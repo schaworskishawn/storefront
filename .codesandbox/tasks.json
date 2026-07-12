@@ -1,0 +1,213 @@
+{
+	// These tasks will run in order when initializing your CodeSandbox project.
+	"setupTasks": [
+		{
+			"command": "pnpm install",
+			"name": "Installing Dependencies"
+		}
+	],
+
+	// These tasks can be run from CodeSandbox. Running one will open a log in the app.
+	"tasks": {
+		"dev": {
+			"name": "dev",
+			"command": "pnpm dev",
+			"runAtStart": true
+		},
+		"dev:webpack": {
+			"name": "dev:webpack",
+			"command": "pnpm dev:webpack",
+			"runAtStart": false
+		},
+		"dev:theme-editorial": {
+			"name": "dev:theme-editorial",
+			"command": "pnpm dev:theme-editorial",
+			"runAtStart": false
+		},
+		"dev:turbopack": {
+			"name": "dev:turbopack",
+			"command": "pnpm dev:turbopack",
+			"runAtStart": false
+		},
+		"build": {
+			"name": "build",
+			"command": "pnpm build",
+			"runAtStart": false
+		},
+		"start": {
+			"name": "start",
+			"command": "pnpm start",
+			"runAtStart": false
+		},
+		"predev": {
+			"name": "predev",
+			"command": "pnpm predev",
+			"runAtStart": false
+		},
+		"prebuild": {
+			"name": "prebuild",
+			"command": "pnpm prebuild",
+			"runAtStart": false
+		},
+		"pretypecheck": {
+			"name": "pretypecheck",
+			"command": "pnpm pretypecheck",
+			"runAtStart": false
+		},
+		"lint": {
+			"name": "lint",
+			"command": "pnpm lint",
+			"runAtStart": false
+		},
+		"lint:fix": {
+			"name": "lint:fix",
+			"command": "pnpm lint:fix",
+			"runAtStart": false
+		},
+		"lint:design-tokens": {
+			"name": "lint:design-tokens",
+			"command": "pnpm lint:design-tokens",
+			"runAtStart": false
+		},
+		"generate": {
+			"name": "generate",
+			"command": "pnpm generate",
+			"runAtStart": false
+		},
+		"generate:checkout": {
+			"name": "generate:checkout",
+			"command": "pnpm generate:checkout",
+			"runAtStart": false
+		},
+		"generate:all": {
+			"name": "generate:all",
+			"command": "pnpm generate:all",
+			"runAtStart": false
+		},
+		"test": {
+			"name": "test",
+			"command": "pnpm test",
+			"runAtStart": false
+		},
+		"test:run": {
+			"name": "test:run",
+			"command": "pnpm test:run",
+			"runAtStart": false
+		},
+		"test:e2e": {
+			"name": "test:e2e",
+			"command": "pnpm test:e2e",
+			"runAtStart": false
+		},
+		"typecheck": {
+			"name": "typecheck",
+			"command": "pnpm typecheck",
+			"runAtStart": false
+		},
+		"verify": {
+			"name": "verify",
+			"command": "pnpm verify",
+			"runAtStart": false
+		},
+		"verify:quick": {
+			"name": "verify:quick",
+			"command": "pnpm verify:quick",
+			"runAtStart": false
+		},
+		"docs:check": {
+			"name": "docs:check",
+			"command": "pnpm docs:check",
+			"runAtStart": false
+		},
+		"docs:compile": {
+			"name": "docs:compile",
+			"command": "pnpm docs:compile",
+			"runAtStart": false
+		},
+		"doctor": {
+			"name": "doctor",
+			"command": "pnpm doctor",
+			"runAtStart": false
+		},
+		"doctor:check": {
+			"name": "doctor:check",
+			"command": "pnpm doctor:check",
+			"runAtStart": false
+		},
+		"knip": {
+			"name": "knip",
+			"command": "pnpm knip",
+			"runAtStart": false
+		},
+		"prepare": {
+			"name": "prepare",
+			"command": "pnpm prepare",
+			"runAtStart": false
+		},
+		"configurator:storefront-content:validate": {
+			"name": "configurator:storefront-content:validate",
+			"command": "pnpm configurator:storefront-content:validate",
+			"runAtStart": false
+		},
+		"configurator:storefront-content:plan": {
+			"name": "configurator:storefront-content:plan",
+			"command": "pnpm configurator:storefront-content:plan",
+			"runAtStart": false
+		},
+		"configurator:storefront-content:deploy": {
+			"name": "configurator:storefront-content:deploy",
+			"command": "pnpm configurator:storefront-content:deploy",
+			"runAtStart": false
+		},
+		"configurator:storefront-content:drop": {
+			"name": "configurator:storefront-content:drop",
+			"command": "pnpm configurator:storefront-content:drop",
+			"runAtStart": false
+		},
+		"configurator:storefront-content:translations": {
+			"name": "configurator:storefront-content:translations",
+			"command": "pnpm configurator:storefront-content:translations",
+			"runAtStart": false
+		},
+		"configurator:storefront-content:reset": {
+			"name": "configurator:storefront-content:reset",
+			"command": "pnpm configurator:storefront-content:reset",
+			"runAtStart": false
+		},
+		"catalog:translations:fetch": {
+			"name": "catalog:translations:fetch",
+			"command": "pnpm catalog:translations:fetch",
+			"runAtStart": false
+		},
+		"catalog:translations:plan": {
+			"name": "catalog:translations:plan",
+			"command": "pnpm catalog:translations:plan",
+			"runAtStart": false
+		},
+		"catalog:translations:deploy": {
+			"name": "catalog:translations:deploy",
+			"command": "pnpm catalog:translations:deploy",
+			"runAtStart": false
+		},
+		"content:verify-attribute-slugs": {
+			"name": "content:verify-attribute-slugs",
+			"command": "pnpm content:verify-attribute-slugs",
+			"runAtStart": false
+		},
+		"content:verify-seed": {
+			"name": "content:verify-seed",
+			"command": "pnpm content:verify-seed",
+			"runAtStart": false
+		},
+		"content:export-seed": {
+			"name": "content:export-seed",
+			"command": "pnpm content:export-seed",
+			"runAtStart": false
+		},
+		"skills:bootstrap": {
+			"name": "skills:bootstrap",
+			"command": "pnpm skills:bootstrap",
+			"runAtStart": false
+		}
+	}
+}

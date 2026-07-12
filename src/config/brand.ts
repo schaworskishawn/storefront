@@ -15,28 +15,29 @@
 
 export const brandConfig = {
 	/** Site name used in titles, metadata, and headers */
-	siteName: "Saleor Store",
+	siteName: "The Vape Store",
 
 	/** Legal entity name for copyright notices */
-	copyrightHolder: "Saleor Demo Store",
+	copyrightHolder: "The Vape Store",
 
 	/** Organization name for structured data (JSON-LD) */
-	organizationName: "Saleor Store",
+	organizationName: "The Vape Store",
 
 	/** Default brand name for products without a brand */
-	defaultBrand: "Saleor Store",
+	defaultBrand: "The Vape Store",
 
 	/** Tagline/description for the store */
-	tagline: "Premium products with exceptional quality. Discover our curated collection.",
+	tagline: "Winnipeg's top vape shop — huge selection, unbeatable prices, fast local delivery.",
 
 	/** Homepage meta description */
-	description: "Starter pack for building performant e-commerce experiences with Saleor.",
+	description:
+		"Winnipeg & Manitoba's best vape shop online. Huge selection of disposables, e-juice & accessories. Low prices, in stock now.",
 
 	/** Logo aria-label for accessibility */
-	logoAriaLabel: "Store",
+	logoAriaLabel: "The Vape Store",
 
 	/** Title template - %s will be replaced with page title */
-	titleTemplate: "%s | Saleor Store",
+	titleTemplate: "%s | The Vape Store",
 
 	/** Social media handles */
 	social: {

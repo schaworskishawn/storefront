@@ -41,9 +41,9 @@
 	--muted-foreground: 0.45 0 0;
 	--accent-foreground: 0.12 0 0;
 
-	/* --- Primary (CTAs, key actions) --- */
-	--primary: 0.12 0 0;
-	--primary-foreground: 0.98 0 0;
+	/* --- Primary (CTAs, key actions) — electric green --- */
+	--primary: 0.72 0.19 145;
+	--primary-foreground: 0.1 0 0;
 
 	/* --- Semantic --- */
 	--destructive: 0.55 0.2 25;
@@ -55,7 +55,7 @@
 	/* --- Interactive --- */
 	--border: 0.915 0 0;
 	--input: 0.915 0 0;
-	--ring: 0.12 0 0;
+	--ring: 0.72 0.19 145;
 
 	/* --- Inverse surfaces (dark bands: bg-foreground text-background) --- */
 	--inverse: 0.82 0 0;

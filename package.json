@@ -47,7 +47,9 @@
 		"skills:bootstrap": "node scripts/bootstrap-agent-skills.mjs"
 	},
 	"dependencies": {
+		"@builder.io/sdk-react": "5.2.4",
 		"@graphql-typed-document-node/core": "3.2.0",
+		"@plasmicapp/loader-nextjs": "2.0.17",
 		"@radix-ui/react-dialog": "1.1.17",
 		"@radix-ui/react-dropdown-menu": "2.1.18",
 		"@radix-ui/react-navigation-menu": "1.2.16",
