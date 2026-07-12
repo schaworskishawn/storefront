@@ -1,22 +1,21 @@
-import { PlasmicComponent, ComponentRenderData } from "@plasmicapp/loader-nextjs";
+import { Content, fetchOneEntry, isPreviewing } from "@builder.io/sdk-react";
 import { notFound } from "next/navigation";
-import { PLASMIC } from "../../../../plasmic-init";
-import { PlasmicClientRootProvider } from "../../../../plasmic-init-client";
 
-export default async function PlasmicPage({ params }: { params: Promise<{ catchall?: string[] }> }) {
-	const { catchall } = await params;
-	const plasmicPath = "/" + (catchall?.join("/") || "");
-	const plasmicData: ComponentRenderData | null = await PLASMIC.maybeFetchComponentData(plasmicPath);
+const BUILDER_API_KEY = process.env.NEXT_PUBLIC_BUILDER_API_KEY!;
 
-	if (!plasmicData) {
+export default async function BuilderPage({ params }: { params: Promise<{ slug?: string[] }> }) {
+	const { slug } = await params;
+	const urlPath = "/" + (slug?.join("/") || "");
+
+	const content = await fetchOneEntry({
+		model: "page",
+		apiKey: BUILDER_API_KEY,
+		userAttributes: { urlPath },
+	});
+
+	if (!content && !isPreviewing()) {
 		notFound();
 	}
 
-	const pageMeta = plasmicData.entryCompMetas[0];
-
-	return (
-		<PlasmicClientRootProvider prefetchedData={plasmicData} pageParams={pageMeta.params}>
-			<PlasmicComponent component={pageMeta.displayName} />
-		</PlasmicClientRootProvider>
-	);
+	return <Content model="page" apiKey={BUILDER_API_KEY} content={content} />;
 }
