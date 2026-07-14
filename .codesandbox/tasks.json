@@ -2,6 +2,10 @@
 	// These tasks will run in order when initializing your CodeSandbox project.
 	"setupTasks": [
 		{
+			"command": "corepack enable && corepack prepare pnpm@latest --activate",
+			"name": "Setup pnpm"
+		},
+		{
 			"command": "pnpm install",
 			"name": "Installing Dependencies"
 		}
