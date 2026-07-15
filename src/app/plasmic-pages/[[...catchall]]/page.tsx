@@ -1,14 +1,28 @@
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { PlasmicComponent } from "@plasmicapp/loader-nextjs";
 import { PLASMIC } from "../../../../plasmic-init";
 import { PlasmicClientRootProvider } from "../../../../plasmic-init-client";
+import { PageContentSkeleton } from "@/ui/components/page-content-skeleton";
 
 type PageProps = {
 	params: Promise<{ catchall?: string[] }>;
 };
 
-export default async function PlasmicPage({ params }: PageProps) {
-	const { catchall } = await params;
+/**
+ * Sync page shell — Plasmic content streams inside a Suspense island (Cache Components / PPR).
+ */
+export default function PlasmicPage({ params }: PageProps) {
+	return (
+		<Suspense fallback={<PageContentSkeleton />}>
+			<PlasmicPageContent params={params} />
+		</Suspense>
+	);
+}
+
+async function PlasmicPageContent({ params: paramsPromise }: PageProps) {
+	const params = await paramsPromise;
+	const catchall = params.catchall;
 	const plasmicPath = "/" + (catchall ? catchall.join("/") : "");
 
 	const plasmicData = await PLASMIC.maybeFetchComponentData(plasmicPath);
