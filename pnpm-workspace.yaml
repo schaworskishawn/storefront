@@ -1,15 +1,27 @@
 packages:
-  - "."
+  - .
 
 blockExoticSubdeps: true
-minimumReleaseAge: 1440 # 24h
-trustPolicy: no-downgrade
-trustPolicyExclude:
-  - "semver@6.3.1"
+
+ignoredBuiltDependencies:
+  - "@parcel/watcher"
+  - "@swc/core"
+  - esbuild
+  - isolated-vm
+  - sharp
+  - unrs-resolver
+
+minimumReleaseAge: 1440
+
 overrides:
-  graphql: 16.8.1
-  dset: ">=3.1.4"
-  micromatch: ">=4.0.8"
-  "@babel/runtime": ">=7.26.10"
   "@babel/helpers": ">=7.26.10"
-  "brace-expansion@>=2": ">=2.0.2"
+  "@babel/runtime": ">=7.26.10"
+  brace-expansion@>=2: ">=2.0.2"
+  dset: ">=3.1.4"
+  graphql: 16.8.1
+  micromatch: ">=4.0.8"
+
+trustPolicy: no-downgrade
+
+trustPolicyExclude:
+  - semver@6.3.1
