@@ -5,7 +5,7 @@ import { resolveLocaleFromSlug } from "@/config/locale";
 import { buildStorefrontPath } from "@/lib/storefront-path";
 
 export function useStorefrontParams() {
-	return useParams<{ locale?: string; channel?: string }>();
+	return useParams<{ locale?: string; channel?: string }>()!;
 }
 
 /** Current locale as a BCP 47 tag for `Intl` formatting (falls back to the default locale). */
