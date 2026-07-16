@@ -4,7 +4,7 @@ import { useParams, usePathname } from "next/navigation";
 import { stripStorefrontPrefix } from "@/lib/storefront-path";
 
 function useSelectedPathname() {
-	const pathname = usePathname();
+	const pathname = usePathname() ?? "";
 	const { locale, channel } = useParams<{ locale?: string; channel?: string }>()!;
 
 	if (locale && channel) {
