@@ -72,7 +72,7 @@
 					"projectId": "vm5C5D3GFpKC6zDVyoLFde",
 					"renderModuleFilePath": "plasmic/blank_project/PlasmicTest.tsx",
 					"importSpec": {
-						"modulePath": "../pages/test.tsx"
+						"modulePath": "../src/pages/test.tsx"
 					},
 					"cssFilePath": "plasmic/blank_project/PlasmicTest.module.css",
 					"scheme": "blackbox",
@@ -111,7 +111,7 @@
 	"wrapPagesWithGlobalContexts": true,
 	"preserveJsImportExtensions": false,
 	"nextjsConfig": {
-		"pagesDir": "../pages"
+		"pagesDir": "../src/pages"
 	},
 	"cliVersion": "0.1.366",
 	"$schema": "https://unpkg.com/@plasmicapp/cli@0.1.366/dist/plasmic.schema.json"
