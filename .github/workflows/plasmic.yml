@@ -20,10 +20,7 @@ jobs:
         with:
           persist-credentials: false
           fetch-depth: 0
-     - id: pnpm
-         name: Setting up pnpm...
-         uses: pnpm/action-setup@v4
-     - id: node
+      - id: node
         name: Setting up node v24...
         uses: actions/setup-node@v6
         with:
