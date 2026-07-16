@@ -25,7 +25,7 @@ export function SearchSort() {
 	const currentLabel = tSort(currentSort);
 
 	const handleSortChange = (value: string) => {
-		const params = new URLSearchParams(searchParams.toString());
+		const params = new URLSearchParams(searchParams?.toString());
 		if (value === "relevance") {
 			params.delete("sort");
 		} else {
