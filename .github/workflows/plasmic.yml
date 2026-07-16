@@ -1,11 +1,14 @@
 # Plasmic workflow v4
 name: Sync, build and deploy Plasmic app
+
 permissions:
   contents: write
   pull-requests: write
+
 on:
   repository_dispatch:
     types: [plasmic]
+
 jobs:
   job:
     name: Sync, build and deploy
@@ -17,17 +20,11 @@ jobs:
         with:
           persist-credentials: false
           fetch-depth: 0
-      - id: pnpm
-        name: Setting up pnpm...
-        uses: pnpm/action-setup@v4
       - id: node
         name: Setting up node v24...
         uses: actions/setup-node@v6
         with:
           node-version: "24"
-      - id: install
-        name: Installing dependencies...
-        run: pnpm install --frozen-lockfile
       - id: cache
         name: Recovering cache...
         uses: actions/cache@v5
