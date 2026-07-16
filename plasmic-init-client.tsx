@@ -92,7 +92,6 @@ PLASMIC.registerComponent(ProductCard, {
 				},
 				sizes: {
 					type: "array",
-					itemType: "string",
 				},
 				category: {
 					type: "object",
