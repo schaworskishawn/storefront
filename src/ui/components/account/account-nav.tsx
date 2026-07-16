@@ -26,7 +26,7 @@ const navItems: ReadonlyArray<{
 export function AccountNav() {
 	const t = useTranslations("account.nav");
 	const user = useAccountUser();
-	const pathname = usePathname();
+	const pathname = usePathname() ?? "";
 	const { locale, channel } = useParams<{ locale?: string; channel?: string }>()!;
 
 	const isActive = (href: string, exact?: boolean) => {

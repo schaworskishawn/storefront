@@ -15,7 +15,7 @@ import { ArrowUpDown } from "lucide-react";
 
 export function SearchSort() {
 	const router = useRouter();
-	const pathname = usePathname();
+	const pathname = usePathname() ?? "";
 	const searchParams = useSearchParams()!;
 	const t = useTranslations("search");
 	const tSort = useTranslations("search.sortOptions");

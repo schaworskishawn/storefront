@@ -32,7 +32,7 @@ import { usePathname } from "next/navigation";
  * builds that commit *after* popstate restore via the effect's branch.
  *
  * ## Why state lives at module scope
- * In dev, `usePathname()` suspends this component mid-navigation, so React may tear down and
+ * In dev, `usePathname() ?? ""` suspends this component mid-navigation, so React may tear down and
  * recreate the fiber across the Suspense boundary — a `useRef` cannot survive a navigation.
  * Navigation state, saved offsets, and listeners therefore live at module scope (installed once).
  *
@@ -178,7 +178,7 @@ function installListeners(): void {
 }
 
 export function ScrollToTopOnNavigate() {
-	const pathname = usePathname();
+	const pathname = usePathname() ?? "";
 
 	useEffect(() => {
 		installListeners();

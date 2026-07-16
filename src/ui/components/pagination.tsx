@@ -16,7 +16,7 @@ export function Pagination({
 		startCursor?: string | null;
 	};
 }) {
-	const pathname = usePathname();
+	const pathname = usePathname() ?? "";
 	const searchParams = useSearchParams()!;
 	const t = useTranslations("common.pagination");
 

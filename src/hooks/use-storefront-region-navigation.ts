@@ -14,7 +14,7 @@ import {
 /** Navigate browse URLs while preserving the path suffix (ADR 0001 picker behavior). */
 export function useStorefrontRegionNavigation() {
 	const router = useRouter();
-	const pathname = usePathname() ?? "";
+	const pathname = usePathname() ?? "" ?? "";
 	const params = useParams<{ locale?: string; channel?: string }>()!;
 
 	const locale = params.locale ?? "";
