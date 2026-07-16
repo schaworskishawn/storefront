@@ -38,7 +38,7 @@ export function useStripeReturnCompletion({
 	channelSlug,
 	onError,
 }: UseStripeReturnCompletionParams) {
-	const searchParams = useSearchParams();
+	const searchParams = useSearchParams()!;
 	const paymentMessages = useCheckoutPaymentMessages();
 	const isProcessingRef = useRef(false);
 	/** Dedupes effect re-runs while Next `searchParams` still reflects the pre-clear return URL. */

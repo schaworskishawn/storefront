@@ -23,7 +23,7 @@ type AuthorizedPaymentRecoveryProps = {
 
 /** Fallback when authorizeStatus is FULL but checkoutComplete did not run. */
 export const AuthorizedPaymentRecovery: FC<AuthorizedPaymentRecoveryProps> = ({ checkout, onError }) => {
-	const searchParams = useSearchParams();
+	const searchParams = useSearchParams()!;
 	const paymentMessages = useCheckoutPaymentMessages();
 	const tActions = useTranslations("checkout.actions");
 	const [isCompleting, setIsCompleting] = useState(false);

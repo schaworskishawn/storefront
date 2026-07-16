@@ -14,7 +14,7 @@ import { useCheckoutData } from "@/checkout/providers/checkout-data";
 export function useOrphanedCheckoutRecovery(checkout: CheckoutFragment) {
 	const router = useRouter();
 	const refreshCheckoutRsc = useRefreshCheckoutRsc();
-	const searchParams = useSearchParams();
+	const searchParams = useSearchParams()!;
 	const { authenticated } = useUser();
 	const { setCheckout } = useCheckoutData();
 	const [isRecovering, setIsRecovering] = useState(false);

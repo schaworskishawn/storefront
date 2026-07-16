@@ -103,7 +103,7 @@ const InformationStepForm: FC<InformationStepFormProps> = ({
 	onAuthSessionPending,
 }) => {
 	const router = useRouter();
-	const searchParams = useSearchParams();
+	const searchParams = useSearchParams()!;
 	const t = useTranslations("checkout.actions");
 	const tErrors = useTranslations("checkout.errors");
 	const tAccount = useTranslations("account.errors");
@@ -497,7 +497,7 @@ const InformationStepForm: FC<InformationStepFormProps> = ({
 	return (
 		<form className="space-y-8" onSubmit={handleSubmit} noValidate>
 			{isOrphaned ? (
-				<div className="bg-muted/40 space-y-3 rounded-lg border border-border p-4">
+				<div className="space-y-3 rounded-lg border border-border bg-muted/40 p-4">
 					<p className="text-sm text-foreground">{tErrors("orphanedCartMessage")}</p>
 					<div className="flex flex-wrap gap-3">
 						<Button

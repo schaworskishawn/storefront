@@ -7,7 +7,7 @@ import { useOrderData } from "@/checkout/providers/order-data";
 /** Order confirmation data — server-hydrated from the RSC page. */
 export const useOrder = () => {
 	const { order, orderId: sessionOrderId } = useOrderData();
-	const searchParams = useSearchParams();
+	const searchParams = useSearchParams()!;
 	const orderIdFromUrl = getQueryParams(searchParams).orderId;
 	const orderId = orderIdFromUrl ?? sessionOrderId;
 

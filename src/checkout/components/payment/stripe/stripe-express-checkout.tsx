@@ -54,7 +54,7 @@ export const StripeExpressCheckout: FC<StripeExpressCheckoutProps> = ({
 }) => {
 	const stripe = useStripe();
 	const elements = useElements();
-	const searchParams = useSearchParams();
+	const searchParams = useSearchParams()!;
 	const { refreshCheckout } = useCheckoutData();
 	const paymentMessages = useCheckoutPaymentMessages();
 	const [hasWallets, setHasWallets] = useState<boolean | null>(null);
@@ -132,8 +132,8 @@ export const StripeExpressCheckout: FC<StripeExpressCheckoutProps> = ({
 				onAvailablePaymentMethodsChange={({ paymentMethods }) => {
 					const available = Boolean(
 						paymentMethods?.applePay?.available ||
-							paymentMethods?.googlePay?.available ||
-							paymentMethods?.link?.available,
+						paymentMethods?.googlePay?.available ||
+						paymentMethods?.link?.available,
 					);
 					setHasWallets(available);
 				}}

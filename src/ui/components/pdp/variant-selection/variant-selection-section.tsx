@@ -60,7 +60,7 @@ export function VariantSelectionSection({
 }: VariantSelectionSectionProps) {
 	const router = useRouter();
 	const { locale } = useParams<{ locale: string; channel: string }>();
-	const searchParams = useSearchParams();
+	const searchParams = useSearchParams()!;
 	const [isPending, startTransition] = useTransition();
 
 	const attributeGroups = useMemo(() => groupVariantsByAttributes(variants as SaleorVariant[]), [variants]);

@@ -13,10 +13,10 @@ type UseCheckoutOptions = {
 export const useCheckout = ({ pause = false }: UseCheckoutOptions = {}) => {
 	const { checkout, setCheckout, refreshCheckout } = useCheckoutData();
 	const { checkoutId: sessionCheckoutId } = useCheckoutSession();
-	const searchParams = useSearchParams();
+	const searchParams = useSearchParams()!;
 	const queryParams = useMemo(() => getQueryParams(searchParams), [searchParams]);
 	const checkoutIdFromUrl = extractCheckoutIdFromParams(queryParams);
-	const checkoutId = pause ? null : checkoutIdFromUrl ?? sessionCheckoutId;
+	const checkoutId = pause ? null : (checkoutIdFromUrl ?? sessionCheckoutId);
 
 	return useMemo(
 		() => ({

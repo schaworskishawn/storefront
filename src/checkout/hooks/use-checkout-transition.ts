@@ -14,7 +14,7 @@ export type CheckoutTransition = "completing" | null;
 
 /** Guards checkout UI during payment → order transitions (avoids step-1 skeleton flashes). */
 export function useCheckoutTransition(): CheckoutTransition {
-	const searchParams = useSearchParams();
+	const searchParams = useSearchParams()!;
 	const liveSearchParams = useLiveCheckoutSearchParams(searchParams);
 	const { checkoutId } = useCheckoutSession();
 	const [completingRevision, setCompletingRevision] = useState(0);

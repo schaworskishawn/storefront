@@ -67,7 +67,7 @@ export function useProductFilters({
 }: UseProductFiltersOptions): UseProductFiltersResult {
 	const router = useRouter();
 	const pathname = usePathname();
-	const searchParams = useSearchParams();
+	const searchParams = useSearchParams()!;
 
 	// Parse current filters from URL
 	const selectedCategories = useMemo(

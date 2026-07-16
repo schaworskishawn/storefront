@@ -44,7 +44,7 @@ export const RootViews = () => {
 	const { emptySession } = useCheckoutContent();
 	const t = useTranslations("checkout.errors");
 	const storefrontLocale = useCheckoutBrowseLocale();
-	const searchParams = useSearchParams();
+	const searchParams = useSearchParams()!;
 	const { loadState, checkout } = useCheckoutData();
 	const transition = useCheckoutTransition();
 	const accountCredentials = getEmailAndTokenFromSearchParams(searchParams);

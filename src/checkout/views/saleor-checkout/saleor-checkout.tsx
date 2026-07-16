@@ -19,7 +19,7 @@ import { CheckoutSkeleton } from "./checkout-skeleton";
 import { PaymentCompletingScreen } from "./payment-completing-screen";
 
 export const SaleorCheckout: FC = () => {
-	const searchParams = useSearchParams();
+	const searchParams = useSearchParams()!;
 	const transition = useCheckoutTransition();
 	const { checkout, setCheckout, refetch } = useCheckout();
 	// RootViews shows PaymentCompletingScreen while `transition === "completing"` — keep this

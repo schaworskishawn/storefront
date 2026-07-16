@@ -9,7 +9,7 @@ import { useCheckoutSession } from "@/checkout/providers/checkout-session";
 /** Drops stale sessionStorage flags when the shopper opens a different checkout. */
 export function CheckoutSessionCleanup() {
 	const { checkoutId } = useCheckoutSession();
-	const searchParams = useSearchParams();
+	const searchParams = useSearchParams()!;
 
 	useLayoutEffect(() => {
 		reconcileCheckoutSessionStorage({

@@ -17,7 +17,7 @@ export function Pagination({
 	};
 }) {
 	const pathname = usePathname();
-	const searchParams = useSearchParams();
+	const searchParams = useSearchParams()!;
 	const t = useTranslations("common.pagination");
 
 	const nextSearchParams = new URLSearchParams(searchParams);
