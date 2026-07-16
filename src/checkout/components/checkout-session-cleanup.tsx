@@ -14,7 +14,7 @@ export function CheckoutSessionCleanup() {
 	useLayoutEffect(() => {
 		reconcileCheckoutSessionStorage({
 			checkoutId,
-			processingPayment: searchParams.get("processingPayment") === "true",
+			processingPayment: searchParams?.get("processingPayment") === "true",
 		});
 	}, [checkoutId, searchParams]);
 
