@@ -14,7 +14,7 @@ import { StripeCheckoutReturnHandler } from "./stripe-checkout-return-handler";
  */
 export function StripeCheckoutCompletionHost() {
 	const { checkoutId } = useCheckoutSession();
-	const searchParams = useSearchParams();
+	const searchParams = useSearchParams()!;
 	const liveSearchParams = useLiveCheckoutSearchParams(searchParams);
 
 	if (!checkoutId) {
