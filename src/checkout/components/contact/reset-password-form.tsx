@@ -46,7 +46,12 @@ export const ResetPasswordForm: FC<ResetPasswordFormProps> = ({ onSuccess, onBac
 			return;
 		}
 
-		const { passwordResetToken, passwordResetEmail } = getQueryParams(searchParams ?? new URLSearchParams());
+		if (!searchParams) {
+			setError(t("errors.invalidResetToken"));
+			return;
+		}
+
+		const { passwordResetToken, passwordResetEmail } = getQueryParams(searchParams);
 
 		if (!passwordResetToken) {
 			setError(t("errors.invalidResetToken"));
