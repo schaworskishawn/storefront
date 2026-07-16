@@ -20,7 +20,7 @@ export function SearchSort() {
 	const t = useTranslations("search");
 	const tSort = useTranslations("search.sortOptions");
 
-	const rawSort = searchParams.get("sort") || "relevance";
+	const rawSort = searchParams?.get("sort") || "relevance";
 	const currentSort = isSearchSortValue(rawSort) ? rawSort : "relevance";
 	const currentLabel = tSort(currentSort);
 
