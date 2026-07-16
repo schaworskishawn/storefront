@@ -23,6 +23,9 @@ importers:
       '@plasmicapp/react-web':
         specifier: 1.0.25
         version: 1.0.25(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      '@plasmicpkgs/react-twitter-widgets':
+        specifier: 0.0.252
+        version: 0.0.252(@plasmicapp/host@2.0.11(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       '@radix-ui/react-dialog':
         specifier: 1.1.17
         version: 1.1.17(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
@@ -1808,6 +1811,13 @@ packages:
   '@plasmicapp/watcher@1.0.85':
     resolution: {integrity: sha512-vMMCebTDN5VkZ4PnrXXXUXYRDuqyhUNwYLLjQAA7LI8KE3wNZkqTGa/Wb46rjDzSDVq6EnGh7O6AtJG8/BSMJg==}
     engines: {node: '>=10'}
+
+  '@plasmicpkgs/react-twitter-widgets@0.0.252':
+    resolution: {integrity: sha512-7HLReHkYFWfDyrJ2BUTcpo55GHaFUHaSS1Tyx8xIy8egQiWUPg/A/cwqiK1ip2MwvbPgoLxFzZstDhXuCuqIQQ==}
+    peerDependencies:
+      '@plasmicapp/host': '>=1.0.0'
+      react: '>=16.8.0'
+      react-dom: '>=16.8.0'
 
   '@playwright/test@1.55.0':
     resolution: {integrity: sha512-04IXzPwHrW69XusN/SIdDdKZBzMfOT9UNT/YiJit/xpy2VuAoB8NHc8Aplb96zsWDddLnbkPL3TsmrS04ZU2xQ==}
@@ -4137,6 +4147,9 @@ packages:
     resolution: {integrity: sha512-ME4Fb83LgEgwNw96RKNvKV4VTLuXfoKudAmm2lP8Kk87KaMK0/Xrx/aAkMWmT8mDb+3MlFDspfbCs7adjRxA2g==}
     engines: {node: '>=20.0.0'}
 
+  loadjs@4.3.0:
+    resolution: {integrity: sha512-vNX4ZZLJBeDEOBvdr2v/F+0aN5oMuPu7JTqrMwp+DtgK+AryOlpy6Xtm2/HpNr+azEa828oQjOtWsB6iDtSfSQ==}
+
   locate-path@5.0.0:
     resolution: {integrity: sha512-t7hw9pI+WvuwNJXwk5zVHpyhIqzg2qTlklJOf0mVxGSbe3Fp2VieZcduNYjaLDoy6p9uGpQEGWG87WpMKlNq8g==}
     engines: {node: '>=8'}
@@ -4747,6 +4760,11 @@ packages:
     peerDependenciesMeta:
       '@types/react':
         optional: true
+
+  react-twitter-widgets@1.11.0:
+    resolution: {integrity: sha512-PMCLJQc30iqy01y1b2+HnMfCX+ZkOxWaPKJb4BhHgOgjSjoZb68K5T0nq3q+3YbX9K7OH0bhptgDihtBG/BqRQ==}
+    peerDependencies:
+      react: ^16.8.0 || ^17 || ^18
 
   react-zoom-pan-pinch@4.0.3:
     resolution: {integrity: sha512-N2Hi6L78fFmhRra+ORpFSW7WST5x6kxpOPplIvtB0b7b+U2anpo1z1wLgaWRPS2kUSqcraRG+JgBCIlDJnqqAg==}
@@ -7344,6 +7362,13 @@ snapshots:
       - supports-color
       - utf-8-validate
 
+  '@plasmicpkgs/react-twitter-widgets@0.0.252(@plasmicapp/host@2.0.11(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(react-dom@19.2.7(react@19.2.7))(react@19.2.7)':
+    dependencies:
+      '@plasmicapp/host': 2.0.11(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      react: 19.2.7
+      react-dom: 19.2.7(react@19.2.7)
+      react-twitter-widgets: 1.11.0(react@19.2.7)
+
   '@playwright/test@1.55.0':
     dependencies:
       playwright: 1.55.0
@@ -9795,6 +9820,8 @@ snapshots:
       rfdc: 1.4.1
       wrap-ansi: 9.0.2
 
+  loadjs@4.3.0: {}
+
   locate-path@5.0.0:
     dependencies:
       p-locate: 4.1.0
@@ -10324,6 +10351,11 @@ snapshots:
       tslib: 2.8.1
     optionalDependencies:
       '@types/react': 19.2.17
+
+  react-twitter-widgets@1.11.0(react@19.2.7):
+    dependencies:
+      loadjs: 4.3.0
+      react: 19.2.7
 
   react-zoom-pan-pinch@4.0.3(react-dom@19.2.7(react@19.2.7))(react@19.2.7):
     dependencies:

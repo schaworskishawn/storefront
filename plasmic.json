@@ -7,7 +7,7 @@
 	},
 	"style": {
 		"scheme": "css-modules",
-		"defaultStyleCssFilePath": ""
+		"defaultStyleCssFilePath": "plasmic/plasmic__default_style.css"
 	},
 	"images": {
 		"scheme": "public-files",
@@ -20,7 +20,91 @@
 	},
 	"srcDir": "components",
 	"defaultPlasmicDir": "./plasmic",
-	"projects": [],
+	"projects": [
+		{
+			"projectId": "itBdcjth19Wasd6ngAYxWR",
+			"projectApiToken": "pJhvXesaoH425YiAJjn9GHDxeWDga53GXsyZpNGKlO9WKig0ai1puOivs1GJSpPWSXxCDR78cMtivrw",
+			"projectName": "react-twitter-widgets",
+			"version": ">0.0.0",
+			"cssFilePath": "plasmic/react_twitter_widgets/plasmic.css",
+			"components": [],
+			"icons": [],
+			"images": [],
+			"indirect": true,
+			"globalContextsFilePath": "",
+			"splitsProviderFilePath": "",
+			"styleTokensProviderFilePath": "plasmic/react_twitter_widgets/PlasmicStyleTokensProvider.tsx",
+			"dataTokensFilePath": "",
+			"projectModuleFilePath": "plasmic/react_twitter_widgets/plasmic.tsx",
+			"codeComponents": [
+				{
+					"id": "RZqWqT2DfR",
+					"name": "TweetWrapper",
+					"displayName": "hostless-react-twitter-widgets-tweet",
+					"componentImportPath": "@plasmicpkgs/react-twitter-widgets"
+				},
+				{
+					"id": "x2j0abJR_t",
+					"name": "TimelineWrapper",
+					"displayName": "hostless-react-twitter-widgets-timeline",
+					"componentImportPath": "@plasmicpkgs/react-twitter-widgets"
+				},
+				{
+					"id": "zqQBieQcfl",
+					"name": "FollowWrapper",
+					"displayName": "hostless-react-twitter-widgets-follow",
+					"componentImportPath": "@plasmicpkgs/react-twitter-widgets"
+				}
+			],
+			"customFunctions": []
+		},
+		{
+			"projectId": "vm5C5D3GFpKC6zDVyoLFde",
+			"projectApiToken": "JHaSWDVct98RbpqTkZwt8KQbUiqWfX0zA9bU7pDc3gfEoOnFKulwf7pmWUwT0e7JtZp1lnH4LZaSdQeAnKw",
+			"projectName": "Blank project",
+			"version": "latest",
+			"cssFilePath": "plasmic/blank_project/plasmic.css",
+			"components": [
+				{
+					"id": "0TS71ob9QO5w",
+					"name": "Test",
+					"type": "managed",
+					"projectId": "vm5C5D3GFpKC6zDVyoLFde",
+					"renderModuleFilePath": "plasmic/blank_project/PlasmicTest.tsx",
+					"importSpec": {
+						"modulePath": "../pages/test.tsx"
+					},
+					"cssFilePath": "plasmic/blank_project/PlasmicTest.module.css",
+					"scheme": "blackbox",
+					"componentType": "page",
+					"path": "/test"
+				}
+			],
+			"icons": [],
+			"images": [],
+			"indirect": false,
+			"globalContextsFilePath": "",
+			"splitsProviderFilePath": "",
+			"styleTokensProviderFilePath": "plasmic/blank_project/PlasmicStyleTokensProvider.tsx",
+			"dataTokensFilePath": "",
+			"projectModuleFilePath": "plasmic/blank_project/plasmic.tsx",
+			"codeComponents": [
+				{
+					"id": "IAs0z8P-hzWn",
+					"name": "PlasmicHead",
+					"displayName": "hostless-plasmic-head",
+					"componentImportPath": "@plasmicapp/react-web"
+				},
+				{
+					"id": "dDeQacxeCDEL",
+					"name": "Fetcher",
+					"displayName": "plasmic-data-source-fetcher",
+					"componentImportPath": "@plasmicapp/react-web/lib/data-sources"
+				}
+			],
+			"customFunctions": []
+		}
+	],
 	"globalVariants": {
 		"variantGroups": []
 	},
