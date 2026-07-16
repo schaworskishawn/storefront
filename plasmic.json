@@ -18,7 +18,7 @@
 		"scheme": "theo",
 		"tokensFilePath": "plasmic-tokens.theo.json"
 	},
-	"srcDir": "components",
+	"srcDir": "src/components",
 	"defaultPlasmicDir": "./plasmic",
 	"projects": [
 		{
