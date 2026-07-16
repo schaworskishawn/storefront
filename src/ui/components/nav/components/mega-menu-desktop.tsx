@@ -61,7 +61,7 @@ const megaMenuDropdownTriggerClassName = cn(
 
 function MegaMenuTriggerLabel({ item, onClose }: { item: NavMenuItem; onClose: () => void }) {
 	const router = useRouter();
-	const params = useParams<{ locale?: string; channel?: string }>();
+	const params = useParams<{ locale?: string; channel?: string }>()!;
 
 	const navigate = () => {
 		if (!item.href) {

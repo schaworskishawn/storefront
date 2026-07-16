@@ -59,7 +59,7 @@ export function VariantSelectionSection({
 	children,
 }: VariantSelectionSectionProps) {
 	const router = useRouter();
-	const { locale } = useParams<{ locale: string; channel: string }>();
+	const { locale } = useParams<{ locale: string; channel: string }>()!;
 	const searchParams = useSearchParams()!;
 	const [isPending, startTransition] = useTransition();
 

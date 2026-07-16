@@ -12,7 +12,7 @@ import { useAccountUser } from "@/ui/components/account/account-context";
 export function AccountSettingsPage() {
 	const t = useTranslations("account.settings");
 	const tFields = useTranslations("account.fields");
-	const params = useParams<{ locale: string }>();
+	const params = useParams<{ locale: string }>()!;
 	const user = useAccountUser();
 	const intlLocale = resolveLocaleFromSlug(params.locale).bcp47;
 
@@ -57,7 +57,7 @@ export function AccountSettingsPage() {
 				</div>
 			</div>
 
-			<div className="border-destructive/20 rounded-lg border p-4 sm:p-6">
+			<div className="rounded-lg border border-destructive/20 p-4 sm:p-6">
 				<DeleteAccountSection />
 			</div>
 		</div>

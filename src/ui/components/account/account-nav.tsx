@@ -27,7 +27,7 @@ export function AccountNav() {
 	const t = useTranslations("account.nav");
 	const user = useAccountUser();
 	const pathname = usePathname();
-	const { locale, channel } = useParams<{ locale?: string; channel?: string }>();
+	const { locale, channel } = useParams<{ locale?: string; channel?: string }>()!;
 
 	const isActive = (href: string, exact?: boolean) => {
 		const accountPath = locale && channel ? stripStorefrontPrefix(pathname, locale, channel) : pathname;
@@ -73,7 +73,7 @@ export function AccountNav() {
 			<nav
 				aria-label={t("ariaLabel")}
 				className={cn(
-					"bg-secondary/60 grid auto-cols-fr grid-flow-col gap-1 rounded-xl p-1",
+					"grid auto-cols-fr grid-flow-col gap-1 rounded-xl bg-secondary/60 p-1",
 					"md:flex md:flex-col md:gap-0.5 md:rounded-none md:bg-transparent md:p-0",
 				)}
 			>

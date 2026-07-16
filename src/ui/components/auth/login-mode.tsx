@@ -15,7 +15,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function LoginMode() {
 	const t = useTranslations("account");
-	const params = useParams<{ locale: string; channel: string }>();
+	const params = useParams<{ locale: string; channel: string }>()!;
 	const router = useRouter();
 
 	const [email, setEmail] = useState("");
@@ -138,7 +138,7 @@ export function LoginMode() {
 
 				<form onSubmit={handleLogin} className="space-y-4">
 					{error && (
-						<div role="alert" className="bg-destructive/10 rounded-md p-3 text-sm text-destructive">
+						<div role="alert" className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
 							{error}
 						</div>
 					)}

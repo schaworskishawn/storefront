@@ -15,7 +15,7 @@ import {
 export function useStorefrontRegionNavigation() {
 	const router = useRouter();
 	const pathname = usePathname();
-	const params = useParams<{ locale?: string; channel?: string }>();
+	const params = useParams<{ locale?: string; channel?: string }>()!;
 
 	const locale = params.locale ?? "";
 	const channel = params.channel ?? "";

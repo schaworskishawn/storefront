@@ -19,7 +19,7 @@ type Props = {
 export function SetPasswordMode({ email, token }: Props) {
 	const t = useTranslations("account");
 	const router = useRouter();
-	const params = useParams<{ locale: string; channel: string }>();
+	const params = useParams<{ locale: string; channel: string }>()!;
 
 	const [password, setPassword] = useState("");
 	const [confirmPassword, setConfirmPassword] = useState("");
@@ -104,7 +104,7 @@ export function SetPasswordMode({ email, token }: Props) {
 
 				<form onSubmit={handleSubmit} className="space-y-4">
 					{error && (
-						<div role="alert" className="bg-destructive/10 rounded-md p-3 text-sm text-destructive">
+						<div role="alert" className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
 							{error}
 						</div>
 					)}

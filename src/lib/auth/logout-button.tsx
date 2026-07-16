@@ -20,7 +20,7 @@ export const LogoutButton = forwardRef<HTMLButtonElement, LogoutButtonProps>(fun
 	{ children, channel: channelProp, redirectTo, stayOnPage, onClick, disabled, ...props },
 	ref,
 ) {
-	const params = useParams<{ locale?: string; channel?: string }>();
+	const params = useParams<{ locale?: string; channel?: string }>()!;
 	const logoutSession = useLogout();
 
 	const logoutOptions: LogoutOptions = {

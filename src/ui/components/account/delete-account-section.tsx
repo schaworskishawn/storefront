@@ -13,7 +13,7 @@ export function DeleteAccountSection() {
 	const t = useTranslations("account.deleteAccount");
 	const tAccount = useTranslations("account");
 	const tCommon = useTranslations("account.common");
-	const params = useParams<{ locale: string; channel: string }>();
+	const params = useParams<{ locale: string; channel: string }>()!;
 	const [showConfirm, setShowConfirm] = useState(false);
 	const [isPending, startTransition] = useTransition();
 	const [error, setError] = useState("");
@@ -63,7 +63,7 @@ export function DeleteAccountSection() {
 					{t("submit")}
 				</Button>
 			) : (
-				<div className="border-destructive/20 bg-destructive/5 flex items-start gap-3 rounded-lg border p-4">
+				<div className="flex items-start gap-3 rounded-lg border border-destructive/20 bg-destructive/5 p-4">
 					<AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
 					<div className="space-y-3">
 						<p className="text-sm">{t("confirmBody")}</p>
