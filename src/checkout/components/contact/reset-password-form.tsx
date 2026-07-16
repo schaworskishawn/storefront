@@ -46,7 +46,7 @@ export const ResetPasswordForm: FC<ResetPasswordFormProps> = ({ onSuccess, onBac
 			return;
 		}
 
-		const { passwordResetToken, passwordResetEmail } = getQueryParams(searchParams);
+		const { passwordResetToken, passwordResetEmail } = getQueryParams(searchParams ?? new URLSearchParams());
 
 		if (!passwordResetToken) {
 			setError(t("errors.invalidResetToken"));
@@ -83,7 +83,7 @@ export const ResetPasswordForm: FC<ResetPasswordFormProps> = ({ onSuccess, onBac
 				<p className="mt-1 text-sm text-muted-foreground">{tCheckout("resetPasswordSubtitle")}</p>
 			</div>
 
-			{error && <div className="bg-destructive/10 rounded-md p-3 text-sm text-destructive">{error}</div>}
+			{error && <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{error}</div>}
 
 			<div className="space-y-1.5">
 				<Label htmlFor="new-password" className="text-sm font-medium">
