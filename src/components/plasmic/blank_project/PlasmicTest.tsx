@@ -117,9 +117,9 @@ export const PlasmicTest__ArgProps = new Array<ArgPropType>();
 export type PlasmicTest__OverridesType = {
 	root?: Flex__<"div">;
 	h1?: Flex__<"h1">;
-	freeBox?: Flex__<"div">;
 	rectangle1?: Flex__<"div">;
 	timeline?: Flex__<typeof TimelineWrapper>;
+	text?: Flex__<"div">;
 };
 
 export interface DefaultTestProps {}
@@ -199,11 +199,7 @@ function PlasmicTest__RenderFunc(props: {
 					>
 						{"You won't believe what happens next."}
 					</h1>
-					<div
-						data-plasmic-name={"freeBox"}
-						data-plasmic-override={overrides.freeBox}
-						className={classNames("all", sty.freeBox)}
-					/>
+					<div className={classNames("all", sty.freeBox___3Fyne)} />
 
 					<div
 						data-plasmic-name={"rectangle1"}
@@ -217,6 +213,17 @@ function PlasmicTest__RenderFunc(props: {
 						className={classNames("__wab_instance", sty.timeline)}
 						url={"https://twitter.com/plasmicapp"}
 					/>
+
+					<div
+						data-plasmic-name={"text"}
+						data-plasmic-override={overrides.text}
+						className={classNames("all", "__wab_text", sty.text)}
+					>
+						{
+							'import "../../components/plasmic/blank_project/plasmic.css"; // plasmic-import: vm5C5D3GFpKC6zDVyoLFde/projectcss'
+						}
+					</div>
+					<div className={classNames("all", sty.freeBox__yjrvk)} />
 				</div>
 			</div>
 		</React.Fragment>
@@ -224,20 +231,20 @@ function PlasmicTest__RenderFunc(props: {
 }
 
 const PlasmicDescendants = {
-	root: ["root", "h1", "freeBox", "rectangle1", "timeline"],
+	root: ["root", "h1", "rectangle1", "timeline", "text"],
 	h1: ["h1"],
-	freeBox: ["freeBox"],
 	rectangle1: ["rectangle1"],
 	timeline: ["timeline"],
+	text: ["text"],
 } as const;
 type NodeNameType = keyof typeof PlasmicDescendants;
 type DescendantsType<T extends NodeNameType> = (typeof PlasmicDescendants)[T][number];
 type NodeDefaultElementType = {
 	root: "div";
 	h1: "h1";
-	freeBox: "div";
 	rectangle1: "div";
 	timeline: typeof TimelineWrapper;
+	text: "div";
 };
 
 type ReservedPropsType = "variants" | "args" | "overrides";
@@ -295,9 +302,9 @@ export const PlasmicTest = Object.assign(
 	{
 		// Helper components rendering sub-elements
 		h1: makeNodeComponent("h1"),
-		freeBox: makeNodeComponent("freeBox"),
 		rectangle1: makeNodeComponent("rectangle1"),
 		timeline: makeNodeComponent("timeline"),
+		text: makeNodeComponent("text"),
 
 		// Metadata about props expected for PlasmicTest
 		internalVariantProps: PlasmicTest__VariantProps,
