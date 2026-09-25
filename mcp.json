@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "Locofy": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@locofy/mcp@latest"],
+      "env": {
+        "PERSONAL_ACCESS_TOKEN": "lpat_v1_EcUBbR0G22wqMWcXeO9bsVgx7A1Nj6s0VTBp4bt05SSU9spD0yCopbkkNyuJ_nzAnftUujcZ84ALSyrqby910yMJYSm7Hn4d6yOPSj2OSPU=",
+        "PROJECT_ID": "3JppKFfiZzDZve7D3wynYwJsUNq",
+        "IDE_SOURCE": "claude_code"
+      }
+    }
+  }
+}

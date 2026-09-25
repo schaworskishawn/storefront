@@ -1,0 +1,27 @@
+{
+  "components": [],
+  "projectId": "3Jpzf5oR5WsWM0vKF4MY1Uox0t0",
+  "projectName": "sss",
+  "framework": "next",
+  "teamId": "3JpocNetbGqjLK6X2WdWU5JYUnB",
+  "settings": {
+    "units": {
+      "unit": "px",
+      "topRightBottomLeft": true,
+      "widthHeight": true,
+      "margin": true,
+      "padding": true,
+      "gap": true,
+      "fontSize": true,
+      "lineHeight": true,
+      "baseFontSize": 16
+    },
+    "designTokens": true,
+    "generateFigmaTokens": true,
+    "tailwindGenerateTokens": true,
+    "styling": "CSS Modules",
+    "fileNamingConvention": "Kebab Case",
+    "typescript": true,
+    "routerConfig": "app-router"
+  }
+}
