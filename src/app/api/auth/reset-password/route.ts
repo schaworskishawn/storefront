@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { rejectIfRateLimited } from "@/lib/auth/auth-rate-limit";
-import { isAllowedRedirectUrl } from "@/lib/auth/validate-redirect-url";
+import { getRequestOrigin, isAllowedRedirectUrl } from "@/lib/auth/validate-redirect-url";
 import { executeRawGraphQL, getUserMessage } from "@/lib/graphql";
 
 const REQUEST_PASSWORD_RESET_MUTATION = `
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
 	}
 
 	// Reset emails embed this URL — only this deployment's surfaces are allowed.
-	if (!isAllowedRedirectUrl(redirectUrl, request.nextUrl.origin)) {
+	if (!isAllowedRedirectUrl(redirectUrl, await getRequestOrigin())) {
 		return NextResponse.json(
 			{ errors: [{ message: "Invalid redirect URL", code: "INVALID" }] },
 			{ status: 400 },

@@ -10,9 +10,11 @@ import { CategoryTileGrid, type CategoryTile } from "@/ui/sections/category-tile
 import { EditorialHero } from "@/ui/sections/editorial-hero/editorial-hero";
 import { FeaturedCollectionSection } from "@/ui/sections/featured-collection-section/featured-collection-section";
 import { ImageWithText } from "@/ui/sections/image-with-text/image-with-text";
+import { LogoStrip } from "@/ui/sections/logo-strip/logo-strip";
 import { MediaHero } from "@/ui/sections/media-hero/media-hero";
 import { MulticolumnSection } from "@/ui/sections/multicolumn-section/multicolumn-section";
 import { RichTextBlock } from "@/ui/sections/rich-text-block/rich-text-block";
+import { TrustBadgeStrip } from "@/ui/sections/trust-badge-strip/trust-badge-strip";
 
 export const metadata = {
 	description: brandConfig.description,
@@ -65,11 +67,17 @@ function buildCategoryTiles(products: readonly FeaturedProduct[], max = 3): Cate
  * that island in its own `Suspense` — never re-wrap the whole page in a page-level skeleton.
  * The `pnpm build` Cache Components check enforces this: any uncached/runtime access outside a
  * `Suspense` fails the build, proving `/` stays a real static shell.
+ *
+ * NOTE: the newsletter section is temporarily removed below (import + usage) while we debug
+ * a Next.js 16 Cache Components error it was triggering. See NewsletterSection/NewsletterForm
+ * for the in-progress fix — nothing here needs to change to bring it back, just re-add the
+ * import and the JSX block once that's resolved.
  */
 export default async function Page({ params }: { params: Promise<{ locale: string; channel: string }> }) {
 	const { locale, channel } = await params;
 	const content = await getStorefrontContent(channel, locale);
-	const { hero, featuredCollection, categories, brandStory, values, editorial } = content.surfaces.homepage;
+	const { hero, featuredCollection, categories, brandStory, values, editorial, trustBadges, brandLogos } =
+		content.surfaces.homepage;
 
 	// Source real product imagery from the same cached collection the featured
 	// section uses (deduped by "use cache" key).
@@ -143,6 +151,10 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
 					tone="muted"
 				/>
 			) : null}
+
+			{trustBadges ? <TrustBadgeStrip badges={trustBadges.badges} tone="muted" /> : null}
+
+			{brandLogos ? <LogoStrip heading={brandLogos.heading} logos={brandLogos.logos} tone="default" /> : null}
 
 			<ImageWithText
 				heading={editorial.heading}

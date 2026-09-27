@@ -20,7 +20,7 @@ export function CheckoutPageShell({
 	storefrontChannel,
 }: CheckoutPageShellProps) {
 	return (
-		<div className="min-h-screen overscroll-none bg-secondary">
+		<div className="wv-checkout min-h-screen overscroll-none bg-secondary text-foreground">
 			<CheckoutHeader
 				step={step}
 				onStepClick={onStepClick}

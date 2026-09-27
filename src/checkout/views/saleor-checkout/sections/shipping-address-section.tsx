@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { Label } from "@/ui/components/ui/label";
 import { FormSelect, FieldError, AddressFields } from "../address-form-fields";
 import { HybridAddressSelector } from "@/checkout/components/shipping-address";
-import { getCountryName } from "@/checkout/lib/utils/locale";
+import { useCountryName } from "@/checkout/lib/utils/locale";
 import type { CountryCode, AddressFragment } from "@/checkout/graphql";
 import type { AddressField } from "@/checkout/components/address-form/types";
 
@@ -67,6 +67,7 @@ export const ShippingAddressSection: FC<ShippingAddressSectionProps> = ({
 	isRequiredField,
 	countryAreaChoices,
 }) => {
+	const countryName = useCountryName();
 	const t = useTranslations("checkout.shipping");
 	const hasAddresses = userAddresses.length > 0;
 	const showAddressList = isAuthenticated && hasAddresses && !showNewAddressForm;
@@ -125,7 +126,7 @@ export const ShippingAddressSection: FC<ShippingAddressSectionProps> = ({
 							autoComplete="shipping country"
 							options={availableCountries.map((code) => ({
 								value: code,
-								label: getCountryName(code),
+								label: countryName(code),
 							}))}
 						/>
 					</div>

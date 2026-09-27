@@ -92,6 +92,38 @@ export type HomepageCategoriesContent = {
 	eyebrow?: string;
 };
 
+export type HomepageTrustBadge = {
+	/** Emoji or short glyph rendered at a fixed size — not an image asset. */
+	icon: string;
+	title: string;
+	subtitle: string;
+};
+
+/** Compact horizontal strip of trust signals (support, shipping, age verification, etc.). */
+export type HomepageTrustBadgesContent = {
+	badges: readonly HomepageTrustBadge[];
+};
+
+export type HomepageBrandLogo = {
+	/** Logo image URL — served from /public or an external asset host. */
+	src: string;
+	alt: string;
+	href?: string;
+};
+
+/** Partner/brand logo row, rendered via the existing `LogoStrip` section. */
+export type HomepageBrandLogosContent = {
+	heading?: string;
+	logos: readonly HomepageBrandLogo[];
+};
+
+export type HomepageNewsletterContent = {
+	heading: string;
+	body: string;
+	placeholder: string;
+	submitLabel: string;
+};
+
 export type HomepagePhotoCredit = {
 	name: string;
 	href: string;
@@ -106,6 +138,12 @@ export type HomepageContent = {
 	brandStory: HomepageBrandStoryContent;
 	values: HomepageValuesContent;
 	editorial: HomepageEditorialContent;
+	/** Optional — omit to hide the trust badge strip entirely. */
+	trustBadges?: HomepageTrustBadgesContent;
+	/** Optional — omit to hide the brand/partner logo row entirely. */
+	brandLogos?: HomepageBrandLogosContent;
+	/** Optional — omit to hide the newsletter signup band entirely. */
+	newsletter?: HomepageNewsletterContent;
 };
 
 export type CartEmptyContent = {

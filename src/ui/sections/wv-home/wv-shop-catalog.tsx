@@ -1,0 +1,314 @@
+"use client";
+
+import Image from "next/image";
+import Link from "next/link";
+import { useMemo, useState } from "react";
+import type { HomeProduct } from "@/lib/catalog/get-home-products";
+import { WishlistHeart } from "./wv-wishlist-client";
+import { formatPrice } from "@/ui/components/plp/utils";
+
+const heyComic = "font-[family-name:var(--font-hey-comic)]";
+const bungee = "font-[family-name:var(--font-bungee)]";
+const orbitron = "font-[family-name:var(--font-orbitron)]";
+
+const PER_PAGE = 8;
+
+type Sort = "featured" | "price-asc" | "price-desc" | "newest" | "name";
+
+const SORTS: { value: Sort; label: string }[] = [
+	{ value: "featured", label: "Featured" },
+	{ value: "newest", label: "Newest" },
+	{ value: "price-asc", label: "Price: Low to High" },
+	{ value: "price-desc", label: "Price: High to Low" },
+	{ value: "name", label: "Name A–Z" },
+];
+
+type Ctx = { locale: string; channel: string; localeBcp47: string };
+
+function ShopProductCard({ product, ctx }: { product: HomeProduct; ctx: Ctx }) {
+	const money = (n: number) => formatPrice(n, product.currency, ctx.localeBcp47);
+	const href = `/product/${product.slug}`;
+
+	return (
+		<article className="flex flex-col gap-[10px] rounded-xl border border-[var(--wv-purple)] bg-[var(--wv-surface)] p-3">
+			<Link
+				href={href}
+				className="relative block h-40 w-full overflow-hidden rounded-[10px] bg-[var(--wv-deep)]"
+			>
+				{product.image && (
+					<Image
+						src={product.image.url}
+						alt={product.image.alt}
+						fill
+						sizes="230px"
+						className="object-cover"
+					/>
+				)}
+				<span className="to-[var(--wv-bg)]/80 absolute inset-0 bg-gradient-to-b from-transparent" />
+			</Link>
+			<div className="flex flex-1 flex-col gap-[6px]">
+				<h3 className={`${heyComic} text-sm uppercase text-white`}>
+					<Link href={href}>{product.name}</Link>
+				</h3>
+				{product.brand && (
+					<p className={`${orbitron} text-[11px] leading-[1.4] text-[var(--wv-text-dim)]`}>{product.brand}</p>
+				)}
+				<p className={`${bungee} mt-auto flex items-baseline gap-2 text-sm text-[var(--wv-cyan-soft)]`}>
+					<span>
+						{money(product.price)}
+						{product.priceStop !== null && ` - ${money(product.priceStop)}`}
+					</span>
+					{product.undiscountedPrice !== null && (
+						<span className="text-[10px] text-[var(--wv-muted)] line-through">
+							{money(product.undiscountedPrice)}
+						</span>
+					)}
+				</p>
+			</div>
+			<div className="flex items-center justify-between">
+				<WishlistHeart slug={product.slug} className="size-7 text-sm" />
+				<Link
+					href={href}
+					aria-label={`View ${product.name}`}
+					className="flex size-7 items-center justify-center rounded-full border border-[var(--wv-purple)] bg-[var(--wv-control)]"
+				>
+					<Image src="/home/imgShoppingCart.svg" alt="" width={16} height={16} />
+				</Link>
+			</div>
+		</article>
+	);
+}
+
+function PageButton({
+	children,
+	active,
+	disabled,
+	onClick,
+}: {
+	children: React.ReactNode;
+	active?: boolean;
+	disabled?: boolean;
+	onClick: () => void;
+}) {
+	return (
+		<button
+			type="button"
+			disabled={disabled}
+			aria-current={active ? "page" : undefined}
+			onClick={onClick}
+			className={`${heyComic} rounded-lg px-[14px] py-2 text-xs disabled:opacity-40 ${
+				active
+					? "bg-[var(--wv-cyan-soft)] text-[var(--wv-bg)]"
+					: "border border-[var(--wv-purple)] bg-[var(--wv-surface)] text-[var(--wv-text-dim)]"
+			}`}
+		>
+			{children}
+		</button>
+	);
+}
+
+export function ShopCatalog({
+	products,
+	ctx,
+	initialCategorySlug,
+}: {
+	products: HomeProduct[];
+	ctx: Ctx;
+	initialCategorySlug?: string;
+}) {
+	const bounds = useMemo(() => {
+		const prices = products.map((p) => p.price);
+		return prices.length
+			? { min: Math.floor(Math.min(...prices)), max: Math.ceil(Math.max(...prices)) }
+			: { min: 0, max: 0 };
+	}, [products]);
+
+	const categories = useMemo(() => {
+		const map = new Map<string, { slug: string; name: string; count: number }>();
+		for (const p of products) {
+			if (!p.categorySlug) continue;
+			const entry = map.get(p.categorySlug) ?? { slug: p.categorySlug, name: p.brand, count: 0 };
+			entry.count += 1;
+			map.set(p.categorySlug, entry);
+		}
+		return [...map.values()].sort((a, b) => b.count - a.count);
+	}, [products]);
+
+	// Draft state (sidebar controls) vs applied state (what the grid shows).
+	// `initialCategorySlug` pre-applies a category filter from the URL, e.g. /shop?category=bundles.
+	const initialCats = useMemo(
+		() => (initialCategorySlug ? [initialCategorySlug] : []),
+		[initialCategorySlug],
+	);
+	const [draftCats, setDraftCats] = useState<string[]>(initialCats);
+	const [draftRange, setDraftRange] = useState<[number, number]>([bounds.min, bounds.max]);
+	const [applied, setApplied] = useState<{ cats: string[]; range: [number, number] }>({
+		cats: initialCats,
+		range: [bounds.min, bounds.max],
+	});
+	const [sort, setSort] = useState<Sort>("featured");
+	const [page, setPage] = useState(1);
+
+	const visible = useMemo(() => {
+		const filtered = products.filter(
+			(p) =>
+				(applied.cats.length === 0 || (p.categorySlug !== null && applied.cats.includes(p.categorySlug))) &&
+				p.price >= applied.range[0] &&
+				p.price <= applied.range[1],
+		);
+		const sorted = [...filtered];
+		if (sort === "price-asc") sorted.sort((a, b) => a.price - b.price);
+		else if (sort === "price-desc") sorted.sort((a, b) => b.price - a.price);
+		else if (sort === "newest") sorted.sort((a, b) => b.created.localeCompare(a.created));
+		else if (sort === "name") sorted.sort((a, b) => a.name.localeCompare(b.name));
+		return sorted;
+	}, [products, applied, sort]);
+
+	const pageCount = Math.max(1, Math.ceil(visible.length / PER_PAGE));
+	const current = Math.min(page, pageCount);
+	const pageItems = visible.slice((current - 1) * PER_PAGE, current * PER_PAGE);
+	const currency = products[0]?.currency ?? "USD";
+	const money = (n: number) => formatPrice(n, currency, ctx.localeBcp47);
+
+	const span = Math.max(1, bounds.max - bounds.min);
+	const left = ((draftRange[0] - bounds.min) / span) * 100;
+	const right = ((draftRange[1] - bounds.min) / span) * 100;
+
+	return (
+		<div className="flex flex-col gap-6 px-4 pb-10 pt-6 md:flex-row md:items-start md:gap-6 md:px-8 xl:gap-10 xl:px-20 xl:pb-[72px] xl:pt-[22px]">
+			{/* Filter sidebar */}
+			<aside className="flex w-full shrink-0 flex-col gap-6 rounded-2xl border border-[var(--wv-purple)] bg-[var(--wv-surface)] p-5 md:w-[216px] xl:w-[280px]">
+				<div className="flex flex-col gap-[6px]">
+					<h2 className={`${bungee} text-base text-white`}>FILTERS</h2>
+					<div className="h-px bg-[var(--wv-purple)]" />
+				</div>
+
+				<div className="flex flex-col gap-3">
+					<h3 className={`${bungee} text-xs text-[var(--wv-cyan-soft)]`}>CATEGORIES</h3>
+					<div className="flex flex-col gap-2">
+						{categories.map((c) => {
+							const on = draftCats.includes(c.slug);
+							return (
+								<button
+									key={c.slug}
+									type="button"
+									aria-pressed={on}
+									onClick={() =>
+										setDraftCats((cur) => (on ? cur.filter((s) => s !== c.slug) : [...cur, c.slug]))
+									}
+									className={`${heyComic} flex items-center justify-between text-xs ${on ? "text-[var(--wv-cyan-soft)]" : "text-white"}`}
+								>
+									<span>
+										{on ? "✓ " : ""}
+										{c.name}
+									</span>
+									<span className={`${orbitron} text-[var(--wv-text-dim)]`}>({c.count})</span>
+								</button>
+							);
+						})}
+					</div>
+				</div>
+
+				<div className="flex flex-col gap-3">
+					<h3 className={`${bungee} text-xs text-[var(--wv-cyan-soft)]`}>PRICE RANGE</h3>
+					<div className="relative h-1 rounded-sm bg-[var(--wv-purple)]">
+						<div
+							className="absolute inset-y-0 bg-[var(--wv-cyan-soft)]"
+							style={{ left: `${left}%`, width: `${Math.max(0, right - left)}%` }}
+						/>
+						<input
+							type="range"
+							aria-label="Minimum price"
+							className="wv-range"
+							min={bounds.min}
+							max={bounds.max}
+							value={draftRange[0]}
+							onChange={(e) => setDraftRange(([, hi]) => [Math.min(Number(e.target.value), hi), hi])}
+						/>
+						<input
+							type="range"
+							aria-label="Maximum price"
+							className="wv-range"
+							min={bounds.min}
+							max={bounds.max}
+							value={draftRange[1]}
+							onChange={(e) => setDraftRange(([lo]) => [lo, Math.max(Number(e.target.value), lo)])}
+						/>
+					</div>
+					<div className={`${orbitron} flex justify-between text-[11px]`}>
+						<span className="text-[var(--wv-text-dim)]">{money(bounds.min)}</span>
+						<span className="text-white">
+							{money(draftRange[0])} - {money(draftRange[1])}
+						</span>
+						<span className="text-[var(--wv-text-dim)]">{money(bounds.max)}</span>
+					</div>
+				</div>
+
+				<button
+					type="button"
+					onClick={() => {
+						setApplied({ cats: draftCats, range: draftRange });
+						setPage(1);
+					}}
+					className={`${heyComic} h-[45px] w-full rounded-xl bg-[var(--wv-cyan-soft)] text-sm text-[var(--wv-bg)]`}
+				>
+					APPLY FILTERS
+				</button>
+			</aside>
+
+			{/* Catalog */}
+			<div className="flex min-w-0 flex-1 flex-col gap-8">
+				<div className="flex flex-wrap items-center justify-between gap-3">
+					<p className={`${heyComic} text-sm text-[var(--wv-text-dim)]`} role="status">
+						Showing {visible.length} {visible.length === 1 ? "product" : "products"} found
+					</p>
+					<label className={`${heyComic} flex items-center gap-2 text-xs text-[var(--wv-disabled)]`}>
+						Sort by:
+						<select
+							value={sort}
+							onChange={(e) => {
+								setSort(e.target.value as Sort);
+								setPage(1);
+							}}
+							className={`${heyComic} rounded-lg border border-[var(--wv-purple)] bg-[var(--wv-surface)] px-2 py-1 text-xs text-white`}
+						>
+							{SORTS.map((s) => (
+								<option key={s.value} value={s.value}>
+									{s.label}
+								</option>
+							))}
+						</select>
+					</label>
+				</div>
+
+				{pageItems.length > 0 ? (
+					<div className="grid grid-cols-1 gap-x-5 gap-y-6 md:grid-cols-2 xl:grid-cols-4">
+						{pageItems.map((p) => (
+							<ShopProductCard key={p.id} product={p} ctx={ctx} />
+						))}
+					</div>
+				) : (
+					<p className={`${heyComic} py-16 text-center text-[var(--wv-text-dim)]`}>
+						No products match these filters.
+					</p>
+				)}
+
+				{pageCount > 1 && (
+					<nav aria-label="Pagination" className="flex flex-wrap justify-center gap-2 pt-5">
+						<PageButton disabled={current === 1} onClick={() => setPage(current - 1)}>
+							← Previous
+						</PageButton>
+						{Array.from({ length: pageCount }, (_, i) => i + 1).map((n) => (
+							<PageButton key={n} active={n === current} onClick={() => setPage(n)}>
+								{n}
+							</PageButton>
+						))}
+						<PageButton disabled={current === pageCount} onClick={() => setPage(current + 1)}>
+							Next →
+						</PageButton>
+					</nav>
+				)}
+			</div>
+		</div>
+	);
+}

@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 import { FormSelect, AddressFields } from "@/checkout/views/saleor-checkout/address-form-fields";
 import { type CountryCode, type AddressFragment } from "@/checkout/graphql";
 import { useAvailableShippingCountries } from "@/checkout/hooks/use-available-shipping-countries";
-import { getCountryName } from "@/checkout/lib/utils/locale";
+import { useCountryName } from "@/checkout/lib/utils/locale";
 import { useAddressFormUtils } from "@/checkout/components/address-form/use-address-form-utils";
 import { getBillingAddressOptions } from "@/checkout/lib/billing-addresses";
 import { HybridAddressSelector, AddressCard } from "@/checkout/components/shipping-address";
@@ -83,6 +83,7 @@ export const BillingAddressSection: FC<BillingAddressSectionProps> = ({
 	initialSameAsShipping,
 	disabled = false,
 }) => {
+	const countryName = useCountryName();
 	const t = useTranslations("checkout.billing");
 	const tShipping = useTranslations("checkout.shipping");
 	const { availableShippingCountries } = useAvailableShippingCountries();
@@ -265,7 +266,7 @@ export const BillingAddressSection: FC<BillingAddressSectionProps> = ({
 											autoComplete="billing country"
 											options={availableShippingCountries.map((code) => ({
 												value: code,
-												label: getCountryName(code),
+												label: countryName(code),
 											}))}
 										/>
 									</div>
@@ -333,7 +334,7 @@ export const BillingAddressSection: FC<BillingAddressSectionProps> = ({
 									autoComplete="billing country"
 									options={availableShippingCountries.map((code) => ({
 										value: code,
-										label: getCountryName(code),
+										label: countryName(code),
 									}))}
 								/>
 							</div>

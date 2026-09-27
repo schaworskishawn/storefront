@@ -12,7 +12,7 @@
  */
 
 /* ============================================
- * Light theme (only)
+ * Worldwide Vapor theme (dark neon)
  * ============================================ */
 :root {
 	/* --- Color tokens — BARE OKLCH CHANNELS (no oklch() wrapper) ---
@@ -25,37 +25,38 @@
 	 * it isn't a color on its own. Wrap it: `color: oklch(var(--foreground))`. In JSX prefer
 	 * a Tailwind utility (`text-foreground`) over inline `var()`.
 	 *
-	 * Cool, neutral palette: crisp near-white page with soft grey panels. */
-	--background: 0.99 0 0; /* Page background - crisp near-white */
-	--card: 1 0 0; /* Cards, dropdowns, modals */
-	--popover: 1 0 0;
-	--secondary: 0.965 0 0; /* Soft grey panels (hero/editorial image tiles) */
-	--muted: 0.95 0 0;
-	--accent: 0.95 0 0;
+	 * Dark neon palette: near-black surfaces, cyan primary/borders, pink accents.
+	 * Converted from the Worldwide Vapor Figma file's hex values. */
+	--background: 0.108 0.022 299.5; /* was #05030a — page background */
+	--card: 0.228 0.038 282.9; /* was #1a1a2e — product cards, panels */
+	--popover: 0.228 0.038 282.9; /* same as card */
+	--secondary: 0.171 0.01 285.3; /* was #0f0f14 — soft panels */
+	--muted: 0.166 0.027 283.1; /* was #0d0d1a */
+	--accent: 0.171 0.01 285.3; /* hover/accent surfaces */
 
-	/* --- Foregrounds (text on light surfaces) --- */
-	--foreground: 0.12 0 0;
-	--card-foreground: 0.12 0 0;
-	--popover-foreground: 0.12 0 0;
-	--secondary-foreground: 0.12 0 0;
-	--muted-foreground: 0.45 0 0;
-	--accent-foreground: 0.12 0 0;
+	/* --- Foregrounds (text on dark surfaces) --- */
+	--foreground: 1 0 0;
+	--card-foreground: 1 0 0;
+	--popover-foreground: 1 0 0;
+	--secondary-foreground: 1 0 0;
+	--muted-foreground: 0.778 0.023 297.3; /* was #b8b4c4 — body copy on dark */
+	--accent-foreground: 1 0 0;
 
-	/* --- Primary (CTAs, key actions) — electric green --- */
-	--primary: 0.72 0.19 145;
-	--primary-foreground: 0.1 0 0;
+	/* --- Primary (CTAs, key actions) — electric cyan (was green) --- */
+	--primary: 0.844 0.146 209.3; /* was #00e5ff */
+	--primary-foreground: 0.108 0.022 299.5; /* dark text on cyan buttons */
 
 	/* --- Semantic --- */
 	--destructive: 0.55 0.2 25;
 	--destructive-foreground: 0.98 0 0;
 	--success: 0.55 0.15 145;
 	--success-foreground: 0.98 0 0;
-	--bestseller: 0.56 0.084 68; /* Bronze outline (~#8B6B3D) — bestseller badge */
+	--bestseller: 0.759 0.214 324.4; /* was #f179fb — pink badge */
 
 	/* --- Interactive --- */
-	--border: 0.915 0 0;
-	--input: 0.915 0 0;
-	--ring: 0.72 0.19 145;
+	--border: 0.844 0.146 209.3; /* cyan borders, used throughout the design */
+	--input: 0.844 0.146 209.3;
+	--ring: 0.844 0.146 209.3;
 
 	/* --- Inverse surfaces (dark bands: bg-foreground text-background) --- */
 	--inverse: 0.82 0 0;
@@ -70,7 +71,8 @@
 	 * (see tailwind.config.cjs → theme.extend.fontSize): text-display/h1/h2/h3/lead.
 	 *
 	 * --font-display: heading family (Geist by default; Fraunces when data-typography=editorial). */
-	--font-display: var(--font-geist-sans), system-ui, sans-serif;
+	--font-display:
+		var(--font-bungee), var(--font-geist-sans), system-ui, sans-serif; /* was Geist — now Bungee, matching the Figma headline font */
 	--text-display: clamp(2.75rem, 1.9rem + 4.2vw, 4.5rem); /* 44 → 72px */
 	--text-h1: clamp(2rem, 1.5rem + 2.4vw, 3rem); /* 32 → 48px */
 	--text-h2: clamp(1.5rem, 1.25rem + 1.2vw, 2.25rem); /* 24 → 36px */
@@ -171,4 +173,141 @@ html[data-typography="editorial"] {
 	to {
 		opacity: 1;
 	}
+}
+
+/* ============================================
+ * Worldwide Vapor — /home page tokens (from Figma "6.01 High Fidelity – Home")
+ * Full colors (not OKLCH channels): consume as `bg-[var(--wv-bg)]`.
+ * ============================================ */
+:root {
+	--wv-bg: #05030a;
+	--wv-header: #0d0d1f;
+	--wv-surface: #0f0f14;
+	--wv-deep: #0d0d1a;
+	--wv-section: #1a1a2e;
+	--wv-footer: #0a0a14;
+	--wv-cyan: #00e5ff;
+	--wv-cyan-soft: #69ebff;
+	--wv-pink: #f179fb;
+	--wv-purple: #7a1fa2;
+	--wv-muted: #7e7487;
+	--wv-text-dim: #b8b4c4;
+	--wv-footer-link: #8a8a99;
+}
+
+:root {
+	--wv-control: #141020;
+	--wv-disabled: #756d80;
+}
+
+:root {
+	--wv-ink: #0b0712;
+}
+
+/* ============================================
+ * Shared muted-text / status tokens (originally added for /quit, now used across
+ * several forms and account pages — e.g. wv-cart, wv-login-form, checkout-header).
+ * ============================================ */
+:root {
+	--q-border-strong: #30283f;
+	--q-text-dim: #a7a1b6;
+	--q-text-mute: #7d778a;
+	--q-text-nav: #cbc5d7;
+	--q-green: #65f3a8;
+	--q-red: #ff7b87;
+}
+
+/* ============================================
+ * Nicotine Quitting Program (/quit) — semantic + primitive tokens pulled straight from the
+ * Figma design system foundation ("01.01 — Colors | Brand Palette"), not invented per-page.
+ * Primitives: Neon Cyan #69EBFF, Neon Magenta #F179FB, Electric Purple #7A1FA2, neutral 900 #0B0712.
+ * Semantic: color.bg.canvas, color.bg.surface, color.action.primary/secondary, color.border.default,
+ * color.text.primary/muted, color.focus.ring. Status: success/warning/error/info.
+ * ============================================ */
+:root {
+	--qp-bg: #05030a; /* color.bg.canvas — same primitive as --wv-bg */
+	--qp-surface: #0b0712; /* color.bg.surface — same primitive as --wv-ink */
+	--qp-field: #141020; /* neutral 850 — same primitive as --wv-control */
+	--qp-border: #40204f; /* color.border.default */
+	--qp-border-strong: #7a1fa2; /* Electric Purple, for emphasized borders */
+	--qp-primary: #69ebff; /* color.action.primary / Neon Cyan */
+	--qp-secondary: #f179fb; /* color.action.secondary / Neon Magenta */
+	--qp-focus: #69ebff; /* color.focus.ring */
+	--qp-text: #ffffff; /* color.text.primary */
+	--qp-muted: #b8b4c4; /* color.text.muted / neutral 200 */
+	--qp-dim: #756d80; /* neutral 400 */
+	--qp-ink: #05030a; /* text-on-primary, same as canvas */
+	--qp-success: #35e59b; /* color.status.success */
+	--qp-warning: #ffd166; /* color.status.warning */
+	--qp-error: #ff5c7a; /* color.status.error */
+	--qp-info: #69ebff; /* color.status.information */
+}
+
+/* ============================================
+ * Worldwide Vapor — /returns page tokens (Figma "6.12 High Fidelity – Returns")
+ * ============================================ */
+:root {
+	--rt-bg: #05050a;
+	--rt-band: #0a0a16;
+	--rt-card: #0e0e1f;
+	--rt-border: #1f1f3d;
+	--rt-cyan: #00ffe0;
+	--rt-magenta: #ff00a0;
+	--rt-purple: #9d00ff;
+	--rt-text: #a3a3c2;
+	--rt-muted: #626280;
+}
+
+/* ============================================
+ * Worldwide Vapor — /contact-us page tokens (Figma "6.13 High Fidelity – Contact Us")
+ * ============================================ */
+:root {
+	--ct-bg: #080810;
+	--ct-card: #0d0d1e;
+	--ct-border: #1b1b3a;
+	--ct-field: #090918;
+	--ct-icon: #111124;
+	--ct-cyan: #00ffe0;
+	--ct-magenta: #d900ff;
+	--ct-text: #8a91b5;
+	--ct-placeholder: #4e547a;
+	--ct-ink: #080810;
+}
+
+/* /faqs page extras (Figma "6.14 High Fidelity – Faqs") */
+:root {
+	--fq-search-bg: #0f0f19;
+	--fq-search-border: #282d3c;
+	--fq-search-text: #646e82;
+}
+
+/* Legal pages (Terms / Privacy) — Figma "6.16 High Fidelity – Terms and Conditions" */
+:root {
+	--lg-card: #0d0d1f;
+	--lg-border: #40204f;
+	--lg-body: #b8b4c4;
+}
+
+/* Affiliate program tiers (Figma "6.18 High Fidelity – Affiliate Program") */
+:root {
+	--af-yellow: #ffd900;
+	--af-orange: #e58c26;
+	--af-pink: #f233cc;
+	--af-cyan: #00e5ff;
+}
+
+/* Account (Figma 6.20) */
+:root {
+	--ac-card-border: #7a1fa2;
+	--ac-subtle: #141020;
+	--ac-input: #05030a;
+	--ac-cyan: #69ebff;
+	--ac-cyan-bright: #00e5ff;
+	--ac-pink: #f179fb;
+	--ac-muted: #b8b4c4;
+}
+
+:root {
+	--ac-green: #3ee89a;
+	--ac-grey: #b8b4c4;
 }

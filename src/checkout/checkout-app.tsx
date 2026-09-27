@@ -22,6 +22,7 @@ import { StripeCheckoutCompletionHost } from "@/checkout/components/payment/stri
 import { CheckoutLoadingFallback } from "@/checkout/views/saleor-checkout";
 import { CheckoutCrashFallback } from "@/checkout/views/page-not-found";
 import "./index.css";
+import "./wv-checkout.css";
 
 // Composition root: payment modules and CheckoutDataProvider reach Saleor only
 // through the CheckoutTransport seam; the checkout shell wires in the Next.js

@@ -1,0 +1,82 @@
+/**
+ * Worldwide Vapor checkout theme — Figma "6.09 - High Fidelity - Checkout".
+ * Scoped to `.wv-checkout` so the checkout flow keeps its logic and only its look changes.
+ * Token values are bare OKLCH channels (see src/styles/brand.css).
+ */
+
+.wv-checkout {
+	--secondary: 0.15 0.02 285; /* page background  (#0a0a14) */
+	--card: 0.18 0.02 275; /* section cards    (rgba(14,16,25,.6) on page) */
+	--muted: 0.16 0.02 280;
+	--border: 0.27 0.05 262; /* card borders     (#1a2640) */
+	--input: 0.35 0.02 285; /* field borders    (#333340) */
+	--primary: 0.88 0.12 208; /* CTA / accents    (#69ebff) */
+	--ring: 0.88 0.12 208;
+	--muted-foreground: 0.6 0.03 285;
+
+	font-family: var(--font-orbitron), var(--font-geist-sans), system-ui, sans-serif;
+}
+
+.wv-checkout h2 {
+	font-family: var(--font-bungee), system-ui, sans-serif;
+	font-size: 18px;
+	font-weight: 400;
+	letter-spacing: 0.5px;
+	text-transform: uppercase;
+}
+
+.wv-checkout label,
+.wv-checkout input,
+.wv-checkout select,
+.wv-checkout textarea {
+	font-family: var(--font-orbitron), system-ui, sans-serif;
+}
+
+/* Section cards: soft purple glow like the design */
+.wv-checkout .wv-card {
+	box-shadow: 0 8px 24px 0 rgba(122, 31, 162, 0.19);
+}
+.wv-checkout .wv-card-summary {
+	box-shadow: 0 8px 24px 0 rgba(105, 235, 255, 0.08);
+}
+
+/* Primary buttons use the display face like the "Continue to Payment" CTA */
+.wv-checkout button[type="submit"],
+.wv-checkout .wv-cta {
+	font-family: var(--font-hey-comic), system-ui, sans-serif;
+	letter-spacing: 0.04em;
+}
+
+/* Stepper */
+.wv-stepper-dot {
+	display: flex;
+	width: 24px;
+	height: 24px;
+	align-items: center;
+	justify-content: center;
+	border-radius: 999px;
+	font-size: 11px;
+	font-weight: 700;
+	border: 1px solid #453c50;
+	background: #05030a;
+	color: #453c50;
+}
+.wv-stepper-dot[data-state="done"] {
+	border-color: #b8b4c4;
+	background: #141020;
+	color: #b8b4c4;
+}
+.wv-stepper-dot[data-state="active"] {
+	border: 2px solid #69ebff;
+	color: #69ebff;
+	filter: drop-shadow(0 0 4px rgba(105, 235, 255, 0.5));
+}
+
+/* Text inputs (incl. the discount field) stay on the dark input surface */
+.wv-checkout input:not([type="checkbox"]):not([type="radio"]) {
+	background-color: oklch(var(--background));
+	color: oklch(var(--foreground));
+}
+.wv-checkout input::placeholder {
+	color: oklch(var(--muted-foreground));
+}

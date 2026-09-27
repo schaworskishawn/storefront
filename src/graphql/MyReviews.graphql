@@ -1,0 +1,34 @@
+query MyReviews {
+	me {
+		id
+		metafield(key: "wv_reviews")
+		orders(first: 100) {
+			edges {
+				node {
+					id
+					lines {
+						variant {
+							product {
+								id
+								name
+								slug
+								thumbnail {
+									url
+									alt
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+mutation SaveMyReviews($id: ID!, $value: String!) {
+	updateMetadata(id: $id, input: [{ key: "wv_reviews", value: $value }]) {
+		errors {
+			message
+		}
+	}
+}

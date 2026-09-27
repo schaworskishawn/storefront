@@ -71,13 +71,13 @@ export const SaleorCheckout: FC = () => {
 			isShippingRequired={isShippingRequired}
 			storefrontChannel={checkout.channel.slug}
 		>
-			<main className="mx-auto max-w-7xl px-4 py-6 pb-24 sm:px-6 md:py-8 md:pb-8 lg:px-8">
-				<div className="flex flex-col gap-8 md:flex-row">
+			<main className="px-4 py-4 pb-24 md:px-8 md:py-6 md:pb-10 xl:px-20 xl:pb-16">
+				<div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:gap-12">
 					<div className="min-w-0 flex-1">
-						<div className="mb-4 overflow-hidden rounded-lg border border-border bg-card md:hidden">
+						<div className="wv-card-summary mb-4 overflow-hidden rounded-xl border border-border bg-card xl:hidden">
 							<OrderSummary checkout={checkout} onCheckoutChange={() => void refetch()} />
 						</div>
-						<div className="rounded-lg border border-border bg-card p-6 md:p-8">
+						<div className="wv-card rounded-xl border border-border bg-card p-5 md:p-7">
 							<div ref={stepRef} tabIndex={-1} className="outline-none">
 								{currentStep.id === "INFO" ? (
 									<InformationStep
@@ -108,8 +108,8 @@ export const SaleorCheckout: FC = () => {
 						</div>
 					</div>
 
-					<div className="hidden md:block md:shrink-0 md:basis-[30%]">
-						<div className="overflow-hidden rounded-lg border border-border bg-card md:sticky md:top-8">
+					<div className="hidden xl:block xl:w-[420px] xl:shrink-0">
+						<div className="wv-card-summary overflow-hidden rounded-xl border border-border bg-card xl:sticky xl:top-6">
 							<OrderSummary checkout={checkout} onCheckoutChange={() => void refetch()} />
 						</div>
 					</div>

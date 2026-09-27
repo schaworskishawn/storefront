@@ -1,0 +1,16 @@
+query CurrentUserPaymentMethods($channel: String!) {
+	me {
+		id
+		storedPaymentMethods(channel: $channel) {
+			id
+			type
+			name
+			creditCardInfo {
+				brand
+				lastDigits
+				expMonth
+				expYear
+			}
+		}
+	}
+}

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { rejectIfRateLimited } from "@/lib/auth/auth-rate-limit";
-import { isAllowedRedirectUrl } from "@/lib/auth/validate-redirect-url";
+import { getRequestOrigin, isAllowedRedirectUrl } from "@/lib/auth/validate-redirect-url";
 import { executeRawGraphQL, asValidationError, getUserMessage } from "@/lib/graphql";
 
 const REGISTER_MUTATION = `
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
 	}
 
 	// Confirmation emails embed this URL — only this deployment's surfaces are allowed.
-	if (redirectUrl && !isAllowedRedirectUrl(redirectUrl, request.nextUrl.origin)) {
+	if (redirectUrl && !isAllowedRedirectUrl(redirectUrl, await getRequestOrigin())) {
 		return NextResponse.json(
 			{ errors: [{ message: "Invalid redirect URL", code: "INVALID" }] },
 			{ status: 400 },

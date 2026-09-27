@@ -3,6 +3,7 @@ import { DefaultChannelSlug } from "@/app/config";
 import { getStaticStorefrontChannelSlugs, isAllowedStorefrontChannel } from "@/config/channels";
 import { getDefaultLocaleSlug, isLocaleSlug, isStorefrontLocaleSlug } from "@/config/locale";
 import { BROWSE_LOCALE_COOKIE, getBrowseLocaleCookieOptions } from "@/lib/browse-locale";
+import { AGE_GATE_PATH, AGE_VERIFIED_COOKIE } from "@/lib/age-gate";
 import { buildStorefrontPath } from "@/lib/storefront-path";
 
 const RESERVED_ROOT_SEGMENTS = new Set([
@@ -44,6 +45,15 @@ export function middleware(request: NextRequest) {
 		pathname.includes(".") // static files
 	) {
 		return NextResponse.next();
+	}
+
+	// Site-wide age gate: everything except the gate page itself needs the "verified" cookie.
+	if (pathname !== AGE_GATE_PATH && request.cookies.get(AGE_VERIFIED_COOKIE)?.value !== "1") {
+		const url = request.nextUrl.clone();
+		const next = `${pathname}${request.nextUrl.search}`;
+		url.pathname = AGE_GATE_PATH;
+		url.search = next === "/" ? "" : `?next=${encodeURIComponent(next)}`;
+		return NextResponse.redirect(url, 307);
 	}
 
 	const segments = pathname.split("/").filter(Boolean);

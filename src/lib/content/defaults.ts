@@ -84,6 +84,35 @@ export const defaultStorefrontContent = {
 				image: null,
 				imageAlt: "",
 			},
+			trustBadges: {
+				badges: [
+					{ icon: "⚡", title: "24/7 SUPPORT", subtitle: "Always active direct line" },
+					{ icon: "🍁", title: "GLOBAL SHIPPING", subtitle: "Coming Soon, Canada Only" },
+					{ icon: "🔞", title: "AGE VERIFIED CHECKOUT", subtitle: "Must Be Of Legal Age" },
+					{ icon: "📦", title: "WE SHIP PACKAGES ASAP", subtitle: "No Delay standard logistics" },
+				],
+			},
+			brandLogos: {
+				heading: "Official Partners",
+				// TODO: replace with real logo files. Add them to `public/images/brands/`
+				// in this repo, then update these src paths — placeholders won't 404
+				// the page, they'll just render broken image icons until real files
+				// exist at these paths.
+				logos: [
+					{ src: "/images/brands/flavour-beast.png", alt: "Flavour Beast" },
+					{ src: "/images/brands/stlth.png", alt: "STLTH" },
+					{ src: "/images/brands/vaporesso.png", alt: "Vaporesso" },
+					{ src: "/images/brands/smok.png", alt: "SMOK" },
+					{ src: "/images/brands/uwell.png", alt: "Uwell" },
+					{ src: "/images/brands/geekvape.png", alt: "GeekVape" },
+				],
+			},
+			newsletter: {
+				heading: "Stay Updated",
+				body: "Get the latest deals, new products, and updates directly to your warehouse registry.",
+				placeholder: "Enter your email address",
+				submitLabel: "Subscribe",
+			},
 		},
 		products: {
 			title: "All Products",

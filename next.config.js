@@ -2,10 +2,17 @@
 import createNextIntlPlugin from "next-intl/plugin";
 import { paperCacheLifeProfiles } from "./src/lib/cache-life-profiles.data.mjs";
 
-/** Hostnames for mobile/tunnel dev (ngrok, LAN). See ALLOWED_DEV_ORIGINS in .env.example */
-const allowedDevOrigins = process.env.ALLOWED_DEV_ORIGINS?.split(",")
-	.map((origin) => origin.trim())
-	.filter(Boolean);
+/**
+ * Hostnames for mobile/tunnel dev (ngrok, LAN). See ALLOWED_DEV_ORIGINS in .env.example.
+ * `127.0.0.1` is always allowed so the site can be opened at http://127.0.0.1:3000 (a separate
+ * browser cache/origin from localhost) without Next blocking the dev HMR/client resources.
+ */
+const allowedDevOrigins = [
+	"127.0.0.1",
+	...(process.env.ALLOWED_DEV_ORIGINS?.split(",")
+		.map((origin) => origin.trim())
+		.filter(Boolean) ?? []),
+];
 
 const config = {
 	...(allowedDevOrigins?.length ? { allowedDevOrigins } : {}),
@@ -56,25 +63,27 @@ const config = {
 	async headers() {
 		const isDev = process.env.NODE_ENV === "development";
 		return [
-			// In development, prevent aggressive caching of dynamic chunks
+			// In development, never cache build output: dev chunk/CSS URLs are NOT content-hashed, so an
+			// immutable cache serves stale bundles after edits (flickering error pages / reload loops).
 			...(isDev
 				? [
 						{
-							source: "/_next/static/chunks/:path*",
+							source: "/_next/static/:path*",
 							headers: [{ key: "Cache-Control", value: "no-store, must-revalidate" }],
 						},
 					]
-				: []),
-			{
-				// Static assets - cache for 1 year (immutable with hash in filename)
-				source: "/_next/static/:path*",
-				headers: [
-					{
-						key: "Cache-Control",
-						value: "public, max-age=31536000, immutable",
-					},
-				],
-			},
+				: [
+						{
+							// Static assets - cache for 1 year (immutable with hash in filename)
+							source: "/_next/static/:path*",
+							headers: [
+								{
+									key: "Cache-Control",
+									value: "public, max-age=31536000, immutable",
+								},
+							],
+						},
+					]),
 			{
 				// Public folder assets - cache for 1 month (logos, favicons, etc.)
 				source: "/(.*)\\.(ico|png|jpg|jpeg|gif|svg|webp|woff|woff2|webmanifest)",
