@@ -4,13 +4,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
-import type { HomeProduct } from "@/lib/catalog/get-home-products";
+import type { HomeProduct, WvCategoryTile } from "@/lib/catalog/get-home-products";
 import { WishlistHeart } from "./wv-wishlist-client";
+import { CATEGORY_ART } from "./wv-category-art";
 import { formatPrice } from "@/ui/components/plp/utils";
 
 const heyComic = "font-[family-name:var(--font-hey-comic)]";
 const bungee = "font-[family-name:var(--font-bungee)]";
 const orbitron = "font-[family-name:var(--font-orbitron)]";
+const marker = "font-[family-name:var(--font-permanent-marker)]";
 
 const PER_PAGE = 8;
 
@@ -108,7 +110,17 @@ function PageButton({
 	);
 }
 
-export function ShopCatalog({ products, ctx }: { products: HomeProduct[]; ctx: Ctx }) {
+export function ShopCatalog({
+	products,
+	ctx,
+	categoryTiles,
+}: {
+	products: HomeProduct[];
+	ctx: Ctx;
+	/** Rich "Browse Collections" tiles (art/Saleor category image) — separate from the
+	 *  product-count-derived `categories` below, which powers the filter sidebar checkboxes. */
+	categoryTiles: WvCategoryTile[];
+}) {
 	// Read client-side rather than the page awaiting `searchParams` server-side: this is a pure
 	// display concern (which category tab starts selected), not data-fetching — `products` already
 	// has every category, filtered here. Awaiting `searchParams` in the page shell instead would
@@ -150,6 +162,16 @@ export function ShopCatalog({ products, ctx }: { products: HomeProduct[]; ctx: C
 	const [sort, setSort] = useState<Sort>("featured");
 	const [page, setPage] = useState(1);
 
+	// Top "Browse Collections" tiles are a one-click jump, unlike the sidebar's draft-then-apply
+	// multi-select — set both draft *and* applied together so there's no separate "Apply" step,
+	// and the sidebar reflects the same selection if the shopper opens it afterward.
+	const selectCategory = (slug: string | null) => {
+		const cats = slug ? [slug] : [];
+		setDraftCats(cats);
+		setApplied((cur) => ({ ...cur, cats }));
+		setPage(1);
+	};
+
 	const visible = useMemo(() => {
 		const filtered = products.filter(
 			(p) =>
@@ -176,140 +198,199 @@ export function ShopCatalog({ products, ctx }: { products: HomeProduct[]; ctx: C
 	const right = ((draftRange[1] - bounds.min) / span) * 100;
 
 	return (
-		<div className="flex flex-col gap-6 px-4 pb-10 pt-6 md:flex-row md:items-start md:gap-6 md:px-8 xl:gap-10 xl:px-20 xl:pb-[72px] xl:pt-[22px]">
-			{/* Filter sidebar */}
-			<aside className="flex w-full shrink-0 flex-col gap-6 rounded-2xl border border-[var(--wv-purple)] bg-[var(--wv-surface)] p-5 md:w-[216px] xl:w-[280px]">
-				<div className="flex flex-col gap-[6px]">
-					<h2 className={`${bungee} text-base text-white`}>FILTERS</h2>
-					<div className="h-px bg-[var(--wv-purple)]" />
-				</div>
-
-				<div className="flex flex-col gap-3">
-					<h3 className={`${bungee} text-xs text-[var(--wv-cyan-soft)]`}>CATEGORIES</h3>
-					<div className="flex flex-col gap-2">
-						{categories.map((c) => {
-							const on = draftCats.includes(c.slug);
+		<>
+			{/* Categories — one-click filter via `selectCategory`, not a navigation (see that
+			    function's comment). Moved here from the page shell so clicking a tile doesn't need a
+			    page transition to reach this component's filter state. */}
+			{categoryTiles.length > 0 && (
+				<section className="flex flex-col items-center gap-5 border-y border-[var(--wv-purple)] bg-[var(--wv-surface)] px-4 py-6 md:px-8 xl:px-20 xl:py-8">
+					<div className="flex flex-col items-center gap-[6px]">
+						<p className={`${marker} text-xl uppercase tracking-[2px] text-[var(--wv-pink)]`}>
+							Browse Collections
+						</p>
+						<h2 className={`${bungee} text-2xl tracking-[1px] text-white`}>CATEGORIES</h2>
+						<div className="h-[3px] w-[60px] rounded-full bg-[var(--wv-cyan-soft)]" />
+					</div>
+					<div className="flex w-full justify-end">
+						<button
+							type="button"
+							onClick={() => selectCategory(null)}
+							className="text-[13px] text-[var(--wv-cyan-soft)]"
+						>
+							VIEW ALL →
+						</button>
+					</div>
+					<div className="grid w-full max-w-[420px] grid-cols-3 justify-items-center gap-3 md:max-w-[560px] xl:flex xl:max-w-none xl:justify-center xl:gap-[26px]">
+						{categoryTiles.map((c) => {
+							const art = CATEGORY_ART[c.slug];
+							const on = applied.cats.includes(c.slug);
 							return (
 								<button
 									key={c.slug}
 									type="button"
 									aria-pressed={on}
-									onClick={() =>
-										setDraftCats((cur) => (on ? cur.filter((s) => s !== c.slug) : [...cur, c.slug]))
-									}
-									className={`${heyComic} flex items-center justify-between text-xs ${on ? "text-[var(--wv-cyan-soft)]" : "text-white"}`}
+									onClick={() => selectCategory(on ? null : c.slug)}
+									className={`relative block size-[100px] shrink-0 rounded-xl md:size-[90px] xl:size-[175px] ${
+										on ? "ring-2 ring-[var(--wv-cyan-soft)]" : ""
+									}`}
 								>
-									<span>
-										{on ? "✓ " : ""}
-										{c.name}
-									</span>
-									<span className={`${orbitron} text-[var(--wv-text-dim)]`}>({c.count})</span>
+									{art ? (
+										<Image src={art} alt={c.name} fill sizes="175px" className="rounded-xl object-cover" />
+									) : (
+										<span className="relative flex size-full items-end overflow-hidden rounded-xl border border-[var(--wv-cyan)] bg-[var(--wv-section)]">
+											{c.image && (
+												<Image src={c.image.url} alt="" fill sizes="175px" className="object-cover" />
+											)}
+											<span className="absolute inset-0 bg-gradient-to-t from-[var(--wv-bg)] to-transparent" />
+											<span
+												className={`${bungee} relative w-full break-words p-2 text-center text-[9px] uppercase text-white xl:p-3 xl:text-xs`}
+											>
+												{c.name}
+											</span>
+										</span>
+									)}
 								</button>
 							);
 						})}
 					</div>
-				</div>
+				</section>
+			)}
 
-				<div className="flex flex-col gap-3">
-					<h3 className={`${bungee} text-xs text-[var(--wv-cyan-soft)]`}>PRICE RANGE</h3>
-					<div className="relative h-1 rounded-sm bg-[var(--wv-purple)]">
-						<div
-							className="absolute inset-y-0 bg-[var(--wv-cyan-soft)]"
-							style={{ left: `${left}%`, width: `${Math.max(0, right - left)}%` }}
-						/>
-						<input
-							type="range"
-							aria-label="Minimum price"
-							className="wv-range"
-							min={bounds.min}
-							max={bounds.max}
-							value={draftRange[0]}
-							onChange={(e) => setDraftRange(([, hi]) => [Math.min(Number(e.target.value), hi), hi])}
-						/>
-						<input
-							type="range"
-							aria-label="Maximum price"
-							className="wv-range"
-							min={bounds.min}
-							max={bounds.max}
-							value={draftRange[1]}
-							onChange={(e) => setDraftRange(([lo]) => [lo, Math.max(Number(e.target.value), lo)])}
-						/>
+			<div className="flex flex-col gap-6 px-4 pb-10 pt-6 md:flex-row md:items-start md:gap-6 md:px-8 xl:gap-10 xl:px-20 xl:pb-[72px] xl:pt-[22px]">
+				{/* Filter sidebar */}
+				<aside className="flex w-full shrink-0 flex-col gap-6 rounded-2xl border border-[var(--wv-purple)] bg-[var(--wv-surface)] p-5 md:w-[216px] xl:w-[280px]">
+					<div className="flex flex-col gap-[6px]">
+						<h2 className={`${bungee} text-base text-white`}>FILTERS</h2>
+						<div className="h-px bg-[var(--wv-purple)]" />
 					</div>
-					<div className={`${orbitron} flex justify-between text-[11px]`}>
-						<span className="text-[var(--wv-text-dim)]">{money(bounds.min)}</span>
-						<span className="text-white">
-							{money(draftRange[0])} - {money(draftRange[1])}
-						</span>
-						<span className="text-[var(--wv-text-dim)]">{money(bounds.max)}</span>
+
+					<div className="flex flex-col gap-3">
+						<h3 className={`${bungee} text-xs text-[var(--wv-cyan-soft)]`}>CATEGORIES</h3>
+						<div className="flex flex-col gap-2">
+							{categories.map((c) => {
+								const on = draftCats.includes(c.slug);
+								return (
+									<button
+										key={c.slug}
+										type="button"
+										aria-pressed={on}
+										onClick={() =>
+											setDraftCats((cur) => (on ? cur.filter((s) => s !== c.slug) : [...cur, c.slug]))
+										}
+										className={`${heyComic} flex items-center justify-between text-xs ${on ? "text-[var(--wv-cyan-soft)]" : "text-white"}`}
+									>
+										<span>
+											{on ? "✓ " : ""}
+											{c.name}
+										</span>
+										<span className={`${orbitron} text-[var(--wv-text-dim)]`}>({c.count})</span>
+									</button>
+								);
+							})}
+						</div>
 					</div>
-				</div>
 
-				<button
-					type="button"
-					onClick={() => {
-						setApplied({ cats: draftCats, range: draftRange });
-						setPage(1);
-					}}
-					className={`${heyComic} h-[45px] w-full rounded-xl bg-[var(--wv-cyan-soft)] text-sm text-[var(--wv-bg)]`}
-				>
-					APPLY FILTERS
-				</button>
-			</aside>
+					<div className="flex flex-col gap-3">
+						<h3 className={`${bungee} text-xs text-[var(--wv-cyan-soft)]`}>PRICE RANGE</h3>
+						<div className="relative h-1 rounded-sm bg-[var(--wv-purple)]">
+							<div
+								className="absolute inset-y-0 bg-[var(--wv-cyan-soft)]"
+								style={{ left: `${left}%`, width: `${Math.max(0, right - left)}%` }}
+							/>
+							<input
+								type="range"
+								aria-label="Minimum price"
+								className="wv-range"
+								min={bounds.min}
+								max={bounds.max}
+								value={draftRange[0]}
+								onChange={(e) => setDraftRange(([, hi]) => [Math.min(Number(e.target.value), hi), hi])}
+							/>
+							<input
+								type="range"
+								aria-label="Maximum price"
+								className="wv-range"
+								min={bounds.min}
+								max={bounds.max}
+								value={draftRange[1]}
+								onChange={(e) => setDraftRange(([lo]) => [lo, Math.max(Number(e.target.value), lo)])}
+							/>
+						</div>
+						<div className={`${orbitron} flex justify-between text-[11px]`}>
+							<span className="text-[var(--wv-text-dim)]">{money(bounds.min)}</span>
+							<span className="text-white">
+								{money(draftRange[0])} - {money(draftRange[1])}
+							</span>
+							<span className="text-[var(--wv-text-dim)]">{money(bounds.max)}</span>
+						</div>
+					</div>
 
-			{/* Catalog */}
-			<div className="flex min-w-0 flex-1 flex-col gap-8">
-				<div className="flex flex-wrap items-center justify-between gap-3">
-					<p className={`${heyComic} text-sm text-[var(--wv-text-dim)]`} role="status">
-						Showing {visible.length} {visible.length === 1 ? "product" : "products"} found
-					</p>
-					<label className={`${heyComic} flex items-center gap-2 text-xs text-[var(--wv-disabled)]`}>
-						Sort by:
-						<select
-							value={sort}
-							onChange={(e) => {
-								setSort(e.target.value as Sort);
-								setPage(1);
-							}}
-							className={`${heyComic} rounded-lg border border-[var(--wv-purple)] bg-[var(--wv-surface)] px-2 py-1 text-xs text-white`}
-						>
-							{SORTS.map((s) => (
-								<option key={s.value} value={s.value}>
-									{s.label}
-								</option>
+					<button
+						type="button"
+						onClick={() => {
+							setApplied({ cats: draftCats, range: draftRange });
+							setPage(1);
+						}}
+						className={`${heyComic} h-[45px] w-full rounded-xl bg-[var(--wv-cyan-soft)] text-sm text-[var(--wv-bg)]`}
+					>
+						APPLY FILTERS
+					</button>
+				</aside>
+
+				{/* Catalog */}
+				<div className="flex min-w-0 flex-1 flex-col gap-8">
+					<div className="flex flex-wrap items-center justify-between gap-3">
+						<p className={`${heyComic} text-sm text-[var(--wv-text-dim)]`} role="status">
+							Showing {visible.length} {visible.length === 1 ? "product" : "products"} found
+						</p>
+						<label className={`${heyComic} flex items-center gap-2 text-xs text-[var(--wv-disabled)]`}>
+							Sort by:
+							<select
+								value={sort}
+								onChange={(e) => {
+									setSort(e.target.value as Sort);
+									setPage(1);
+								}}
+								className={`${heyComic} rounded-lg border border-[var(--wv-purple)] bg-[var(--wv-surface)] px-2 py-1 text-xs text-white`}
+							>
+								{SORTS.map((s) => (
+									<option key={s.value} value={s.value}>
+										{s.label}
+									</option>
+								))}
+							</select>
+						</label>
+					</div>
+
+					{pageItems.length > 0 ? (
+						<div className="grid grid-cols-1 gap-x-5 gap-y-6 md:grid-cols-2 xl:grid-cols-4">
+							{pageItems.map((p) => (
+								<ShopProductCard key={p.id} product={p} ctx={ctx} />
 							))}
-						</select>
-					</label>
-				</div>
+						</div>
+					) : (
+						<p className={`${heyComic} py-16 text-center text-[var(--wv-text-dim)]`}>
+							No products match these filters.
+						</p>
+					)}
 
-				{pageItems.length > 0 ? (
-					<div className="grid grid-cols-1 gap-x-5 gap-y-6 md:grid-cols-2 xl:grid-cols-4">
-						{pageItems.map((p) => (
-							<ShopProductCard key={p.id} product={p} ctx={ctx} />
-						))}
-					</div>
-				) : (
-					<p className={`${heyComic} py-16 text-center text-[var(--wv-text-dim)]`}>
-						No products match these filters.
-					</p>
-				)}
-
-				{pageCount > 1 && (
-					<nav aria-label="Pagination" className="flex flex-wrap justify-center gap-2 pt-5">
-						<PageButton disabled={current === 1} onClick={() => setPage(current - 1)}>
-							← Previous
-						</PageButton>
-						{Array.from({ length: pageCount }, (_, i) => i + 1).map((n) => (
-							<PageButton key={n} active={n === current} onClick={() => setPage(n)}>
-								{n}
+					{pageCount > 1 && (
+						<nav aria-label="Pagination" className="flex flex-wrap justify-center gap-2 pt-5">
+							<PageButton disabled={current === 1} onClick={() => setPage(current - 1)}>
+								← Previous
 							</PageButton>
-						))}
-						<PageButton disabled={current === pageCount} onClick={() => setPage(current + 1)}>
-							Next →
-						</PageButton>
-					</nav>
-				)}
+							{Array.from({ length: pageCount }, (_, i) => i + 1).map((n) => (
+								<PageButton key={n} active={n === current} onClick={() => setPage(n)}>
+									{n}
+								</PageButton>
+							))}
+							<PageButton disabled={current === pageCount} onClick={() => setPage(current + 1)}>
+								Next →
+							</PageButton>
+						</nav>
+					)}
+				</div>
 			</div>
-		</div>
+		</>
 	);
 }

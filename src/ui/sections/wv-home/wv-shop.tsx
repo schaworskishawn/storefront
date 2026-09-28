@@ -3,7 +3,6 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { type HomeProduct, type WvCategoryTile } from "@/lib/catalog/get-home-products";
 import { WvFooter, WvHeader } from "./wv-chrome";
-import { CATEGORY_ART } from "./wv-category-art";
 import { NewsletterForm } from "./wv-newsletter-client";
 import { ShopCatalog } from "./wv-shop-catalog";
 import "./wv-home.css";
@@ -13,7 +12,6 @@ import "./wv-home.css";
 const heyComic = "font-[family-name:var(--font-hey-comic)]";
 const bungee = "font-[family-name:var(--font-bungee)]";
 const orbitron = "font-[family-name:var(--font-orbitron)]";
-const marker = "font-[family-name:var(--font-permanent-marker)]";
 
 const TRUST = [
 	{
@@ -137,62 +135,15 @@ export function WvShop({
 				</div>
 			</section>
 
-			{/* Categories */}
-			{categories.length > 0 && (
-				<section className="flex flex-col items-center gap-5 border-y border-[var(--wv-purple)] bg-[var(--wv-surface)] px-4 py-6 md:px-8 xl:px-20 xl:py-8">
-					<div className="flex flex-col items-center gap-[6px]">
-						<p className={`${marker} text-xl uppercase tracking-[2px] text-[var(--wv-pink)]`}>
-							Browse Collections
-						</p>
-						<h2 className={`${bungee} text-2xl tracking-[1px]`}>CATEGORIES</h2>
-						<div className="h-[3px] w-[60px] rounded-full bg-[var(--wv-cyan-soft)]" />
-					</div>
-					<div className="flex w-full justify-end">
-						<Link
-							href="/shop"
-							className="text-[13px] text-[var(--wv-cyan-soft)]"
-						>
-							VIEW ALL →
-						</Link>
-					</div>
-					<div className="grid w-full max-w-[420px] grid-cols-3 justify-items-center gap-3 md:max-w-[560px] xl:flex xl:max-w-none xl:justify-center xl:gap-[26px]">
-						{categories.map((c) => {
-							const art = CATEGORY_ART[c.slug];
-							return (
-								<Link
-									key={c.slug}
-									href={`/shop?category=${encodeURIComponent(c.slug)}`}
-									className="relative block size-[100px] shrink-0 md:size-[90px] xl:size-[175px]"
-								>
-									{art ? (
-										<Image src={art} alt={c.name} fill sizes="175px" className="object-cover" />
-									) : (
-										<span className="relative flex size-full items-end overflow-hidden rounded-xl border border-[var(--wv-cyan)] bg-[var(--wv-section)]">
-											{c.image && (
-												<Image src={c.image.url} alt="" fill sizes="175px" className="object-cover" />
-											)}
-											<span className="absolute inset-0 bg-gradient-to-t from-[var(--wv-bg)] to-transparent" />
-											<span
-												className={`${bungee} relative w-full break-words p-2 text-center text-[9px] uppercase text-white xl:p-3 xl:text-xs`}
-											>
-												{c.name}
-											</span>
-										</span>
-									)}
-								</Link>
-							);
-						})}
-					</div>
-				</section>
-			)}
-
-			{/* Catalog — `ShopCatalog` reads the category filter via `useSearchParams()` (see that
-			    file), which this project's Cache Components/PPR setup requires to sit behind a
-			    Suspense boundary or the whole route fails to build (not just a dev-mode warning,
-			    unlike vanilla Next.js). The fallback below is only ever seen for a moment during
-			    the initial static shell paint. */}
+			{/* Catalog (incl. the "Browse Collections" category tiles) — `ShopCatalog` reads the
+			    category filter via `useSearchParams()` (see that file), which this project's Cache
+			    Components/PPR setup requires to sit behind a Suspense boundary or the whole route
+			    fails to build (not just a dev-mode warning, unlike vanilla Next.js). The fallback
+			    below is only ever seen for a moment during the initial static shell paint.
+			    The category tiles live inside `ShopCatalog` (not here) so clicking one applies the
+			    filter directly against its state — no page navigation. */}
 			<Suspense fallback={<ShopCatalogFallback />}>
-				<ShopCatalog products={products} ctx={ctx} />
+				<ShopCatalog products={products} ctx={ctx} categoryTiles={categories} />
 			</Suspense>
 
 			{/* Trust badges */}
