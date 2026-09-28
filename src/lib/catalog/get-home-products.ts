@@ -1,5 +1,6 @@
 import { ProductListDocument } from "@/gql/graphql";
 import { CACHE_PROFILES, applyCacheProfile } from "@/lib/cache-manifest";
+import { remapCategoryName, remapCategorySlug } from "@/lib/catalog/category-map";
 import { executePublicGraphQL } from "@/lib/graphql";
 import { graphqlLanguageCodeVariables } from "@/lib/graphql-locale";
 import { isBestseller } from "@/lib/catalog/product-flags";
@@ -53,13 +54,17 @@ export async function getHomeProducts(channel: string, localeSlug: string): Prom
 			const { isOnSale, discountPercent } = getDiscountInfo(price, undiscounted);
 			const stop = range?.stop?.gross.amount ?? null;
 			const name = node.translation?.name || node.name;
+			const rawCategorySlug = node.category?.slug ?? null;
+			const rawCategoryName = node.category?.translation?.name || node.category?.name || "";
 			return [
 				{
 					id: node.id,
 					slug: node.slug,
 					name,
-					brand: node.category?.translation?.name || node.category?.name || "",
-					categorySlug: node.category?.slug ?? null,
+					// See category-map.ts: the connected Saleor catalog's real category slugs/names are
+					// leftover demo data, remapped here to Worldwide Vapor's actual taxonomy.
+					brand: rawCategorySlug ? remapCategoryName(rawCategorySlug, rawCategoryName) : rawCategoryName,
+					categorySlug: rawCategorySlug ? remapCategorySlug(rawCategorySlug) : null,
 					categoryImage: node.category?.backgroundImage?.url
 						? {
 								url: node.category.backgroundImage.url,
