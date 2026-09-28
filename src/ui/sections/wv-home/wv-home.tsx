@@ -2,7 +2,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { type ReactNode } from "react";
 import { type HomeProduct, type WvCategoryTile } from "@/lib/catalog/get-home-products";
-import { buildStorefrontPath } from "@/lib/storefront-path";
 import { formatPrice } from "@/ui/components/plp/utils";
 import { WvFooter, WvHeader } from "./wv-chrome";
 import { CATEGORY_ART } from "./wv-category-art";
@@ -184,7 +183,7 @@ function ProductSection({
 				</div>
 				{cta && (
 					<div className="mt-8 flex justify-center xl:mt-10">
-						<OutlineButton href={buildStorefrontPath(ctx.locale, ctx.channel, "/products")} color="cyan">
+						<OutlineButton href="/shop" color="cyan">
 							VIEW ALL PRODUCTS
 						</OutlineButton>
 					</div>
@@ -294,7 +293,7 @@ export function WvHome({
 					/>
 					<div className="mx-auto mt-5 grid max-w-[704px] grid-cols-3 gap-3 md:gap-5 xl:flex xl:max-w-[1040px] xl:justify-center xl:gap-10">
 						{categories.map((c) => {
-							const href = buildStorefrontPath(ctx.locale, ctx.channel, `/categories/${c.slug}`);
+							const href = `/shop?category=${encodeURIComponent(c.slug)}`;
 							const art = CATEGORY_ART[c.slug];
 							return (
 								<Link

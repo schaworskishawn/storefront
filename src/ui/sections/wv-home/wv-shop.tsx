@@ -2,7 +2,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
 import { type HomeProduct, type WvCategoryTile } from "@/lib/catalog/get-home-products";
-import { buildStorefrontPath } from "@/lib/storefront-path";
 import { WvFooter, WvHeader } from "./wv-chrome";
 import { CATEGORY_ART } from "./wv-category-art";
 import { NewsletterForm } from "./wv-newsletter-client";
@@ -150,7 +149,7 @@ export function WvShop({
 					</div>
 					<div className="flex w-full justify-end">
 						<Link
-							href={buildStorefrontPath(locale, channel, "/products")}
+							href="/shop"
 							className="text-[13px] text-[var(--wv-cyan-soft)]"
 						>
 							VIEW ALL →
@@ -162,7 +161,7 @@ export function WvShop({
 							return (
 								<Link
 									key={c.slug}
-									href={buildStorefrontPath(locale, channel, `/categories/${c.slug}`)}
+									href={`/shop?category=${encodeURIComponent(c.slug)}`}
 									className="relative block size-[100px] shrink-0 md:size-[90px] xl:size-[175px]"
 								>
 									{art ? (
@@ -223,7 +222,7 @@ export function WvShop({
 							wholesale hardware access, and certified direct shipping.
 						</p>
 						<Link
-							href={buildStorefrontPath(locale, channel, "/products")}
+							href="/shop"
 							className={`${heyComic} flex h-[45px] items-center justify-center rounded-xl border-[1.5px] border-[var(--wv-cyan-soft)] bg-[var(--wv-control)] px-6 text-sm text-[var(--wv-cyan-soft)]`}
 						>
 							SHOP NOW →
