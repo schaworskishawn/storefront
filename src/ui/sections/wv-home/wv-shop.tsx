@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { Suspense } from "react";
 import { type HomeProduct, type WvCategoryTile } from "@/lib/catalog/get-home-products";
 import { buildStorefrontPath } from "@/lib/storefront-path";
 import { WvFooter, WvHeader } from "./wv-chrome";
@@ -31,6 +32,25 @@ const TRUST = [
 	},
 	{ icon: "📦", title: "SAFE PACKAGING", text: "We ship packages sealed", accent: "text-[var(--wv-pink)]" },
 ];
+
+/** Static-shell placeholder for `<Suspense>` around `ShopCatalog` — see the usage site below. */
+function ShopCatalogFallback() {
+	return (
+		<div className="flex flex-col gap-6 px-4 py-8 md:px-8 xl:px-20" aria-hidden="true">
+			<div className="h-10 w-full max-w-xs animate-pulse rounded-lg bg-[var(--wv-surface)]" />
+			<div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
+				{Array.from({ length: 8 }, (_, i) => (
+					<div
+						key={i}
+						className="h-64 rounded-xl border border-[var(--wv-purple)] bg-[var(--wv-surface)] p-3"
+					>
+						<div className="h-40 w-full animate-pulse rounded-[10px] bg-[var(--wv-deep)]" />
+					</div>
+				))}
+			</div>
+		</div>
+	);
+}
 
 export function WvShop({
 	locale,
@@ -167,8 +187,14 @@ export function WvShop({
 				</section>
 			)}
 
-			{/* Catalog */}
-			<ShopCatalog products={products} ctx={ctx} />
+			{/* Catalog — `ShopCatalog` reads the category filter via `useSearchParams()` (see that
+			    file), which this project's Cache Components/PPR setup requires to sit behind a
+			    Suspense boundary or the whole route fails to build (not just a dev-mode warning,
+			    unlike vanilla Next.js). The fallback below is only ever seen for a moment during
+			    the initial static shell paint. */}
+			<Suspense fallback={<ShopCatalogFallback />}>
+				<ShopCatalog products={products} ctx={ctx} />
+			</Suspense>
 
 			{/* Trust badges */}
 			<section
