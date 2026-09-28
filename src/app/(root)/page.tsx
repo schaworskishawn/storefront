@@ -1,17 +1,20 @@
 import { redirect } from "next/navigation";
 import { DefaultChannelSlug } from "@/app/config";
-import { getDefaultLocaleSlug } from "@/config/locale";
-import { buildStorefrontPath } from "@/lib/storefront-path";
 
 /**
- * Root page redirects to the default locale + channel.
+ * Root page redirects to the storefront home.
+ *
+ * This fork uses flat routes (`/home`, `/shop`, …) for its actual customer-facing site, not the
+ * stock Paper template's `/{locale}/{channel}` scheme — redirecting there instead landed every
+ * visitor to `/` (and every `href="/"` link across the app) on the generic, unbranded template
+ * homepage rather than the real site. `/home` itself still runs the age-gate before real content.
  *
  * Requires NEXT_PUBLIC_DEFAULT_CHANNEL to be set.
  * In development, shows setup instructions if not configured.
  */
 export default function RootPage() {
 	if (DefaultChannelSlug) {
-		redirect(buildStorefrontPath(getDefaultLocaleSlug(), DefaultChannelSlug));
+		redirect("/home");
 	}
 
 	return (

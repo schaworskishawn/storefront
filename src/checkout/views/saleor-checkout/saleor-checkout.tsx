@@ -13,7 +13,11 @@ import { CheckoutPageShell } from "./checkout-page-shell";
 import { OrderSummary } from "./order-summary";
 import { InformationStep } from "./information-step";
 import { ShippingStep } from "./shipping-step";
+import { IdentityStep } from "./identity-step";
+import { AgeCheckerStep } from "./agechecker-step";
 import { PaymentStep } from "./payment-step";
+import type { CheckoutStepType } from "./flow";
+import { resolveIdentityProvider } from "@/checkout/lib/identity-verification/provider";
 import { useCheckoutTransition } from "@/checkout/hooks/use-checkout-transition";
 import { CheckoutSkeleton } from "./checkout-skeleton";
 import { PaymentCompletingScreen } from "./payment-completing-screen";
@@ -32,12 +36,24 @@ export const SaleorCheckout: FC = () => {
 
 	const isShippingRequired = checkout?.isShippingRequired ?? true;
 	const checkoutSteps = useCheckoutSteps(isShippingRequired);
+	const hasIdentityStep = checkoutSteps.some((step) => step.id === "IDENTITY");
+	// Which provider's UI to render for the IDENTITY step — see provider.ts for the priority order.
+	const identityProvider = resolveIdentityProvider();
 	const urlStep = useCheckoutStepFromUrl(searchParams, isShippingRequired);
 	const { currentStep, stepRef, goToStep, completeStep } = useCheckoutStep({
 		isShippingRequired,
 		searchParams,
 		setCheckout,
 	});
+
+	/** Step to advance to after INFO (no shipping) or after SHIPPING completes. */
+	const stepAfterShippingOrInfo: CheckoutStepType = hasIdentityStep ? "IDENTITY" : "PAYMENT";
+	/** Step PAYMENT's back button returns to. */
+	const stepBeforePayment: "SHIPPING" | "IDENTITY" | "INFO" = hasIdentityStep
+		? "IDENTITY"
+		: isShippingRequired
+			? "SHIPPING"
+			: "INFO";
 
 	const { deliveries: shippingDeliveries, isLoading: isLoadingShippingDeliveries } = useShippingDeliveries(
 		checkout,
@@ -83,7 +99,7 @@ export const SaleorCheckout: FC = () => {
 									<InformationStep
 										checkout={checkout}
 										onComplete={(updated) =>
-											completeStep(updated, updated.isShippingRequired ? "SHIPPING" : "PAYMENT")
+											completeStep(updated, updated.isShippingRequired ? "SHIPPING" : stepAfterShippingOrInfo)
 										}
 									/>
 								) : null}
@@ -93,13 +109,42 @@ export const SaleorCheckout: FC = () => {
 										deliveries={shippingDeliveries}
 										isLoadingDeliveries={isLoadingShippingDeliveries}
 										onBack={() => goToStep("INFO")}
-										onComplete={(updated) => completeStep(updated, "PAYMENT")}
+										onComplete={(updated) => completeStep(updated, stepAfterShippingOrInfo)}
+									/>
+								) : null}
+								{currentStep.id === "IDENTITY" && identityProvider === "agechecker" ? (
+									<AgeCheckerStep
+										checkout={checkout}
+										isShippingRequired={isShippingRequired}
+										onBack={() => goToStep(isShippingRequired ? "SHIPPING" : "INFO")}
+										onComplete={() => {
+											// Refresh so PAYMENT's back button (and a re-visit of this step) sees the
+											// just-written verification status from checkout metadata, not the stale
+											// snapshot this page loaded with.
+											void refetch();
+											goToStep("PAYMENT");
+										}}
+									/>
+								) : null}
+								{currentStep.id === "IDENTITY" && identityProvider === "stripe" ? (
+									<IdentityStep
+										checkout={checkout}
+										isShippingRequired={isShippingRequired}
+										onBack={() => goToStep(isShippingRequired ? "SHIPPING" : "INFO")}
+										onComplete={() => {
+											// Refresh so PAYMENT's back button (and a re-visit of this step) sees the
+											// just-written verification status from checkout metadata, not the stale
+											// snapshot this page loaded with.
+											void refetch();
+											goToStep("PAYMENT");
+										}}
 									/>
 								) : null}
 								{currentStep.id === "PAYMENT" ? (
 									<PaymentStep
 										checkout={checkout}
-										onBack={() => goToStep(isShippingRequired ? "SHIPPING" : "INFO")}
+										onBack={() => goToStep(stepBeforePayment)}
+										backTarget={stepBeforePayment}
 										onGoToInformation={() => goToStep("INFO")}
 										onPaymentBusyChange={setIsPaymentBusy}
 									/>

@@ -2,7 +2,6 @@
 
 import { useEffect } from "react";
 import { clearPaymentCompleting } from "@/checkout/lib/payment/checkout-payment-completion";
-import { navigateToStorefrontHome } from "@/lib/auth";
 import { useCheckoutBrowseLocale } from "@/checkout/providers/checkout-browse";
 import { CheckCircle, Mail, MapPin, Package, CreditCard } from "lucide-react";
 import { Button } from "@/ui/components/ui/button";
@@ -83,7 +82,7 @@ export const OrderConfirmation = () => {
 								</div>
 
 								<div className="overflow-hidden rounded-lg border border-border">
-									<div className="bg-secondary/50 border-b border-border p-4">
+									<div className="border-b border-border bg-secondary/50 p-4">
 										<h2 className="font-semibold">{t("confirmedTitle")}</h2>
 										<p className="mt-1 text-sm text-muted-foreground">{t("confirmedEmail", { email })}</p>
 									</div>
@@ -128,7 +127,15 @@ export const OrderConfirmation = () => {
 									<Button
 										type="button"
 										className="min-w-[200px] px-8"
-										onClick={() => navigateToStorefrontHome(channel, storefrontLocale)}
+										onClick={() => {
+											// This fork's storefront uses flat routes (/shop), not the stock Paper
+											// template's /{locale}/{channel} scheme that `navigateToStorefrontHome`
+											// builds — that was landing shoppers on the generic, unbranded template
+											// homepage instead of the real site. `window.location.assign` (not a
+											// Next `Link`) stays consistent with checkout supporting a separate
+											// origin via `NEXT_PUBLIC_CHECKOUT_URL` (see `@paper/session-bridge`).
+											window.location.assign("/shop");
+										}}
 									>
 										{tActions("continueShopping")}
 									</Button>

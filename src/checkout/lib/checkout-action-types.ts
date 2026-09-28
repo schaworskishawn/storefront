@@ -1,5 +1,7 @@
 import type { CheckoutErrorFragment, ValidationRulesFragment } from "@/checkout/graphql";
 import type { DeliveryOption, ServerCheckout } from "@/checkout/lib/checkout-types";
+import type { AgeCheckerStatus } from "@/checkout/lib/identity-verification/agechecker/keys";
+import type { IdentityVerificationStatus } from "@/checkout/lib/identity-verification/keys";
 import type { TransactionInitializePayload } from "@/checkout/lib/payment/types";
 
 export type CheckoutFieldError = Pick<CheckoutErrorFragment, "field" | "message" | "code">;
@@ -50,4 +52,16 @@ export type TransactionProcessPayload = {
 
 export type TransactionProcessActionResult =
 	| { ok: true; data: NonNullable<TransactionProcessPayload> }
+	| { ok: false; error: string };
+
+export type IdentityVerificationSessionActionResult =
+	| { ok: true; clientSecret: string; sessionId: string }
+	| { ok: false; error: string };
+
+export type IdentityVerificationStatusActionResult =
+	| { ok: true; status: IdentityVerificationStatus }
+	| { ok: false; error: string };
+
+export type AgeCheckerVerificationActionResult =
+	| { ok: true; uuid?: string; status: AgeCheckerStatus }
 	| { ok: false; error: string };

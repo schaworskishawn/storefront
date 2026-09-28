@@ -20,6 +20,7 @@ export function useCheckoutStepLabels(): CheckoutStepLabels {
 	return {
 		information: t("information"),
 		shipping: t("shipping"),
+		identity: t("identity"),
 		payment: t("payment"),
 	};
 }

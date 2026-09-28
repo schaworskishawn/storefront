@@ -1,4 +1,5 @@
 import { CheckoutHeaderSkeleton } from "./checkout-header-skeleton";
+import { getCheckoutSteps } from "./flow";
 
 type CheckoutSkeletonProps = {
 	step?: number;
@@ -10,7 +11,11 @@ type CheckoutSkeletonProps = {
  * Uses a non-i18n header so this is safe in page-level Suspense fallbacks.
  */
 export const CheckoutSkeleton = ({ step = 1, isShippingRequired = true }: CheckoutSkeletonProps) => {
-	const totalSteps = isShippingRequired ? 3 : 2;
+	// `getCheckoutSteps` (not the `useCheckoutSteps` hook) — plain function, no i18n context needed,
+	// so this stays safe to render before next-intl/checkout data are ready. Labels are irrelevant
+	// here; only `.length` matters, so identity verification being on/off is still reflected
+	// correctly (3 vs 4 steps) without hardcoding a step count that silently drifts from `flow.ts`.
+	const totalSteps = getCheckoutSteps(isShippingRequired).length;
 
 	return (
 		<div className="min-h-screen overscroll-none bg-secondary">

@@ -39,5 +39,6 @@
 		"**/src/gql/**": true,
 		"**/node_modules": true,
 		"**/.next": true
-	}
+	},
+	"liveServer.settings.port": 5534
 }

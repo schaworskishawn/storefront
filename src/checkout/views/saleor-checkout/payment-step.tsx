@@ -34,6 +34,8 @@ import { useCheckoutPaymentReturnError } from "@/checkout/providers/checkout-pay
 interface PaymentStepProps {
 	checkout: CheckoutFragment;
 	onBack: () => void;
+	/** Which step `onBack` returns to — picks the right back-button label. Defaults to shipping/information. */
+	backTarget?: "SHIPPING" | "IDENTITY" | "INFO";
 	onGoToInformation?: () => void;
 	onPaymentBusyChange?: (busy: boolean) => void;
 }
@@ -41,6 +43,7 @@ interface PaymentStepProps {
 export const PaymentStep: FC<PaymentStepProps> = ({
 	checkout,
 	onBack,
+	backTarget,
 	onGoToInformation,
 	onPaymentBusyChange,
 }) => {
@@ -144,6 +147,13 @@ export const PaymentStep: FC<PaymentStepProps> = ({
 
 	const total = checkout.totalPrice?.gross;
 	const totalStr = formatMoneyWithFallback(total);
+	const resolvedBackTarget = backTarget ?? (isShippingRequired ? "SHIPPING" : "INFO");
+	const backLabel =
+		resolvedBackTarget === "IDENTITY"
+			? tActions("returnToIdentity")
+			: resolvedBackTarget === "SHIPPING"
+				? tActions("returnToShipping")
+				: tActions("returnToInformation");
 
 	const buttonText = isLoading
 		? isCompletingOrder
@@ -274,7 +284,7 @@ export const PaymentStep: FC<PaymentStepProps> = ({
 					className="flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
 				>
 					<ChevronLeft className="h-4 w-4" />
-					{isShippingRequired ? tActions("returnToShipping") : tActions("returnToInformation")}
+					{backLabel}
 				</button>
 				{!usesClientSubmit ? (
 					<div className="hidden flex-col items-end gap-3 md:flex">

@@ -1,6 +1,7 @@
 import { type ReadonlyURLSearchParams } from "next/navigation";
+import { isIdentityVerificationEnabled } from "@/checkout/lib/identity-verification/provider";
 
-export type CheckoutStepType = "INFO" | "SHIPPING" | "PAYMENT";
+export type CheckoutStepType = "INFO" | "SHIPPING" | "IDENTITY" | "PAYMENT";
 
 export interface CheckoutStep {
 	id: CheckoutStepType;
@@ -14,27 +15,38 @@ export interface CheckoutStep {
 export type CheckoutStepLabels = {
 	information: string;
 	shipping: string;
+	identity: string;
 	payment: string;
 };
 
 const defaultStepLabels: CheckoutStepLabels = {
 	information: "Information",
 	shipping: "Shipping",
+	identity: "Verify Identity",
 	payment: "Payment",
 };
 
 /**
  * Single source of truth for SaleorCheckout flow steps.
  * Handles conditional steps (like shipping) based on checkout state.
+ *
+ * `identityVerificationRequired` defaults to `isIdentityVerificationEnabled()` (env-gated, see
+ * `identity-verification/provider.ts`) rather than always being on, so checkouts in environments
+ * without a verification provider configured don't get stuck on a step with no way to complete it.
  */
 export const getCheckoutSteps = (
 	isShippingRequired: boolean,
 	labels: CheckoutStepLabels = defaultStepLabels,
+	identityVerificationRequired: boolean = isIdentityVerificationEnabled(),
 ): CheckoutStep[] => {
 	const steps: Omit<CheckoutStep, "index">[] = [{ id: "INFO", label: labels.information, slug: "contact" }];
 
 	if (isShippingRequired) {
 		steps.push({ id: "SHIPPING", label: labels.shipping, slug: "shipping" });
+	}
+
+	if (identityVerificationRequired) {
+		steps.push({ id: "IDENTITY", label: labels.identity, slug: "identity" });
 	}
 
 	steps.push({ id: "PAYMENT", label: labels.payment, slug: "payment" });

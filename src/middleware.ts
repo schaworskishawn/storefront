@@ -60,14 +60,15 @@ export function middleware(request: NextRequest) {
 	const defaultLocale = getDefaultLocaleSlug();
 	const defaultChannel = DefaultChannelSlug ?? getStaticStorefrontChannelSlugs()[0];
 
-	// Root → default browse home
+	// Root → this fork's actual homepage. Not `buildStorefrontPath(...)` (the stock Paper
+	// template's `/{locale}/{channel}` scheme) — this fork uses flat routes (`/home`, `/shop`, …)
+	// for its real site, so redirecting there instead sent every visitor of `/` to the generic,
+	// unbranded template homepage. This runs before `(root)/page.tsx`, so fixing that alone (see
+	// its comment) had no effect — middleware redirects before the page component ever executes.
 	if (segments.length === 0) {
-		if (!defaultChannel) {
-			return NextResponse.next();
-		}
 		const url = request.nextUrl.clone();
-		url.pathname = buildStorefrontPath(defaultLocale, defaultChannel);
-		return withBrowseLocaleCookie(request, NextResponse.redirect(url, 308), defaultLocale);
+		url.pathname = "/home";
+		return NextResponse.redirect(url, 307);
 	}
 
 	const [first, second, ...rest] = segments;
