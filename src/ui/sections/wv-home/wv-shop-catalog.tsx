@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import type { HomeProduct } from "@/lib/catalog/get-home-products";
 import { WishlistHeart } from "./wv-wishlist-client";
@@ -107,15 +108,15 @@ function PageButton({
 	);
 }
 
-export function ShopCatalog({
-	products,
-	ctx,
-	initialCategorySlug,
-}: {
-	products: HomeProduct[];
-	ctx: Ctx;
-	initialCategorySlug?: string;
-}) {
+export function ShopCatalog({ products, ctx }: { products: HomeProduct[]; ctx: Ctx }) {
+	// Read client-side rather than the page awaiting `searchParams` server-side: this is a pure
+	// display concern (which category tab starts selected), not data-fetching — `products` already
+	// has every category, filtered here. Awaiting `searchParams` in the page shell instead would
+	// collapse the whole route into a PPR dynamic hole (see `data-caching.md`); `useSearchParams()`
+	// in this already-client component avoids that entirely.
+	const searchParams = useSearchParams();
+	const initialCategorySlug = searchParams?.get("category") ?? undefined;
+
 	const bounds = useMemo(() => {
 		const prices = products.map((p) => p.price);
 		return prices.length

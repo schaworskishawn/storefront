@@ -38,14 +38,12 @@ export function WvShop({
 	localeBcp47,
 	products,
 	categories,
-	initialCategorySlug,
 }: {
 	locale: string;
 	channel: string;
 	localeBcp47: string;
 	products: HomeProduct[];
 	categories: WvCategoryTile[];
-	initialCategorySlug?: string;
 }) {
 	const ctx = { locale, channel, localeBcp47 };
 
@@ -170,7 +168,7 @@ export function WvShop({
 			)}
 
 			{/* Catalog */}
-			<ShopCatalog products={products} ctx={ctx} initialCategorySlug={initialCategorySlug} />
+			<ShopCatalog products={products} ctx={ctx} />
 
 			{/* Trust badges */}
 			<section

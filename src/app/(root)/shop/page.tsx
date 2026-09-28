@@ -11,11 +11,10 @@ export const metadata: Metadata = {
 		"Browse premium disposables, hardware kits, e-liquids and accessories at retail and wholesale prices.",
 };
 
-export default async function ShopPage({ searchParams }: { searchParams: Promise<{ category?: string }> }) {
+export default async function ShopPage() {
 	const locale = getDefaultLocaleSlug();
 	const channel = DefaultChannelSlug ?? getStaticStorefrontChannelSlugs()[0] ?? "";
 	const catalog = channel ? await getHomeProducts(channel, locale) : [];
-	const { category } = await searchParams;
 
 	return (
 		<WvShop
@@ -24,7 +23,6 @@ export default async function ShopPage({ searchParams }: { searchParams: Promise
 			localeBcp47={resolveLocaleFromSlug(locale).bcp47}
 			products={catalog}
 			categories={buildCategoryTiles(catalog)}
-			initialCategorySlug={category}
 		/>
 	);
 }
