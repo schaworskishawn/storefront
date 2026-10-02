@@ -1,5 +1,9 @@
-query ProductList($first: Int = 9, $channel: String!, $languageCode: LanguageCodeEnum!) {
-	products(first: $first, channel: $channel) {
+query ProductList($first: Int = 9, $after: String, $channel: String!, $languageCode: LanguageCodeEnum!) {
+	products(first: $first, after: $after, channel: $channel) {
+		pageInfo {
+			hasNextPage
+			endCursor
+		}
 		edges {
 			node {
 				...ProductListItem
