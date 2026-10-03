@@ -28,21 +28,6 @@ const SORTS: { value: Sort; label: string }[] = [
 	{ value: "name", label: "Name A–Z" },
 ];
 
-/** Fixed price buckets (not a min/max slider) — matches the requested filter spec exactly. */
-type PriceBucket = { id: string; label: string; min: number; max: number };
-const PRICE_BUCKETS: PriceBucket[] = [
-	{ id: "under-20", label: "Under $20", min: 0, max: 20 },
-	{ id: "20-30", label: "$20 – $29.99", min: 20, max: 30 },
-	{ id: "30-40", label: "$30 – $39.99", min: 30, max: 40 },
-	{ id: "40-50", label: "$40 – $49.99", min: 40, max: 50 },
-	{ id: "50-plus", label: "$50+", min: 50, max: Infinity },
-];
-const PRICE_BUCKET_BY_ID = new Map(PRICE_BUCKETS.map((b) => [b.id, b]));
-function priceInBucket(price: number, bucketId: string): boolean {
-	const bucket = PRICE_BUCKET_BY_ID.get(bucketId);
-	return bucket ? price >= bucket.min && price < bucket.max : false;
-}
-
 type Ctx = { locale: string; channel: string; localeBcp47: string };
 
 function ShopProductCard({ product, ctx }: { product: HomeProduct; ctx: Ctx }) {
@@ -149,6 +134,14 @@ export function ShopCatalog({
 	// New Arrivals is virtual (see new-arrivals.ts): the newest products, wherever their real category is.
 	const newest = useMemo(() => newArrivalSlugs(products), [products]);
 
+	// Whole-dollar bounds of the catalog's prices: the extremes of the price slider.
+	const bounds = useMemo(() => {
+		const prices = products.map((p) => p.price);
+		return prices.length
+			? { min: Math.floor(Math.min(...prices)), max: Math.ceil(Math.max(...prices)) }
+			: { min: 0, max: 0 };
+	}, [products]);
+
 	const categories = useMemo(() => {
 		const map = new Map<string, { slug: string; name: string; count: number }>();
 		for (const p of products) {
@@ -169,10 +162,12 @@ export function ShopCatalog({
 		[initialCategorySlug],
 	);
 	const [draftCats, setDraftCats] = useState<string[]>(initialCats);
-	const [draftPriceBuckets, setDraftPriceBuckets] = useState<string[]>([]);
-	const [applied, setApplied] = useState<{ cats: string[]; priceBucketIds: string[] }>({
+	const [draftRange, setDraftRange] = useState<[number, number]>([bounds.min, bounds.max]);
+	// `range` is null while the slider spans the whole catalog, so a catalog that grows or shrinks never
+	// leaves a stale price filter behind.
+	const [applied, setApplied] = useState<{ cats: string[]; range: [number, number] | null }>({
 		cats: initialCats,
-		priceBucketIds: [],
+		range: null,
 	});
 	const [sort, setSort] = useState<Sort>(initialCategorySlug === NEW_ARRIVALS_SLUG ? "newest" : "featured");
 	const [page, setPage] = useState(1);
@@ -195,8 +190,7 @@ export function ShopCatalog({
 					applied.cats.some(
 						(slug) => p.categorySlug === slug || (slug === NEW_ARRIVALS_SLUG && newest.has(p.slug)),
 					)) &&
-				(applied.priceBucketIds.length === 0 ||
-					applied.priceBucketIds.some((id) => priceInBucket(p.price, id))),
+				(applied.range === null || (p.price >= applied.range[0] && p.price <= applied.range[1])),
 		);
 		const sorted = [...filtered];
 		if (sort === "best-selling") sorted.sort((a, b) => Number(b.isBestseller) - Number(a.isBestseller));
@@ -210,6 +204,15 @@ export function ShopCatalog({
 	const pageCount = Math.max(1, Math.ceil(visible.length / PER_PAGE));
 	const current = Math.min(page, pageCount);
 	const pageItems = visible.slice((current - 1) * PER_PAGE, current * PER_PAGE);
+
+	const currency = products[0]?.currency ?? "USD";
+	const money = (n: number) => formatPrice(n, currency, ctx.localeBcp47);
+	// Thumbs are clamped to the current bounds in case the catalog changed since they were dragged.
+	const lo = Math.min(Math.max(draftRange[0], bounds.min), bounds.max);
+	const hi = Math.min(Math.max(draftRange[1], lo), bounds.max);
+	const span = Math.max(1, bounds.max - bounds.min);
+	const left = ((lo - bounds.min) / span) * 100;
+	const right = ((hi - bounds.min) / span) * 100;
 
 	return (
 		<>
@@ -305,32 +308,47 @@ export function ShopCatalog({
 					</div>
 
 					<div className="flex flex-col gap-3">
-						<h3 className={`${bungee} text-xs text-[var(--wv-cyan-soft)]`}>PRICE</h3>
-						<div className="flex flex-col gap-2">
-							{PRICE_BUCKETS.map((b) => {
-								const on = draftPriceBuckets.includes(b.id);
-								return (
-									<button
-										key={b.id}
-										type="button"
-										aria-pressed={on}
-										onClick={() =>
-											setDraftPriceBuckets((cur) => (on ? cur.filter((id) => id !== b.id) : [...cur, b.id]))
-										}
-										className={`${heyComic} flex items-center gap-2 text-left text-xs ${on ? "text-[var(--wv-cyan-soft)]" : "text-white"}`}
-									>
-										{on ? "✓ " : ""}
-										{b.label}
-									</button>
-								);
-							})}
+						<h3 className={`${bungee} text-xs text-[var(--wv-cyan-soft)]`}>PRICE RANGE</h3>
+						<div className="relative h-1 rounded-sm bg-[var(--wv-purple)]">
+							<div
+								className="absolute inset-y-0 bg-[var(--wv-cyan-soft)]"
+								style={{ left: `${left}%`, width: `${Math.max(0, right - left)}%` }}
+							/>
+							<input
+								type="range"
+								aria-label="Minimum price"
+								className="wv-range"
+								min={bounds.min}
+								max={bounds.max}
+								value={lo}
+								onChange={(e) => setDraftRange([Math.min(Number(e.target.value), hi), hi])}
+							/>
+							<input
+								type="range"
+								aria-label="Maximum price"
+								className="wv-range"
+								min={bounds.min}
+								max={bounds.max}
+								value={hi}
+								onChange={(e) => setDraftRange([lo, Math.max(Number(e.target.value), lo)])}
+							/>
+						</div>
+						<div className={`${orbitron} flex justify-between text-[11px]`}>
+							<span className="text-[var(--wv-text-dim)]">{money(bounds.min)}</span>
+							<span className="text-white">
+								{money(lo)} - {money(hi)}
+							</span>
+							<span className="text-[var(--wv-text-dim)]">{money(bounds.max)}</span>
 						</div>
 					</div>
 
 					<button
 						type="button"
 						onClick={() => {
-							setApplied({ cats: draftCats, priceBucketIds: draftPriceBuckets });
+							setApplied({
+								cats: draftCats,
+								range: lo === bounds.min && hi === bounds.max ? null : [lo, hi],
+							});
 							setPage(1);
 						}}
 						className={`${heyComic} h-[45px] w-full rounded-xl bg-[var(--wv-cyan-soft)] text-sm text-[var(--wv-bg)]`}

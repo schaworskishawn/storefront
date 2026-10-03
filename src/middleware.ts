@@ -4,6 +4,7 @@ import { getStaticStorefrontChannelSlugs, isAllowedStorefrontChannel } from "@/c
 import { getDefaultLocaleSlug, isLocaleSlug, isStorefrontLocaleSlug } from "@/config/locale";
 import { BROWSE_LOCALE_COOKIE, getBrowseLocaleCookieOptions } from "@/lib/browse-locale";
 import { AGE_GATE_PATH, AGE_VERIFIED_COOKIE } from "@/lib/age-gate";
+import { SITE_ACCESS_COOKIE, SITE_PASSWORD_PATH, getSitePassword, hasSiteAccess } from "@/lib/site-password";
 import { buildStorefrontPath } from "@/lib/storefront-path";
 
 const RESERVED_ROOT_SEGMENTS = new Set([
@@ -36,7 +37,7 @@ function withBrowseLocaleCookie(request: NextRequest, response: NextResponse, lo
 	return response;
 }
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
 	const { pathname } = request.nextUrl;
 
 	if (
@@ -47,8 +48,33 @@ export function middleware(request: NextRequest) {
 		return NextResponse.next();
 	}
 
-	// Site-wide age gate: everything except the gate page itself needs the "verified" cookie.
-	if (pathname !== AGE_GATE_PATH && request.cookies.get(AGE_VERIFIED_COOKIE)?.value !== "1") {
+	// Optional site-wide password (see lib/site-password.ts): only active while SITE_PASSWORD is set, and checked
+	// before the age gate. /api stays open above so Saleor and Stripe webhooks and cache revalidation keep working.
+	if (getSitePassword()) {
+		if (
+			pathname !== SITE_PASSWORD_PATH &&
+			!(await hasSiteAccess(request.cookies.get(SITE_ACCESS_COOKIE)?.value))
+		) {
+			const url = request.nextUrl.clone();
+			const next = `${pathname}${request.nextUrl.search}`;
+			url.pathname = SITE_PASSWORD_PATH;
+			url.search = next === "/" ? "" : `?next=${encodeURIComponent(next)}`;
+			return NextResponse.redirect(url, 307);
+		}
+	} else if (pathname === SITE_PASSWORD_PATH) {
+		// No password configured: the gate page has nothing to ask.
+		const url = request.nextUrl.clone();
+		url.pathname = "/home";
+		url.search = "";
+		return NextResponse.redirect(url, 307);
+	}
+
+	// Site-wide age gate: everything except the gate pages themselves needs the "verified" cookie.
+	if (
+		pathname !== AGE_GATE_PATH &&
+		pathname !== SITE_PASSWORD_PATH &&
+		request.cookies.get(AGE_VERIFIED_COOKIE)?.value !== "1"
+	) {
 		const url = request.nextUrl.clone();
 		const next = `${pathname}${request.nextUrl.search}`;
 		url.pathname = AGE_GATE_PATH;
