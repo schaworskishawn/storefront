@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import type { HomeProduct, WvCategoryTile } from "@/lib/catalog/get-home-products";
+import { NEW_ARRIVALS_NAME, NEW_ARRIVALS_SLUG, newArrivalSlugs } from "@/lib/catalog/new-arrivals";
 import { WishlistHeart } from "./wv-wishlist-client";
 import { CATEGORY_ART } from "./wv-category-art";
 import { formatPrice } from "@/ui/components/plp/utils";
@@ -145,16 +146,21 @@ export function ShopCatalog({
 	const searchParams = useSearchParams();
 	const initialCategorySlug = searchParams?.get("category") ?? undefined;
 
+	// New Arrivals is virtual (see new-arrivals.ts): the newest products, wherever their real category is.
+	const newest = useMemo(() => newArrivalSlugs(products), [products]);
+
 	const categories = useMemo(() => {
 		const map = new Map<string, { slug: string; name: string; count: number }>();
 		for (const p of products) {
-			if (!p.categorySlug) continue;
+			if (!p.categorySlug || p.categorySlug === NEW_ARRIVALS_SLUG) continue;
 			const entry = map.get(p.categorySlug) ?? { slug: p.categorySlug, name: p.brand, count: 0 };
 			entry.count += 1;
 			map.set(p.categorySlug, entry);
 		}
-		return [...map.values()].sort((a, b) => b.count - a.count);
-	}, [products]);
+		const list = [...map.values()].sort((a, b) => b.count - a.count);
+		if (newest.size > 0) list.push({ slug: NEW_ARRIVALS_SLUG, name: NEW_ARRIVALS_NAME, count: newest.size });
+		return list;
+	}, [products, newest]);
 
 	// Draft state (sidebar controls) vs applied state (what the grid shows).
 	// `initialCategorySlug` pre-applies a category filter from the URL, e.g. /shop?category=bundles.
@@ -168,7 +174,7 @@ export function ShopCatalog({
 		cats: initialCats,
 		priceBucketIds: [],
 	});
-	const [sort, setSort] = useState<Sort>("featured");
+	const [sort, setSort] = useState<Sort>(initialCategorySlug === NEW_ARRIVALS_SLUG ? "newest" : "featured");
 	const [page, setPage] = useState(1);
 
 	// Top "Browse Collections" tiles are a one-click jump, unlike the sidebar's draft-then-apply
@@ -178,13 +184,17 @@ export function ShopCatalog({
 		const cats = slug ? [slug] : [];
 		setDraftCats(cats);
 		setApplied((cur) => ({ ...cur, cats }));
+		if (slug === NEW_ARRIVALS_SLUG) setSort("newest");
 		setPage(1);
 	};
 
 	const visible = useMemo(() => {
 		const filtered = products.filter(
 			(p) =>
-				(applied.cats.length === 0 || (p.categorySlug !== null && applied.cats.includes(p.categorySlug))) &&
+				(applied.cats.length === 0 ||
+					applied.cats.some(
+						(slug) => p.categorySlug === slug || (slug === NEW_ARRIVALS_SLUG && newest.has(p.slug)),
+					)) &&
 				(applied.priceBucketIds.length === 0 ||
 					applied.priceBucketIds.some((id) => priceInBucket(p.price, id))),
 		);
@@ -195,7 +205,7 @@ export function ShopCatalog({
 		else if (sort === "newest") sorted.sort((a, b) => b.created.localeCompare(a.created));
 		else if (sort === "name") sorted.sort((a, b) => a.name.localeCompare(b.name));
 		return sorted;
-	}, [products, applied, sort]);
+	}, [products, applied, sort, newest]);
 
 	const pageCount = Math.max(1, Math.ceil(visible.length / PER_PAGE));
 	const current = Math.min(page, pageCount);

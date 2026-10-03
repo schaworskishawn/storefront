@@ -4,6 +4,7 @@ import { graphqlLanguageCodeVariables } from "@/lib/graphql-locale";
 import { executePublicGraphQL } from "@/lib/graphql";
 
 export type ProductSpec = { label: string; value: string };
+export type VariantSelectionOption = { attribute: string; label: string; value: string };
 export type ProductVariantOption = {
 	id: string;
 	name: string;
@@ -11,6 +12,7 @@ export type ProductVariantOption = {
 	undiscountedPrice: number | null;
 	currency: string;
 	inStock: boolean;
+	options: VariantSelectionOption[];
 };
 export type ProductDetails = {
 	images: { url: string; alt: string }[];
@@ -106,6 +108,15 @@ export async function getProductDetails(
 				undiscountedPrice: und !== null && und > price.amount ? und : null,
 				currency: price.currency,
 				inStock: (v.quantityAvailable ?? 0) > 0,
+				options: (v.selectionAttributes ?? []).flatMap((s) => {
+					const value = s.values
+						.map((x) => x.translation?.name || x.name)
+						.filter(Boolean)
+						.join(", ");
+					if (!value) return [];
+					const label = s.attribute.translation?.name || s.attribute.name || s.attribute.slug;
+					return [{ attribute: s.attribute.slug, label, value }];
+				}),
 			},
 		];
 	});

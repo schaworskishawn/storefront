@@ -13,13 +13,14 @@ const CONFIG_PATH = resolve(ROOT, "config/saleor/storefront-content.config.yml")
  */
 it("exports configurator seed models to storefront-content.config.yml", () => {
 	const source = readFileSync(CONFIG_PATH, "utf8");
-	const modelsIndex = source.indexOf("models:\n");
+	const modelsMatch = source.match(/models:\r?\n/);
 
-	if (modelsIndex === -1) {
+	if (!modelsMatch) {
 		throw new Error("models: section not found in storefront-content.config.yml");
 	}
 
-	const head = source.slice(0, modelsIndex);
-	const modelsYaml = formatConfiguratorSeedYamlSection(defaultStorefrontContent);
-	writeFileSync(CONFIG_PATH, `${head}${modelsYaml}\n`);
+	const head = source.slice(0, modelsMatch.index);
+	const eol = source.includes("\r\n") ? "\r\n" : "\n";
+	const modelsYaml = formatConfiguratorSeedYamlSection(defaultStorefrontContent).replace(/\r?\n/g, eol);
+	writeFileSync(CONFIG_PATH, `${head}${modelsYaml}${eol}`);
 });

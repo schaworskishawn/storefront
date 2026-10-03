@@ -37,7 +37,6 @@ export function WvProduct({
 }) {
 	const images = details?.images.length ? details.images : product.image ? [product.image] : [];
 	const specs = details?.specs ?? [];
-	const quickSpecs = specs.slice(0, 4).map((x) => x.value);
 	const dashboard = specs
 		.filter((x) => x.value.length <= 10 && !/^\d{4}-\d{2}-\d{2}$/.test(x.value))
 		.slice(0, 5);
@@ -55,6 +54,7 @@ export function WvProduct({
 					undiscountedPrice: product.undiscountedPrice,
 					currency: product.currency,
 					inStock: true,
+					options: [],
 				},
 			];
 
@@ -100,25 +100,7 @@ export function WvProduct({
 						locale={locale}
 						name={product.name}
 						slug={product.slug}
-					>
-						{quickSpecs.length > 0 && (
-							<div className="flex flex-col gap-2">
-								<p className={`${heyComic} text-[11px] tracking-[1px] text-[var(--wv-disabled)]`}>
-									QUICK SPECS
-								</p>
-								<ul className="grid grid-cols-2 gap-2">
-									{quickSpecs.map((q) => (
-										<li
-											key={q}
-											className={`${bungee} truncate rounded-full border border-[var(--wv-control)] bg-[var(--wv-bg)] px-[10px] py-[6px] text-[11px]`}
-										>
-											{q}
-										</li>
-									))}
-								</ul>
-							</div>
-						)}
-					</ProductPurchase>
+					/>
 				</div>
 			</section>
 

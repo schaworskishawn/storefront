@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState, useTransition, type ReactNode } from "react";
+import { useState, useTransition } from "react";
 import { addVariantToCart } from "@/lib/wv-cart-actions";
 import { WishlistHeart } from "./wv-wishlist-client";
 import { formatPrice } from "@/ui/components/plp/utils";
@@ -95,9 +95,30 @@ export type PurchaseVariant = {
 	undiscountedPrice: number | null;
 	currency: string;
 	inStock: boolean;
+	options: { attribute: string; label: string; value: string }[];
 };
 
-/** Price, variant selection, quantity and purchase actions. `children` (quick specs) render between price and options. */
+type OptionGroup = { attribute: string; label: string; values: string[] };
+
+const optionOf = (v: PurchaseVariant, attribute: string) =>
+	v.options.find((o) => o.attribute === attribute)?.value;
+
+function optionGroups(variants: PurchaseVariant[]): OptionGroup[] {
+	const groups: OptionGroup[] = [];
+	for (const v of variants) {
+		for (const o of v.options) {
+			let g = groups.find((x) => x.attribute === o.attribute);
+			if (!g) {
+				g = { attribute: o.attribute, label: o.label, values: [] };
+				groups.push(g);
+			}
+			if (!g.values.includes(o.value)) g.values.push(o.value);
+		}
+	}
+	return groups;
+}
+
+/** Price, variant selection, quantity and purchase actions. */
 export function ProductPurchase({
 	variants,
 	optionLabel,
@@ -106,7 +127,6 @@ export function ProductPurchase({
 	locale,
 	name,
 	slug,
-	children,
 }: {
 	variants: PurchaseVariant[];
 	optionLabel: string;
@@ -115,7 +135,6 @@ export function ProductPurchase({
 	locale: string;
 	name: string;
 	slug: string;
-	children?: ReactNode;
 }) {
 	const [sel, setSel] = useState(
 		Math.max(
@@ -127,6 +146,25 @@ export function ProductPurchase({
 	const [pending, start] = useTransition();
 	const [status, setStatus] = useState<{ kind: "added" | "error"; text: string } | null>(null);
 	const v = variants[sel];
+
+	// One group per selection attribute, but only when every variant carries every attribute;
+	// otherwise fall back to a single row of chips named after each variant.
+	const groups = optionGroups(variants);
+	const grouped =
+		groups.length > 0 && variants.every((x) => groups.every((g) => optionOf(x, g.attribute) !== undefined));
+
+	// Prefer the variant that keeps the other groups' current choices, then one that is in stock.
+	const pick = (attribute: string, value: string) => {
+		const rank = (x: PurchaseVariant) =>
+			groups.filter((g) => g.attribute !== attribute && optionOf(x, g.attribute) === optionOf(v, g.attribute))
+				.length *
+				2 +
+			(x.inStock ? 1 : 0);
+		const best = variants
+			.filter((x) => optionOf(x, attribute) === value)
+			.reduce((a, b) => (rank(b) > rank(a) ? b : a));
+		setSel(variants.indexOf(best));
+	};
 
 	const submit = (buyNow: boolean) => {
 		setStatus(null);
@@ -160,8 +198,50 @@ export function ProductPurchase({
 				)}
 			</p>
 			<hr className="border-[var(--wv-ink)]" />
-			{children}
-			{variants.length > 1 && (
+			{variants.length === 1 && groups.length > 0 && (
+				<div className="flex flex-col gap-3">
+					{groups.map((g) => (
+						<div key={g.attribute} className="flex flex-col gap-2">
+							<p className={labelClass}>{g.label.toUpperCase()}</p>
+							<div className="flex flex-wrap gap-[6px]">
+								{g.values.map((value) => (
+									<span key={value} className={chip(true)}>
+										{value}
+									</span>
+								))}
+							</div>
+						</div>
+					))}
+				</div>
+			)}
+			{variants.length > 1 && grouped && (
+				<div className="flex flex-col gap-3">
+					{groups.map((g) => (
+						<div key={g.attribute} className="flex flex-col gap-2">
+							<p className={labelClass}>{g.label.toUpperCase()}</p>
+							<div role="radiogroup" aria-label={g.label} className="flex flex-wrap gap-[6px]">
+								{g.values.map((value) => {
+									const on = optionOf(v, g.attribute) === value;
+									return (
+										<button
+											key={value}
+											type="button"
+											role="radio"
+											aria-checked={on}
+											disabled={!variants.some((x) => x.inStock && optionOf(x, g.attribute) === value)}
+											onClick={() => pick(g.attribute, value)}
+											className={`${chip(on)} disabled:cursor-not-allowed disabled:line-through disabled:opacity-40`}
+										>
+											{value}
+										</button>
+									);
+								})}
+							</div>
+						</div>
+					))}
+				</div>
+			)}
+			{variants.length > 1 && !grouped && (
 				<div className="flex flex-col gap-2">
 					<p className={labelClass}>SELECT {optionLabel}</p>
 					<div role="radiogroup" aria-label={optionLabel} className="flex flex-wrap gap-[6px]">
