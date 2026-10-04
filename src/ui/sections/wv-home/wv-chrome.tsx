@@ -1,7 +1,6 @@
 import { Search, ShoppingCart, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { whatsappHref } from "@/lib/whatsapp";
 import { WishlistLink } from "./wv-wishlist-client";
 import { NAV } from "./wv-data";
 import { FOOTER_COLUMNS, FOOTER_HREFS, LEGAL_LINKS } from "./wv-footer-links";
@@ -102,15 +101,6 @@ function FooterSocials({ className }: { className: string }) {
 						<Image src={s.src} alt="" width={18} height={18} />
 					</a>
 				))}
-				<a
-					href={whatsappHref() ?? "#"}
-					target={whatsappHref() ? "_blank" : undefined}
-					rel="noopener noreferrer"
-					aria-label="WhatsApp"
-					className="relative block size-10"
-				>
-					<Image src="/home/imgSocialWhatsapp.svg" alt="" fill sizes="40px" />
-				</a>
 			</div>
 		</div>
 	);
