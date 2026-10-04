@@ -5,22 +5,25 @@ import {
 	PACES,
 	addDays,
 	dayLabel,
-	defaultData,
+	MAX_STRENGTH,
+	PUFF_BUMP,
+	STRENGTHS,
+	STRENGTH_STEP,
 	generateStages,
+	startingData,
 	type Pace,
 	type QuitData,
 	type Stage,
 } from "./wv-quit-model";
+import { DEFAULT_SWITCH_STRENGTH, SWITCH_BANDS } from "./wv-quit-switch";
 import { fieldClass, ghostBtn, primaryBtn, stageFrame } from "./wv-quit-ui";
 
-const TOTAL_STEPS = 6;
-const STRENGTHS = [3, 6, 12, 18, 20, 24, 35, 50];
 const PRODUCTS = [
 	{ id: "Vape", icon: "▯", label: "Vape", sub: "E-liquids / pods" },
-	{ id: "Cigarettes", icon: "／", label: "Cigarettes", sub: "Traditional tobacco" },
-	{ id: "Pouches", icon: "◫", label: "Nicotine pouches", sub: "ZYN, On!, etc." },
-	{ id: "Other", icon: "▥", label: "Other", sub: "Lozenges, snus, etc." },
+	{ id: "Cigarettes", icon: "／", label: "Cigarettes", sub: "Switching to vape" },
 ];
+/** Most puffs per day the setup accepts (three digits). */
+const MAX_PUFFS = 999;
 const PUFF_PRESETS = [
 	{ label: "< 20", value: 15 },
 	{ label: "20–50", value: 50 },
@@ -47,16 +50,16 @@ function StepDots({ step, total }: { step: number; total: number }) {
 	);
 }
 
-function StepHead({ step, label }: { step: number; label: string }) {
+function StepHead({ step, total, label }: { step: number; total: number; label: string }) {
 	return (
 		<div className="mb-6 flex flex-wrap items-center gap-4">
 			<span className="flex size-12 shrink-0 items-center justify-center rounded-full border-2 border-[var(--qp-primary)] text-xl font-black text-[var(--qp-primary)] shadow-[0_0_18px_rgba(105,235,255,0.22)]">
 				{step}
 			</span>
 			<span className="flex-1 font-bold text-[var(--qp-muted)]">
-				Step {step} of {TOTAL_STEPS} · {label}
+				Step {step} of {total} · {label}
 			</span>
-			<StepDots step={step} total={TOTAL_STEPS} />
+			<StepDots step={step} total={total} />
 		</div>
 	);
 }
@@ -77,20 +80,22 @@ const choiceCard = (on: boolean) =>
  * First-run setup wizard: 6 steps mirroring the reference design exactly — welcome, product,
  * strength, daily baseline, pace, and a generated plan summary. Nothing leaves this browser.
  */
-export function Onboarding({
-	today,
-	onDone,
-	onSample,
-}: {
-	today: string;
-	onDone: (d: QuitData) => void;
-	onSample: () => void;
-}) {
+export function Onboarding({ today, onDone }: { today: string; onDone: (d: QuitData) => void }) {
 	const [step, setStep] = useState(1);
 	const [product, setProduct] = useState("Vape");
 	const [strength, setStrength] = useState(20);
 	const [custom, setCustom] = useState("");
 	const [puffs, setPuffs] = useState(50);
+	// What is typed in the puffs box while it is being edited (so it can be emptied and retyped); null shows `puffs`.
+	const [puffsDraft, setPuffsDraft] = useState<string | null>(null);
+	// The −/+ and preset buttons set the number outright, so they also drop whatever was half-typed in the box.
+	const adjustPuffs = (fn: (v: number) => number) => {
+		setPuffs((v) => Math.min(MAX_PUFFS, Math.max(0, fn(v))));
+		setPuffsDraft(null);
+	};
+	// Cigarette smokers are switching to vape: they say how much they smoke (not a strength they don't have yet), skip
+	// the puffs-per-day question, and start from a suggested strength.
+	const switching = product === "Cigarettes";
 	const [pace, setPace] = useState<Pace["id"]>("steady");
 
 	const days = PACES.find((p) => p.id === pace)?.days ?? 7;
@@ -98,20 +103,29 @@ export function Onboarding({
 	const totalDays = stages.reduce((a, s) => a + s.days, 0);
 	const finish = addDays(today, totalDays);
 
-	const start = () => {
-		const base = defaultData(today);
-		onDone({
-			...base,
-			setup: true,
-			product,
-			baselinePuffs: puffs,
-			plan: { ...base.plan, stages },
-			logs: { [today]: { date: today, strength, puffs } },
-		});
+	const flow = switching ? [1, 2, 3, 5, 6] : [1, 2, 3, 4, 5, 6];
+	const position = Math.max(0, flow.indexOf(step)) + 1;
+	const head = (label: string) => <StepHead step={position} total={flow.length} label={label} />;
+
+	// Each way in starts from its own answers, so a strength picked for one never carries over to the other.
+	const chooseProduct = (id: string) => {
+		setProduct(id);
+		setStrength(id === "Cigarettes" ? DEFAULT_SWITCH_STRENGTH : 20);
+		setCustom("");
 	};
 
-	const back = () => setStep((s) => Math.max(1, s - 1));
-	const next = () => setStep((s) => Math.min(TOTAL_STEPS, s + 1));
+	const start = () => {
+		// Someone switching from cigarettes has no puff baseline yet; it is learned from what they log in the first step.
+		onDone(startingData(today, { product, baselinePuffs: switching ? 0 : puffs, stages }));
+	};
+
+	const back = () => setStep((s) => flow[Math.max(0, flow.indexOf(s) - 1)]);
+	const next = () => setStep((s) => flow[Math.min(flow.length - 1, flow.indexOf(s) + 1)]);
+
+	// Step 3's choices: what a vaper uses now, or how much a smoker smokes (each with the strength it suggests).
+	const strengthChoices: { value: number; label: string; sub?: string }[] = switching
+		? SWITCH_BANDS.map((b) => ({ value: b.strength, label: b.label, sub: `Start at ${b.strength} mg` }))
+		: STRENGTHS.map((v) => ({ value: v, label: `${v} mg` }));
 
 	if (step === 1) {
 		return (
@@ -146,9 +160,6 @@ export function Onboarding({
 							<button type="button" className={primaryBtn} onClick={next}>
 								Begin Setup →
 							</button>
-							<button type="button" className={ghostBtn} onClick={onSample}>
-								Look around with sample data
-							</button>
 						</div>
 					</div>
 					<div className="relative hidden min-h-[320px] overflow-hidden rounded-2xl border border-[var(--qp-border)] bg-gradient-to-b from-[var(--qp-field)] via-[var(--qp-surface)] to-[var(--qp-bg)] xl:block">
@@ -181,7 +192,7 @@ export function Onboarding({
 		return (
 			<div className="flex flex-col gap-6">
 				<section className={`${stageFrame} p-6 md:p-9`}>
-					<StepHead step={2} label="What do you use?" />
+					{head("What do you use?")}
 					<h2 className="mb-1 text-[26px] font-black">What do you use?</h2>
 					<p className="mb-5 text-[var(--qp-muted)]">Select the one you use most.</p>
 					<div role="radiogroup" aria-label="Product" className="grid gap-4 md:grid-cols-2">
@@ -193,7 +204,7 @@ export function Onboarding({
 									type="button"
 									role="radio"
 									aria-checked={on}
-									onClick={() => setProduct(p.id)}
+									onClick={() => chooseProduct(p.id)}
 									className={choiceCard(on)}
 								>
 									<Radio on={on} />
@@ -225,27 +236,32 @@ export function Onboarding({
 		return (
 			<div className="flex flex-col gap-6">
 				<section className={`${stageFrame} p-6 md:p-9`}>
-					<StepHead step={3} label="Current nicotine strength" />
-					<h2 className="mb-1 text-[26px] font-black">What nicotine strength do you use now?</h2>
+					{head(switching ? "Your smoking" : "Current nicotine strength")}
+					<h2 className="mb-1 text-[26px] font-black">
+						{switching
+							? "How many cigarettes do you smoke on a typical day?"
+							: "What nicotine strength do you use now?"}
+					</h2>
 					<p className="mb-5 text-[var(--qp-muted)]">
-						Not sure? Check the bottle or device label — it&apos;s printed as mg/mL, or as a percent (2% = 20
-						mg).
+						{switching
+							? `We'll suggest a vape nicotine strength to switch to, then step it down from there. A pack is about 20 cigarettes. Our strongest e-liquid is ${MAX_STRENGTH} mg/mL, so heavier smokers start there.`
+							: "Not sure? Check the bottle or device label — it's printed as mg/mL, or as a percent (2% = 20 mg)."}
 					</p>
 					<div
 						role="radiogroup"
-						aria-label="Nicotine strength in mg/mL"
+						aria-label={switching ? "Cigarettes per day" : "Nicotine strength in mg/mL"}
 						className="grid grid-cols-2 gap-4 md:grid-cols-4"
 					>
-						{STRENGTHS.map((v) => {
-							const on = strength === v && !custom;
+						{strengthChoices.map((o) => {
+							const on = strength === o.value && !custom;
 							return (
 								<button
-									key={v}
+									key={o.value}
 									type="button"
 									role="radio"
 									aria-checked={on}
 									onClick={() => {
-										setStrength(v);
+										setStrength(o.value);
 										setCustom("");
 									}}
 									className={`relative flex min-h-[112px] flex-col items-center justify-center gap-2 rounded-xl border p-5 text-center transition-colors ${on ? "border-2 border-[var(--qp-primary)] bg-[var(--qp-field)] shadow-[0_0_20px_rgba(105,235,255,0.18)]" : "hover:border-[var(--qp-primary)]/60 border-[var(--qp-border)] bg-[var(--qp-surface)]"}`}
@@ -254,23 +270,25 @@ export function Onboarding({
 									<span className="flex size-11 items-center justify-center rounded-[11px] border border-[var(--qp-border)] text-lg font-black text-[var(--qp-primary)]">
 										▥
 									</span>
-									<b className="text-base text-[var(--qp-text)]">{v} mg</b>
+									<b className="text-base text-[var(--qp-text)]">{o.label}</b>
+									{o.sub && <small className="text-[var(--qp-dim)]">{o.sub}</small>}
 								</button>
 							);
 						})}
 					</div>
 					<label className="mt-5 flex max-w-[240px] flex-col gap-1 text-xs text-[var(--qp-dim)]">
-						Something else?
+						{switching ? "Prefer a different strength?" : "Something else?"} (up to {MAX_STRENGTH} mg/mL)
 						<input
 							type="number"
 							min={1}
-							max={100}
+							max={MAX_STRENGTH}
 							placeholder="mg/mL"
 							value={custom}
 							onChange={(e) => {
-								setCustom(e.target.value);
-								const n = Number(e.target.value);
-								if (n >= 1 && n <= 100) setStrength(Math.round(n));
+								// Nothing above the strongest e-liquid we sell: a bigger number is pulled back to it.
+								const n = Math.min(Number(e.target.value), MAX_STRENGTH);
+								setCustom(e.target.value === "" ? "" : String(n));
+								if (n >= 1) setStrength(Math.round(n));
 							}}
 							className={fieldClass}
 						/>
@@ -292,7 +310,7 @@ export function Onboarding({
 		return (
 			<div className="flex flex-col gap-6">
 				<section className={`${stageFrame} p-6 md:p-9`}>
-					<StepHead step={4} label="Daily use / baseline" />
+					{head("Daily use / baseline")}
 					<h2 className="mb-1 text-[26px] font-black">About how much do you use in a typical day?</h2>
 					<p className="mb-6 text-[var(--qp-muted)]">
 						This helps us set the right pace for you. You can always adjust this later.
@@ -301,19 +319,33 @@ export function Onboarding({
 						<button
 							type="button"
 							aria-label="Decrease"
-							onClick={() => setPuffs((v) => Math.max(0, v - 5))}
+							onClick={() => adjustPuffs((v) => v - 5)}
 							className="flex size-[50px] shrink-0 items-center justify-center rounded-full border border-[var(--qp-border)] bg-[var(--qp-field)] text-2xl font-black text-white"
 						>
 							−
 						</button>
 						<div className="flex-1 text-center">
-							<strong className="block text-3xl font-black">{puffs}</strong>
+							<input
+								type="text"
+								inputMode="numeric"
+								pattern="[0-9]*"
+								aria-label="Puffs per day"
+								value={puffsDraft ?? String(puffs)}
+								onFocus={(e) => e.target.select()}
+								onChange={(e) => {
+									const digits = e.target.value.replace(/\D/g, "").slice(0, String(MAX_PUFFS).length);
+									setPuffsDraft(digits);
+									if (digits !== "") setPuffs(Number(digits));
+								}}
+								onBlur={() => setPuffsDraft(null)}
+								className="block w-full rounded-md bg-transparent text-center text-3xl font-black text-[var(--qp-text)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--qp-primary)]"
+							/>
 							<span className="text-sm text-[var(--qp-muted)]">puffs per day</span>
 						</div>
 						<button
 							type="button"
 							aria-label="Increase"
-							onClick={() => setPuffs((v) => v + 5)}
+							onClick={() => adjustPuffs((v) => v + 5)}
 							className="flex size-[50px] shrink-0 items-center justify-center rounded-full border border-[var(--qp-border)] bg-[var(--qp-field)] text-2xl font-black text-white"
 						>
 							+
@@ -325,7 +357,7 @@ export function Onboarding({
 								key={p.label}
 								type="button"
 								aria-pressed={puffs === p.value}
-								onClick={() => setPuffs(p.value)}
+								onClick={() => adjustPuffs(() => p.value)}
 								className={`rounded-lg border px-3 py-2 text-sm font-bold ${puffs === p.value ? "border-[var(--qp-primary)] bg-[var(--qp-primary)] text-[var(--qp-ink)]" : "border-[var(--qp-border)] bg-[var(--qp-surface)] text-[var(--qp-muted)]"}`}
 							>
 								{p.label}
@@ -349,7 +381,7 @@ export function Onboarding({
 		return (
 			<div className="flex flex-col gap-6">
 				<section className={`${stageFrame} p-6 md:p-9`}>
-					<StepHead step={5} label="Your goal and pace" />
+					{head("Your goal and pace")}
 					<h2 className="mb-1 text-[26px] font-black">How would you like to quit?</h2>
 					<p className="mb-5 text-[var(--qp-muted)]">
 						You can adjust your pace anytime — this is your journey.
@@ -401,7 +433,7 @@ export function Onboarding({
 	return (
 		<div className="flex flex-col gap-6">
 			<section className={`${stageFrame} p-6 md:p-9`}>
-				<StepHead step={6} label="Your starting plan" />
+				{head("Your starting plan")}
 				<h2 className="mb-1 text-[26px] font-black">Your starting plan</h2>
 				<p className="mb-6 text-[var(--qp-muted)]">Here&apos;s your personalized quit plan.</p>
 
@@ -439,12 +471,15 @@ export function Onboarding({
 					<div className="bg-[var(--qp-field)] p-4 text-center">
 						<b className="block text-[var(--qp-text)]">Starting point</b>
 						<small className="text-[var(--qp-muted)]">
-							{strength} mg · {puffs} puffs/day
+							{strength} mg · {switching ? "switching from cigarettes" : `${puffs} puffs/day`}
 						</small>
 					</div>
 				</div>
 				<p className="mt-5 text-xs text-[var(--qp-dim)]">
-					You can edit any stage later, and pause or slow down whenever you need to.
+					Each step lowers your strength by {STRENGTH_STEP} mg. When it drops you can puff a little more (up
+					to {Math.round(PUFF_BUMP * 100)}% above your usual), then ease those puffs back down before the next
+					step. {switching ? "Your usual puffs are measured from what you log in the first step. " : ""}You
+					can pause or slow down whenever you need to.
 				</p>
 
 				<div className="mt-8 flex justify-between gap-3">
