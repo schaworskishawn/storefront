@@ -27,7 +27,15 @@ import { getFormattedMoney, formatMoneyWithFallback } from "@/checkout/lib/utils
 import { AuthorizedPaymentRecovery } from "@/checkout/components/payment/stripe/authorized-payment-recovery";
 import { isCheckoutFreeOrder } from "@/checkout/lib/payment/checkout-pay-amount";
 import { shouldShowPaymentMethodArea } from "@/checkout/lib/payment/should-show-payment-method-area";
-import { usesClientPaymentSubmit } from "@/checkout/lib/payment";
+import { isIntegratedPaymentProvider, usesClientPaymentSubmit } from "@/checkout/lib/payment";
+import { ETransferPayment } from "@/checkout/components/payment/etransfer/etransfer-payment";
+import { PaymentMethodTabs } from "@/checkout/components/payment/payment-method-tabs";
+import { isETransferCountry, isETransferCurrency, isETransferEnabled } from "@/lib/etransfer";
+import {
+	readPaymentMethodChoice,
+	writePaymentMethodChoice,
+	type PaymentMethodChoice,
+} from "@/checkout/lib/payment/payment-method-choice";
 import { consumePaymentCompletionError } from "@/checkout/lib/payment/checkout-payment-completion";
 import { useCheckoutPaymentReturnError } from "@/checkout/providers/checkout-payment-return-error";
 
@@ -95,8 +103,36 @@ export const PaymentStep: FC<PaymentStepProps> = ({
 		authenticated,
 	});
 
-	const usesClientSubmit = usesClientPaymentSubmit(provider);
 	const isFreeOrder = isCheckoutFreeOrder(checkout);
+	const cardUsesClientSubmit = usesClientPaymentSubmit(provider);
+
+	// Interac e-Transfer is a storefront-level method (no payment app): offered next to the card gateway when enabled,
+	// and on its own when no card gateway is integrated.
+	const eTransferOffered =
+		isETransferEnabled() &&
+		isETransferCurrency(checkout.totalPrice?.gross?.currency) &&
+		isETransferCountry(checkout.shippingAddress?.country?.code ?? checkout.billingAddress?.country?.code) &&
+		!isFreeOrder;
+	const hasCardMethod = isIntegratedPaymentProvider(provider);
+	const [pickedMethod, setPickedMethod] = useState<PaymentMethodChoice>("card");
+
+	// The step unmounts while an order is placed (the "processing" screen replaces it); bring the choice back afterwards.
+	useEffect(() => {
+		const saved = readPaymentMethodChoice(checkout.id);
+		// eslint-disable-next-line react-hooks/set-state-in-effect -- storage is client-only, so it can't seed useState
+		if (saved) setPickedMethod(saved);
+	}, [checkout.id]);
+
+	const handlePickMethod = useCallback(
+		(choice: PaymentMethodChoice) => {
+			setPickedMethod(choice);
+			writePaymentMethodChoice(checkout.id, choice);
+		},
+		[checkout.id],
+	);
+	const method: "card" | "etransfer" =
+		eTransferOffered && (!hasCardMethod || pickedMethod === "etransfer") ? "etransfer" : "card";
+	const usesClientSubmit = method === "etransfer" || cardUsesClientSubmit;
 
 	const handlePaymentError = useCallback(
 		(message: string) => {
@@ -218,10 +254,29 @@ export const PaymentStep: FC<PaymentStepProps> = ({
 				</div>
 			)}
 
-			<PaymentGatewayAlerts gateways={checkout.availablePaymentGateways} />
+			{method === "etransfer" && !hasCardMethod ? null : (
+				<PaymentGatewayAlerts gateways={checkout.availablePaymentGateways} />
+			)}
 
-			{usesClientSubmit && !isFreeOrder ? (
+			{method === "card" && cardUsesClientSubmit && !isFreeOrder ? (
 				<AuthorizedPaymentRecovery checkout={checkout} onError={handlePaymentError} />
+			) : null}
+
+			{eTransferOffered && hasCardMethod ? (
+				<PaymentMethodTabs
+					ariaLabel={tPayment("etransfer.chooseMethod")}
+					value={method}
+					onChange={handlePickMethod}
+					disabled={isPaymentBusy}
+					options={[
+						{ id: "card", label: tPayment("etransfer.methodCard") },
+						{
+							id: "etransfer",
+							label: tPayment("etransfer.methodTitle"),
+							description: tPayment("etransfer.methodDescription"),
+						},
+					]}
+				/>
 			) : null}
 
 			{usesClientSubmit ? (
@@ -242,7 +297,22 @@ export const PaymentStep: FC<PaymentStepProps> = ({
 
 			<PaymentError message={errors.payment || returnError || undefined} />
 
-			{shouldShowPaymentMethodArea(checkout) ? (
+			{method === "etransfer" ? (
+				<ETransferPayment
+					checkout={checkout}
+					billing={{
+						billingData,
+						sameAsBilling,
+						hasShippingAddress,
+						shippingAddress,
+						userAddresses: user?.addresses,
+						authenticated,
+					}}
+					onPaymentError={handlePaymentError}
+					onBillingErrors={setBillingErrors}
+					onPaymentActivityChange={handlePaymentActivityChange}
+				/>
+			) : shouldShowPaymentMethodArea(checkout) ? (
 				<PaymentMethodArea
 					provider={provider}
 					checkout={checkout}

@@ -33,6 +33,7 @@ const fakeTransport: CheckoutTransport = {
 	initializeTransaction,
 	processTransaction: vi.fn(),
 	completeCheckout,
+	placeETransferOrder: vi.fn(),
 };
 
 describe("executePayment", () => {

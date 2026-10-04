@@ -7,6 +7,7 @@ import type {
 import type {
 	CheckoutActionResult,
 	CheckoutCompleteActionResult,
+	ETransferOrderActionResult,
 	PaymentGatewaysInitializeActionResult,
 	TransactionInitializeActionResult,
 	TransactionProcessActionResult,
@@ -41,6 +42,8 @@ export type CheckoutTransport = {
 	) => Promise<TransactionProcessActionResult>;
 	/** `checkoutComplete` — converts a fully-paid checkout into an order. */
 	completeCheckout: (checkoutId: string) => Promise<CheckoutCompleteActionResult>;
+	/** Interac e-Transfer: places the order unpaid and sends the transfer instructions (see `src/lib/etransfer.ts`). */
+	placeETransferOrder: (checkoutId: string) => Promise<ETransferOrderActionResult>;
 };
 
 // Module-level holder, set once by the checkout shell before any payment code runs.

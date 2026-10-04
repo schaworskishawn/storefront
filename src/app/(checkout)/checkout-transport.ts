@@ -6,6 +6,7 @@ import {
 	syncCheckoutFromServer,
 	updateCheckoutBillingAddress,
 } from "@/app/(checkout)/actions";
+import { placeETransferOrder } from "@/app/(checkout)/etransfer-actions";
 import type { CheckoutTransport } from "@/checkout/lib/checkout-transport";
 
 /**
@@ -20,4 +21,5 @@ export const nextCheckoutTransport: CheckoutTransport = {
 	initializeTransaction: initializeCheckoutTransaction,
 	processTransaction: processCheckoutTransaction,
 	completeCheckout: runCheckoutComplete,
+	placeETransferOrder,
 };

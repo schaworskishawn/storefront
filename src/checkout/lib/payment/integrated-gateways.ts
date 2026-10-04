@@ -8,12 +8,13 @@ import {
 	isStripeGateway,
 	isStripePaymentEnabled,
 } from "@/checkout/lib/payment/providers/stripe";
+import { findWvPayGateway, isWvPayEnabled, isWvPayGateway } from "@/checkout/lib/payment/providers/wvpay";
 import { type PaymentGatewayLike, type PaymentSubmitMode } from "./types";
 
 /** Built-in gateways this UI does not integrate with but should not block checkout. */
 export const IGNORABLE_GATEWAY_IDS = ["saleor.io.gift-card-payment-gateway"] as const;
 
-export type IntegratedGatewayType = "stripe" | "dummy";
+export type IntegratedGatewayType = "stripe" | "wvpay" | "dummy";
 
 type IntegratedGatewayDefinition = {
 	type: IntegratedGatewayType;
@@ -28,6 +29,15 @@ type IntegratedGatewayDefinition = {
  * Add a new Saleor payment app here plus its provider module and UI component.
  */
 export const INTEGRATED_GATEWAYS: readonly IntegratedGatewayDefinition[] = [
+	// Worldwide Vapor Payments (Authorize.net cards). Ahead of Stripe so that switching it on takes over card payments;
+	// it stays invisible until NEXT_PUBLIC_ENABLE_AUTHORIZENET_PAYMENTS is set and Saleor lists the app.
+	{
+		type: "wvpay",
+		submitMode: "client",
+		findGateway: (gateways) => findWvPayGateway(gateways),
+		isEnabled: isWvPayEnabled,
+		matchesGateway: (gateway) => isWvPayGateway(gateway.id),
+	},
 	{
 		type: "stripe",
 		submitMode: "client",

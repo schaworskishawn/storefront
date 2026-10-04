@@ -13,7 +13,17 @@ const bungee = "font-[family-name:var(--font-bungee)]";
 const orbitron = "font-[family-name:var(--font-orbitron)]";
 const marker = "font-[family-name:var(--font-permanent-marker)]";
 
-const BADGES = ["Visa", "Mastercard", "Amex", "Discover", "PayPal", "Apple Pay", "Google Pay", "⚡ Bitcoin"];
+const BADGES = [
+	"Visa",
+	"Mastercard",
+	"Amex",
+	"Discover",
+	"PayPal",
+	"Apple Pay",
+	"Google Pay",
+	"Interac e-Transfer",
+	"⚡ Bitcoin",
+];
 
 const METHODS = [
 	{
@@ -37,9 +47,9 @@ const METHODS = [
 		text: "Quick verification and secure credit tokens directly via Android or Chrome payment agents.",
 	},
 	{
-		icon: "🛍️",
-		title: "Shop Pay",
-		text: "Access rapid profile billing, tracking tools, and split payment installations automatically.",
+		icon: "🏦",
+		title: "Interac e-Transfer",
+		text: "Place your order, then send an Interac e-Transfer from your Canadian bank. We email the details and ship once it arrives.",
 	},
 	{
 		icon: "🪙",
@@ -49,7 +59,7 @@ const METHODS = [
 	{
 		icon: "🎁",
 		title: "Gift Cards",
-		text: "Apply promo points, store voucher balances, or bulk discount gift credits directly at checkout.",
+		text: "Redeem a gift card at checkout and use it across several orders until the balance runs out, or give one to a friend.",
 	},
 	{
 		icon: "🗓️",

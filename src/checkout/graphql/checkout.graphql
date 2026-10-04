@@ -391,6 +391,14 @@ mutation checkoutComplete($checkoutId: ID!) {
 		}
 		order {
 			id
+			number
+			userEmail
+			total {
+				gross {
+					amount
+					currency
+				}
+			}
 			channel {
 				slug
 			}

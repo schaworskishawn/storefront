@@ -478,7 +478,11 @@
 			"placeholder": "Rabattkode",
 			"apply": "Bruk",
 			"applying": "Bruker…",
-			"removeAriaLabel": "Fjern rabattkode"
+			"removeAriaLabel": "Fjern rabattkode",
+			"codeOrGiftCardPlaceholder": "Discount code or gift card",
+			"giftCardApplied": "Gift card {code}",
+			"giftCardBalance": "Balance: {balance}",
+			"removeGiftCardAriaLabel": "Remove gift card {code}"
 		},
 		"shipping": {
 			"methodTitle": "Fraktmetode",
@@ -544,7 +548,34 @@
 			"authorizedBody": "Betalingen din er autorisert (belastning skjer når vi oppfyller bestillingen). Trykk nedenfor for å legge inn bestillingen — du belastes ikke igjen i kassen.",
 			"freeOrderBody": "Ordresummen din er {total}. Ingen betaling kreves — bekreft nedenfor for å legge inn bestillingen.",
 			"dummyTestMode": "Testmodus. Ingen kortdetaljer nødvendig — bruk Betal for å fullføre en testbestilling.",
-			"stripeLoadTitle": "Kunne ikke laste Stripe"
+			"stripeLoadTitle": "Kunne ikke laste Stripe",
+			"etransfer": {
+				"chooseMethod": "Choose how to pay",
+				"methodCard": "Credit or debit card",
+				"methodTitle": "Interac e-Transfer",
+				"methodDescription": "Pay from your Canadian bank account after you place the order.",
+				"title": "Pay by Interac e-Transfer",
+				"intro": "Place your order now and send {total} by Interac e-Transfer. We ship as soon as it arrives.",
+				"step1": "Place your order — we email you the e-Transfer details and show them on the next page.",
+				"step2": "Send the e-Transfer from your online banking, with your order number in the message.",
+				"step3": "We confirm your payment and ship your order.",
+				"placeOrder": "Place order — pay by e-Transfer",
+				"introConvert": "Place your order now and send the Canadian-dollar equivalent of {total} by Interac e-Transfer. We ship as soon as it arrives."
+			},
+			"wvpay": {
+				"loading": "Loading secure card form…",
+				"loadFailed": "We couldn't load the secure card form. Please refresh the page and try again.",
+				"notConfigured": "Card payments aren't set up yet. Please choose another payment method or contact support.",
+				"cardNumber": "Card number",
+				"expiry": "Expiry",
+				"cvv": "Security code",
+				"numberInvalid": "Check your card number.",
+				"expiryInvalid": "Enter the expiry as MM / YY.",
+				"expiryPast": "This card has expired.",
+				"cvvInvalid": "Check the security code.",
+				"cardRejected": "Your card couldn't be verified. Please check the details and try again.",
+				"securityNote": "Your card details go securely and directly to our payment processor, Authorize.net. They never touch our servers."
+			}
 		},
 		"confirmation": {
 			"orderNumber": "Bestilling #{number}",
@@ -554,7 +585,25 @@
 			"emailSent": "Bekreftelses-e-post sendt",
 			"shippingAddress": "Leveringsadresse",
 			"billingAddress": "Fakturaadresse",
-			"estimatedDelivery": "Estimert levering"
+			"estimatedDelivery": "Estimert levering",
+			"etransfer": {
+				"title": "Send your Interac e-Transfer to finish your order",
+				"intro": "Your order is reserved. We ship it as soon as your payment arrives.",
+				"amount": "Amount",
+				"sendTo": "Send to",
+				"message": "Message (required)",
+				"securityQuestion": "Security question",
+				"securityAnswer": "Security answer",
+				"payBy": "Pay by",
+				"copy": "Copy",
+				"copied": "Copied",
+				"matchNote": "Please put the message exactly as shown so we can match your payment to your order.",
+				"autoDeposit": "No security question is needed — the money goes straight into our account.",
+				"emailNote": "We've also emailed these details to you.",
+				"reservedTitle": "Your order is reserved",
+				"reservedEmail": "We've emailed the e-Transfer details to {email}",
+				"currencyNote": "Your order total is in {currency}, but Interac e-Transfers are sent in Canadian dollars — please send the CAD equivalent at the current exchange rate."
+			}
 		},
 		"identity": {
 			"title": "Bekreft identiteten din",
@@ -610,7 +659,13 @@
 			"validationRulesUnavailable": "Valideringsregler er ikke tilgjengelige",
 			"setDefaultAddressFailed": "Kunne ikke angi standardadresse",
 			"dummyNotAllowed": "Testbetaling er ikke tilgjengelig i dette miljøet.",
-			"stripeNotEnabled": "Stripe-betalinger er ikke aktivert i dette miljøet. Sett NEXT_PUBLIC_ENABLE_STRIPE_PAYMENTS=true i butikken."
+			"stripeNotEnabled": "Stripe-betalinger er ikke aktivert i dette miljøet. Sett NEXT_PUBLIC_ENABLE_STRIPE_PAYMENTS=true i butikken.",
+			"eTransferUnavailable": "Interac e-Transfer isn't available right now. Please choose another payment method.",
+			"eTransferCurrency": "Interac e-Transfer is only available for orders in Canadian dollars.",
+			"eTransferNotAllowed": "We couldn't place this order for e-Transfer yet. Please choose another payment method or contact support.",
+			"eTransferFailed": "We couldn't save your e-Transfer order. Please try again.",
+			"wvpayNotEnabled": "Card payments are not enabled in this environment. Set NEXT_PUBLIC_ENABLE_AUTHORIZENET_PAYMENTS=true on the storefront.",
+			"eTransferCountry": "Interac e-Transfer is only available for customers in Canada."
 		},
 		"gateways": {
 			"noneTitle": "Ingen betalingsgateway konfigurert",

@@ -2,11 +2,16 @@
 
 import { useState, type FC, type FormEvent } from "react";
 import Image from "next/image";
-import { Tag, ShieldCheck, RotateCcw, Truck, ChevronDown, ShoppingBag, X } from "lucide-react";
+import { Tag, Gift, ShieldCheck, RotateCcw, Truck, ChevronDown, ShoppingBag, X } from "lucide-react";
 import { Button } from "@/ui/components/ui/button";
 import { Input } from "@/ui/components/ui/input";
 import { cn } from "@/lib/utils";
-import { applyCheckoutPromoCode, removeCheckoutPromoCode } from "@/app/(checkout)/actions";
+import {
+	applyCheckoutPromoCode,
+	removeCheckoutGiftCard,
+	removeCheckoutPromoCode,
+} from "@/app/(checkout)/actions";
+import { formatMoneyWithFallback } from "@/checkout/lib/utils/money";
 import { type CheckoutErrorFragment, type CheckoutFragment, type OrderFragment } from "@/checkout/graphql";
 import { useCheckoutData } from "@/checkout/providers/checkout-data";
 import { useTranslations } from "next-intl";
@@ -269,7 +274,7 @@ export const OrderSummary: FC<OrderSummaryProps> = ({ checkout, order, editable,
 			</button>
 
 			{/* Desktop Header - Only visible on desktop */}
-			<header className="bg-secondary/30 hidden items-center gap-2 px-5 py-4 md:flex">
+			<header className="hidden items-center gap-2 bg-secondary/30 px-5 py-4 md:flex">
 				<h2 className="text-base font-semibold">{t("title")}</h2>
 				<span className="text-sm text-muted-foreground">({t("itemCount", { count: itemCount })})</span>
 			</header>
@@ -361,7 +366,7 @@ export const OrderSummary: FC<OrderSummaryProps> = ({ checkout, order, editable,
 						</dl>
 
 						{/* Total */}
-						<div className="border-border/50 mt-4 flex items-baseline justify-between border-t pt-4">
+						<div className="mt-4 flex items-baseline justify-between border-t border-border/50 pt-4">
 							<div className="flex flex-col">
 								<span className="text-base font-semibold">{t("total")}</span>
 								{tax > 0 && <span className="text-xs text-muted-foreground">{t("includingVat")}</span>}
@@ -373,7 +378,7 @@ export const OrderSummary: FC<OrderSummaryProps> = ({ checkout, order, editable,
 					</section>
 
 					{/* Trust/Social proof */}
-					<footer className="bg-secondary/30 grid grid-cols-3 gap-2 border-t border-border px-5 py-4">
+					<footer className="grid grid-cols-3 gap-2 border-t border-border bg-secondary/30 px-5 py-4">
 						<div className="flex flex-col items-center rounded-lg bg-secondary p-2.5 text-center">
 							<ShieldCheck className="mb-1 h-4 w-4 text-muted-foreground" />
 							<span className="text-[10px] leading-tight text-muted-foreground">
@@ -421,6 +426,8 @@ function CheckoutPromoSection({ checkout, onCheckoutChange }: CheckoutPromoSecti
 
 	const appliedPromoCode = checkout.voucherCode;
 	const appliedDiscountName = checkout.translatedDiscountName || checkout.discountName;
+	// Gift cards ride on the same input as discount codes (Saleor's checkoutAddPromoCode accepts both) and can be stacked.
+	const appliedGiftCards = checkout.giftCards ?? [];
 
 	const handleApplyPromo = async (event: FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
@@ -474,8 +481,58 @@ function CheckoutPromoSection({ checkout, onCheckoutChange }: CheckoutPromoSecti
 		}
 	};
 
+	const handleRemoveGiftCard = async (giftCardId: string) => {
+		if (isPromoBusy) return;
+
+		setPromoError(null);
+		setIsPromoBusy(true);
+
+		try {
+			const result = await removeCheckoutGiftCard(checkout.id, giftCardId);
+
+			if (!result.ok) {
+				const errorMessage =
+					result.error ?? getCheckoutErrorMessage(result.fieldErrors) ?? tErrors("discountRemoveFailed");
+				setPromoError(errorMessage);
+				return;
+			}
+
+			setCheckout(result.checkout);
+			onCheckoutChange?.();
+		} finally {
+			setIsPromoBusy(false);
+		}
+	};
+
 	return (
-		<section className="border-t border-border px-5 py-4">
+		<section className="space-y-3 border-t border-border px-5 py-4">
+			{appliedGiftCards.map((card) => (
+				<div
+					key={card.id}
+					className="flex items-center gap-3 rounded-lg border border-green-200 bg-green-50 p-3"
+				>
+					<Gift className="h-4 w-4 shrink-0 text-green-700" />
+					<div className="min-w-0 flex-1">
+						<p className="truncate text-sm font-medium text-green-800">
+							{tPromo("giftCardApplied", { code: card.displayCode })}
+						</p>
+						<p className="truncate text-xs text-green-700">
+							{tPromo("giftCardBalance", { balance: formatMoneyWithFallback(card.currentBalance) })}
+						</p>
+					</div>
+					<Button
+						type="button"
+						variant="ghost"
+						size="icon"
+						disabled={isPromoBusy}
+						onClick={() => void handleRemoveGiftCard(card.id)}
+						aria-label={tPromo("removeGiftCardAriaLabel", { code: card.displayCode })}
+						className="h-8 w-8 shrink-0 text-green-700 hover:bg-green-100 hover:text-green-800"
+					>
+						<X className="h-4 w-4" />
+					</Button>
+				</div>
+			))}
 			{appliedPromoCode ? (
 				<div className="flex items-center gap-3 rounded-lg border border-green-200 bg-green-50 p-3">
 					<Tag className="h-4 w-4 shrink-0 text-green-700" />
@@ -497,7 +554,8 @@ function CheckoutPromoSection({ checkout, onCheckoutChange }: CheckoutPromoSecti
 						<X className="h-4 w-4" />
 					</Button>
 				</div>
-			) : (
+			) : null}
+			{
 				<form className="flex gap-2" onSubmit={handleApplyPromo}>
 					<div className="relative flex-1">
 						<Tag className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -505,7 +563,7 @@ function CheckoutPromoSection({ checkout, onCheckoutChange }: CheckoutPromoSecti
 							name={contactFieldAttributes.promoCode.name}
 							inputMode={contactFieldAttributes.promoCode.inputMode}
 							autoComplete={contactFieldAttributes.promoCode.autoComplete}
-							placeholder={tPromo("placeholder")}
+							placeholder={tPromo("codeOrGiftCardPlaceholder")}
 							value={promoCode}
 							onChange={(e) => {
 								setPromoCode(e.target.value);
@@ -525,7 +583,7 @@ function CheckoutPromoSection({ checkout, onCheckoutChange }: CheckoutPromoSecti
 						{isPromoBusy ? tPromo("applying") : tPromo("apply")}
 					</Button>
 				</form>
-			)}
+			}
 			{promoError ? (
 				<p className="mt-2 text-sm text-destructive" role="alert">
 					{promoError}

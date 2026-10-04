@@ -55,6 +55,49 @@ export async function sendNotification({
 	}
 }
 
+/** Sends one email to a specific recipient (e.g. a customer). Same Resend setup and sender as `sendNotification`. */
+export async function sendEmail({
+	to,
+	subject,
+	text,
+	html,
+	replyTo,
+}: {
+	to: string;
+	subject: string;
+	text: string;
+	html?: string;
+	replyTo?: string;
+}): Promise<SendResult> {
+	const key = process.env.RESEND_API_KEY;
+	if (!key) return { ok: false, reason: "not_configured" };
+	const from = process.env.AFFILIATE_FROM_EMAIL || "Worldwide Vapor <onboarding@resend.dev>";
+	try {
+		const res = await fetch("https://api.resend.com/emails", {
+			method: "POST",
+			headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+			body: JSON.stringify({
+				from,
+				to: [to],
+				reply_to: replyTo || process.env.AFFILIATE_INBOX_EMAIL || "support@worldwidevapor.com",
+				subject,
+				text,
+				html:
+					html ??
+					`<pre style="font-family:system-ui,sans-serif;white-space:pre-wrap">${escapeHtml(text)}</pre>`,
+			}),
+		});
+		if (!res.ok) {
+			console.error("[email] Resend failed", res.status, await res.text().catch(() => ""));
+			return { ok: false, reason: "failed" };
+		}
+		return { ok: true };
+	} catch (e) {
+		console.error("[email] delivery error", e);
+		return { ok: false, reason: "failed" };
+	}
+}
+
 /** Adds an address to the configured Resend audience. Returns not_configured when no audience is set. */
 export async function addToAudience(email: string): Promise<SendResult> {
 	const key = process.env.RESEND_API_KEY;

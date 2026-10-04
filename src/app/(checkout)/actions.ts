@@ -82,6 +82,7 @@ import {
 	hasMaterialCheckoutTotalChange,
 } from "@/checkout/lib/payment/checkout-pay-amount";
 import { getStripePaymentGuardError, isStripePaymentEnabled } from "@/checkout/lib/payment/providers/stripe";
+import { getWvPayGuardError, isWvPayEnabled } from "@/checkout/lib/payment/providers/wvpay";
 import { buildMarketingConsentMetadata } from "@/checkout/lib/marketing-consent";
 import { fetchCheckoutOnServer } from "@/checkout/lib/server/fetch-checkout";
 import { getCheckoutServerTranslations } from "@/checkout/lib/server/get-checkout-server-translations";
@@ -484,6 +485,11 @@ export async function initializeCheckoutTransaction(
 		return { ok: false, error: t("stripeNotEnabled") };
 	}
 
+	const wvpayGuardError = getWvPayGuardError(variables.paymentGateway?.id);
+	if (wvpayGuardError) {
+		return { ok: false, error: t("wvpayNotEnabled") };
+	}
+
 	// Defense in depth: never trust the client-supplied amount. Saleor re-validates
 	// coverage at checkoutComplete, but rejecting here avoids authorizing a wrong amount.
 	if (typeof variables.amount === "number") {
@@ -528,7 +534,7 @@ export async function processCheckoutTransaction(
 	// Mirror the initialize guards: when every integrated gateway is disabled for this
 	// environment, a direct call to this action must not drive transactions either.
 	// Forks adding gateways should extend this check alongside the initialize guards.
-	if (!isStripePaymentEnabled() && !isDummyPaymentAllowed()) {
+	if (!isStripePaymentEnabled() && !isWvPayEnabled() && !isDummyPaymentAllowed()) {
 		const { server: t } = await getCheckoutServerTranslations();
 		return { ok: false, error: t("paymentsDisabled") };
 	}
@@ -606,7 +612,16 @@ export async function runCheckoutComplete(checkoutId: string): Promise<CheckoutC
 		}
 	});
 
-	return { ok: true, orderId };
+	const total = payload.order?.total?.gross;
+	return {
+		ok: true,
+		orderId,
+		order: {
+			number: String(payload.order?.number ?? ""),
+			userEmail: payload.order?.userEmail ?? null,
+			total: total ? { amount: total.amount, currency: total.currency } : null,
+		},
+	};
 }
 
 export async function getAddressValidationRules(
@@ -657,6 +672,27 @@ export async function removeCheckoutPromoCode(
 		variables: {
 			checkoutId,
 			promoCode,
+			languageCode: await checkoutGraphqlLanguageCode(),
+		},
+		cache: "no-cache",
+	});
+
+	if (!result.ok) {
+		return { ok: false, error: result.error.message };
+	}
+
+	return toCheckoutActionResult(result.data.checkoutRemovePromoCode);
+}
+
+/** Removes one applied gift card by id (the checkout only exposes its last characters, not the full code). */
+export async function removeCheckoutGiftCard(
+	checkoutId: string,
+	giftCardId: string,
+): Promise<CheckoutActionResult> {
+	const result = await executeAuthenticatedGraphQL(checkoutRemovePromoCodeDocument, {
+		variables: {
+			checkoutId,
+			promoCodeId: giftCardId,
 			languageCode: await checkoutGraphqlLanguageCode(),
 		},
 		cache: "no-cache",
