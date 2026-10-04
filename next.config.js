@@ -6,9 +6,11 @@ import { paperCacheLifeProfiles } from "./src/lib/cache-life-profiles.data.mjs";
  * Hostnames for mobile/tunnel dev (ngrok, LAN). See ALLOWED_DEV_ORIGINS in .env.example.
  * `127.0.0.1` is always allowed so the site can be opened at http://127.0.0.1:3000 (a separate
  * browser cache/origin from localhost) without Next blocking the dev HMR/client resources.
+ * `10.0.2.2` is how the Android emulator reaches this computer (see docs/mobile-app.md, `pnpm cap:sync:emulator`).
  */
 const allowedDevOrigins = [
 	"127.0.0.1",
+	"10.0.2.2",
 	...(process.env.ALLOWED_DEV_ORIGINS?.split(",")
 		.map((origin) => origin.trim())
 		.filter(Boolean) ?? []),
