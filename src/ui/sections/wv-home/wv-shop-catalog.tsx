@@ -3,11 +3,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useMemo, useState, useSyncExternalStore } from "react";
+import { useMemo, useState } from "react";
 import type { HomeProduct, WvCategoryTile } from "@/lib/catalog/get-home-products";
 import { NEW_ARRIVALS_NAME, NEW_ARRIVALS_SLUG, newArrivalSlugs } from "@/lib/catalog/new-arrivals";
 import { categoryRank } from "@/lib/catalog/category-order";
-import { byShuffle } from "@/lib/catalog/shuffle";
+import { sortProducts, type Sort } from "@/lib/catalog/product-sort";
+import { useShuffleSeed } from "@/lib/catalog/use-shuffle-seed";
 import type { FacetKey } from "@/lib/catalog/product-facets";
 import {
 	CATEGORY_FILTER_GROUPS,
@@ -33,8 +34,6 @@ const marker = "font-[family-name:var(--font-permanent-marker)]";
 
 const PER_PAGE = 8;
 
-type Sort = "featured" | "best-selling" | "newest" | "name" | "price-asc" | "price-desc";
-
 const SORTS: { value: Sort; label: string }[] = [
 	{ value: "featured", label: "Featured" },
 	{ value: "best-selling", label: "Best Sellers" },
@@ -43,21 +42,6 @@ const SORTS: { value: Sort; label: string }[] = [
 	{ value: "price-asc", label: "Price: Low to High" },
 	{ value: "price-desc", label: "Price: High to Low" },
 ];
-
-/** Alphabetical, ignoring case, with numbers in natural order ("2 mg" before "10 mg"). Only Name A–Z uses it. */
-const byName = (a: HomeProduct, b: HomeProduct) =>
-	a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: "base" });
-
-// Featured, Best Sellers, New Arrivals (and equal prices) show a random order. The server render uses a fixed seed so
-// hydration matches; in the browser each page load picks its own seed, so every visit gets a fresh order, while
-// filtering and paging keep the order steady (see src/lib/catalog/shuffle.ts).
-let pageSeed: number | undefined;
-const subscribeNever = () => () => {};
-const getPageSeed = () => {
-	if (pageSeed === undefined) pageSeed = 1 + Math.floor(Math.random() * 0x7fffffff);
-	return pageSeed;
-};
-const getServerSeed = () => 0;
 
 type Ctx = { locale: string; channel: string; localeBcp47: string };
 
@@ -246,7 +230,7 @@ export function ShopCatalog({
 		types: [],
 	});
 	const [sort, setSort] = useState<Sort>(initialCategorySlug === NEW_ARRIVALS_SLUG ? "newest" : "featured");
-	const pageSeedNow = useSyncExternalStore(subscribeNever, getPageSeed, getServerSeed);
+	const pageSeedNow = useShuffleSeed();
 	// Picking a sort in the dropdown deals a fresh shuffle.
 	const [reshuffles, setReshuffles] = useState(0);
 	const shuffleSeed = (pageSeedNow + reshuffles * 7919) | 0;
@@ -326,20 +310,7 @@ export function ShopCatalog({
 				matchesSubcategories(p, applied.types) &&
 				(applied.range === null || (p.price >= applied.range[0] && p.price <= applied.range[1])),
 		);
-		// Only Name A–Z is alphabetical. Featured is fully shuffled; Best Sellers puts flagged bestsellers first and
-		// New Arrivals the newest day first (products are added in batches, so exact timestamps would be arbitrary);
-		// inside those groups, and among equal prices, the order is the seeded shuffle.
-		const shuffled = byShuffle<HomeProduct>(shuffleSeed, (p) => p.slug);
-		const sorted = [...filtered];
-		if (sort === "best-selling")
-			sorted.sort((x, y) => Number(y.isBestseller) - Number(x.isBestseller) || shuffled(x, y));
-		else if (sort === "newest")
-			sorted.sort((x, y) => y.created.slice(0, 10).localeCompare(x.created.slice(0, 10)) || shuffled(x, y));
-		else if (sort === "price-asc") sorted.sort((x, y) => x.price - y.price || shuffled(x, y));
-		else if (sort === "price-desc") sorted.sort((x, y) => y.price - x.price || shuffled(x, y));
-		else if (sort === "name") sorted.sort(byName);
-		else sorted.sort(shuffled);
-		return sorted;
+		return sortProducts(filtered, sort, shuffleSeed);
 	}, [products, applied, sort, shuffleSeed]);
 
 	const pageCount = Math.max(1, Math.ceil(visible.length / PER_PAGE));
