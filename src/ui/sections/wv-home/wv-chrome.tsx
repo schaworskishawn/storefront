@@ -4,6 +4,7 @@ import Link from "next/link";
 import { whatsappHref } from "@/lib/whatsapp";
 import { WishlistLink } from "./wv-wishlist-client";
 import { NAV } from "./wv-data";
+import { FOOTER_COLUMNS, FOOTER_HREFS, LEGAL_LINKS } from "./wv-footer-links";
 import { MobileMenu } from "./wv-menu-client";
 import "./wv-home.css";
 
@@ -13,19 +14,6 @@ import "./wv-home.css";
  */
 
 const heyComic = "font-[family-name:var(--font-hey-comic)]";
-
-const FOOTER_COLUMNS = [
-	{ title: "SHOP", links: ["All Products", "Disposables", "E-Liquids", "Devices", "Coils", "Accessories"] },
-	{
-		title: "COMPANY",
-		links: ["About Us", "Shipping Info", "Payments", "Blog", "Affiliate Program"],
-	},
-	{
-		title: "HELP",
-		links: ["FAQs", "Age Verification", "Terms & Conditions", "Privacy Policy", "Returns", "Contact Us"],
-	},
-	{ title: "CONTACT", links: ["support@worldwidevapor.com", "Worldwide Shipping"] },
-];
 
 const SOCIALS = [
 	{ name: "Instagram", src: "/home/imgInstagram.svg" },
@@ -98,21 +86,6 @@ export function WvHeader() {
 		</header>
 	);
 }
-
-const FOOTER_HREFS: Record<string, string> = {
-	"All Products": "/shop",
-	"Shipping Info": "/shipping",
-	Payments: "/payments",
-	Blog: "/learn",
-	FAQs: "/faqs",
-	"Age Verification": "/age-verification",
-	"Terms & Conditions": "/terms-and-conditions",
-	"Privacy Policy": "/privacy-policy",
-	"Affiliate Program": "/affiliate-program",
-	Returns: "/returns",
-	"Contact Us": "/contact-us",
-	"Become a Distributor": "/distributor",
-};
 
 function FooterSocials({ className }: { className: string }) {
 	return (
@@ -194,8 +167,8 @@ export function WvFooter() {
 					<FooterSocials className="hidden flex-col items-end gap-3 md:flex xl:hidden" />
 				</div>
 
-				{/* Link columns: mobile stacks all four; tablet is a 2×2 grid; desktop is a single row. */}
-				<div className="grid grid-cols-1 gap-y-4 md:grid-cols-2 md:gap-x-[84px] md:gap-y-6 xl:flex xl:flex-1 xl:gap-10 xl:pl-10 xl:pt-6">
+				{/* Link columns: mobile stacks them; tablet is a two-column grid; desktop is a single row. */}
+				<div className="grid grid-cols-1 gap-y-4 md:grid-cols-2 md:gap-x-[84px] md:gap-y-6 xl:flex xl:flex-1 xl:gap-8 xl:pl-6 xl:pt-6">
 					{FOOTER_COLUMNS.map((col) => (
 						<div key={col.title} className="flex flex-col gap-[10px] xl:gap-3">
 							<p className={`${heyComic} text-xs tracking-[2px] text-[var(--wv-cyan)] xl:mb-2`}>
@@ -218,7 +191,16 @@ export function WvFooter() {
 			</div>
 			<div className="mx-auto mt-6 flex w-full max-w-[1440px] flex-col gap-2 border-t border-[var(--wv-cyan-soft)] pt-4 font-sans text-[10px] text-[var(--wv-footer-link)] md:flex-row md:items-center md:justify-between xl:mt-8 xl:border-0 xl:pt-0">
 				<p>© 2026 Worldwide Vapor. All rights reserved.</p>
-				<p>Privacy · Terms · Accessibility</p>
+				<nav aria-label="Legal" className="flex flex-wrap items-center gap-x-2">
+					{LEGAL_LINKS.map((link, i) => (
+						<span key={link.href} className="flex items-center gap-x-2">
+							{i > 0 && <span aria-hidden>·</span>}
+							<a href={link.href} className="underline-offset-2 hover:underline">
+								{link.label}
+							</a>
+						</span>
+					))}
+				</nav>
 			</div>
 		</footer>
 	);
