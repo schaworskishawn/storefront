@@ -7,6 +7,28 @@ query ProductList($first: Int = 9, $after: String, $channel: String!, $languageC
 		edges {
 			node {
 				...ProductListItem
+				# Shop filters (src/lib/catalog/product-facets.ts picks the few slugs it needs from these).
+				productType {
+					name
+				}
+				attributes {
+					attribute {
+						slug
+					}
+					values {
+						name
+					}
+				}
+				variants {
+					attributes(variantSelection: VARIANT_SELECTION) {
+						attribute {
+							slug
+						}
+						values {
+							name
+						}
+					}
+				}
 			}
 		}
 	}

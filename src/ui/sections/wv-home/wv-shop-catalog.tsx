@@ -3,9 +3,25 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
 import type { HomeProduct, WvCategoryTile } from "@/lib/catalog/get-home-products";
 import { NEW_ARRIVALS_NAME, NEW_ARRIVALS_SLUG, newArrivalSlugs } from "@/lib/catalog/new-arrivals";
+import { categoryRank } from "@/lib/catalog/category-order";
+import { byShuffle } from "@/lib/catalog/shuffle";
+import type { FacetKey } from "@/lib/catalog/product-facets";
+import {
+	CATEGORY_FILTER_GROUPS,
+	CATEGORY_SUBCATEGORIES,
+	type CategoryFacetSelection,
+	type FilterOptionCount,
+	categoryOfType,
+	filterGroupsFor,
+	groupOptions,
+	matchesCategoryFacets,
+	matchesSubcategories,
+	subcategoryOptions,
+} from "@/lib/catalog/shop-filters";
+import { FilterSection } from "./wv-filter-section";
 import { WishlistHeart } from "./wv-wishlist-client";
 import { CATEGORY_ART } from "./wv-category-art";
 import { formatPrice } from "@/ui/components/plp/utils";
@@ -17,18 +33,43 @@ const marker = "font-[family-name:var(--font-permanent-marker)]";
 
 const PER_PAGE = 8;
 
-type Sort = "featured" | "best-selling" | "price-asc" | "price-desc" | "newest" | "name";
+type Sort = "featured" | "best-selling" | "newest" | "name" | "price-asc" | "price-desc";
 
 const SORTS: { value: Sort; label: string }[] = [
 	{ value: "featured", label: "Featured" },
-	{ value: "newest", label: "Newest" },
-	{ value: "best-selling", label: "Best Selling" },
+	{ value: "best-selling", label: "Best Sellers" },
+	{ value: "newest", label: "New Arrivals" },
+	{ value: "name", label: "Name A–Z" },
 	{ value: "price-asc", label: "Price: Low to High" },
 	{ value: "price-desc", label: "Price: High to Low" },
-	{ value: "name", label: "Name A–Z" },
 ];
 
+/** Alphabetical, ignoring case, with numbers in natural order ("2 mg" before "10 mg"). Only Name A–Z uses it. */
+const byName = (a: HomeProduct, b: HomeProduct) =>
+	a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: "base" });
+
+// Featured, Best Sellers, New Arrivals (and equal prices) show a random order. The server render uses a fixed seed so
+// hydration matches; in the browser each page load picks its own seed, so every visit gets a fresh order, while
+// filtering and paging keep the order steady (see src/lib/catalog/shuffle.ts).
+let pageSeed: number | undefined;
+const subscribeNever = () => () => {};
+const getPageSeed = () => {
+	if (pageSeed === undefined) pageSeed = 1 + Math.floor(Math.random() * 0x7fffffff);
+	return pageSeed;
+};
+const getServerSeed = () => 0;
+
 type Ctx = { locale: string; channel: string; localeBcp47: string };
+
+/** One collapsible group under a category heading: attribute values ("facet") or sub-categories ("type"). */
+type SidebarGroup = {
+	id: string;
+	/** Heading of the collapsible group; without one the options are listed directly under the category. */
+	label?: string;
+	kind: "facet" | "type" | "category";
+	key?: FacetKey;
+	options: FilterOptionCount[];
+};
 
 function ShopProductCard({ product, ctx }: { product: HomeProduct; ctx: Ctx }) {
 	const money = (n: number) => formatPrice(n, product.currency, ctx.localeBcp47);
@@ -112,6 +153,34 @@ function PageButton({
 	);
 }
 
+/** One ticked-or-not option row in the filter sidebar: "✓ Label (count)". */
+function OptionButton({
+	label,
+	count,
+	ticked,
+	onClick,
+}: {
+	label: string;
+	count: number;
+	ticked: boolean;
+	onClick: () => void;
+}) {
+	return (
+		<button
+			type="button"
+			aria-pressed={ticked}
+			onClick={onClick}
+			className={`${heyComic} flex items-center justify-between gap-2 text-left text-xs ${ticked ? "text-[var(--wv-cyan-soft)]" : "text-white"}`}
+		>
+			<span>
+				{ticked ? "✓ " : ""}
+				{label}
+			</span>
+			<span className={`${orbitron} text-[var(--wv-text-dim)]`}>({count})</span>
+		</button>
+	);
+}
+
 export function ShopCatalog({
 	products,
 	ctx,
@@ -150,9 +219,10 @@ export function ShopCatalog({
 			entry.count += 1;
 			map.set(p.categorySlug, entry);
 		}
-		const list = [...map.values()].sort((a, b) => b.count - a.count);
+		const list = [...map.values()];
 		if (newest.size > 0) list.push({ slug: NEW_ARRIVALS_SLUG, name: NEW_ARRIVALS_NAME, count: newest.size });
-		return list;
+		// Same order as the tiles above (Disposables, E-Liquid, Hardware, Coils, Accessories, New Arrivals).
+		return list.sort((a, b) => categoryRank(a.slug) - categoryRank(b.slug));
 	}, [products, newest]);
 
 	// Draft state (sidebar controls) vs applied state (what the grid shows).
@@ -165,11 +235,28 @@ export function ShopCatalog({
 	const [draftRange, setDraftRange] = useState<[number, number]>([bounds.min, bounds.max]);
 	// `range` is null while the slider spans the whole catalog, so a catalog that grows or shrinks never
 	// leaves a stale price filter behind.
-	const [applied, setApplied] = useState<{ cats: string[]; range: [number, number] | null }>({
+	// Ticked attribute values per category (Disposables > Puff Count > 20K, …).
+	const [draftFacets, setDraftFacets] = useState<CategoryFacetSelection>({});
+	// Category headings the shopper has opened or closed by hand (otherwise a heading is open while its category is ticked).
+	const [openOverride, setOpenOverride] = useState<Record<string, boolean>>({});
+	// Ticked sub-categories (product types) from the categories tree, e.g. "Pod Mod", "Charger".
+	const [draftTypes, setDraftTypes] = useState<string[]>([]);
+	const [applied, setApplied] = useState<{
+		cats: string[];
+		range: [number, number] | null;
+		facets: CategoryFacetSelection;
+		types: string[];
+	}>({
 		cats: initialCats,
 		range: null,
+		facets: {},
+		types: [],
 	});
 	const [sort, setSort] = useState<Sort>(initialCategorySlug === NEW_ARRIVALS_SLUG ? "newest" : "featured");
+	const pageSeedNow = useSyncExternalStore(subscribeNever, getPageSeed, getServerSeed);
+	// Picking a sort in the dropdown deals a fresh shuffle.
+	const [reshuffles, setReshuffles] = useState(0);
+	const shuffleSeed = (pageSeedNow + reshuffles * 7919) | 0;
 	const [page, setPage] = useState(1);
 
 	// Top "Browse Collections" tiles are a one-click jump, unlike the sidebar's draft-then-apply
@@ -178,28 +265,89 @@ export function ShopCatalog({
 	const selectCategory = (slug: string | null) => {
 		const cats = slug ? [slug] : [];
 		setDraftCats(cats);
-		setApplied((cur) => ({ ...cur, cats }));
+		// Other categories offer other filters, so a jump to a new category starts from a clean slate.
+		setDraftFacets({});
+		setDraftTypes([]);
+		setApplied((cur) => ({ ...cur, cats, facets: {}, types: [] }));
 		if (slug === NEW_ARRIVALS_SLUG) setSort("newest");
 		setPage(1);
 	};
 
+	const toggleDraftCategory = (slug: string) => {
+		// Unticking a category also unticks what was ticked under it.
+		if (draftCats.includes(slug)) {
+			setDraftTypes((cur) => cur.filter((value) => categoryOfType(value) !== slug));
+			setDraftFacets((cur) =>
+				Object.fromEntries(Object.entries(cur).filter(([category]) => category !== slug)),
+			);
+		}
+		setDraftCats((cur) => (cur.includes(slug) ? cur.filter((s) => s !== slug) : [...cur, slug]));
+	};
+
+	// Under New Arrivals the items are categories: ticking one narrows New Arrivals to it (and ticks New Arrivals).
+	const toggleUnderNewArrivals = (slug: string) => {
+		toggleDraftCategory(slug);
+		setDraftCats((cur) => (cur.includes(NEW_ARRIVALS_SLUG) ? cur : [...cur, NEW_ARRIVALS_SLUG]));
+	};
+
+	// Ticking a sub-category ticks the category it sits under.
+	const toggleType = (value: string) => {
+		const owner = categoryOfType(value);
+		if (owner) setDraftCats((cur) => (cur.includes(owner) ? cur : [...cur, owner]));
+		setDraftTypes((cur) => (cur.includes(value) ? cur.filter((v) => v !== value) : [...cur, value]));
+	};
+
+	// Ticking a value under a category ticks that category too.
+	const toggleFacet = (category: string, key: FacetKey, value: string) => {
+		setDraftCats((cur) => (cur.includes(category) ? cur : [...cur, category]));
+		setDraftFacets((cur) => {
+			const mine = cur[category] ?? {};
+			const have = mine[key] ?? [];
+			const next = have.includes(value) ? have.filter((v) => v !== value) : [...have, value];
+			return { ...cur, [category]: { ...mine, [key]: next } };
+		});
+	};
+
+	const clearAll = () => {
+		setDraftCats([]);
+		setDraftFacets({});
+		setDraftTypes([]);
+		setDraftRange([bounds.min, bounds.max]);
+		setApplied({ cats: [], range: null, facets: {}, types: [] });
+		setPage(1);
+	};
+
 	const visible = useMemo(() => {
-		const filtered = products.filter(
+		// Real categories combine with "or"; New Arrivals then narrows whatever they select to its newest products
+		// (so "Hardware + New Arrivals" is the newest hardware, and New Arrivals alone spans every category).
+		const realCats = applied.cats.filter((slug) => slug !== NEW_ARRIVALS_SLUG);
+		const inCategories =
+			realCats.length === 0
+				? products
+				: products.filter((p) => p.categorySlug !== null && realCats.includes(p.categorySlug));
+		const newestHere = applied.cats.includes(NEW_ARRIVALS_SLUG) ? newArrivalSlugs(inCategories) : null;
+		const filtered = inCategories.filter(
 			(p) =>
-				(applied.cats.length === 0 ||
-					applied.cats.some(
-						(slug) => p.categorySlug === slug || (slug === NEW_ARRIVALS_SLUG && newest.has(p.slug)),
-					)) &&
+				(newestHere === null || newestHere.has(p.slug)) &&
+				matchesCategoryFacets(p, applied.facets) &&
+				matchesSubcategories(p, applied.types) &&
 				(applied.range === null || (p.price >= applied.range[0] && p.price <= applied.range[1])),
 		);
+		// Only Name A–Z is alphabetical. Featured is fully shuffled; Best Sellers puts flagged bestsellers first and
+		// New Arrivals the newest day first (products are added in batches, so exact timestamps would be arbitrary);
+		// inside those groups, and among equal prices, the order is the seeded shuffle.
+		const shuffled = byShuffle<HomeProduct>(shuffleSeed, (p) => p.slug);
 		const sorted = [...filtered];
-		if (sort === "best-selling") sorted.sort((a, b) => Number(b.isBestseller) - Number(a.isBestseller));
-		else if (sort === "price-asc") sorted.sort((a, b) => a.price - b.price);
-		else if (sort === "price-desc") sorted.sort((a, b) => b.price - a.price);
-		else if (sort === "newest") sorted.sort((a, b) => b.created.localeCompare(a.created));
-		else if (sort === "name") sorted.sort((a, b) => a.name.localeCompare(b.name));
+		if (sort === "best-selling")
+			sorted.sort((x, y) => Number(y.isBestseller) - Number(x.isBestseller) || shuffled(x, y));
+		else if (sort === "newest")
+			sorted.sort((x, y) => y.created.slice(0, 10).localeCompare(x.created.slice(0, 10)) || shuffled(x, y));
+		else if (sort === "price-asc") sorted.sort((x, y) => x.price - y.price || shuffled(x, y));
+		else if (sort === "price-desc") sorted.sort((x, y) => y.price - x.price || shuffled(x, y));
+		else if (sort === "name") sorted.sort(byName);
+		else sorted.sort(shuffled);
 		return sorted;
-	}, [products, applied, sort, newest]);
+	}, [products, applied, sort, shuffleSeed]);
 
 	const pageCount = Math.max(1, Math.ceil(visible.length / PER_PAGE));
 	const current = Math.min(page, pageCount);
@@ -213,6 +361,82 @@ export function ShopCatalog({
 	const span = Math.max(1, bounds.max - bounds.min);
 	const left = ((lo - bounds.min) / span) * 100;
 	const right = ((hi - bounds.min) / span) * 100;
+
+	// Attribute values only count while their category is still ticked.
+	const facetsNow = useMemo(
+		() =>
+			Object.fromEntries(Object.entries(draftFacets).filter(([category]) => draftCats.includes(category))),
+		[draftFacets, draftCats],
+	);
+
+	// A sub-category only counts while its category is still ticked.
+	const typesNow = useMemo(
+		() => draftTypes.filter((value) => draftCats.includes(categoryOfType(value) ?? "")),
+		[draftTypes, draftCats],
+	);
+
+	// Everything listed under each category heading as collapsible groups: its attribute groups (Battery Capacity,
+	// Brand, …) and its sub-categories (Mods, Atomizers, Type), each with how many products have each value.
+	const categoryGroups = useMemo(() => {
+		const result: Record<string, SidebarGroup[]> = {};
+		for (const slug of new Set([
+			...Object.keys(CATEGORY_FILTER_GROUPS),
+			...Object.keys(CATEGORY_SUBCATEGORIES),
+		])) {
+			if (slug === NEW_ARRIVALS_SLUG) continue;
+			const here = products.filter((p) => p.categorySlug === slug);
+			const attributeGroups: SidebarGroup[] = filterGroupsFor(slug).map((group) => ({
+				id: `${slug}-${group.id}`,
+				label: group.label,
+				kind: "facet",
+				key: group.key,
+				options: groupOptions(group, here),
+			}));
+			const typeGroups: SidebarGroup[] = subcategoryOptions(CATEGORY_SUBCATEGORIES[slug] ?? [], here).map(
+				(group, i) => ({
+					id: `${slug}-types-${i}`,
+					label: group.label,
+					kind: "type",
+					options: group.options,
+				}),
+			);
+			result[slug] = [...attributeGroups, ...typeGroups].filter((g) => g.options.length > 0);
+		}
+		const fresh = newArrivalSlugs(products);
+		const byCategory = new Map<string, { label: string; count: number }>();
+		for (const p of products) {
+			if (!fresh.has(p.slug) || !p.categorySlug) continue;
+			const entry = byCategory.get(p.categorySlug) ?? { label: p.brand, count: 0 };
+			entry.count += 1;
+			byCategory.set(p.categorySlug, entry);
+		}
+		result[NEW_ARRIVALS_SLUG] =
+			byCategory.size > 0
+				? [
+						{
+							id: "new-arrivals-categories",
+							kind: "category",
+							options: [...byCategory]
+								.sort(([a], [b]) => categoryRank(a) - categoryRank(b))
+								.map(([value, { label, count }]) => ({ label, value, count })),
+						},
+					]
+				: [];
+		return result;
+	}, [products]);
+
+	const hasAnyFilter =
+		applied.cats.length > 0 ||
+		applied.range !== null ||
+		Object.values(applied.facets).some((groups) =>
+			Object.values(groups).some((values) => values.length > 0),
+		) ||
+		draftCats.length > 0 ||
+		Object.values(facetsNow).some((groups) => Object.values(groups).some((values) => values.length > 0)) ||
+		applied.types.length > 0 ||
+		typesNow.length > 0 ||
+		lo !== bounds.min ||
+		hi !== bounds.max;
 
 	return (
 		<>
@@ -275,72 +499,166 @@ export function ShopCatalog({
 
 			<div className="flex flex-col gap-6 px-4 pb-10 pt-6 md:flex-row md:items-start md:gap-6 md:px-8 xl:gap-10 xl:px-20 xl:pb-[72px] xl:pt-[22px]">
 				{/* Filter sidebar */}
-				<aside className="flex w-full shrink-0 flex-col gap-6 rounded-2xl border border-[var(--wv-purple)] bg-[var(--wv-surface)] p-5 md:w-[216px] xl:w-[280px]">
+				<aside className="flex w-full shrink-0 flex-col gap-4 rounded-2xl border border-[var(--wv-purple)] bg-[var(--wv-surface)] p-5 md:w-[216px] xl:w-[280px]">
 					<div className="flex flex-col gap-[6px]">
-						<h2 className={`${bungee} text-base text-white`}>FILTERS</h2>
+						<div className="flex items-center justify-between gap-2">
+							<h2 className={`${bungee} text-base text-white`}>FILTERS</h2>
+							{hasAnyFilter && (
+								<button
+									type="button"
+									onClick={clearAll}
+									className={`${heyComic} text-[11px] text-[var(--wv-cyan-soft)] underline`}
+								>
+									Clear all
+								</button>
+							)}
+						</div>
 						<div className="h-px bg-[var(--wv-purple)]" />
 					</div>
 
-					<div className="flex flex-col gap-3">
-						<h3 className={`${bungee} text-xs text-[var(--wv-cyan-soft)]`}>CATEGORIES</h3>
+					<FilterSection title="CATEGORIES" defaultOpen>
 						<div className="flex flex-col gap-2">
 							{categories.map((c) => {
 								const on = draftCats.includes(c.slug);
+								const groupsHere = categoryGroups[c.slug] ?? [];
+								const expandable = groupsHere.length > 0;
+								// Open while ticked (e.g. after picking its tile) unless the shopper has opened or closed it themselves.
+								const open = openOverride[c.slug] ?? on;
 								return (
-									<button
-										key={c.slug}
-										type="button"
-										aria-pressed={on}
-										onClick={() =>
-											setDraftCats((cur) => (on ? cur.filter((s) => s !== c.slug) : [...cur, c.slug]))
-										}
-										className={`${heyComic} flex items-center justify-between text-xs ${on ? "text-[var(--wv-cyan-soft)]" : "text-white"}`}
-									>
-										<span>
-											{on ? "✓ " : ""}
-											{c.name}
-										</span>
-										<span className={`${orbitron} text-[var(--wv-text-dim)]`}>({c.count})</span>
-									</button>
+									<div key={c.slug} className="flex flex-col gap-2">
+										<div className="flex items-center gap-2">
+											<button
+												type="button"
+												aria-pressed={on}
+												aria-label={`Select ${c.name}`}
+												onClick={() => toggleDraftCategory(c.slug)}
+												className={`flex size-4 shrink-0 items-center justify-center text-base leading-none ${
+													on ? "text-[var(--wv-cyan-soft)]" : "text-[var(--wv-purple)]"
+												}`}
+											>
+												•
+											</button>
+											{/* The heading opens and closes what is under it (or ticks the category when nothing is). */}
+											<button
+												type="button"
+												aria-expanded={expandable ? open : undefined}
+												onClick={() =>
+													expandable
+														? setOpenOverride((cur) => ({ ...cur, [c.slug]: !open }))
+														: toggleDraftCategory(c.slug)
+												}
+												className={`${heyComic} flex min-w-0 flex-1 items-center justify-between gap-2 text-left text-xs ${on ? "text-[var(--wv-cyan-soft)]" : "text-white"}`}
+											>
+												<span>{c.name}</span>
+												<span className="flex items-center gap-2">
+													<span className={`${orbitron} text-[var(--wv-text-dim)]`}>({c.count})</span>
+													{expandable && (
+														<span
+															aria-hidden
+															className={`text-[var(--wv-cyan-soft)] transition-transform ${open ? "rotate-180" : ""}`}
+														>
+															▾
+														</span>
+													)}
+												</span>
+											</button>
+										</div>
+										{/* Under the heading: collapsible groups (Battery Capacity, Mods, …), or the items directly. */}
+										{expandable && (
+											<div
+												className={
+													open ? "ml-1 flex flex-col gap-3 border-l border-[var(--wv-purple)] pl-3" : "hidden"
+												}
+											>
+												{groupsHere.map((group) => {
+													const tickedValues =
+														group.kind === "type"
+															? typesNow
+															: group.kind === "category"
+																? draftCats
+																: ((group.key && facetsNow[c.slug]?.[group.key]) ?? []);
+													const options = group.options.map((o) => (
+														<OptionButton
+															key={o.value}
+															label={o.label}
+															count={o.count}
+															ticked={tickedValues.includes(o.value)}
+															onClick={() =>
+																group.kind === "category"
+																	? toggleUnderNewArrivals(o.value)
+																	: group.kind === "type" || !group.key
+																		? toggleType(o.value)
+																		: toggleFacet(c.slug, group.key, o.value)
+															}
+														/>
+													));
+													if (!group.label) {
+														return (
+															<div key={group.id} className="flex flex-col gap-2">
+																{options}
+															</div>
+														);
+													}
+													const tickedHere = group.options.filter((o) =>
+														tickedValues.includes(o.value),
+													).length;
+													return (
+														<FilterSection
+															key={group.id}
+															nested
+															title={group.label}
+															defaultOpen={tickedHere > 0}
+															badge={tickedHere > 0 ? `(${tickedHere})` : undefined}
+														>
+															<div className="flex max-h-56 flex-col gap-2 overflow-y-auto pr-1">
+																{options}
+															</div>
+														</FilterSection>
+													);
+												})}
+											</div>
+										)}
+									</div>
 								);
 							})}
 						</div>
-					</div>
+					</FilterSection>
 
-					<div className="flex flex-col gap-3">
-						<h3 className={`${bungee} text-xs text-[var(--wv-cyan-soft)]`}>PRICE RANGE</h3>
-						<div className="relative h-1 rounded-sm bg-[var(--wv-purple)]">
-							<div
-								className="absolute inset-y-0 bg-[var(--wv-cyan-soft)]"
-								style={{ left: `${left}%`, width: `${Math.max(0, right - left)}%` }}
-							/>
-							<input
-								type="range"
-								aria-label="Minimum price"
-								className="wv-range"
-								min={bounds.min}
-								max={bounds.max}
-								value={lo}
-								onChange={(e) => setDraftRange([Math.min(Number(e.target.value), hi), hi])}
-							/>
-							<input
-								type="range"
-								aria-label="Maximum price"
-								className="wv-range"
-								min={bounds.min}
-								max={bounds.max}
-								value={hi}
-								onChange={(e) => setDraftRange([lo, Math.max(Number(e.target.value), lo)])}
-							/>
+					<FilterSection title="PRICE RANGE" defaultOpen>
+						<div className="flex flex-col gap-3">
+							<div className="relative h-1 rounded-sm bg-[var(--wv-purple)]">
+								<div
+									className="absolute inset-y-0 bg-[var(--wv-cyan-soft)]"
+									style={{ left: `${left}%`, width: `${Math.max(0, right - left)}%` }}
+								/>
+								<input
+									type="range"
+									aria-label="Minimum price"
+									className="wv-range"
+									min={bounds.min}
+									max={bounds.max}
+									value={lo}
+									onChange={(e) => setDraftRange([Math.min(Number(e.target.value), hi), hi])}
+								/>
+								<input
+									type="range"
+									aria-label="Maximum price"
+									className="wv-range"
+									min={bounds.min}
+									max={bounds.max}
+									value={hi}
+									onChange={(e) => setDraftRange([lo, Math.max(Number(e.target.value), lo)])}
+								/>
+							</div>
+							<div className={`${orbitron} flex justify-between text-[11px]`}>
+								<span className="text-[var(--wv-text-dim)]">{money(bounds.min)}</span>
+								<span className="text-white">
+									{money(lo)} - {money(hi)}
+								</span>
+								<span className="text-[var(--wv-text-dim)]">{money(bounds.max)}</span>
+							</div>
 						</div>
-						<div className={`${orbitron} flex justify-between text-[11px]`}>
-							<span className="text-[var(--wv-text-dim)]">{money(bounds.min)}</span>
-							<span className="text-white">
-								{money(lo)} - {money(hi)}
-							</span>
-							<span className="text-[var(--wv-text-dim)]">{money(bounds.max)}</span>
-						</div>
-					</div>
+					</FilterSection>
 
 					<button
 						type="button"
@@ -348,6 +666,8 @@ export function ShopCatalog({
 							setApplied({
 								cats: draftCats,
 								range: lo === bounds.min && hi === bounds.max ? null : [lo, hi],
+								facets: facetsNow,
+								types: typesNow,
 							});
 							setPage(1);
 						}}
@@ -369,6 +689,7 @@ export function ShopCatalog({
 								value={sort}
 								onChange={(e) => {
 									setSort(e.target.value as Sort);
+									setReshuffles((n) => n + 1);
 									setPage(1);
 								}}
 								className={`${heyComic} rounded-lg border border-[var(--wv-purple)] bg-[var(--wv-surface)] px-2 py-1 text-xs text-white`}
