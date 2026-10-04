@@ -127,12 +127,10 @@ function ShopProductCard({ product, ctx }: { product: HomeProduct; ctx: Ctx }) {
 
 function PageButton({
 	children,
-	active,
 	disabled,
 	onClick,
 }: {
 	children: React.ReactNode;
-	active?: boolean;
 	disabled?: boolean;
 	onClick: () => void;
 }) {
@@ -140,13 +138,8 @@ function PageButton({
 		<button
 			type="button"
 			disabled={disabled}
-			aria-current={active ? "page" : undefined}
 			onClick={onClick}
-			className={`${heyComic} rounded-lg px-[14px] py-2 text-xs disabled:opacity-40 ${
-				active
-					? "bg-[var(--wv-cyan-soft)] text-[var(--wv-bg)]"
-					: "border border-[var(--wv-purple)] bg-[var(--wv-surface)] text-[var(--wv-text-dim)]"
-			}`}
+			className={`${heyComic} rounded-lg border border-[var(--wv-purple)] bg-[var(--wv-surface)] px-[14px] py-2 text-xs text-[var(--wv-text-dim)] disabled:opacity-40`}
 		>
 			{children}
 		</button>
@@ -716,15 +709,17 @@ export function ShopCatalog({
 					)}
 
 					{pageCount > 1 && (
-						<nav aria-label="Pagination" className="flex flex-wrap justify-center gap-2 pt-5">
+						<nav aria-label="Pagination" className="flex flex-wrap items-center justify-center gap-2 pt-5">
 							<PageButton disabled={current === 1} onClick={() => setPage(current - 1)}>
 								← Previous
 							</PageButton>
-							{Array.from({ length: pageCount }, (_, i) => i + 1).map((n) => (
-								<PageButton key={n} active={n === current} onClick={() => setPage(n)}>
-									{n}
-								</PageButton>
-							))}
+							{/* Just the page you're on, between the arrows. */}
+							<span
+								aria-current="page"
+								className={`${heyComic} rounded-lg bg-[var(--wv-cyan-soft)] px-[14px] py-2 text-xs text-[var(--wv-bg)]`}
+							>
+								{current}
+							</span>
 							<PageButton disabled={current === pageCount} onClick={() => setPage(current + 1)}>
 								Next →
 							</PageButton>
