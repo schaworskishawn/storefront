@@ -310,7 +310,7 @@ export function ProductPurchase({
 						>
 							BUY IT NOW
 						</button>
-						<div role="status" aria-live="polite" className="min-h-5 text-sm">
+						<div role="status" aria-live="polite" className="text-sm">
 							{status?.kind === "added" && (
 								<p className="text-[var(--wv-cyan-soft)]">
 									{status.text}{" "}

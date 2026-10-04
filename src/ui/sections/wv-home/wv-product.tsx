@@ -13,13 +13,6 @@ const heyComic = "font-[family-name:var(--font-hey-comic)]";
 const bungee = "font-[family-name:var(--font-bungee)]";
 const orbitron = "font-[family-name:var(--font-orbitron)]";
 
-const TRUST = [
-	{ icon: "/home/imgHeadset.svg", title: "24/7 SUPPORT", text: "Always on, never closed" },
-	{ icon: "/home/imgTruck.svg", title: "GLOBAL SHIPPING", text: "Coming Soon: Canada Only" },
-	{ icon: "/home/imgShieldCheck.svg", title: "AGE VERIFIED CHECKOUT", text: "Must Be 18+ Legal Age" },
-	{ icon: "/home/imgPackage.svg", title: "WE SHIP FIRE PACKAGES ASAP", text: "We ship packages sealed" },
-];
-
 export function WvProduct({
 	locale,
 	channel,
@@ -37,9 +30,6 @@ export function WvProduct({
 }) {
 	const images = details?.images.length ? details.images : product.image ? [product.image] : [];
 	const specs = details?.specs ?? [];
-	const dashboard = specs
-		.filter((x) => x.value.length <= 10 && !/^\d{4}-\d{2}-\d{2}$/.test(x.value))
-		.slice(0, 5);
 	const paragraphs = details?.paragraphs.length
 		? details.paragraphs
 		: [`${product.name} from Worldwide Vapor — shipped sealed and age-verified at checkout.`];
@@ -77,8 +67,8 @@ export function WvProduct({
 			</nav>
 
 			{/* Hero */}
-			<section className="flex flex-col gap-6 px-4 pb-10 md:gap-8 md:px-8 md:pb-14 xl:flex-row xl:gap-16 xl:px-20 xl:pb-20">
-				<div className="xl:w-[620px] xl:shrink-0">
+			<section className="flex flex-col gap-6 px-4 pb-10 md:gap-8 md:px-8 md:pb-14 xl:grid xl:grid-cols-[620px_minmax(0,1fr)] xl:items-start xl:gap-x-16 xl:gap-y-5 xl:px-20 xl:pb-20">
+				<div>
 					<ProductGallery images={images} name={product.name} />
 				</div>
 				<div className="flex min-w-0 flex-1 flex-col gap-[10px]">
@@ -102,50 +92,21 @@ export function WvProduct({
 						slug={product.slug}
 					/>
 				</div>
-			</section>
-
-			{/* Spec dashboard */}
-			{dashboard.length >= 3 && (
-				<section className="grid grid-cols-2 gap-x-4 gap-y-8 border-y border-[var(--wv-control)] px-4 py-8 md:grid-cols-3 md:px-8 md:py-10 xl:grid-cols-5 xl:gap-6 xl:px-20 xl:py-12">
-					{dashboard.map((c) => (
-						<div key={c.label} className="flex flex-col items-center gap-[6px] text-center">
-							<p className={`${bungee} text-[22px] uppercase text-[var(--wv-cyan-soft)] md:text-[28px]`}>
-								{c.value}
-							</p>
-							<p className={`${orbitron} text-xs font-bold uppercase tracking-[1px]`}>{c.label}</p>
-						</div>
-					))}
-				</section>
-			)}
-
-			{/* Trust */}
-			<section className="grid grid-cols-1 gap-3 px-4 py-8 md:grid-cols-2 md:gap-4 md:px-8 md:py-10 xl:grid-cols-4 xl:px-20">
-				{TRUST.map((t) => (
-					<div
-						key={t.title}
-						className="flex flex-col gap-3 rounded-xl border border-[var(--wv-control)] bg-[var(--wv-bg)] p-6"
-					>
-						<span className="flex size-8 items-center justify-center rounded-lg bg-[var(--wv-cyan-soft)]">
-							<Image src={t.icon} alt="" width={16} height={16} />
-						</span>
-						<p className={`${heyComic} text-xs uppercase tracking-[1px]`}>{t.title}</p>
-						<p className={`${orbitron} text-[11px] text-[var(--wv-disabled)]`}>{t.text}</p>
-					</div>
-				))}
-			</section>
-
-			{/* Description + tech specs */}
-			<section className="flex flex-col gap-8 px-4 py-8 md:px-8 md:py-10 xl:flex-row xl:gap-16 xl:px-20 xl:pb-16 xl:pt-12">
-				<div className="flex flex-1 flex-col gap-6">
-					<h2 className={`${bungee} text-lg uppercase md:text-[22px]`}>ABOUT {product.name}</h2>
-					{paragraphs.map((t) => (
-						<p key={t} className={`${orbitron} text-sm leading-[22px] text-[var(--wv-disabled)]`}>
-							{t}
+				{/* Description sits right under the buy buttons; spans the full width on desktop to match Tech Specs */}
+				<div className="-mt-3 flex flex-col gap-4 rounded-xl border border-[var(--wv-purple)] bg-[var(--wv-bg)] p-6 md:-mt-5 xl:col-span-2 xl:mt-0">
+					<h2 className={`${bungee} text-lg uppercase md:text-[22px]`}>{product.name}</h2>
+					{paragraphs.map((x) => (
+						<p key={x} className={`${orbitron} text-sm leading-[22px] text-[var(--wv-disabled)]`}>
+							{x}
 						</p>
 					))}
 				</div>
-				{specs.length > 0 && (
-					<div className="flex flex-col gap-4 rounded-xl border border-[var(--wv-control)] bg-[var(--wv-bg)] p-6 xl:w-[480px] xl:shrink-0">
+			</section>
+
+			{/* Tech specs — pulled up by the hero's bottom padding (pb-10 / md:pb-14 / xl:pb-20) so only pt-5 separates it from the description. */}
+			{specs.length > 0 && (
+				<section className="-mt-10 px-4 pt-5 md:-mt-14 md:px-8 xl:-mt-20 xl:px-20">
+					<div className="flex flex-col gap-4 rounded-xl border border-[var(--wv-purple)] bg-[var(--wv-bg)] p-6">
 						<h2 className={`${bungee} text-base text-[var(--wv-cyan-soft)]`}>TECH SPECS</h2>
 						<dl className="flex flex-col gap-4">
 							{specs.map((x) => (
@@ -159,45 +120,34 @@ export function WvProduct({
 							))}
 						</dl>
 					</div>
-				)}
-			</section>
+				</section>
+			)}
 
-			{/* Features + promo */}
-			<section className="flex flex-col gap-8 px-4 py-8 md:px-8 md:py-10 xl:flex-row xl:items-center xl:gap-10 xl:px-20 xl:py-12">
-				{features.length > 0 && (
-					<div className="flex flex-1 flex-col gap-6">
-						<h2 className={`${heyComic} text-xl`}>KEY FEATURES</h2>
-						<ul className={`${orbitron} flex flex-col gap-4`}>
-							{features.map((f) => (
-								<li key={f} className="flex items-center gap-3">
-									<span className="text-sm text-[var(--wv-cyan-soft)]">✓</span>
-									<span className="flex-1 text-[13px] text-[var(--wv-disabled)]">{f}</span>
-								</li>
-							))}
-						</ul>
-					</div>
-				)}
-				<div className="flex flex-col gap-5 rounded-[14px] border border-[var(--wv-purple)] bg-[var(--wv-bg)] p-6 md:p-8 xl:w-[540px] xl:shrink-0">
-					<p className={`${heyComic} text-lg leading-7`}>
-						PREMIUM FLAVOR. MASSIVE PUFFS. UNBEATABLE EXPERIENCE.
-					</p>
-					<p className={`${orbitron} text-xs leading-[18px] text-[var(--wv-disabled)]`}>
-						Join the Worldwide Vapor movement. Our custom formulas are engineered specifically for
-						high-capacity systems. Get satisfaction that lasts.
-					</p>
-				</div>
-			</section>
+			{/* Key features */}
+			{features.length > 0 && (
+				<section className="flex flex-col gap-6 px-4 py-8 md:px-8 md:py-10 xl:px-20 xl:py-12">
+					<h2 className={`${heyComic} text-xl`}>KEY FEATURES</h2>
+					<ul className={`${orbitron} flex flex-col gap-4`}>
+						{features.map((f) => (
+							<li key={f} className="flex items-center gap-3">
+								<span className="text-sm text-[var(--wv-cyan-soft)]">✓</span>
+								<span className="flex-1 text-[13px] text-[var(--wv-disabled)]">{f}</span>
+							</li>
+						))}
+					</ul>
+				</section>
+			)}
 
 			{/* Recommendations */}
 			{related.length > 0 && (
-				<section className="flex flex-col gap-6 px-4 py-8 md:px-8 md:py-10 xl:px-20 xl:py-12">
+				<section className="flex flex-col gap-6 px-4 pb-8 pt-5 md:px-8 md:pb-10 xl:px-20 xl:pb-12">
 					<h2 className={`${heyComic} text-2xl`}>YOU MAY ALSO LIKE</h2>
 					<ul className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 xl:grid-cols-6">
 						{related.map((p) => (
 							<li key={p.id}>
 								<Link
 									href={`/product/${p.slug}`}
-									className="flex h-full flex-col overflow-hidden rounded-[14px] border border-[var(--wv-control)] bg-[var(--wv-ink)]"
+									className="flex h-full flex-col overflow-hidden rounded-[14px] border border-[var(--wv-purple)] bg-[var(--wv-ink)]"
 								>
 									<span className="relative block h-[140px] bg-[var(--wv-bg)] md:h-[180px]">
 										{p.image && (
