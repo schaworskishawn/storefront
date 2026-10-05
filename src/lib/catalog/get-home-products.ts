@@ -4,6 +4,8 @@ import { remapCategoryName, remapCategorySlug } from "@/lib/catalog/category-map
 import { executePublicGraphQL } from "@/lib/graphql";
 import { graphqlLanguageCodeVariables } from "@/lib/graphql-locale";
 import { NEW_ARRIVALS_NAME, NEW_ARRIVALS_SLUG, newestFirst } from "@/lib/catalog/new-arrivals";
+import { categoryRank } from "@/lib/catalog/category-order";
+import { type Facets, extractFacets } from "@/lib/catalog/product-facets";
 import { isBestseller } from "@/lib/catalog/product-flags";
 import { getDiscountInfo } from "@/lib/pricing";
 
@@ -23,6 +25,8 @@ export type HomeProduct = {
 	discountPercent: number | null;
 	isBestseller: boolean;
 	created: string;
+	/** Values the shop sidebar filters on (brand, puff count, nicotine strength, product type, …). */
+	facets: Facets;
 };
 
 const PAGE_SIZE = 100;
@@ -104,6 +108,7 @@ export async function getHomeProducts(channel: string, localeSlug: string): Prom
 				discountPercent,
 				isBestseller: isBestseller(node),
 				created: node.created,
+				facets: extractFacets(node),
 			},
 		];
 	});
@@ -113,13 +118,6 @@ export type WvCategoryTile = {
 	slug: string;
 	name: string;
 	image: { url: string; alt: string } | null;
-};
-
-/** Tile order follows the Figma category cards (see wv-category-art.ts); unlisted categories come after, in catalog order. */
-const TILE_ORDER = ["disposables", "ejuice", "e-liquid", "e-liquids", "hardware", "coils", "accessories"];
-const tileRank = (slug: string) => {
-	const i = TILE_ORDER.indexOf(slug);
-	return i === -1 ? TILE_ORDER.length : i;
 };
 
 /**
@@ -133,8 +131,10 @@ export function buildCategoryTiles(catalog: HomeProduct[], max = 6): WvCategoryT
 			continue;
 		tiles.set(p.categorySlug, { slug: p.categorySlug, name: p.brand, image: p.categoryImage ?? p.image });
 	}
-	// Array#sort is stable, so categories outside TILE_ORDER keep their catalog order.
-	const ordered = [...tiles.values()].sort((a, b) => tileRank(a.slug) - tileRank(b.slug)).slice(0, max - 1);
+	// Array#sort is stable, so categories outside CATEGORY_ORDER keep their catalog order.
+	const ordered = [...tiles.values()]
+		.sort((a, b) => categoryRank(a.slug) - categoryRank(b.slug))
+		.slice(0, max - 1);
 	const latest = newestFirst(catalog)[0];
 	if (latest) ordered.push({ slug: NEW_ARRIVALS_SLUG, name: NEW_ARRIVALS_NAME, image: latest.image });
 	return ordered;

@@ -68,7 +68,10 @@ export const AgeCheckerStep: FC<AgeCheckerStepProps> = ({
 	const isBusy = isSubmitting || isCheckingStatus;
 
 	const address = checkout.shippingAddress ?? checkout.billingAddress;
-	const canSubmit = Boolean(address) && parseDob(dob) !== null && !isBusy;
+	// A verification that already exists and only needs AgeChecker's popup (photo ID, signature, phone) is resumed, not
+	// re-created: starting over would open a second verification and ask for the same documents again.
+	const canResume = Boolean(uuid && status && needsAgeCheckerPopup(status));
+	const canSubmit = !isBusy && (canResume || (Boolean(address) && parseDob(dob) !== null));
 
 	const handleRefresh = useCallback(
 		async (verificationUuid: string) => {
@@ -103,7 +106,8 @@ export const AgeCheckerStep: FC<AgeCheckerStepProps> = ({
 					},
 				});
 				widget.show(verificationUuid);
-			} catch {
+			} catch (widgetError) {
+				console.error("[AgeChecker] Could not open the verification popup:", widgetError);
 				setError(t("widgetLoadFailed"));
 			}
 		},
@@ -113,6 +117,13 @@ export const AgeCheckerStep: FC<AgeCheckerStepProps> = ({
 	const handleSubmit = useCallback(
 		async (event: React.FormEvent) => {
 			event.preventDefault();
+
+			if (canResume && uuid) {
+				setError(null);
+				await openPopupFor(uuid);
+				return;
+			}
+
 			const dobParts = parseDob(dob);
 			if (!address || !dobParts) return;
 
@@ -145,7 +156,7 @@ export const AgeCheckerStep: FC<AgeCheckerStepProps> = ({
 				await openPopupFor(result.uuid);
 			}
 		},
-		[address, checkout.email, checkout.id, dob, openPopupFor],
+		[address, canResume, checkout.email, checkout.id, dob, openPopupFor, uuid],
 	);
 
 	// A previous attempt may have left us on "pending" (photo ID awaiting manual review) or a
@@ -238,7 +249,7 @@ export const AgeCheckerStep: FC<AgeCheckerStepProps> = ({
 							max={maxDob}
 							onChange={(e) => setDob(e.target.value)}
 							disabled={isBusy}
-							required
+							required={!canResume}
 							className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm"
 						/>
 					</div>

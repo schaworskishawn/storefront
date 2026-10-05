@@ -1,7 +1,13 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { afterEach, describe, expect, it, vi, beforeEach } from "vitest";
 
 import { setCheckoutTransport, type CheckoutTransport } from "@/checkout/lib/checkout-transport";
 import { buildCheckoutGatewayMessages } from "@/checkout/lib/payment/gateway-messages";
+import {
+	DECLINE_MESSAGES,
+	DEFAULT_DUMMY_CARD,
+	DUMMY_CARD_INVALID_MESSAGE,
+	setDummyCardEntry,
+} from "./providers/dummy-card";
 import { executePayment } from "./execute-payment";
 
 const gatewayMessages = buildCheckoutGatewayMessages((key, values) => {
@@ -33,6 +39,7 @@ const fakeTransport: CheckoutTransport = {
 	initializeTransaction,
 	processTransaction: vi.fn(),
 	completeCheckout,
+	placeETransferOrder: vi.fn(),
 };
 
 describe("executePayment", () => {
@@ -86,6 +93,84 @@ describe("executePayment", () => {
 			ok: false,
 			error: "Test payment is not available in this environment.",
 			errorKey: "payment",
+		});
+	});
+
+	describe("dummy payment with the test card form", () => {
+		const dummyProvider = {
+			type: "dummy",
+			gateway: { id: "saleor.io.dummy-payment-app", name: "Dummy" },
+			submitMode: "server",
+		} as const;
+		const context = { checkoutId: "checkout-1", amount: 42.5 };
+
+		afterEach(() => {
+			setDummyCardEntry(null);
+		});
+
+		it("charges when the form holds the approved test card", async () => {
+			setDummyCardEntry(DEFAULT_DUMMY_CARD);
+			initializeTransaction.mockResolvedValue({
+				ok: true,
+				data: { transactionEvent: { type: "CHARGE_SUCCESS" }, transaction: { id: "tx-1" } },
+			});
+			completeCheckout.mockResolvedValue({ ok: true, orderId: "order-1" });
+
+			expect(await executePayment(dummyProvider, context, gatewayMessages)).toEqual({
+				ok: true,
+				orderId: "order-1",
+			});
+			expect(initializeTransaction).toHaveBeenCalledWith(
+				expect.objectContaining({
+					paymentGateway: expect.objectContaining({
+						data: { event: { includePspReference: true, type: "CHARGE_SUCCESS" } },
+					}),
+				}),
+			);
+		});
+
+		it("records a failed charge for a decline card, shows the reason, and never places the order", async () => {
+			setDummyCardEntry({ ...DEFAULT_DUMMY_CARD, number: "4000 0000 0000 0002" });
+			initializeTransaction.mockResolvedValue({
+				ok: true,
+				data: { transactionEvent: { type: "CHARGE_FAILURE" }, transaction: { id: "tx-1" } },
+			});
+
+			expect(await executePayment(dummyProvider, context, gatewayMessages)).toEqual({
+				ok: false,
+				error: DECLINE_MESSAGES.declined,
+				errorKey: "payment",
+			});
+			expect(initializeTransaction).toHaveBeenCalledWith(
+				expect.objectContaining({
+					paymentGateway: expect.objectContaining({
+						data: { event: { includePspReference: true, type: "CHARGE_FAILURE" } },
+					}),
+				}),
+			);
+			expect(completeCheckout).not.toHaveBeenCalled();
+		});
+
+		it("does not call Saleor for a malformed card", async () => {
+			setDummyCardEntry({ ...DEFAULT_DUMMY_CARD, number: "1234" });
+
+			expect(await executePayment(dummyProvider, context, gatewayMessages)).toEqual({
+				ok: false,
+				error: DUMMY_CARD_INVALID_MESSAGE,
+				errorKey: "payment",
+			});
+			expect(initializeTransaction).not.toHaveBeenCalled();
+		});
+
+		it("still reports a Saleor error when declining a card", async () => {
+			setDummyCardEntry({ ...DEFAULT_DUMMY_CARD, number: "4000 0000 0000 0002" });
+			initializeTransaction.mockResolvedValue({ ok: false, error: "No response from Saleor" });
+
+			expect(await executePayment(dummyProvider, context, gatewayMessages)).toEqual({
+				ok: false,
+				error: "No response from Saleor",
+				errorKey: "payment",
+			});
 		});
 	});
 

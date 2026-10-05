@@ -11,6 +11,8 @@ import { OrderConfirmationPageShell } from "./order-confirmation-page-shell";
 import { PageNotFound } from "@/checkout/views/page-not-found";
 import { useTranslations } from "next-intl";
 import { getLocaleDefinition } from "@/config/locale";
+import { parseETransferDetails } from "@/lib/etransfer";
+import { ETransferInstructions } from "./etransfer-instructions";
 
 /** Format address for display */
 function formatAddress(address: {
@@ -61,6 +63,10 @@ export const OrderConfirmation = () => {
 	const billingAddress = order.billingAddress;
 	const email = order.userEmail || "";
 
+	// An Interac e-Transfer order is placed unpaid: show how to pay it until staff mark it paid.
+	const eTransfer = order.isPaid ? null : parseETransferDetails(order.metadata);
+	const orderTotal = order.total?.gross;
+
 	return (
 		<OrderConfirmationPageShell storefrontChannel={channel}>
 			<main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -81,10 +87,24 @@ export const OrderConfirmation = () => {
 									</div>
 								</div>
 
+								{eTransfer && orderTotal ? (
+									<ETransferInstructions
+										details={eTransfer}
+										orderNumber={String(order.number)}
+										amount={orderTotal.amount}
+										currency={orderTotal.currency}
+										locale={localeBcp47}
+									/>
+								) : null}
+
 								<div className="overflow-hidden rounded-lg border border-border">
 									<div className="border-b border-border bg-secondary/50 p-4">
-										<h2 className="font-semibold">{t("confirmedTitle")}</h2>
-										<p className="mt-1 text-sm text-muted-foreground">{t("confirmedEmail", { email })}</p>
+										<h2 className="font-semibold">
+											{eTransfer ? t("etransfer.reservedTitle") : t("confirmedTitle")}
+										</h2>
+										<p className="mt-1 text-sm text-muted-foreground">
+											{eTransfer ? t("etransfer.reservedEmail", { email }) : t("confirmedEmail", { email })}
+										</p>
 									</div>
 
 									<div className="space-y-4 p-4">
@@ -113,13 +133,15 @@ export const OrderConfirmation = () => {
 												</div>
 											</div>
 										)}
-										<div className="flex items-start gap-3">
-											<Package className="mt-0.5 h-5 w-5 text-muted-foreground" />
-											<div>
-												<p className="text-sm font-medium">{t("estimatedDelivery")}</p>
-												<p className="text-sm text-muted-foreground">{formattedDelivery}</p>
+										{eTransfer ? null : (
+											<div className="flex items-start gap-3">
+												<Package className="mt-0.5 h-5 w-5 text-muted-foreground" />
+												<div>
+													<p className="text-sm font-medium">{t("estimatedDelivery")}</p>
+													<p className="text-sm text-muted-foreground">{formattedDelivery}</p>
+												</div>
 											</div>
-										</div>
+										)}
 									</div>
 								</div>
 

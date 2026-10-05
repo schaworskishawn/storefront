@@ -163,7 +163,7 @@ export function AffiliateApplyForm() {
 						aria-invalid={invalid("email")}
 					/>
 				</Field>
-				<Field id="af-phone" title="Phone / WhatsApp">
+				<Field id="af-phone" title="Phone">
 					<input
 						id="af-phone"
 						name="phone"

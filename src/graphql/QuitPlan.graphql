@@ -1,0 +1,15 @@
+# The customer's quit plan, stored as JSON on their account (metadata key must match QUIT_PLAN_KEY in src/app/(root)/quit/account.ts).
+query MyQuitPlan {
+	me {
+		id
+		metafield(key: "wv_quit_plan")
+	}
+}
+
+mutation SaveMyQuitPlan($id: ID!, $value: String!) {
+	updateMetadata(id: $id, input: [{ key: "wv_quit_plan", value: $value }]) {
+		errors {
+			message
+		}
+	}
+}

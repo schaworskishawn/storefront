@@ -31,6 +31,11 @@
 		"doctor": "node scripts/paper-doctor.mjs",
 		"doctor:check": "node scripts/paper-doctor.mjs --check",
 		"knip": "knip",
+		"cap:assets": "node scripts/make-app-assets.mjs",
+		"cap:sync": "node scripts/cap-sync.mjs",
+		"cap:sync:emulator": "node scripts/cap-sync.mjs http://10.0.2.2:3000",
+		"cap:android": "cap open android",
+		"cap:ios": "cap open ios",
 		"prepare": "husky install",
 		"configurator:storefront-content:validate": "pnpm dlx @saleor/configurator validate --config config/saleor/storefront-content.config.yml",
 		"configurator:storefront-content:plan": "sh scripts/configurator-storefront-content.sh plan",
@@ -47,7 +52,11 @@
 		"skills:bootstrap": "node scripts/bootstrap-agent-skills.mjs"
 	},
 	"dependencies": {
+		"@adyen/adyen-web": "6.46.0",
 		"@builder.io/sdk-react": "5.2.4",
+		"@capacitor/android": "8.5.2",
+		"@capacitor/core": "8.5.2",
+		"@capacitor/ios": "8.5.2",
 		"@graphql-typed-document-node/core": "3.2.0",
 		"@plasmicapp/loader-nextjs": "2.0.17",
 		"@plasmicapp/react-web": "1.0.25",
@@ -83,6 +92,7 @@
 		"xss": "1.0.15"
 	},
 	"devDependencies": {
+		"@capacitor/cli": "8.5.2",
 		"@graphql-codegen/cli": "6.1.1",
 		"@graphql-codegen/client-preset": "5.2.2",
 		"@graphql-codegen/typescript": "5.0.7",

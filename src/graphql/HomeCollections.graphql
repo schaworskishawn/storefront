@@ -1,0 +1,18 @@
+# Which products are in the home page's merchandising collections (slugs: see HOME_COLLECTION_SLUGS in
+# src/lib/catalog/get-home-collections.ts). Only ids: the products themselves come from the cached catalog.
+query HomeCollections($channel: String!, $slugs: [String!]!) {
+	collections(first: 20, channel: $channel, filter: { slugs: $slugs }) {
+		edges {
+			node {
+				slug
+				products(first: 100) {
+					edges {
+						node {
+							id
+						}
+					}
+				}
+			}
+		}
+	}
+}

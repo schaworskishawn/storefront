@@ -2,7 +2,7 @@ import type { LegalSection } from "@/ui/sections/wv-home/wv-legal-client";
 
 /**
  * Privacy Policy copy. DRAFT: written from how this storefront actually works (checkout via Saleor, the age gate cookie,
- * newsletter and contact forms, WhatsApp/email support). Have it reviewed by a lawyer before relying on it.
+ * newsletter and contact forms, email support). Have it reviewed by a lawyer before relying on it.
  */
 export const PRIVACY_UPDATED = "SEPTEMBER 1, 2026";
 

@@ -4,6 +4,7 @@
 
 import { useState, useCallback, useEffect, type FC } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { AlertCircle } from "lucide-react";
 import { syncAuthSurfacesAfterSignIn } from "@/lib/auth";
 import { buildAccountConfirmationRedirectUrl } from "@/lib/auth/account-confirmation-url";
 import { resolveBrowseLocaleSlugWithFallback } from "@/lib/browse-locale";
@@ -28,6 +29,7 @@ import {
 import { useUser } from "@/checkout/hooks/use-user";
 import { useOrphanedCheckoutRecovery } from "@/checkout/hooks/use-orphaned-checkout-recovery";
 import { getQueryParams, createQueryString } from "@/checkout/lib/utils/url";
+import { FORM_ERROR_KEY, mapCheckoutFieldErrors } from "@/checkout/lib/map-checkout-field-errors";
 import {
 	getCheckoutSaveAddressFlag,
 	isUsingSavedShippingAddress,
@@ -45,6 +47,15 @@ import { MobileStickyAction } from "./mobile-sticky-action";
 // =============================================================================
 
 type ContactView = "main" | "signIn" | "resetPassword";
+
+const FORM_ERROR_ID = "checkout-form-error";
+
+/** The message renders after state updates, so wait a frame; on mobile it sits just above the sticky button. */
+function scrollFormErrorIntoView() {
+	requestAnimationFrame(() => {
+		document.getElementById(FORM_ERROR_ID)?.scrollIntoView({ block: "center", behavior: "smooth" });
+	});
+}
 
 interface InformationStepProps {
 	checkout: CheckoutFragment;
@@ -211,11 +222,14 @@ const InformationStepForm: FC<InformationStepFormProps> = ({
 	const handleFieldChange = (field: string, value: string) => {
 		setFormData((prev) => ({ ...prev, [field]: value }));
 		if (errors[field]) setErrors((prev) => ({ ...prev, [field]: "" }));
+		// A whole-form message (e.g. "can't ship to this address") is stale once the address changes.
+		if (errors[FORM_ERROR_KEY]) setErrors((prev) => ({ ...prev, [FORM_ERROR_KEY]: "" }));
 	};
 
 	const handleCountryChange = (value: string) => {
 		setCountryCode(value as CountryCode);
 		setFormData((prev) => ({ ...prev, countryArea: "" }));
+		if (errors[FORM_ERROR_KEY]) setErrors((prev) => ({ ...prev, [FORM_ERROR_KEY]: "" }));
 	};
 
 	const handleSelectAddress = (id: string | null) => {
@@ -332,11 +346,17 @@ const InformationStepForm: FC<InformationStepFormProps> = ({
 					const emailResult = await updateCheckoutEmail(checkout.id, email);
 					if (!emailResult.ok) {
 						if (emailResult.fieldErrors?.length) {
-							const errorMap: Record<string, string> = {};
-							emailResult.fieldErrors.forEach((err) => {
-								errorMap[err.field || "email"] = err.message || tErrors("invalidValue");
-							});
-							setErrors(errorMap);
+							setErrors(
+								mapCheckoutFieldErrors({
+									fieldErrors: emailResult.fieldErrors.map((err) => ({
+										...err,
+										field: err.field || "email",
+									})),
+									knownFields: ["email", "password"],
+									fallbackMessage: tErrors("invalidValue"),
+								}),
+							);
+							scrollFormErrorIntoView();
 						} else {
 							setErrors({ email: emailResult.error ?? tErrors("updateEmailFailed") });
 						}
@@ -403,14 +423,20 @@ const InformationStepForm: FC<InformationStepFormProps> = ({
 
 						if (!addressResult.ok) {
 							if (addressResult.fieldErrors?.length) {
-								const errorMap: Record<string, string> = {};
-								addressResult.fieldErrors.forEach((err) => {
-									const field = err.field || "streetAddress1";
-									errorMap[field] = err.message || tErrors("invalidValue");
-								});
-								setErrors(errorMap);
+								// Errors for fields this form has no input for (e.g. INSUFFICIENT_STOCK on `quantity`) show as a
+								// message above the button — otherwise the shopper clicks Continue and nothing visibly happens.
+								setErrors(
+									mapCheckoutFieldErrors({
+										fieldErrors: addressResult.fieldErrors,
+										knownFields: ["email", "password", "address", "countryCode", ...orderedAddressFields],
+										fallbackMessage: tErrors("invalidValue"),
+										messageByCode: { INSUFFICIENT_STOCK: tErrors("outOfStockForAddress") },
+									}),
+								);
+								scrollFormErrorIntoView();
 							} else {
-								setErrors({ streetAddress1: addressResult.error ?? tErrors("updateAddressFailed") });
+								setErrors({ [FORM_ERROR_KEY]: addressResult.error ?? tErrors("updateAddressFailed") });
+								scrollFormErrorIntoView();
 							}
 							setIsSubmitting(false);
 							return;
@@ -564,6 +590,17 @@ const InformationStepForm: FC<InformationStepFormProps> = ({
 					countryAreaChoices={countryAreaChoices}
 				/>
 			)}
+
+			{errors[FORM_ERROR_KEY] ? (
+				<div
+					id={FORM_ERROR_ID}
+					role="alert"
+					className="flex items-start gap-3 rounded-lg border border-destructive/50 bg-destructive/10 p-4"
+				>
+					<AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
+					<p className="text-sm text-destructive">{errors[FORM_ERROR_KEY]}</p>
+				</div>
+			) : null}
 
 			<Button
 				type="submit"

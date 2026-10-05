@@ -8,10 +8,12 @@ import {
 	findEnabledIntegratedGateway,
 	hasUnsupportedPaymentGateway,
 } from "./integrated-gateways";
-import { type PaymentGatewayLike, type ResolvedPaymentProvider } from "./types";
+import { isExtraMethodGateway } from "./payment-methods";
+import { isIntegratedPaymentProvider, type PaymentGatewayLike, type ResolvedPaymentProvider } from "./types";
 
+/** A gateway that stands for a card payment option — extra-method gateways (PayPal/BNPL, crypto) don't. */
 function hasSubstantiveGateway(gateways: ReadonlyArray<PaymentGatewayLike>): boolean {
-	return gateways.some((gateway) => !isIgnorableGateway(gateway));
+	return gateways.some((gateway) => !isIgnorableGateway(gateway) && !isExtraMethodGateway(gateway));
 }
 
 /** Picks the payment integration for checkout.availablePaymentGateways. */
@@ -45,7 +47,7 @@ export function resolvePaymentProvider(
 
 /** Client-driven gateways render their own Pay button (e.g. Stripe Elements). */
 export function usesClientPaymentSubmit(provider: ResolvedPaymentProvider): boolean {
-	return provider.type === "stripe" || provider.type === "dummy" ? provider.submitMode === "client" : false;
+	return isIntegratedPaymentProvider(provider) ? provider.submitMode === "client" : false;
 }
 
 /** Whether the checkout Pay button can run for the resolved provider. */

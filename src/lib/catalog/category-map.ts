@@ -24,7 +24,8 @@ const CATEGORY_SLUG_REMAP: Record<string, string> = {
 
 const CATEGORY_DISPLAY_NAMES: Record<string, string> = {
 	disposables: "Disposables",
-	"e-liquids": "E-Juice",
+	"e-liquids": "E-Liquid",
+	ejuice: "E-Liquid",
 	hardware: "Hardware",
 	coils: "Coils",
 	accessories: "Accessories",

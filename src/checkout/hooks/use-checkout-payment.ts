@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { type AddressFragment, type CheckoutFragment } from "@/checkout/graphql";
 import { type BillingAddressData } from "@/checkout/components/payment";
 import {
@@ -20,7 +20,9 @@ import {
 import { useCheckoutData } from "@/checkout/providers/checkout-data";
 import {
 	clearPaymentCompleting,
+	consumePaymentCompletionError,
 	markPaymentCompleting,
+	stashPaymentCompletionError,
 } from "@/checkout/lib/payment/checkout-payment-completion";
 import { navigateToOrderConfirmation } from "@/checkout/lib/payment/navigate-to-order";
 import { useCheckoutGatewayMessages } from "@/checkout/hooks/use-checkout-gateway-messages";
@@ -52,6 +54,13 @@ export function useCheckoutPayment({
 	const [isProcessing, setIsProcessing] = useState(false);
 	const [errors, setErrors] = useState<Record<string, string>>({});
 	const [priceChangeNotice, setPriceChangeNotice] = useState<CheckoutPriceChangeNotice | null>(null);
+
+	// Still mounted with the error on screen: the stashed copy (see `submit`) is not needed, and would show again later.
+	useEffect(() => {
+		if (errors.payment) {
+			consumePaymentCompletionError();
+		}
+	}, [errors.payment]);
 
 	const setPaymentError = useCallback((message: string) => {
 		setErrors((current) => {
@@ -162,6 +171,10 @@ export function useCheckoutPayment({
 						nextErrors.payment = payResult.error;
 					}
 					setErrors(nextErrors);
+					// Paying swaps this step for the "processing" screen, which unmounts it; a failure that took a network round
+					// trip (a declined card, a gateway error) would be set on a component that is already gone. Keep the
+					// message for the step to pick up when it comes back (it clears the copy itself if it is still mounted).
+					stashPaymentCompletionError(payResult.error);
 					return;
 				}
 

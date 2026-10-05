@@ -11,6 +11,8 @@
 
 const WIDGET_SCRIPT_SRC = "https://cdn.agechecker.net/static/popup/v1/popup.js";
 
+const WIDGET_READY_TIMEOUT_MS = 15_000;
+
 export type AgeCheckerWidgetVerificationEvent = {
 	uuid: string;
 	status: "accepted" | "denied" | "signature" | "photo_id" | "pending";
@@ -28,6 +30,28 @@ declare global {
 			createInstance?: (config: Record<string, unknown>) => AgeCheckerWidgetInstanceApi;
 		};
 	}
+}
+
+const hasShow = (value: unknown): value is AgeCheckerWidgetInstanceApi =>
+	!!value && typeof (value as { show?: unknown }).show === "function";
+
+/**
+ * Finds the object with `show(uuid)` among what the widget hands back. For an autoloaded instance AgeChecker calls
+ * `onready({ api })` — an object that *contains* the API — not the API itself, and also sets `window.AgeCheckerAPI`. Taking
+ * the argument at face value left us holding `{ api }` with no `show`, so opening the popup threw and the shopper saw
+ * "Could not load the verification form" on every attempt. Returns null when no candidate can actually open the popup.
+ */
+export function resolveAgeCheckerApi(
+	readyArgument: unknown,
+	globalApi: unknown,
+): AgeCheckerWidgetInstanceApi | null {
+	const wrapped = (readyArgument as { api?: unknown } | null | undefined)?.api;
+	for (const candidate of [wrapped, readyArgument, globalApi]) {
+		if (hasShow(candidate)) {
+			return candidate;
+		}
+	}
+	return null;
 }
 
 let widgetPromise: Promise<AgeCheckerWidgetInstanceApi> | null = null;
@@ -58,14 +82,32 @@ export function loadAgeCheckerWidget(
 		return widgetPromise;
 	}
 
-	widgetPromise = new Promise((resolve, reject) => {
+	widgetPromise = new Promise<AgeCheckerWidgetInstanceApi>((resolve, reject) => {
+		// The widget checks the key (and that this domain is allowed to use it) before it calls onready. If that never
+		// happens the shopper would be left staring at nothing, so give up after a while and let "Try again" start over.
+		const timer = setTimeout(
+			() =>
+				reject(
+					new Error(
+						"The AgeChecker.Net widget did not become ready (check the API key and allowed domains).",
+					),
+				),
+			WIDGET_READY_TIMEOUT_MS,
+		);
+
 		window.AgeCheckerConfig = {
 			key: apiKey,
 			autoload: true,
 			mode: "manual",
 			ignore_fields: true,
-			onready: (api?: AgeCheckerWidgetInstanceApi) => {
-				resolve(api ?? window.AgeCheckerAPI ?? { show: () => undefined });
+			onready: (readyArgument?: unknown) => {
+				clearTimeout(timer);
+				const api = resolveAgeCheckerApi(readyArgument, window.AgeCheckerAPI);
+				if (api) {
+					resolve(api);
+				} else {
+					reject(new Error("The AgeChecker.Net widget loaded but did not provide a way to open the popup."));
+				}
 			},
 			onstatuschanged: (verification: AgeCheckerWidgetVerificationEvent) => {
 				currentHandlers.onStatusChanged?.(verification);
@@ -76,11 +118,23 @@ export function loadAgeCheckerWidget(
 			},
 		};
 
+		// A retry after a failure must not stack a second copy of the widget on top of the first.
+		document.querySelectorAll(`script[src="${WIDGET_SCRIPT_SRC}"]`).forEach((existing) => existing.remove());
+
 		const script = document.createElement("script");
 		script.src = WIDGET_SCRIPT_SRC;
 		script.crossOrigin = "anonymous";
-		script.onerror = () => reject(new Error("Failed to load the AgeChecker.Net verification widget."));
+		script.onerror = () => {
+			clearTimeout(timer);
+			script.remove();
+			reject(new Error("Failed to load the AgeChecker.Net verification widget."));
+		};
 		document.head.appendChild(script);
+	});
+
+	// A failed load must not be remembered: "Try again" has to attempt a fresh load instead of replaying the failure.
+	widgetPromise.catch(() => {
+		widgetPromise = null;
 	});
 
 	return widgetPromise;
