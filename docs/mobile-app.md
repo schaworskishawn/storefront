@@ -65,10 +65,13 @@ in Android Studio. For a real phone on the same Wi-Fi use your computer's LAN ad
 
 ## Troubleshooting
 
-- **"The project is using an incompatible version (AGP 8.13.0) of the Android Gradle plugin"** — Android Studio only syncs
-  projects whose Android Gradle Plugin it supports. Narwhal 2025.1.2 supports up to 8.12.1, so `android/build.gradle` pins
-  8.12.1 (Capacitor 8's template ships 8.13.0). After updating Android Studio to Narwhal 3 (2025.1.3) or newer you can raise
-  it back to 8.13.0. Either way, File → Sync Project with Gradle Files afterwards.
+- **"The project is using an incompatible version (AGP …) of the Android Gradle plugin"** — Android Studio only syncs
+  projects whose Android Gradle Plugin it supports. `android/build.gradle` pins 8.13.2 (Gradle 8.14.5 in
+  `gradle-wrapper.properties`), which the updated Android Studio accepts. Narwhal 2025.1.2 stopped at 8.12.x; on an older
+  Android Studio lower the pin (or update Android Studio), then File → Sync Project with Gradle Files.
+- **Gray strips above/below the page** — with edge-to-edge (Android 15+) the window background shows behind the status and
+  navigation bars. `AppTheme.NoActionBar` in `android/app/src/main/res/values/styles.xml` sets it to the site's dark
+  (`@color/splash_background`), and `plugins.SystemBars.style` in `capacitor.config.ts` keeps the bar icons light.
 - **Gradle can't find the SDK** — `android/local.properties` (git-ignored, machine-specific) must contain `sdk.dir=…` pointing
   at Android Studio's SDK (here `C:\Users\shawn\AppData\Local\Android\Sdk`; Capacitor 8 builds against Android 36).
 - **The app is blank or shows the offline page in the emulator** — the dev server isn't reachable at `http://10.0.2.2:3000`;

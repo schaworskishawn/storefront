@@ -7,9 +7,9 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        // Capacitor 8's template uses 8.13.0, but Android Studio Narwhal 2025.1.2 only syncs AGP 8.12.x (it refuses 8.13.0).
-        // Raise this back to 8.13.0+ after updating Android Studio to Narwhal 3 (2025.1.3) or newer.
-        classpath 'com.android.tools.build:gradle:8.12.3'
+        // Capacitor 8's template uses 8.13.0. Android Studio only syncs an AGP version it supports (Narwhal 2025.1.2 stopped at
+        // 8.12.x); 8.13.2 works with the updated Android Studio. Lower it if your Android Studio refuses it.
+        classpath 'com.android.tools.build:gradle:8.13.2'
         classpath 'com.google.gms:google-services:4.4.4'
 
         // NOTE: Do not place your application dependencies here; they belong
