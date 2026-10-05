@@ -39,6 +39,9 @@ const config: CapacitorConfig = {
 	// The marker lets the site recognise the Android app and show its bottom tab bar there only. It must equal
 	// NATIVE_APP_USER_AGENT_MARKER in src/lib/native-app.ts (inlined: the Capacitor CLI can't resolve this repo's imports).
 	android: { backgroundColor: "#05030a", appendUserAgent: "WorldwideVaporApp" },
+	// Light status/navigation bar icons on the dark site, whatever the phone's own theme is. The bars' own colour is the
+	// window background set in android/app/src/main/res/values/styles.xml.
+	plugins: { SystemBars: { style: "DARK" } },
 };
 
 export default config;
