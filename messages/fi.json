@@ -439,7 +439,8 @@
 			"createAccountFailed": "Tilin luonti epäonnistui",
 			"updateAddressFailed": "Osoitteen päivitys epäonnistui",
 			"crashTitle": "Kassavirhe",
-			"crashMessage": "Kassan lataamisessa tapahtui virhe. Yritä uudelleen."
+			"crashMessage": "Kassan lataamisessa tapahtui virhe. Yritä uudelleen.",
+			"outOfStockForAddress": "Some items in your cart can't be shipped to this address because they're out of stock for that destination. Try a different address, or update your cart."
 		},
 		"contact": {
 			"title": "Yhteystiedot",
@@ -575,6 +576,45 @@
 				"cvvInvalid": "Check the security code.",
 				"cardRejected": "Your card couldn't be verified. Please check the details and try again.",
 				"securityNote": "Your card details go securely and directly to our payment processor, Authorize.net. They never touch our servers."
+			},
+			"adyen": {
+				"methodTitle": "PayPal & Pay Later",
+				"methodDescription": "PayPal, Klarna, Afterpay and Affirm.",
+				"loading": "Loading PayPal and pay-later options…",
+				"unavailable": "PayPal and pay-later options aren't available for this order. Please choose another payment method.",
+				"loadFailed": "We couldn't load PayPal and pay-later options. Please refresh the page or choose another payment method.",
+				"pendingApproval": "Your payment is waiting for approval. This can take a moment — please don't close this page or pay again."
+			},
+			"crypto": {
+				"methodTitle": "Crypto",
+				"methodDescription": "Pay with Bitcoin, Ethereum and other coins.",
+				"title": "Pay with crypto",
+				"intro": "Pay {total} in Bitcoin, Ethereum or another coin. You'll finish on our payment partner's secure page, then come straight back here.",
+				"step1": "Choose the coin you want to pay with.",
+				"step2": "Send the exact amount shown before the timer runs out.",
+				"step3": "Once the network confirms it, your order is placed automatically.",
+				"payButton": "Pay with crypto",
+				"loading": "Checking crypto availability…",
+				"unavailable": "Crypto payments aren't available right now. Please choose another payment method.",
+				"pendingTitle": "Waiting for your crypto payment",
+				"pendingBody": "We haven't seen your payment confirmed yet. Crypto transfers can take a few minutes to confirm on the network. If you've already sent it, hang tight — your order is placed as soon as it confirms. Please don't pay again.",
+				"notConfirmed": "Still waiting for the network to confirm your payment.",
+				"checkStatus": "Check payment status",
+				"checking": "Checking…",
+				"openPaymentPage": "Open payment page",
+				"startOver": "Start over",
+				"orderPlaced": "Your payment was received and your order has been placed. Check your email for the confirmation."
+			},
+			"dummyCard": {
+				"intro": "Test mode — no real charge is made. Use a test card below, or any well-formed card number.",
+				"cardNumber": "Card number",
+				"expiry": "Expiry",
+				"cvv": "Security code",
+				"testCards": "Test cards",
+				"approved": "Approved",
+				"declined": "Declined",
+				"insufficientFunds": "Insufficient funds",
+				"incorrectCvc": "Wrong security code"
 			}
 		},
 		"confirmation": {
@@ -665,7 +705,9 @@
 			"eTransferNotAllowed": "We couldn't place this order for e-Transfer yet. Please choose another payment method or contact support.",
 			"eTransferFailed": "We couldn't save your e-Transfer order. Please try again.",
 			"wvpayNotEnabled": "Card payments are not enabled in this environment. Set NEXT_PUBLIC_ENABLE_AUTHORIZENET_PAYMENTS=true on the storefront.",
-			"eTransferCountry": "Interac e-Transfer is only available for customers in Canada."
+			"eTransferCountry": "Interac e-Transfer is only available for customers in Canada.",
+			"cryptoNotEnabled": "Crypto payments are not enabled in this environment. Set NEXT_PUBLIC_ENABLE_CRYPTO_PAYMENTS=true on the storefront.",
+			"adyenNotEnabled": "Adyen payments are not enabled in this environment. Set NEXT_PUBLIC_ENABLE_ADYEN_PAYMENTS=true on the storefront."
 		},
 		"gateways": {
 			"noneTitle": "Maksuyhdyskäytävää ei ole määritetty",
