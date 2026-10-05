@@ -9,6 +9,7 @@ import {
 	isStripePaymentEnabled,
 } from "@/checkout/lib/payment/providers/stripe";
 import { findWvPayGateway, isWvPayEnabled, isWvPayGateway } from "@/checkout/lib/payment/providers/wvpay";
+import { isExtraMethodGateway } from "./payment-methods";
 import { type PaymentGatewayLike, type PaymentSubmitMode } from "./types";
 
 /** Built-in gateways this UI does not integrate with but should not block checkout. */
@@ -64,11 +65,17 @@ export function isIntegratedGateway(gateway: PaymentGatewayLike): boolean {
 	);
 }
 
-/** Gateways on the checkout that this storefront cannot process yet (e.g. Adyen when not wired). */
+/**
+ * Gateways on the checkout that this storefront cannot process (e.g. Adyen with its flag off). Gateways that only back an
+ * extra payment method (PayPal/BNPL, crypto — see `payment-methods.ts`) are handled elsewhere, so they don't count.
+ */
 export function hasUnsupportedPaymentGateway(
 	gateways: ReadonlyArray<PaymentGatewayLike> | null | undefined,
 ): boolean {
-	return (gateways ?? []).some((gateway) => !isIgnorableGateway(gateway) && !isIntegratedGateway(gateway));
+	return (gateways ?? []).some(
+		(gateway) =>
+			!isIgnorableGateway(gateway) && !isIntegratedGateway(gateway) && !isExtraMethodGateway(gateway),
+	);
 }
 
 export function findEnabledIntegratedGateway(

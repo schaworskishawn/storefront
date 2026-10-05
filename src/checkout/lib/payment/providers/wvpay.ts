@@ -29,9 +29,17 @@ export function isWvPayEnabled(): boolean {
 	return process.env.NEXT_PUBLIC_ENABLE_AUTHORIZENET_PAYMENTS === "true";
 }
 
-/** Server-side guard for transactionInitialize — blocks the gateway when the storefront flag is off. */
-export function getWvPayGuardError(gatewayId: string | null | undefined): string | null {
-	if (!gatewayId || !isWvPayGateway(gatewayId)) {
+/** The same app also serves hosted crypto checkout; those requests carry `method: "crypto"` and have their own flag. */
+export function isWvPayCryptoRequest(data: unknown): boolean {
+	return !!data && typeof data === "object" && (data as { method?: unknown }).method === "crypto";
+}
+
+/**
+ * Server-side guard for transactionInitialize — blocks the card gateway when its storefront flag is off. Crypto requests
+ * are guarded separately (`getCryptoPaymentGuardError`).
+ */
+export function getWvPayGuardError(gatewayId: string | null | undefined, data?: unknown): string | null {
+	if (!gatewayId || !isWvPayGateway(gatewayId) || isWvPayCryptoRequest(data)) {
 		return null;
 	}
 	return isWvPayEnabled() ? null : WVPAY_NOT_ENABLED_MESSAGE;
@@ -47,6 +55,11 @@ export type WvPayGatewayConfig = {
 	methods: string[];
 	authorizenet: AuthorizeNetClientConfig | null;
 };
+
+/** The payments app lists `"crypto"` in `methods` once the crypto provider's keys are set. */
+export function wvPayOffersCrypto(config: Pick<WvPayGatewayConfig, "methods"> | null | undefined): boolean {
+	return !!config?.methods.includes("crypto");
+}
 
 const text = (value: unknown): string | null =>
 	typeof value === "string" && value.trim() ? value.trim() : null;

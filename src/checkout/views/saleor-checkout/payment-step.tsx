@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useMemo, useEffect, type FC } from "react";
+import dynamic from "next/dynamic";
 import { ChevronLeft, AlertTriangle } from "lucide-react";
 import { Button } from "@/ui/components/ui/button";
 import {
@@ -28,6 +29,7 @@ import { AuthorizedPaymentRecovery } from "@/checkout/components/payment/stripe/
 import { isCheckoutFreeOrder } from "@/checkout/lib/payment/checkout-pay-amount";
 import { shouldShowPaymentMethodArea } from "@/checkout/lib/payment/should-show-payment-method-area";
 import { isIntegratedPaymentProvider, usesClientPaymentSubmit } from "@/checkout/lib/payment";
+import { CryptoPayment } from "@/checkout/components/payment/crypto/crypto-payment";
 import { ETransferPayment } from "@/checkout/components/payment/etransfer/etransfer-payment";
 import { PaymentMethodTabs } from "@/checkout/components/payment/payment-method-tabs";
 import { isETransferCountry, isETransferCurrency, isETransferEnabled } from "@/lib/etransfer";
@@ -36,8 +38,20 @@ import {
 	writePaymentMethodChoice,
 	type PaymentMethodChoice,
 } from "@/checkout/lib/payment/payment-method-choice";
+import {
+	getGatewayPaymentOffers,
+	listPaymentMethods,
+	resolvePaymentMethod,
+} from "@/checkout/lib/payment/payment-methods";
+import { getCheckoutPayAmount, getCheckoutPayCurrency } from "@/checkout/lib/payment/checkout-pay-amount";
 import { consumePaymentCompletionError } from "@/checkout/lib/payment/checkout-payment-completion";
 import { useCheckoutPaymentReturnError } from "@/checkout/providers/checkout-payment-return-error";
+
+// The Adyen SDK (and its CSS) is heavy and only needed once the shopper opens that tab, so it loads on demand.
+const AdyenPayment = dynamic(
+	() => import("@/checkout/components/payment/adyen/adyen-payment").then((module) => module.AdyenPayment),
+	{ ssr: false, loading: () => <LoadingSpinner /> },
+);
 
 interface PaymentStepProps {
 	checkout: CheckoutFragment;
@@ -107,13 +121,20 @@ export const PaymentStep: FC<PaymentStepProps> = ({
 	const cardUsesClientSubmit = usesClientPaymentSubmit(provider);
 
 	// Interac e-Transfer is a storefront-level method (no payment app): offered next to the card gateway when enabled,
-	// and on its own when no card gateway is integrated.
+	// and on its own when no card gateway is integrated. PayPal/pay-later (Adyen) and crypto join the same picker when their
+	// flags are on and their gateways are on the checkout.
 	const eTransferOffered =
 		isETransferEnabled() &&
 		isETransferCurrency(checkout.totalPrice?.gross?.currency) &&
 		isETransferCountry(checkout.shippingAddress?.country?.code ?? checkout.billingAddress?.country?.code) &&
 		!isFreeOrder;
 	const hasCardMethod = isIntegratedPaymentProvider(provider);
+	const gatewayOffers = getGatewayPaymentOffers(checkout.availablePaymentGateways, isFreeOrder);
+	const availableMethods = listPaymentMethods({
+		card: hasCardMethod,
+		etransfer: eTransferOffered,
+		...gatewayOffers,
+	});
 	const [pickedMethod, setPickedMethod] = useState<PaymentMethodChoice>("card");
 
 	// The step unmounts while an order is placed (the "processing" screen replaces it); bring the choice back afterwards.
@@ -127,12 +148,32 @@ export const PaymentStep: FC<PaymentStepProps> = ({
 		(choice: PaymentMethodChoice) => {
 			setPickedMethod(choice);
 			writePaymentMethodChoice(checkout.id, choice);
+			// A failure from the method they just left doesn't apply to the one they're switching to.
+			clearReturnError();
+			setPaymentError("");
 		},
-		[checkout.id],
+		[checkout.id, clearReturnError, setPaymentError],
 	);
-	const method: "card" | "etransfer" =
-		eTransferOffered && (!hasCardMethod || pickedMethod === "etransfer") ? "etransfer" : "card";
-	const usesClientSubmit = method === "etransfer" || cardUsesClientSubmit;
+	const method = resolvePaymentMethod(availableMethods, pickedMethod);
+	const usesClientSubmit = method !== "card" || cardUsesClientSubmit;
+	const methodLabels: Record<PaymentMethodChoice, { label: string; description?: string }> = {
+		card: { label: tPayment("etransfer.methodCard") },
+		adyen: { label: tPayment("adyen.methodTitle"), description: tPayment("adyen.methodDescription") },
+		etransfer: {
+			label: tPayment("etransfer.methodTitle"),
+			description: tPayment("etransfer.methodDescription"),
+		},
+		crypto: { label: tPayment("crypto.methodTitle"), description: tPayment("crypto.methodDescription") },
+	};
+	// Total in minor units + country decide which Adyen methods are on offer, so a change remounts the Drop-in.
+	const adyenAmount = getCheckoutPayAmount(checkout);
+	const adyenCurrency = getCheckoutPayCurrency(checkout);
+	const adyenKey = [
+		checkout.id,
+		adyenAmount === null ? "" : Math.round(adyenAmount * 100),
+		adyenCurrency ?? "",
+		checkout.shippingAddress?.country?.code ?? checkout.billingAddress?.country?.code ?? "",
+	].join(":");
 
 	const handlePaymentError = useCallback(
 		(message: string) => {
@@ -254,28 +295,22 @@ export const PaymentStep: FC<PaymentStepProps> = ({
 				</div>
 			)}
 
-			{method === "etransfer" && !hasCardMethod ? null : (
+			{method !== "card" && !hasCardMethod ? null : (
 				<PaymentGatewayAlerts gateways={checkout.availablePaymentGateways} />
 			)}
 
-			{method === "card" && cardUsesClientSubmit && !isFreeOrder ? (
+			{/* A payment that is already authorized or charged but didn't turn into an order: offer to finish it. */}
+			{(method === "card" ? cardUsesClientSubmit : method !== "etransfer") && !isFreeOrder ? (
 				<AuthorizedPaymentRecovery checkout={checkout} onError={handlePaymentError} />
 			) : null}
 
-			{eTransferOffered && hasCardMethod ? (
+			{availableMethods.length > 1 ? (
 				<PaymentMethodTabs
 					ariaLabel={tPayment("etransfer.chooseMethod")}
 					value={method}
 					onChange={handlePickMethod}
 					disabled={isPaymentBusy}
-					options={[
-						{ id: "card", label: tPayment("etransfer.methodCard") },
-						{
-							id: "etransfer",
-							label: tPayment("etransfer.methodTitle"),
-							description: tPayment("etransfer.methodDescription"),
-						},
-					]}
+					options={availableMethods.map((id) => ({ id, ...methodLabels[id] }))}
 				/>
 			) : null}
 
@@ -310,6 +345,39 @@ export const PaymentStep: FC<PaymentStepProps> = ({
 					}}
 					onPaymentError={handlePaymentError}
 					onBillingErrors={setBillingErrors}
+					onPaymentActivityChange={handlePaymentActivityChange}
+				/>
+			) : method === "adyen" ? (
+				<AdyenPayment
+					key={adyenKey}
+					checkout={checkout}
+					billing={{
+						billingData,
+						sameAsBilling,
+						hasShippingAddress,
+						shippingAddress,
+						userAddresses: user?.addresses,
+						authenticated,
+					}}
+					onPaymentError={handlePaymentError}
+					onBillingErrors={setBillingErrors}
+					onPriceChangeNotice={setPriceChangeNotice}
+					onPaymentActivityChange={handlePaymentActivityChange}
+				/>
+			) : method === "crypto" ? (
+				<CryptoPayment
+					checkout={checkout}
+					billing={{
+						billingData,
+						sameAsBilling,
+						hasShippingAddress,
+						shippingAddress,
+						userAddresses: user?.addresses,
+						authenticated,
+					}}
+					onPaymentError={handlePaymentError}
+					onBillingErrors={setBillingErrors}
+					onPriceChangeNotice={setPriceChangeNotice}
 					onPaymentActivityChange={handlePaymentActivityChange}
 				/>
 			) : shouldShowPaymentMethodArea(checkout) ? (

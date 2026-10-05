@@ -5,7 +5,8 @@ import { PAYMENTS_APP_ID, PAYMENTS_APP_NAME, PAYMENTS_APP_VERSION } from "./cons
  * handlers read, so Saleor sends nothing more than needed.
  *
  * Only the events this app handles are registered. `TRANSACTION_PROCESS_SESSION` is deliberately absent: card payments finish
- * inside `TRANSACTION_INITIALIZE_SESSION` (no redirect / 3-D Secure step), so Saleor has nothing to process afterwards.
+ * inside `TRANSACTION_INITIALIZE_SESSION` (no redirect / 3-D Secure step), and crypto payments are confirmed by the provider's
+ * IPN call (src/app/api/saleor-app/crypto/ipn), which reports to Saleor itself — so Saleor has nothing to process afterwards.
  */
 
 const ADDRESS_FIELDS = `
@@ -110,7 +111,8 @@ export function buildPaymentsAppManifest(origin: string) {
 		id: PAYMENTS_APP_ID,
 		version: PAYMENTS_APP_VERSION,
 		name: PAYMENTS_APP_NAME,
-		about: "Takes credit and debit card payments through Authorize.net for this storefront.",
+		about:
+			"Takes credit and debit card payments through Authorize.net, and crypto payments through NOWPayments, for this storefront.",
 		permissions: ["HANDLE_PAYMENTS"],
 		appUrl: base,
 		tokenTargetUrl: `${base}/api/saleor-app/register`,

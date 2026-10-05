@@ -1,4 +1,6 @@
-export type PaymentMethodChoice = "card" | "etransfer";
+export type PaymentMethodChoice = "card" | "etransfer" | "adyen" | "crypto";
+
+const CHOICES: readonly PaymentMethodChoice[] = ["card", "etransfer", "adyen", "crypto"];
 
 const keyFor = (checkoutId: string) => `checkout:payment-method:${checkoutId}`;
 
@@ -10,7 +12,7 @@ const keyFor = (checkoutId: string) => `checkout:payment-method:${checkoutId}`;
 export function readPaymentMethodChoice(checkoutId: string): PaymentMethodChoice | null {
 	try {
 		const value = window.sessionStorage.getItem(keyFor(checkoutId));
-		return value === "card" || value === "etransfer" ? value : null;
+		return CHOICES.find((choice) => choice === value) ?? null;
 	} catch {
 		return null;
 	}

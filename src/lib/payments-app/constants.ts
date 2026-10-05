@@ -12,10 +12,16 @@ export const PAYMENTS_APP_ID = "worldwide-vapor.payments";
 export const PAYMENTS_GATEWAY_ID = `app.${PAYMENTS_APP_ID}`;
 
 export const PAYMENTS_APP_NAME = "Worldwide Vapor Payments";
-export const PAYMENTS_APP_VERSION = "1.0.0";
+export const PAYMENTS_APP_VERSION = "1.1.0";
 
 /** Methods this app can offer, reported by the gateway-initialize webhook. */
-export type PaymentMethodId = "authorizenet";
+export type PaymentMethodId = "authorizenet" | "crypto";
+
+/**
+ * Crypto transactions carry this prefix on their Saleor `pspReference`, which is how the refund and cancel webhooks tell them
+ * apart from Authorize.net card transactions (whose references are plain numbers).
+ */
+export const CRYPTO_PSP_PREFIX = "crypto:";
 
 export type AuthorizeNetEnvironment = "sandbox" | "production";
 

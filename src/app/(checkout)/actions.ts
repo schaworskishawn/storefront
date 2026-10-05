@@ -82,6 +82,8 @@ import {
 	hasMaterialCheckoutTotalChange,
 } from "@/checkout/lib/payment/checkout-pay-amount";
 import { getStripePaymentGuardError, isStripePaymentEnabled } from "@/checkout/lib/payment/providers/stripe";
+import { getAdyenGuardError, isAdyenEnabled } from "@/checkout/lib/payment/providers/adyen";
+import { getCryptoPaymentGuardError } from "@/checkout/lib/payment/providers/crypto";
 import { getWvPayGuardError, isWvPayEnabled } from "@/checkout/lib/payment/providers/wvpay";
 import { buildMarketingConsentMetadata } from "@/checkout/lib/marketing-consent";
 import { fetchCheckoutOnServer } from "@/checkout/lib/server/fetch-checkout";
@@ -485,9 +487,22 @@ export async function initializeCheckoutTransaction(
 		return { ok: false, error: t("stripeNotEnabled") };
 	}
 
-	const wvpayGuardError = getWvPayGuardError(variables.paymentGateway?.id);
+	const wvpayGuardError = getWvPayGuardError(variables.paymentGateway?.id, variables.paymentGateway?.data);
 	if (wvpayGuardError) {
 		return { ok: false, error: t("wvpayNotEnabled") };
+	}
+
+	const cryptoGuardError = getCryptoPaymentGuardError(
+		variables.paymentGateway?.id,
+		variables.paymentGateway?.data,
+	);
+	if (cryptoGuardError) {
+		return { ok: false, error: t("cryptoNotEnabled") };
+	}
+
+	const adyenGuardError = getAdyenGuardError(variables.paymentGateway?.id);
+	if (adyenGuardError) {
+		return { ok: false, error: t("adyenNotEnabled") };
 	}
 
 	// Defense in depth: never trust the client-supplied amount. Saleor re-validates
@@ -534,7 +549,7 @@ export async function processCheckoutTransaction(
 	// Mirror the initialize guards: when every integrated gateway is disabled for this
 	// environment, a direct call to this action must not drive transactions either.
 	// Forks adding gateways should extend this check alongside the initialize guards.
-	if (!isStripePaymentEnabled() && !isWvPayEnabled() && !isDummyPaymentAllowed()) {
+	if (!isStripePaymentEnabled() && !isWvPayEnabled() && !isAdyenEnabled() && !isDummyPaymentAllowed()) {
 		const { server: t } = await getCheckoutServerTranslations();
 		return { ok: false, error: t("paymentsDisabled") };
 	}

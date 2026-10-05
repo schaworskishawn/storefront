@@ -11,6 +11,8 @@ import {
 	type BillingAddress,
 	type OpaqueData,
 } from "./authorizenet";
+import { CRYPTO_PSP_PREFIX } from "./constants";
+import { createInvoice, readNowPaymentsConfig, type NowPaymentsConfig } from "./nowpayments";
 
 /**
  * The synchronous Saleor webhooks of the payments app. Each handler takes the already-verified, parsed payload and returns
@@ -64,12 +66,27 @@ type Deps = {
 		voidTransaction: typeof voidTransaction;
 		refundTransaction: typeof refundTransaction;
 	};
+	/** Hosted crypto checkout. Optional so card-only setups (and their tests) don't have to mention it. */
+	crypto?: {
+		config: NowPaymentsConfig | null;
+		createInvoice: typeof createInvoice;
+		/** Public origin of this storefront — where the crypto provider sends the shopper back and calls our IPN. */
+		storefrontOrigin: string;
+	};
 };
 
 export function defaultDeps(): Deps {
 	return {
 		config: readAuthorizeNetConfig(),
 		authorizenet: { chargeCard, getTransactionDetails, voidTransaction, refundTransaction },
+		crypto: {
+			config: readNowPaymentsConfig(),
+			createInvoice,
+			storefrontOrigin: (process.env.NEXT_PUBLIC_STOREFRONT_URL || "http://localhost:3000").replace(
+				/\/+$/,
+				"",
+			),
+		},
 	};
 }
 
@@ -102,19 +119,91 @@ function parseOpaqueData(data: unknown): OpaqueData | null {
 /** Browser-safe settings for the card form. The transaction key never leaves the server. */
 export function handleGatewayInitialize(deps: Deps = defaultDeps()) {
 	const { config } = deps;
-	if (!config) {
-		return { data: { methods: [] as string[] } };
+	const methods: string[] = [];
+	const data: Record<string, unknown> = { methods };
+
+	if (config) {
+		methods.push("authorizenet");
+		data.authorizenet = {
+			environment: config.environment,
+			apiLoginId: config.apiLoginId,
+			clientKey: config.clientKey,
+			scriptUrl: acceptJsUrl(config.environment),
+		};
 	}
+
+	if (deps.crypto?.config) {
+		methods.push("crypto");
+		data.crypto = { provider: "nowpayments" };
+	}
+
+	return { data };
+}
+
+/** Where the crypto provider may send the shopper back to: a page on this storefront, nowhere else. */
+function sameOriginUrl(value: unknown, origin: string): URL | null {
+	if (typeof value !== "string") return null;
+	try {
+		const url = new URL(value);
+		return url.origin === new URL(origin).origin ? url : null;
+	} catch {
+		return null;
+	}
+}
+
+/**
+ * Crypto: create a hosted invoice and hand its URL back. Nothing is charged here — the payment finishes later, when the
+ * provider calls the IPN route, so the result is "action required" and Saleor keeps the checkout unpaid until then.
+ */
+async function handleCryptoInitialize(
+	payload: TransactionInitializePayload,
+	crypto: NonNullable<Deps["crypto"]>,
+) {
+	const amount = payload.action?.amount;
+	const currency = payload.action?.currency?.toUpperCase();
+	const failure = (message: string, reason: string) => ({
+		result: "CHARGE_FAILURE" as const,
+		amount: typeof amount === "number" ? amount : 0,
+		message,
+		data: { reason },
+	});
+
+	if (!crypto.config) return failure("Crypto payments aren't set up yet.", "not_configured");
+	if (typeof amount !== "number" || !Number.isFinite(amount) || amount <= 0 || !currency) {
+		return failure("The order amount is invalid.", "invalid_amount");
+	}
+
+	const transactionId = payload.transaction?.id;
+	if (!transactionId)
+		return failure("Saleor didn't send a transaction to attach the payment to.", "missing_transaction");
+
+	const returnUrl = sameOriginUrl(
+		(payload.data as { returnUrl?: unknown } | null)?.returnUrl,
+		crypto.storefrontOrigin,
+	);
+	if (!returnUrl)
+		return failure("The return address for the crypto payment is not valid.", "invalid_return_url");
+
+	const cancelUrl = new URL(returnUrl);
+	cancelUrl.searchParams.delete("processingPayment");
+
+	const invoice = await crypto.createInvoice(crypto.config, {
+		amount,
+		currency,
+		orderId: transactionId,
+		description: "Worldwide Vapor order",
+		ipnUrl: `${crypto.storefrontOrigin}/api/saleor-app/crypto/ipn`,
+		successUrl: returnUrl.toString(),
+		cancelUrl: cancelUrl.toString(),
+	});
+	if (!invoice.ok) return failure(invoice.message, "invoice_failed");
+
 	return {
-		data: {
-			methods: ["authorizenet"],
-			authorizenet: {
-				environment: config.environment,
-				apiLoginId: config.apiLoginId,
-				clientKey: config.clientKey,
-				scriptUrl: acceptJsUrl(config.environment),
-			},
-		},
+		result: "CHARGE_ACTION_REQUIRED" as const,
+		pspReference: `${CRYPTO_PSP_PREFIX}${invoice.invoiceId}`,
+		amount,
+		message: "Waiting for the crypto payment.",
+		data: { method: "crypto", invoiceId: invoice.invoiceId, invoiceUrl: invoice.invoiceUrl },
 	};
 }
 
@@ -122,6 +211,14 @@ export async function handleTransactionInitialize(
 	payload: TransactionInitializePayload,
 	deps: Deps = defaultDeps(),
 ) {
+	const method = (payload.data as { method?: string } | null)?.method;
+	if (method === "crypto") {
+		return handleCryptoInitialize(
+			payload,
+			deps.crypto ?? { config: null, createInvoice, storefrontOrigin: "" },
+		);
+	}
+
 	const amount = payload.action?.amount;
 	const currency = payload.action?.currency?.toUpperCase();
 	const failure = (message: string, reason: string) => ({
@@ -139,7 +236,6 @@ export async function handleTransactionInitialize(
 		return failure(`Card payments aren't available in ${currency}.`, "unsupported_currency");
 	}
 
-	const method = (payload.data as { method?: string } | null)?.method;
 	if (method && method !== "authorizenet") return failure("Unknown payment method.", "unknown_method");
 
 	const opaqueData = parseOpaqueData(payload.data);
@@ -186,6 +282,11 @@ export async function handleTransactionRefund(payload: TransactionActionPayload,
 	const pspReference = payload.transaction?.pspReference ?? undefined;
 	const failure = (message: string) => ({ result: "REFUND_FAILURE" as const, amount, pspReference, message });
 
+	if (pspReference?.startsWith(CRYPTO_PSP_PREFIX)) {
+		return failure(
+			"Crypto payments can't be refunded from here. Send the refund from your crypto provider's dashboard, then record it in Saleor.",
+		);
+	}
 	if (!deps.config) return failure("Card payments aren't set up.");
 	if (!pspReference) return failure("This payment has no Authorize.net transaction to refund.");
 	if (!(amount > 0)) return failure("The refund amount is invalid.");
@@ -237,6 +338,9 @@ export async function handleTransactionCancel(payload: TransactionActionPayload,
 	const pspReference = payload.transaction?.pspReference ?? undefined;
 	const failure = (message: string) => ({ result: "CANCEL_FAILURE" as const, amount, pspReference, message });
 
+	if (pspReference?.startsWith(CRYPTO_PSP_PREFIX)) {
+		return failure("Crypto payments can't be cancelled from here; an unpaid crypto invoice simply expires.");
+	}
 	if (!deps.config) return failure("Card payments aren't set up.");
 	if (!pspReference) return failure("This payment has no Authorize.net transaction to cancel.");
 

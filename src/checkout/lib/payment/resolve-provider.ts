@@ -8,10 +8,12 @@ import {
 	findEnabledIntegratedGateway,
 	hasUnsupportedPaymentGateway,
 } from "./integrated-gateways";
+import { isExtraMethodGateway } from "./payment-methods";
 import { isIntegratedPaymentProvider, type PaymentGatewayLike, type ResolvedPaymentProvider } from "./types";
 
+/** A gateway that stands for a card payment option — extra-method gateways (PayPal/BNPL, crypto) don't. */
 function hasSubstantiveGateway(gateways: ReadonlyArray<PaymentGatewayLike>): boolean {
-	return gateways.some((gateway) => !isIgnorableGateway(gateway));
+	return gateways.some((gateway) => !isIgnorableGateway(gateway) && !isExtraMethodGateway(gateway));
 }
 
 /** Picks the payment integration for checkout.availablePaymentGateways. */

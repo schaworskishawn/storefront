@@ -255,3 +255,143 @@ describe("handleTransactionCancel", () => {
 		});
 	});
 });
+
+describe("crypto", () => {
+	const cryptoConfig = { apiKey: "np-key", ipnSecret: "np-secret", sandbox: false };
+	const storefrontOrigin = "https://shop.example";
+
+	function makeCryptoDeps(overrides: { createInvoice?: unknown; config?: unknown } = {}) {
+		const createInvoice = overrides.createInvoice ?? {
+			ok: true,
+			invoiceId: "4522625843",
+			invoiceUrl: "https://nowpayments.io/payment/?iid=4522625843",
+		};
+		const createInvoiceFn = vi.fn().mockResolvedValue(createInvoice);
+		const base = makeDeps({}, null);
+		return {
+			createInvoiceFn,
+			crypto: {
+				config: overrides.config === undefined ? cryptoConfig : overrides.config,
+				createInvoice: createInvoiceFn,
+				storefrontOrigin,
+			},
+			deps: {
+				...(base.deps as object),
+				crypto: {
+					config: overrides.config === undefined ? cryptoConfig : overrides.config,
+					createInvoice: createInvoiceFn,
+					storefrontOrigin,
+				},
+			} as never,
+		};
+	}
+
+	const cryptoInit = {
+		action: { amount: 25.5, currency: "USD", actionType: "CHARGE" },
+		data: {
+			method: "crypto",
+			returnUrl: "https://shop.example/checkout?checkout=abc&processingPayment=true",
+		},
+		transaction: { id: "VHJhbnNhY3Rpb25JdGVtOjE=" },
+	};
+
+	it("lists crypto next to cards once the provider is configured", () => {
+		const { crypto } = makeCryptoDeps();
+		const base = makeDeps({}, config).deps as object;
+		const response = handleGatewayInitialize({ ...base, crypto } as never);
+		expect(response.data).toMatchObject({
+			methods: ["authorizenet", "crypto"],
+			crypto: { provider: "nowpayments" },
+		});
+		expect(JSON.stringify(response)).not.toContain("np-key");
+		expect(JSON.stringify(response)).not.toContain("np-secret");
+	});
+
+	it("can offer crypto without cards", () => {
+		expect(handleGatewayInitialize(makeCryptoDeps().deps).data).toMatchObject({ methods: ["crypto"] });
+	});
+
+	it("creates an invoice for Saleor's amount and waits for the payment", async () => {
+		const { deps, createInvoiceFn } = makeCryptoDeps();
+		const response = await handleTransactionInitialize(cryptoInit, deps);
+
+		expect(response).toEqual({
+			result: "CHARGE_ACTION_REQUIRED",
+			pspReference: "crypto:4522625843",
+			amount: 25.5,
+			message: "Waiting for the crypto payment.",
+			data: {
+				method: "crypto",
+				invoiceId: "4522625843",
+				invoiceUrl: "https://nowpayments.io/payment/?iid=4522625843",
+			},
+		});
+		expect(createInvoiceFn).toHaveBeenCalledWith(cryptoConfig, {
+			amount: 25.5,
+			currency: "USD",
+			orderId: "VHJhbnNhY3Rpb25JdGVtOjE=",
+			description: "Worldwide Vapor order",
+			ipnUrl: "https://shop.example/api/saleor-app/crypto/ipn",
+			successUrl: "https://shop.example/checkout?checkout=abc&processingPayment=true",
+			cancelUrl: "https://shop.example/checkout?checkout=abc",
+		});
+	});
+
+	it("refuses a return address on another site", async () => {
+		const { deps, createInvoiceFn } = makeCryptoDeps();
+		const response = await handleTransactionInitialize(
+			{
+				...cryptoInit,
+				data: { method: "crypto", returnUrl: "https://evil.example/checkout?processingPayment=true" },
+			},
+			deps,
+		);
+		expect(response).toMatchObject({ result: "CHARGE_FAILURE", data: { reason: "invalid_return_url" } });
+		expect(createInvoiceFn).not.toHaveBeenCalled();
+	});
+
+	it("fails cleanly for bad input or missing setup without calling the provider", async () => {
+		const { deps, createInvoiceFn } = makeCryptoDeps();
+		expect(
+			await handleTransactionInitialize({ ...cryptoInit, action: { amount: 0, currency: "USD" } }, deps),
+		).toMatchObject({ result: "CHARGE_FAILURE", data: { reason: "invalid_amount" } });
+		expect(await handleTransactionInitialize({ ...cryptoInit, transaction: {} }, deps)).toMatchObject({
+			result: "CHARGE_FAILURE",
+			data: { reason: "missing_transaction" },
+		});
+		expect(
+			await handleTransactionInitialize(cryptoInit, makeCryptoDeps({ config: null }).deps),
+		).toMatchObject({
+			result: "CHARGE_FAILURE",
+			data: { reason: "not_configured" },
+		});
+		expect(createInvoiceFn).not.toHaveBeenCalled();
+	});
+
+	it("reports a rejected invoice as a failure with the provider's message", async () => {
+		const { deps } = makeCryptoDeps({
+			createInvoice: { ok: false, message: "Crypto payment provider: Amount is too small" },
+		});
+		expect(await handleTransactionInitialize(cryptoInit, deps)).toMatchObject({
+			result: "CHARGE_FAILURE",
+			message: "Crypto payment provider: Amount is too small",
+			data: { reason: "invoice_failed" },
+		});
+	});
+
+	it("never sends a crypto transaction to Authorize.net for a refund or cancel", async () => {
+		const { deps, authorizenet } = makeDeps();
+		const refund = await handleTransactionRefund(
+			{ action: { amount: 5 }, transaction: { pspReference: "crypto:4522625843" } },
+			deps,
+		);
+		expect(refund).toMatchObject({ result: "REFUND_FAILURE" });
+		const cancel = await handleTransactionCancel(
+			{ action: { amount: 5 }, transaction: { pspReference: "crypto:4522625843" } },
+			deps,
+		);
+		expect(cancel).toMatchObject({ result: "CANCEL_FAILURE" });
+		expect(authorizenet.getTransactionDetails).not.toHaveBeenCalled();
+		expect(authorizenet.voidTransaction).not.toHaveBeenCalled();
+	});
+});
