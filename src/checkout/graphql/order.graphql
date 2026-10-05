@@ -62,6 +62,10 @@ fragment OrderFragment on Order {
 	number
 	userEmail
 	isPaid
+	metadata {
+		key
+		value
+	}
 	channel {
 		slug
 	}

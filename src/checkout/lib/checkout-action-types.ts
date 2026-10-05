@@ -26,8 +26,17 @@ export type TransactionInitializeActionResult =
 	| { ok: true; data: NonNullable<TransactionInitializePayload> }
 	| { ok: false; error: string };
 
+/** What `checkoutComplete` reports about the new order — enough for confirmation emails. */
+export type CompletedOrderSummary = {
+	number: string;
+	userEmail: string | null;
+	total: { amount: number; currency: string } | null;
+};
+
+export type ETransferOrderActionResult = { ok: true; orderId: string } | { ok: false; error: string };
+
 export type CheckoutCompleteActionResult =
-	| { ok: true; orderId: string }
+	| { ok: true; orderId: string; order?: CompletedOrderSummary }
 	| { ok: false; error: string; fieldErrors?: CheckoutFieldError[] };
 
 export type PaymentGatewayInitializePayload = {

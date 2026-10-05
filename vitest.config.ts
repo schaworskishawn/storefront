@@ -11,6 +11,7 @@ export default defineConfig({
 	},
 	resolve: {
 		alias: {
+			"@paper/session-bridge": path.resolve(__dirname, "./src/session-bridge/index.ts"),
 			"@": path.resolve(__dirname, "./src"),
 		},
 	},

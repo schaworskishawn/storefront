@@ -80,3 +80,25 @@
 .wv-checkout input::placeholder {
 	color: oklch(var(--muted-foreground));
 }
+
+/*
+ * Adyen Drop-in (PayPal / pay later). The SDK reads these tokens with light fallbacks, so setting them here carries the dark
+ * checkout theme through. Values are the same full colours as the --wv-* tokens in src/styles/brand.css.
+ */
+.wv-checkout .wv-adyen {
+	--adyen-sdk-color-background-primary: #141020;
+	--adyen-sdk-color-background-primary-hover: #1c1630;
+	--adyen-sdk-color-background-secondary: #0f0f14;
+	--adyen-sdk-color-background-secondary-hover: #1c1630;
+	--adyen-sdk-color-background-tertiary: #141020;
+	--adyen-sdk-color-label-primary: #ffffff;
+	--adyen-sdk-color-label-secondary: #b8b4c4;
+	--adyen-sdk-color-label-tertiary: #7e7487;
+	--adyen-sdk-color-outline-primary: #333340;
+	--adyen-sdk-color-outline-primary-hover: #69ebff;
+	--adyen-sdk-color-outline-primary-active: #69ebff;
+	--adyen-sdk-color-separator-primary: #1a2640;
+	--adyen-sdk-color-background-inverse-primary: #69ebff;
+	--adyen-sdk-color-background-inverse-primary-hover: #00e5ff;
+	--adyen-sdk-color-label-on-color: #0b0712;
+}
