@@ -6,7 +6,7 @@ import {
 	isTrustedCryptoInvoiceUrl,
 	parseCryptoInvoice,
 } from "./crypto";
-import { getWvPayGuardError, WVPAY_GATEWAY_ID, wvPayOffersCrypto } from "./wvpay";
+import { WVPAY_GATEWAY_ID, wvPayOffersCrypto } from "./wvpay";
 
 afterEach(() => {
 	vi.unstubAllEnvs();
@@ -26,9 +26,9 @@ describe("crypto enablement", () => {
 	});
 });
 
-describe("guards for the shared payments app", () => {
+describe("guards for the payments app", () => {
 	const crypto = { method: "crypto", returnUrl: "https://shop.example/checkout" };
-	const card = { method: "authorizenet", opaqueData: {} };
+	const other = { method: "something-else" };
 
 	it("blocks crypto requests only when the crypto flag is off", () => {
 		expect(getCryptoPaymentGuardError(WVPAY_GATEWAY_ID, crypto)).toBe(CRYPTO_NOT_ENABLED_MESSAGE);
@@ -36,21 +36,15 @@ describe("guards for the shared payments app", () => {
 		expect(getCryptoPaymentGuardError(WVPAY_GATEWAY_ID, crypto)).toBeNull();
 	});
 
-	it("leaves card requests and other gateways alone", () => {
-		expect(getCryptoPaymentGuardError(WVPAY_GATEWAY_ID, card)).toBeNull();
+	it("leaves other methods and other gateways alone", () => {
+		expect(getCryptoPaymentGuardError(WVPAY_GATEWAY_ID, other)).toBeNull();
 		expect(getCryptoPaymentGuardError("saleor.app.payment.stripe", crypto)).toBeNull();
 		expect(getCryptoPaymentGuardError(null, crypto)).toBeNull();
 	});
 
-	it("keeps the card guard off crypto requests, so crypto can run without Authorize.net enabled", () => {
-		expect(getWvPayGuardError(WVPAY_GATEWAY_ID, card)).toMatch(/AUTHORIZENET/);
-		expect(getWvPayGuardError(WVPAY_GATEWAY_ID, undefined)).toMatch(/AUTHORIZENET/);
-		expect(getWvPayGuardError(WVPAY_GATEWAY_ID, crypto)).toBeNull();
-	});
-
 	it("reads whether the app offers crypto from its gateway config", () => {
-		expect(wvPayOffersCrypto({ methods: ["authorizenet", "crypto"] })).toBe(true);
-		expect(wvPayOffersCrypto({ methods: ["authorizenet"] })).toBe(false);
+		expect(wvPayOffersCrypto({ methods: ["crypto"] })).toBe(true);
+		expect(wvPayOffersCrypto({ methods: [] })).toBe(false);
 		expect(wvPayOffersCrypto(null)).toBe(false);
 	});
 });

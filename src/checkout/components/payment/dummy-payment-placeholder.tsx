@@ -11,7 +11,7 @@ import {
 	setDummyCardEntry,
 } from "@/checkout/lib/payment/providers/dummy-card";
 import { Input } from "@/ui/components/ui/input";
-import { detectBrand, formatCardNumber, formatExpiry, validateCard } from "./wvpay/card-validation";
+import { detectBrand, formatCardNumber, formatExpiry, validateCard } from "./card-validation";
 
 export interface DummyPaymentPlaceholderProps {
 	/** Gateway display name from Saleor (e.g. "Dummy Payment App") */
@@ -64,7 +64,7 @@ type Touched = { number: boolean; expiry: boolean; cvv: boolean };
 
 const TestCardForm: FC = () => {
 	const t = useTranslations("checkout.payment.dummyCard");
-	const tCard = useTranslations("checkout.payment.wvpay");
+	const tCard = useTranslations("checkout.payment.cardErrors");
 	// Starts from the card left by an earlier mount: Pay swaps this whole step for the "processing" screen before it reads the
 	// card, and a failed attempt brings the step back — the shopper should find what they typed, not the default card.
 	const [initial] = useState(() => getDummyCardEntry() ?? DEFAULT_DUMMY_CARD);

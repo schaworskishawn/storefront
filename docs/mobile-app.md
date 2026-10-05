@@ -98,6 +98,6 @@ licensing (age verification, Canadian tobacco/vaping regulation) can be approved
 
 - The site-wide age gate and any site password work as in a browser, but cookies live inside the app's web view, so shoppers
   verify age once per install.
-- Card payments: Accept.js and Stripe load fine. Redirect-based flows (3-D Secure, PayPal) need their host in
+- Card payments: Stripe loads fine. Redirect-based flows (3-D Secure, PayPal) need their host in
   `server.allowNavigation`; add hosts there if a payment redirect opens in the system browser instead of the app.
 - Apple Pay / Google Pay buttons depend on the web view and the payment provider's domain verification; test them on a device.

@@ -2190,29 +2190,27 @@ Only touch `payment-step.tsx` for **provider-specific** extras (e.g. Stripe's `A
 
 ## Current integrated gateways
 
-| App                      | Gateway ID                                     | Env flag                                   | Submit mode |
-| ------------------------ | ---------------------------------------------- | ------------------------------------------ | ----------- |
-| Worldwide Vapor Payments | `app.worldwide-vapor.payments`                 | `NEXT_PUBLIC_ENABLE_AUTHORIZENET_PAYMENTS` | `client`    |
-| Stripe                   | `saleor.app.payment.stripe`                    | `NEXT_PUBLIC_ENABLE_STRIPE_PAYMENTS`       | `client`    |
-| Dummy Payment            | `saleor.io.dummy-payment-app` (and legacy IDs) | `ALLOW_DUMMY_PAYMENT` / dev only           | `server`    |
+| App           | Gateway ID                                     | Env flag                             | Submit mode |
+| ------------- | ---------------------------------------------- | ------------------------------------ | ----------- |
+| Stripe        | `saleor.app.payment.stripe`                    | `NEXT_PUBLIC_ENABLE_STRIPE_PAYMENTS` | `client`    |
+| Dummy Payment | `saleor.io.dummy-payment-app` (and legacy IDs) | `ALLOW_DUMMY_PAYMENT` / dev only     | `server`    |
 
-Registry order is priority: `wvpay` is first, so enabling it takes over card payments from Stripe.
+Registry order is priority: Stripe first, then the dummy gateway. The Worldwide Vapor Payments app (crypto only) is **not** here — it is an extra method, see below. Authorize.net card payments were removed on 2026-10-05; they are in git history if a card processor is ever needed again.
 
 Gift card gateway (`saleor.io.gift-card-payment-gateway`) is **ignorable** — it does not block resolution. Gift cards are redeemed through the checkout's promo box (`checkoutAddPromoCode` accepts both discount codes and gift card codes; applied cards show in `CheckoutPromoSection`, removed by id with `removeCheckoutGiftCard`).
 
 ---
 
-## Worldwide Vapor Payments app (Authorize.net)
+## Worldwide Vapor Payments app (crypto)
 
-Saleor has no ready-made Authorize.net app, so this repo ships one as route handlers (`src/app/api/saleor-app/*`, logic in `src/lib/payments-app/*`):
+Saleor has no ready-made hosted-crypto app, so this repo ships one as route handlers (`src/app/api/saleor-app/*`, logic in `src/lib/payments-app/*`):
 
-- `manifest` — install URL for Dashboard → Apps. Webhook subscription queries live in `manifest.ts` (validate them against the live schema after editing).
+- `manifest` — install URL for Dashboard → Apps. Webhook subscription queries live in `manifest.ts` (validate them against the live schema after editing; bump `PAYMENTS_APP_VERSION` when they change and reinstall the app).
 - `register` — token handshake; only checks the install is ours and has `HANDLE_PAYMENTS`.
 - `webhooks/[event]` — every request is verified (`saleor-signature` RS256 detached JWS against Saleor's JWKS, pinned to `NEXT_PUBLIC_SALEOR_API_URL`) before any handler runs.
-- Handlers answer `PAYMENT_GATEWAY_INITIALIZE_SESSION`, `TRANSACTION_INITIALIZE_SESSION` (charge), `TRANSACTION_REFUND_REQUESTED` (void if unsettled, refund if settled) and `TRANSACTION_CANCELATION_REQUESTED`. Saleor's `action.amount` is the only amount trusted.
-- Card data never reaches our servers: the browser tokenizes with Accept.js (`wvpay/accept-js.ts`) and we only charge the opaque token. The Accept.js URL is derived from the environment name, never taken from a response.
-- Client pipeline: `execute-wvpay-payment.ts` (billing → live total → tokenize → `transactionInitialize` → `finalizeCheckoutOrder`).
-- The same app also serves hosted **crypto** (`method: "crypto"` on `transactionInitialize`, see "Extra methods" below). `nowpayments.ts` creates the invoice and verifies the IPN; `saleor-api.ts` reports the confirmed payment with `transactionEventReport` using `PAYMENTS_APP_TOKEN`. Refund/cancel on a `crypto:`-prefixed `pspReference` never reaches Authorize.net.
+- Handlers answer `PAYMENT_GATEWAY_INITIALIZE_SESSION` (lists `crypto` once the NOWPayments keys are set), `TRANSACTION_INITIALIZE_SESSION` (`method: "crypto"` creates the hosted invoice; any other method is an `unknown_method` failure), and `TRANSACTION_REFUND_REQUESTED` / `TRANSACTION_CANCELATION_REQUESTED` (always a clear failure: crypto is refunded from the provider's dashboard). Saleor's `action.amount` is the only amount trusted.
+- `nowpayments.ts` creates the invoice and verifies the IPN; `saleor-api.ts` reports the confirmed payment with `transactionEventReport` using `PAYMENTS_APP_TOKEN`. Crypto transactions carry a `crypto:` `pspReference` prefix.
+- Server-to-server calls to `/api/saleor-app/*` must not be challenged by a firewall / bot protection (Saleor and NOWPayments can't solve a challenge page).
 
 ## Test card form (Dummy Payment)
 
@@ -2225,7 +2223,7 @@ Adyen (PayPal/BNPL) and crypto are **not** in `INTEGRATED_GATEWAYS` — that reg
 - `getGatewayPaymentOffers(gateways, isFreeOrder)` — `adyen` needs `NEXT_PUBLIC_ENABLE_ADYEN_PAYMENTS` + the `app.saleor.adyen` gateway on the checkout; `crypto` needs `NEXT_PUBLIC_ENABLE_CRYPTO_PAYMENTS` + the payments-app gateway. Neither has a development default.
 - `listPaymentMethods` / `resolvePaymentMethod` order the tabs (`card`, `adyen`, `etransfer`, `crypto`) and fall back when the saved pick is no longer offered. `payment-step.tsx` shows `PaymentMethodTabs` whenever more than one is on offer.
 - `isExtraMethodGateway` keeps their gateways from reading as "unsupported" in `hasUnsupportedPaymentGateway` / `resolvePaymentProvider`.
-- Server guards: `getAdyenGuardError`, `getCryptoPaymentGuardError` (and `getWvPayGuardError` now skips `method: "crypto"`) run in `initializeCheckoutTransaction`.
+- Server guards: `getAdyenGuardError` and `getCryptoPaymentGuardError` run in `initializeCheckoutTransaction`.
 
 **Adyen** (`providers/adyen.ts`, `execute-adyen-payment.ts`, `components/payment/adyen/`): Drop-in is loaded lazily (`next/dynamic`) and owns the Pay button. `submitAdyenPayment` (billing → live total → `transactionInitialize` with `paymentMethod`/`browserInfo`/`returnUrl`) and `submitAdyenDetails` (`transactionProcess`) are the Saleor side of Drop-in's `onSubmit` / `onAdditionalDetails`. Cards are filtered out of `paymentMethodsResponse` (`allowedAdyenPaymentMethods`). A redirect (lender) saves `{transactionId, paymentData}` in `pending-payment-storage.ts` first; `use-adyen-return-completion.ts` finishes it when the shopper returns with `processingPayment=true&redirectResult=…`.
 

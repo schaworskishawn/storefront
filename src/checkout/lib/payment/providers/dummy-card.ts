@@ -1,4 +1,4 @@
-import { digitsOnly, luhnValid, validateCard } from "@/checkout/components/payment/wvpay/card-validation";
+import { digitsOnly, luhnValid, validateCard } from "@/checkout/components/payment/card-validation";
 
 /**
  * Test credit card behaviour for the Saleor Dummy Payment gateway, in the spirit of the dummy app itself: no real processor,

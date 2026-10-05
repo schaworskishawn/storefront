@@ -1,8 +1,9 @@
 import { isWvPayCryptoRequest, isWvPayGateway } from "./wvpay";
 
 /**
- * Hosted crypto checkout. It is served by the same "Worldwide Vapor Payments" Saleor app as cards (`method: "crypto"` on
- * `transactionInitialize`), so there is no gateway of its own — the storefront flag below decides whether it is offered.
+ * Hosted crypto checkout. It is served by the "Worldwide Vapor Payments" Saleor app (`method: "crypto"` on
+ * `transactionInitialize`), which is a gateway on the checkout but never the primary one — the storefront flag below decides
+ * whether crypto is offered.
  *
  * The shopper is sent to the provider's hosted page to pay, and the payment is confirmed by the provider calling our IPN
  * route (src/app/api/saleor-app/crypto/ipn), never by the shopper's browser.

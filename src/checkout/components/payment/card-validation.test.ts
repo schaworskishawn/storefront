@@ -1,5 +1,7 @@
+import { readdirSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
+	type CardErrorKey,
 	cvvLengthFor,
 	detectBrand,
 	formatCardNumber,
@@ -11,6 +13,24 @@ import {
 } from "./card-validation";
 
 const NOW = new Date("2026-10-04T12:00:00");
+
+describe("validation messages", () => {
+	// The test-card form shows `checkout.payment.cardErrors.<key>`; a missing key only fails at runtime, so check every locale.
+	const keys: CardErrorKey[] = ["numberInvalid", "expiryInvalid", "expiryPast", "cvvInvalid"];
+	const dir = new URL("../../../../messages/", import.meta.url);
+
+	it.each(readdirSync(dir).filter((file) => file.endsWith(".json")))(
+		"%s has a message for each error",
+		(file) => {
+			const messages = JSON.parse(readFileSync(new URL(file, dir), "utf8")) as {
+				checkout: { payment: { cardErrors?: Record<string, unknown> } };
+			};
+			for (const key of keys) {
+				expect(typeof messages.checkout.payment.cardErrors?.[key]).toBe("string");
+			}
+		},
+	);
+});
 
 describe("detectBrand", () => {
 	it("recognises the major brands", () => {

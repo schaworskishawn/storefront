@@ -5,7 +5,7 @@ import { type PaymentGatewayLike } from "../types";
  * @see https://docs.saleor.io/developer/app-store/apps/adyen/storefront
  *
  * Adyen is offered *next to* the card gateway, not instead of it: this storefront uses it for PayPal and the
- * buy-now-pay-later methods, while cards stay on Authorize.net / Stripe. So it is not in the primary-gateway registry
+ * buy-now-pay-later methods, while cards stay on Stripe. So it is not in the primary-gateway registry
  * (`INTEGRATED_GATEWAYS`); the payment step lists it as an extra method (see `payment-methods.ts`).
  */
 export const ADYEN_GATEWAY_ID = "app.saleor.adyen";

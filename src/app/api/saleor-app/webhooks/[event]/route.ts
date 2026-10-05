@@ -19,7 +19,7 @@ const HANDLERS: Record<(typeof WEBHOOK_DEFINITIONS)[number]["slug"], Handler> = 
 
 /**
  * Saleor → payments app synchronous webhooks. Every request is verified against Saleor's published signing key before
- * anything is read from it; an unsigned or foreign request gets a 401 and never reaches Authorize.net.
+ * anything is read from it; an unsigned or foreign request gets a 401 and never reaches a handler.
  */
 export async function POST(request: NextRequest, { params }: { params: Promise<{ event: string }> }) {
 	const { event } = await params;

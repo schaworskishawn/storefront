@@ -4,22 +4,10 @@ import { PAYMENTS_APP_ID, PAYMENTS_APP_NAME, PAYMENTS_APP_VERSION } from "./cons
  * Saleor app manifest for the payments app. Each webhook's `query` is a subscription that selects exactly the fields our
  * handlers read, so Saleor sends nothing more than needed.
  *
- * Only the events this app handles are registered. `TRANSACTION_PROCESS_SESSION` is deliberately absent: card payments finish
- * inside `TRANSACTION_INITIALIZE_SESSION` (no redirect / 3-D Secure step), and crypto payments are confirmed by the provider's
- * IPN call (src/app/api/saleor-app/crypto/ipn), which reports to Saleor itself — so Saleor has nothing to process afterwards.
+ * Only the events this app handles are registered. `TRANSACTION_PROCESS_SESSION` is deliberately absent: crypto payments are
+ * confirmed by the provider's IPN call (src/app/api/saleor-app/crypto/ipn), which reports to Saleor itself — so Saleor has
+ * nothing to process afterwards.
  */
-
-const ADDRESS_FIELDS = `
-	firstName
-	lastName
-	companyName
-	streetAddress1
-	streetAddress2
-	city
-	countryArea
-	postalCode
-	phone
-	country { code }`;
 
 export type WebhookDefinition = {
 	/** URL segment under /api/saleor-app/webhooks/ — the route dispatches on it. */
@@ -53,26 +41,6 @@ export const WEBHOOK_DEFINITIONS: readonly WebhookDefinition[] = [
 			data
 			merchantReference
 			transaction { id pspReference }
-			sourceObject {
-				__typename
-				... on Checkout {
-					id
-					email
-					billingAddress {${ADDRESS_FIELDS}
-					}
-					shippingAddress {${ADDRESS_FIELDS}
-					}
-				}
-				... on Order {
-					id
-					number
-					userEmail
-					billingAddress {${ADDRESS_FIELDS}
-					}
-					shippingAddress {${ADDRESS_FIELDS}
-					}
-				}
-			}
 		}
 	}
 }`,
@@ -111,8 +79,7 @@ export function buildPaymentsAppManifest(origin: string) {
 		id: PAYMENTS_APP_ID,
 		version: PAYMENTS_APP_VERSION,
 		name: PAYMENTS_APP_NAME,
-		about:
-			"Takes credit and debit card payments through Authorize.net, and crypto payments through NOWPayments, for this storefront.",
+		about: "Takes crypto payments through NOWPayments for this storefront.",
 		permissions: ["HANDLE_PAYMENTS"],
 		appUrl: base,
 		tokenTargetUrl: `${base}/api/saleor-app/register`,

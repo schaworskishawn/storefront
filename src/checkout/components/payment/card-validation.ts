@@ -1,6 +1,6 @@
 /**
- * Card-entry helpers for the Authorize.net form. These only catch typos before a round trip — the processor is the real
- * authority — and they never see or keep card data beyond the form's own state.
+ * Card-entry helpers for the test-card form (Dummy Payment). These only catch typos before a round trip — a real processor
+ * would be the authority — and they never see or keep card data beyond the form's own state.
  */
 
 export type CardBrand = "visa" | "mastercard" | "amex" | "discover" | "unknown";

@@ -3,17 +3,16 @@
 What the storefront can take payment with, what each method needs, and the order to switch things on. Everything is
 off until its flag is set, so nothing here changes the live store by itself.
 
-| Method                              | Status                                 | Needs                                                                         |
-| ----------------------------------- | -------------------------------------- | ----------------------------------------------------------------------------- |
-| Test credit card (Dummy Payment)    | Built, dev/staging only                | The Saleor Dummy Payment app (already installed), `ALLOW_DUMMY_PAYMENT`       |
-| Credit / debit card (Authorize.net) | Built, untested against a live account | Merchant account, Authorize.net account, app install in Saleor                |
-| Interac e-Transfer                  | Built                                  | Saleor "Allow unpaid orders", a verified Resend sending domain, CAD handling  |
-| Gift cards — redeem                 | Built (uses Saleor's gift card flow)   | `allowLegacyGiftCardUse` on the channel (Saleor default)                      |
-| Gift cards — sell                   | Product created, **unpublished**       | Confirm gift card emails send, then publish the product                       |
-| Apple Pay / Google Pay              | Built (Stripe Express Checkout)        | Stripe enabled, Apple Pay domain verified in Stripe                           |
-| PayPal, Klarna/Afterpay/Affirm      | Built, untested against a live account | Adyen account (PayPal/lender methods enabled), the Saleor Adyen app installed |
-| Crypto (hosted checkout)            | Built, untested against a live account | NOWPayments account, a Saleor app token, the payments app installed           |
-| Shop Pay                            | Not possible                           | Only works inside Shopify's checkout                                          |
+| Method                           | Status                                 | Needs                                                                         |
+| -------------------------------- | -------------------------------------- | ----------------------------------------------------------------------------- |
+| Test credit card (Dummy Payment) | Built, dev/staging only                | The Saleor Dummy Payment app (already installed), `ALLOW_DUMMY_PAYMENT`       |
+| Interac e-Transfer               | Built                                  | Saleor "Allow unpaid orders", a verified Resend sending domain, CAD handling  |
+| Gift cards — redeem              | Built (uses Saleor's gift card flow)   | `allowLegacyGiftCardUse` on the channel (Saleor default)                      |
+| Gift cards — sell                | Product created, **unpublished**       | Confirm gift card emails send, then publish the product                       |
+| Apple Pay / Google Pay           | Built (Stripe Express Checkout)        | Stripe enabled, Apple Pay domain verified in Stripe                           |
+| PayPal, Klarna/Afterpay/Affirm   | Built, untested against a live account | Adyen account (PayPal/lender methods enabled), the Saleor Adyen app installed |
+| Crypto (hosted checkout)         | Built, untested against a live account | NOWPayments account, a Saleor app token, the payments app installed           |
+| Shop Pay                         | Not possible                           | Only works inside Shopify's checkout                                          |
 
 Before wiring any processor, confirm it accepts your business. Vape and nicotine products are restricted or prohibited at
 Stripe, PayPal, Klarna, Afterpay, Affirm and most crypto processors; an account that is opened and later closed for the
@@ -40,38 +39,14 @@ It only appears in development, or where `ALLOW_DUMMY_PAYMENT=true` / `NEXT_PUBL
 turn that on for a store taking real orders:** it approves nearly any card number and creates real orders in Saleor with
 nothing paid. An approved test payment creates a real order in Saleor (cancel it afterwards in the Dashboard).
 
-## Card payments with Authorize.net
+## Card payments
 
-Authorize.net is a gateway, not a bank. You need **both**:
-
-1. A **merchant account** from an acquiring bank that accepts your category (often a "high-risk" acquirer). This is a
-   business application only you can complete. A gateway provider or payments broker can refer you.
-2. An **Authorize.net account** attached to that merchant account. Start with a free sandbox account to test:
-   https://developer.authorize.net/hello_world/sandbox.html
-
-Then:
-
-1. In Authorize.net: Account → Settings → API Credentials & Keys. Copy the API Login ID and Transaction Key, and create a
-   Public Client Key.
-2. Set the `AUTHORIZENET_*` variables (see `.env.example`). Leave `AUTHORIZENET_ENVIRONMENT=sandbox` until you have tested.
-3. Deploy. Saleor has to reach the app, so install it from the deployed site, not localhost:
-   Saleor Dashboard → Apps → Install external app → `https://<your-domain>/api/saleor-app/manifest`.
-4. Set `NEXT_PUBLIC_ENABLE_AUTHORIZENET_PAYMENTS=true` (and `NEXT_PUBLIC_STOREFRONT_URL` to the real domain).
-   While on, it takes over card payments from Stripe.
-5. Test with Authorize.net's sandbox card numbers (e.g. 4111 1111 1111 1111) end to end, including a refund from the
-   Saleor Dashboard, before switching to `production`.
-
-An Authorize.net account settles in **one currency** (the sandbox account created on 2026-10-05 reports CAD only), so it can
-only charge checkouts in that currency. A CAD account can't take the USD channel's orders; point Canadian shoppers at the
-`cad` channel (see the Canada section) or add a second account for USD.
-
-Checked against the sandbox on 2026-10-05 with real calls: the credentials, a charge of an Accept.js token (test card
-`4111 1111 1111 1111`), the transaction lookup, and the void all work. Not yet exercised: Saleor calling the app's webhooks (it
-needs a public URL), refunds (they only work after a transaction settles), and declines.
-
-Card numbers are entered in the checkout and sent straight from the browser to Authorize.net (Accept.js); only a one-time
-token reaches the server. This is PCI SAQ A-EP territory, which is lighter than handling raw cards but still means your
-checkout page's security is yours to maintain.
+The storefront has no card processor of its own right now. Authorize.net was built (a card form using Accept.js, with
+charges, voids and refunds handled by the payments app) and then removed on 2026-10-05 before it ever took a live
+payment; it is in git history, in the commit titled "Remove Authorize.net card payments". Real card payments need a
+processor that accepts your category (vape and nicotine are restricted at most of them), plus a Saleor payment app for it.
+Stripe is wired in (`NEXT_PUBLIC_ENABLE_STRIPE_PAYMENTS`); to add another processor, register it in
+`src/checkout/lib/payment/integrated-gateways.ts` with a provider module and a UI component.
 
 ## Before any Canadian order can complete
 
@@ -136,13 +111,11 @@ Unpaid orders are not cancelled automatically. Cancel any that pass their deadli
 ## Apple Pay / Google Pay
 
 Built on Stripe Express Checkout. Needs `NEXT_PUBLIC_ENABLE_STRIPE_PAYMENTS=true`, and for Apple Pay the domain registered
-in Stripe's dashboard (Stripe gives you a verification file to serve from `/.well-known/`). They will not appear on a
-checkout where the Authorize.net gateway has taken over card payments.
+in Stripe's dashboard (Stripe gives you a verification file to serve from `/.well-known/`).
 
 ## PayPal and buy-now-pay-later (Adyen)
 
-Adyen's Drop-in sits **beside** the card form as an extra tab ("PayPal & Pay Later"); cards stay on Authorize.net or
-Stripe. By default only PayPal, Klarna, Afterpay/Clearpay and Affirm are shown (override with
+Adyen's Drop-in sits **beside** the card form as an extra tab ("PayPal & Pay Later"); cards stay on Stripe. By default only PayPal, Klarna, Afterpay/Clearpay and Affirm are shown (override with
 `NEXT_PUBLIC_ADYEN_PAYMENT_METHODS`, a comma-separated list of Adyen method types).
 
 1. Open an Adyen merchant account and enable the methods you want (PayPal needs your PayPal business details; each lender
@@ -167,8 +140,10 @@ decision is waited for briefly, then the order is placed once Saleor reports the
 ## Crypto (hosted checkout)
 
 The shopper is sent to NOWPayments' hosted page to choose a coin and pay. The order is placed once NOWPayments confirms the
-payment to our server (an IPN call); the shopper's return to the site proves nothing by itself. It is served by the same
-"Worldwide Vapor Payments" app as cards, so that app must be installed (see Card payments, step 3).
+payment to our server (an IPN call); the shopper's return to the site proves nothing by itself. It is served by the
+"Worldwide Vapor Payments" app, which only does crypto, so that app must be installed: Saleor Dashboard → Apps → Install
+external app → `https://<your-domain>/api/saleor-app/manifest` (Saleor has to reach it, so not localhost). The manifest is
+version 2.0.0; if an older version is already installed, remove and reinstall it so Saleor picks up the new webhooks.
 
 1. Create a NOWPayments account, set your payout wallet(s), and in Store Settings create an **API key** and an **IPN secret**.
    (NOWPayments has a sandbox with its own keys: set `NOWPAYMENTS_SANDBOX=true` while testing.)
@@ -185,6 +160,9 @@ Things to know:
 
 - Only a `finished` payment marks the order paid. A **partially paid** invoice (the shopper sent too little) is logged and
   left unpaid for you to resolve with the customer in NOWPayments.
+- Saleor's and NOWPayments' server-to-server calls must reach `/api/saleor-app/*`. If the Vercel project's firewall has Bot
+  Protection set to Challenge (or Attack Challenge Mode on), those calls get a verification page and fail — add a firewall
+  rule that lets that path through, or relax the setting.
 - Crypto can't be refunded from Saleor. The refund button reports a clear failure; send it from NOWPayments and note it on the
   order.
 - Confirm in the sandbox that NOWPayments accepts the Saleor transaction ID as `order_id` and that very small totals are
@@ -195,4 +173,4 @@ Things to know:
 Everything above is covered by unit tests and a browser walkthrough of the checkout UI states, but **none of the Adyen or
 crypto paths have run against a real Adyen or NOWPayments account**: the Drop-in rendering, PayPal pop-up, lender redirects,
 3-D Secure challenges, and the IPN signature against NOWPayments' own callbacks are unverified until you test them with your
-accounts. Authorize.net is in the same position.
+accounts.

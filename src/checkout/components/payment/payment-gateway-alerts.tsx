@@ -16,7 +16,7 @@ export const PaymentGatewayAlerts: FC<PaymentGatewayAlertsProps> = ({ gateways }
 	const t = useTranslations("checkout.gateways");
 	const status = resolvePaymentGatewayStatus(gateways);
 
-	if (status.kind === "dummy" || status.kind === "stripe" || status.kind === "wvpay") {
+	if (status.kind === "dummy" || status.kind === "stripe") {
 		return null;
 	}
 

@@ -563,19 +563,11 @@
 				"placeOrder": "Place order — pay by e-Transfer",
 				"introConvert": "Place your order now and send the Canadian-dollar equivalent of {total} by Interac e-Transfer. We ship as soon as it arrives."
 			},
-			"wvpay": {
-				"loading": "Loading secure card form…",
-				"loadFailed": "We couldn't load the secure card form. Please refresh the page and try again.",
-				"notConfigured": "Card payments aren't set up yet. Please choose another payment method or contact support.",
-				"cardNumber": "Card number",
-				"expiry": "Expiry",
-				"cvv": "Security code",
+			"cardErrors": {
 				"numberInvalid": "Check your card number.",
 				"expiryInvalid": "Enter the expiry as MM / YY.",
 				"expiryPast": "This card has expired.",
-				"cvvInvalid": "Check the security code.",
-				"cardRejected": "Your card couldn't be verified. Please check the details and try again.",
-				"securityNote": "Your card details go securely and directly to our payment processor, Authorize.net. They never touch our servers."
+				"cvvInvalid": "Check the security code."
 			},
 			"adyen": {
 				"methodTitle": "PayPal & Pay Later",
@@ -704,7 +696,6 @@
 			"eTransferCurrency": "Interac e-Transfer is only available for orders in Canadian dollars.",
 			"eTransferNotAllowed": "We couldn't place this order for e-Transfer yet. Please choose another payment method or contact support.",
 			"eTransferFailed": "We couldn't save your e-Transfer order. Please try again.",
-			"wvpayNotEnabled": "Card payments are not enabled in this environment. Set NEXT_PUBLIC_ENABLE_AUTHORIZENET_PAYMENTS=true on the storefront.",
 			"eTransferCountry": "Interac e-Transfer is only available for customers in Canada.",
 			"cryptoNotEnabled": "Crypto payments are not enabled in this environment. Set NEXT_PUBLIC_ENABLE_CRYPTO_PAYMENTS=true on the storefront.",
 			"adyenNotEnabled": "Adyen payments are not enabled in this environment. Set NEXT_PUBLIC_ENABLE_ADYEN_PAYMENTS=true on the storefront."

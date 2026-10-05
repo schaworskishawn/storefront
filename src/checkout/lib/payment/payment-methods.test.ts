@@ -92,14 +92,14 @@ describe("resolvePaymentProvider with extra-method gateways", () => {
 		expect(resolvePaymentProvider([ADYEN, STRIPE]).type).toBe("stripe");
 	});
 
-	it("lets crypto run on the payments app without switching on its card gateway", () => {
+	it("lets crypto run on the payments app without it ever being the primary card gateway", () => {
 		vi.stubEnv("NEXT_PUBLIC_ENABLE_CRYPTO_PAYMENTS", "true");
 		expect(resolvePaymentProvider([WVPAY]).type).toBe("none");
 	});
 
-	it("still takes cards through the payments app when its card flag is on", () => {
-		vi.stubEnv("NEXT_PUBLIC_ENABLE_AUTHORIZENET_PAYMENTS", "true");
+	it("keeps the card gateway as the provider when the payments app sits beside it", () => {
 		vi.stubEnv("NEXT_PUBLIC_ENABLE_CRYPTO_PAYMENTS", "true");
-		expect(resolvePaymentProvider([WVPAY]).type).toBe("wvpay");
+		vi.stubEnv("NEXT_PUBLIC_ENABLE_STRIPE_PAYMENTS", "true");
+		expect(resolvePaymentProvider([WVPAY, STRIPE]).type).toBe("stripe");
 	});
 });

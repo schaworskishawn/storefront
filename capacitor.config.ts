@@ -26,13 +26,7 @@ const config: CapacitorConfig = {
 		errorPath: "offline.html",
 		// Hosts the app may navigate to *inside* the app (everything else opens in the system browser). The site's own host is
 		// always allowed; these cover card-payment redirects (e.g. 3-D Secure) and the Saleor API.
-		allowNavigation: [
-			"worldwidevapor.com",
-			"*.worldwidevapor.com",
-			"*.saleor.cloud",
-			"*.authorize.net",
-			"*.stripe.com",
-		],
+		allowNavigation: ["worldwidevapor.com", "*.worldwidevapor.com", "*.saleor.cloud", "*.stripe.com"],
 	},
 	// Matches --wv-bg so there is no white flash while the site loads.
 	ios: { backgroundColor: "#05030a", contentInset: "automatic" },

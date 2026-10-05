@@ -1,15 +1,12 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import {
 	WVPAY_GATEWAY_ID,
-	WVPAY_NOT_ENABLED_MESSAGE,
 	findWvPayGateway,
-	getWvPayGuardError,
-	isWvPayEnabled,
+	isWvPayCryptoRequest,
 	isWvPayGateway,
 	parseWvPayGatewayConfig,
+	wvPayOffersCrypto,
 } from "./wvpay";
-
-afterEach(() => vi.unstubAllEnvs());
 
 describe("wvpay gateway identity", () => {
 	it("matches the Saleor app's gateway id", () => {
@@ -29,68 +26,40 @@ describe("wvpay gateway identity", () => {
 	});
 });
 
-describe("isWvPayEnabled / getWvPayGuardError", () => {
-	it("is off by default, even in development", () => {
-		vi.stubEnv("NODE_ENV", "development");
-		expect(isWvPayEnabled()).toBe(false);
-	});
-
-	it("turns on with either flag", () => {
-		vi.stubEnv("NEXT_PUBLIC_ENABLE_AUTHORIZENET_PAYMENTS", "true");
-		expect(isWvPayEnabled()).toBe(true);
-		vi.unstubAllEnvs();
-		vi.stubEnv("ENABLE_AUTHORIZENET_PAYMENTS", "true");
-		expect(isWvPayEnabled()).toBe(true);
-	});
-
-	it("only guards the payments app's gateway", () => {
-		expect(getWvPayGuardError(WVPAY_GATEWAY_ID)).toBe(WVPAY_NOT_ENABLED_MESSAGE);
-		expect(getWvPayGuardError("saleor.app.payment.stripe")).toBeNull();
-		expect(getWvPayGuardError(null)).toBeNull();
-
-		vi.stubEnv("NEXT_PUBLIC_ENABLE_AUTHORIZENET_PAYMENTS", "true");
-		expect(getWvPayGuardError(WVPAY_GATEWAY_ID)).toBeNull();
+describe("isWvPayCryptoRequest", () => {
+	it("recognises only the crypto method", () => {
+		expect(isWvPayCryptoRequest({ method: "crypto", returnUrl: "https://shop.example/checkout" })).toBe(true);
+		expect(isWvPayCryptoRequest({ method: "authorizenet" })).toBe(false);
+		expect(isWvPayCryptoRequest({})).toBe(false);
+		expect(isWvPayCryptoRequest(null)).toBe(false);
+		expect(isWvPayCryptoRequest("crypto")).toBe(false);
 	});
 });
 
 describe("parseWvPayGatewayConfig", () => {
-	const valid = {
-		methods: ["authorizenet"],
-		authorizenet: { environment: "production", apiLoginId: "login", clientKey: "client" },
-	};
-
-	it("reads the public Authorize.net settings", () => {
-		expect(parseWvPayGatewayConfig(valid)).toEqual({
-			methods: ["authorizenet"],
-			authorizenet: { environment: "production", apiLoginId: "login", clientKey: "client" },
+	it("reads the methods the app offers", () => {
+		expect(parseWvPayGatewayConfig({ methods: ["crypto"], crypto: { provider: "nowpayments" } })).toEqual({
+			methods: ["crypto"],
 		});
+		expect(parseWvPayGatewayConfig({ methods: [] })).toEqual({ methods: [] });
 	});
 
-	it("falls back to the sandbox for anything but an explicit production", () => {
-		expect(
-			parseWvPayGatewayConfig({ ...valid, authorizenet: { ...valid.authorizenet, environment: "live" } })
-				?.authorizenet?.environment,
-		).toBe("sandbox");
-	});
-
-	it("never takes a script URL from the response", () => {
-		const parsed = parseWvPayGatewayConfig({
-			...valid,
-			authorizenet: { ...valid.authorizenet, scriptUrl: "https://evil.example/x.js" },
-		});
-		expect(JSON.stringify(parsed)).not.toContain("evil.example");
-	});
-
-	it("returns no Authorize.net config when credentials are missing", () => {
-		expect(
-			parseWvPayGatewayConfig({ methods: ["authorizenet"], authorizenet: { apiLoginId: "login" } })
-				?.authorizenet,
-		).toBeNull();
-		expect(parseWvPayGatewayConfig({ methods: [] })).toEqual({ methods: [], authorizenet: null });
+	it("ignores anything that is not a string method", () => {
+		expect(parseWvPayGatewayConfig({ methods: ["crypto", 7, null] })).toEqual({ methods: ["crypto"] });
+		expect(parseWvPayGatewayConfig({ methods: "crypto" })).toEqual({ methods: [] });
+		expect(parseWvPayGatewayConfig({})).toEqual({ methods: [] });
 	});
 
 	it("rejects non-objects", () => {
 		expect(parseWvPayGatewayConfig(null)).toBeNull();
 		expect(parseWvPayGatewayConfig("text")).toBeNull();
+	});
+});
+
+describe("wvPayOffersCrypto", () => {
+	it("is true only when crypto is listed", () => {
+		expect(wvPayOffersCrypto({ methods: ["crypto"] })).toBe(true);
+		expect(wvPayOffersCrypto({ methods: [] })).toBe(false);
+		expect(wvPayOffersCrypto(null)).toBe(false);
 	});
 });

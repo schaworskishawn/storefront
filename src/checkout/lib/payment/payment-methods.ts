@@ -6,7 +6,7 @@ import { type PaymentMethodChoice } from "./payment-method-choice";
 
 /** Which payment methods this checkout can offer next to each other (each is shown only when it applies). */
 export type PaymentMethodOffers = {
-	/** The primary card gateway (Authorize.net / Stripe) is integrated. */
+	/** The primary card gateway (Stripe) is integrated. */
 	card: boolean;
 	etransfer: boolean;
 	/** PayPal and buy-now-pay-later through the Adyen app. */

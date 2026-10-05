@@ -20,8 +20,7 @@ export async function executePayment(
 		case "dummy":
 			return executeDummyPayment(context, provider.gateway.id, messages);
 		case "stripe":
-		case "wvpay":
-			// Client-submit gateways: the card form owns the Pay button, so nothing may route through the form submit.
+			// Client-submit gateway: the card form owns the Pay button, so nothing may route through the form submit.
 			return {
 				ok: false,
 				error: messages.stripeUseCardForm,

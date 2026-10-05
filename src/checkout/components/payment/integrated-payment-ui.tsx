@@ -6,7 +6,6 @@ import { isIntegratedPaymentProvider, type ResolvedPaymentProvider } from "@/che
 import { type CheckoutPriceChangeNotice } from "@/checkout/lib/payment/checkout-pay-amount";
 import { DummyPaymentPlaceholder } from "./dummy-payment-placeholder";
 import { StripePayment } from "./stripe/stripe-payment";
-import { WvPayPayment } from "./wvpay/wvpay-payment";
 import { type BillingAddressData } from "./billing-address-section";
 
 export type IntegratedPaymentUiProps = {
@@ -46,21 +45,6 @@ export const IntegratedPaymentUi: FC<IntegratedPaymentUiProps> = ({
 	switch (provider.type) {
 		case "dummy":
 			return <DummyPaymentPlaceholder gatewayName={provider.gateway.name} />;
-		case "wvpay":
-			if (!checkout || !billing || !onPaymentError || !onBillingErrors || !onPriceChangeNotice) {
-				return null;
-			}
-
-			return (
-				<WvPayPayment
-					checkout={checkout}
-					billing={billing}
-					onPaymentError={onPaymentError}
-					onBillingErrors={onBillingErrors}
-					onPriceChangeNotice={onPriceChangeNotice}
-					onPaymentActivityChange={onPaymentActivityChange}
-				/>
-			);
 		case "stripe":
 			if (!checkout || !billing || !onPaymentError || !onBillingErrors || !onPriceChangeNotice) {
 				return null;

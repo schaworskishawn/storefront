@@ -84,7 +84,6 @@ import {
 import { getStripePaymentGuardError, isStripePaymentEnabled } from "@/checkout/lib/payment/providers/stripe";
 import { getAdyenGuardError, isAdyenEnabled } from "@/checkout/lib/payment/providers/adyen";
 import { getCryptoPaymentGuardError } from "@/checkout/lib/payment/providers/crypto";
-import { getWvPayGuardError, isWvPayEnabled } from "@/checkout/lib/payment/providers/wvpay";
 import { buildMarketingConsentMetadata } from "@/checkout/lib/marketing-consent";
 import { fetchCheckoutOnServer } from "@/checkout/lib/server/fetch-checkout";
 import { getCheckoutServerTranslations } from "@/checkout/lib/server/get-checkout-server-translations";
@@ -487,11 +486,6 @@ export async function initializeCheckoutTransaction(
 		return { ok: false, error: t("stripeNotEnabled") };
 	}
 
-	const wvpayGuardError = getWvPayGuardError(variables.paymentGateway?.id, variables.paymentGateway?.data);
-	if (wvpayGuardError) {
-		return { ok: false, error: t("wvpayNotEnabled") };
-	}
-
 	const cryptoGuardError = getCryptoPaymentGuardError(
 		variables.paymentGateway?.id,
 		variables.paymentGateway?.data,
@@ -549,7 +543,7 @@ export async function processCheckoutTransaction(
 	// Mirror the initialize guards: when every integrated gateway is disabled for this
 	// environment, a direct call to this action must not drive transactions either.
 	// Forks adding gateways should extend this check alongside the initialize guards.
-	if (!isStripePaymentEnabled() && !isWvPayEnabled() && !isAdyenEnabled() && !isDummyPaymentAllowed()) {
+	if (!isStripePaymentEnabled() && !isAdyenEnabled() && !isDummyPaymentAllowed()) {
 		const { server: t } = await getCheckoutServerTranslations();
 		return { ok: false, error: t("paymentsDisabled") };
 	}

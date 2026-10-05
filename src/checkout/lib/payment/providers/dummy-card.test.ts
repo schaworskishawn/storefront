@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { luhnValid } from "@/checkout/components/payment/wvpay/card-validation";
+import { luhnValid } from "@/checkout/components/payment/card-validation";
 import {
 	DECLINE_MESSAGES,
 	DEFAULT_DUMMY_CARD,

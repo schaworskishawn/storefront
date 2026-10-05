@@ -23,7 +23,6 @@ export type PaymentContext = {
 
 type IntegratedPaymentProvider =
 	| { type: "stripe"; gateway: PaymentGatewayLike; submitMode: PaymentSubmitMode }
-	| { type: "wvpay"; gateway: PaymentGatewayLike; submitMode: PaymentSubmitMode }
 	| { type: "dummy"; gateway: PaymentGatewayLike; submitMode: PaymentSubmitMode };
 
 /** Which payment integration handles the current checkout. */
@@ -46,5 +45,5 @@ export type TransactionInitializePayload =
 export function isIntegratedPaymentProvider(
 	provider: ResolvedPaymentProvider,
 ): provider is IntegratedPaymentProvider {
-	return provider.type === "stripe" || provider.type === "wvpay" || provider.type === "dummy";
+	return provider.type === "stripe" || provider.type === "dummy";
 }
