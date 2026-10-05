@@ -65,17 +65,28 @@ export function loadAcceptJs(environment: AuthorizeNetEnvironment): Promise<void
 	return promise;
 }
 
+/**
+ * Accept.js answers E_WC_03 ("not loaded correctly") when it is called in the first moments after its script loads — it
+ * finishes setting itself up a beat later (seen against the Authorize.net sandbox). A shopper rarely gets there that fast, but
+ * autofill and a quick Pay click can, so that one answer is retried a couple of times before it is reported.
+ */
+const NOT_READY_CODE = "E_WC_03";
+const NOT_READY_RETRIES = 3;
+const NOT_READY_DELAY_MS = 700;
+
 /** Exchanges a card for a one-time token. Never throws; failures come back as `{ ok: false }`. */
 export function tokenizeCard({
 	card,
 	apiLoginId,
 	clientKey,
 	accept = typeof window === "undefined" ? undefined : window.Accept,
+	retryDelayMs = NOT_READY_DELAY_MS,
 }: {
 	card: CardInput;
 	apiLoginId: string;
 	clientKey: string;
 	accept?: AcceptJs;
+	retryDelayMs?: number;
 }): Promise<TokenizeResult> {
 	return new Promise((resolve) => {
 		if (!accept) {
@@ -83,35 +94,42 @@ export function tokenizeCard({
 			return;
 		}
 
-		try {
-			accept.dispatchData(
-				{
-					authData: { clientKey, apiLoginID: apiLoginId },
-					cardData: {
-						cardNumber: card.number.replace(/\D/g, ""),
-						month: card.month,
-						year: card.year,
-						cardCode: card.cvv,
-						...(card.zip ? { zip: card.zip } : {}),
-						...(card.fullName ? { fullName: card.fullName } : {}),
-					},
-				},
-				(response) => {
+		const secureData = {
+			authData: { clientKey, apiLoginID: apiLoginId },
+			cardData: {
+				cardNumber: card.number.replace(/\D/g, ""),
+				month: card.month,
+				year: card.year,
+				cardCode: card.cvv,
+				...(card.zip ? { zip: card.zip } : {}),
+				...(card.fullName ? { fullName: card.fullName } : {}),
+			},
+		};
+
+		const attempt = (retriesLeft: number) => {
+			try {
+				accept.dispatchData(secureData, (response) => {
 					if (response.messages.resultCode === "Ok" && response.opaqueData) {
 						resolve({ ok: true, opaqueData: response.opaqueData });
 						return;
 					}
 					const first = response.messages.message?.[0];
+					if (first?.code === NOT_READY_CODE && retriesLeft > 0) {
+						setTimeout(() => attempt(retriesLeft - 1), retryDelayMs);
+						return;
+					}
 					resolve({
 						ok: false,
 						code: first?.code ?? null,
 						message: first?.text ?? "The card could not be verified.",
 					});
-				},
-			);
-		} catch {
-			resolve({ ok: false, code: null, message: "The card could not be verified." });
-		}
+				});
+			} catch {
+				resolve({ ok: false, code: null, message: "The card could not be verified." });
+			}
+		};
+
+		attempt(NOT_READY_RETRIES);
 	});
 }
 

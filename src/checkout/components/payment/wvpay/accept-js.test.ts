@@ -75,6 +75,61 @@ describe("tokenizeCard", () => {
 		});
 	});
 
+	it("retries when Accept.js says it isn't ready yet, then succeeds", async () => {
+		let calls = 0;
+		const accept: AcceptJs = {
+			dispatchData: (_data, callback) => {
+				calls += 1;
+				callback(
+					calls < 3
+						? {
+								messages: {
+									resultCode: "Error",
+									message: [{ code: "E_WC_03", text: "Accept.js is not loaded correctly" }],
+								},
+							}
+						: {
+								opaqueData: { dataDescriptor: "d", dataValue: "v" },
+								messages: { resultCode: "Ok", message: [] },
+							},
+				);
+			},
+		};
+		expect(await tokenizeCard({ card, apiLoginId: "l", clientKey: "c", accept, retryDelayMs: 1 })).toEqual({
+			ok: true,
+			opaqueData: { dataDescriptor: "d", dataValue: "v" },
+		});
+		expect(calls).toBe(3);
+	});
+
+	it("reports the not-ready error once the retries run out, and never retries other errors", async () => {
+		const notReady = vi.fn((_data: unknown, callback: Parameters<AcceptJs["dispatchData"]>[1]) =>
+			callback({ messages: { resultCode: "Error", message: [{ code: "E_WC_03", text: "not loaded" }] } }),
+		);
+		expect(
+			await tokenizeCard({
+				card,
+				apiLoginId: "l",
+				clientKey: "c",
+				accept: { dispatchData: notReady },
+				retryDelayMs: 1,
+			}),
+		).toEqual({ ok: false, code: "E_WC_03", message: "not loaded" });
+		expect(notReady).toHaveBeenCalledTimes(4);
+
+		const badNumber = vi.fn((_data: unknown, callback: Parameters<AcceptJs["dispatchData"]>[1]) =>
+			callback({ messages: { resultCode: "Error", message: [{ code: "E_WC_05", text: "bad number" }] } }),
+		);
+		await tokenizeCard({
+			card,
+			apiLoginId: "l",
+			clientKey: "c",
+			accept: { dispatchData: badNumber },
+			retryDelayMs: 1,
+		});
+		expect(badNumber).toHaveBeenCalledTimes(1);
+	});
+
 	it("omits optional fields that are empty", async () => {
 		const dispatchData = vi.fn((_data: unknown, callback: Parameters<AcceptJs["dispatchData"]>[1]) =>
 			callback({
