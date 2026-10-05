@@ -37,8 +37,13 @@ in Android Studio. For a real phone on the same Wi-Fi use your computer's LAN ad
 
 - **Android:** Android Studio (+ SDK). `pnpm exec cap doctor` reports Android as healthy on this machine.
 - **iOS:** a Mac with Xcode (iOS apps cannot be built on Windows) and an Apple Developer account.
-- **Icons and splash screens:** the projects have Capacitor's defaults. Generate yours with
-  `@capacitor/assets` from a 1024×1024 icon, or replace the files in the native projects.
+- **Icons and splash screens (Android: done).** `pnpm cap:assets` rebuilds them from the brand badge
+  (`public/home/imgHeroLogo.png`) with `scripts/make-app-assets.mjs`: the launcher icons in every density (square-rounded,
+  round, and the adaptive-icon foreground on the brand dark `#05030A`), the Android 12+ splash icon, and the splash bitmaps for
+  older Android. It also writes `assets/icon-only.png` (1024px) and `assets/play-store-icon.png` (512px) for the store
+  listings. Change the badge or the colour and re-run it. iOS icons and splash still have Capacitor's defaults — they need a
+  Mac to build anyway, so extend the script (or use `@capacitor/assets`) when you get there. (`@capacitor/assets` 3.0.5 does
+  not load on Node 24 here, which is why the script uses the `sharp` that Next.js already installs.)
 - A signing key (Android) / provisioning profile (iOS) before any release build.
 
 ## Troubleshooting
