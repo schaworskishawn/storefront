@@ -36,7 +36,9 @@ const config: CapacitorConfig = {
 	},
 	// Matches --wv-bg so there is no white flash while the site loads.
 	ios: { backgroundColor: "#05030a", contentInset: "automatic" },
-	android: { backgroundColor: "#05030a" },
+	// The marker lets the site recognise the Android app and show its bottom tab bar there only. It must equal
+	// NATIVE_APP_USER_AGENT_MARKER in src/lib/native-app.ts (inlined: the Capacitor CLI can't resolve this repo's imports).
+	android: { backgroundColor: "#05030a", appendUserAgent: "WorldwideVaporApp" },
 };
 
 export default config;

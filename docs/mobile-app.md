@@ -19,6 +19,23 @@ static files and bundled into the app. Instead the app is a thin native shell wh
 | `capacitor-www/`      | Offline page + required `index.html`                                            |
 | `android/`, `ios/`    | Generated native projects (commit them; edit icons/splash/permissions in them)  |
 
+## Android bottom tab bar
+
+Inside the Android app the site shows a bottom tab bar (Home, Shop, Wishlist, Orders, Account; the active tab is pink). It is
+part of the website, not the native shell, so it ships with a normal deploy and the app picks it up on its next load.
+
+- `src/ui/components/native-tab-bar.tsx` renders it, mounted in `src/app/(root)/layout.tsx`. It renders nothing on the server
+  and in every browser, so pages stay static (PPR) and the website, including mobile Chrome, is unchanged.
+- `src/lib/native-app.ts` decides when it applies: `window.Capacitor.getPlatform() === "android"`, or the
+  `WorldwideVaporApp` marker that `capacitor.config.ts` appends to the web view's user agent (`android.appendUserAgent`).
+  Run `pnpm cap:sync` and rebuild the app once to add the marker; the Capacitor check works without it. The iOS app is
+  deliberately excluded.
+- It is hidden on the age gate, site password, sign-in/register/password screens and checkout.
+- While visible it sets `data-native-tabbar` on `<html>`, and `brand.css` pads the page by `--native-tabbar-height` (plus the
+  safe-area inset) so the bar never covers content.
+- To try it in a desktop browser, open the dev tools console, run `window.Capacitor = { getPlatform: () => "android" }`, then
+  navigate with a link (the check runs on each navigation).
+
 ## Day to day
 
 ```bash

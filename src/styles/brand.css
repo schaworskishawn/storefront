@@ -218,6 +218,22 @@ html[data-typography="editorial"] {
 }
 
 /* ============================================
+ * Android app bottom tab bar (src/ui/components/native-tab-bar.tsx). The component renders only inside the Android app and
+ * sets data-native-tabbar on <html>; the rule below then keeps page content clear of the fixed bar.
+ * ============================================ */
+:root {
+	--native-tabbar-height: 3.5rem;
+}
+
+html[data-native-tabbar] body {
+	padding-bottom: calc(var(--native-tabbar-height) + env(safe-area-inset-bottom, 0px));
+}
+
+.native-tab-bar {
+	padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* ============================================
  * Nicotine Quitting Program (/quit) — semantic + primitive tokens pulled straight from the
  * Figma design system foundation ("01.01 — Colors | Brand Palette"), not invented per-page.
  * Primitives: Neon Cyan #69EBFF, Neon Magenta #F179FB, Electric Purple #7A1FA2, neutral 900 #0B0712.
