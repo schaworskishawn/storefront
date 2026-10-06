@@ -114,7 +114,7 @@ export function WvHome({
 								<OutlineButton href="/shop" color="cyan">
 									SHOP NOW
 								</OutlineButton>
-								<OutlineButton href="#" color="pink">
+								<OutlineButton href="/distributor" color="pink">
 									BECOME A DISTRIBUTOR
 								</OutlineButton>
 							</div>
@@ -124,7 +124,7 @@ export function WvHome({
 						<OutlineButton href="/shop" color="cyan" className="w-full">
 							SHOP NOW
 						</OutlineButton>
-						<OutlineButton href="#" color="pink" className="w-full">
+						<OutlineButton href="/distributor" color="pink" className="w-full">
 							BECOME A DISTRIBUTOR
 						</OutlineButton>
 					</div>
