@@ -14,6 +14,8 @@ import {
 import { formatMoneyWithFallback } from "@/checkout/lib/utils/money";
 import { type CheckoutErrorFragment, type CheckoutFragment, type OrderFragment } from "@/checkout/graphql";
 import { useCheckoutData } from "@/checkout/providers/checkout-data";
+import { useVaporTokens } from "@/checkout/hooks/use-vapor-tokens";
+import { VaporTokensPanel } from "@/checkout/views/saleor-checkout/vapor-tokens-panel";
 import { useTranslations } from "next-intl";
 import { useCheckoutBrowseLocale } from "@/checkout/providers/checkout-browse";
 import { getLocaleDefinition } from "@/config/locale";
@@ -427,7 +429,11 @@ function CheckoutPromoSection({ checkout, onCheckoutChange }: CheckoutPromoSecti
 	const appliedPromoCode = checkout.voucherCode;
 	const appliedDiscountName = checkout.translatedDiscountName || checkout.discountName;
 	// Gift cards ride on the same input as discount codes (Saleor's checkoutAddPromoCode accepts both) and can be stacked.
-	const appliedGiftCards = checkout.giftCards ?? [];
+	const tokens = useVaporTokens(checkout);
+	// Vapor Tokens are gift cards underneath; the tokens panel shows them, so they stay out of this list.
+	const appliedGiftCards = tokens.pending
+		? []
+		: (checkout.giftCards ?? []).filter((card) => !tokens.tokenCardIds.has(card.id));
 
 	const handleApplyPromo = async (event: FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
@@ -506,6 +512,7 @@ function CheckoutPromoSection({ checkout, onCheckoutChange }: CheckoutPromoSecti
 
 	return (
 		<section className="space-y-3 border-t border-border px-5 py-4">
+			<VaporTokensPanel checkout={checkout} view={tokens.view} onCheckoutChange={onCheckoutChange} />
 			{appliedGiftCards.map((card) => (
 				<div
 					key={card.id}

@@ -13,6 +13,7 @@ off until its flag is set, so nothing here changes the live store by itself.
 | Apple Pay / Google Pay              | Built (Stripe Express Checkout)        | Stripe enabled, Apple Pay domain verified in Stripe                           |
 | PayPal, Klarna/Afterpay/Affirm      | Built, untested against a live account | Adyen account (PayPal/lender methods enabled), the Saleor Adyen app installed |
 | Crypto (hosted checkout)            | Built, untested against a live account | NOWPayments account, a Saleor app token, the payments app installed           |
+| Vapor Tokens (rewards)              | Built, untested against a live install | The rewards app installed, `REWARDS_APP_TOKEN`, `allowLegacyGiftCardUse`      |
 | Shop Pay                            | Not possible                           | Only works inside Shopify's checkout                                          |
 
 Before wiring any processor, confirm it accepts your business. Vape and nicotine products are restricted or prohibited at
@@ -72,6 +73,143 @@ needs a public URL), refunds (they only work after a transaction settles), and d
 Card numbers are entered in the checkout and sent straight from the browser to Authorize.net (Accept.js); only a one-time
 token reaches the server. This is PCI SAQ A-EP territory, which is lighter than handling raw cards but still means your
 checkout page's security is yours to maintain.
+
+## Pay in 4 (the store's own installment plan)
+
+The shopper pays a quarter at checkout and the rest in three equal payments two weeks apart, with no interest or fees. The
+order ships only after the last payment, so the store never sends goods it hasn't been paid for. The store carries the risk of
+a card that stops working: the order simply doesn't ship until it is paid.
+
+**What happens.**
+
+1. At checkout the shopper picks "Pay in 4", sees the four dates and amounts, ticks the agreement, and pays the deposit with
+   the usual card form. The payments app charges exactly a quarter of Saleor's total (never an amount the browser sends) and
+   marks it as the first payment of a series.
+2. Saleor creates the order part-paid (the channel must allow unpaid orders). Saleor then tells the app (`ORDER_CREATED`), which
+   saves the card used for the deposit as an Authorize.net customer profile, writes the schedule on the order, and emails the
+   shopper the schedule.
+3. Once a day the job (`/api/installments/run`) reminds the shopper two days before each payment, charges the stored card on
+   the due date, and reports each payment to Saleor. After the fourth payment Saleor marks the order paid, which is what lets
+   ShipStation and your other `ORDER_FULLY_PAID` integrations release it, and the saved card is deleted.
+4. A declined payment is tried again 3 days later and then 7 days after that. After the third decline the plan stops, the shopper
+   is emailed, and staff are alerted.
+
+**Set up.**
+
+1. The card flow must already work (see the Authorize.net section). Ask your merchant account provider that it allows
+   stored-card / recurring payments: the later charges are merchant-initiated, and some high-risk accounts restrict that.
+2. In Saleor, switch on **Allow unpaid orders** for each channel that offers it (Configuration, Channels), then list those
+   channels in `NEXT_PUBLIC_INSTALLMENT_CHANNELS`. Other channels never show the option. An Authorize.net account settles in
+   one currency, so a CAD account can only serve the CAD channel.
+3. **Reinstall the payments app** from `https://<your-domain>/api/saleor-app/manifest`. This version asks for the
+   `MANAGE_ORDERS` permission (to read orders and store each plan on its order) and adds the order-created webhook. Saleor
+   shows the permissions before you approve. Then create a new app token for it and put it in `PAYMENTS_APP_TOKEN`: a token
+   made for the old version doesn't have the new permission.
+4. Set `CRON_SECRET` to a long random value (at least 16 characters). Vercel Cron then sends it to the job automatically; with
+   no secret the job refuses everyone. The schedule is in `vercel.json` (14:00 UTC every day).
+5. Allow `/api/installments/run` and `/api/saleor-app/*` through Vercel's firewall (Bot Protection in challenge mode answers
+   non-browser callers, such as Saleor and the scheduler, with a 429).
+6. Set `NEXT_PUBLIC_ENABLE_INSTALLMENTS=true`. Optionally set the order range with `NEXT_PUBLIC_INSTALLMENT_MIN_TOTAL` and
+   `NEXT_PUBLIC_INSTALLMENT_MAX_TOTAL` (defaults 50 and 1000). Email (`RESEND_API_KEY`) sends the shopper's reminders and
+   staff alerts; without it, alerts appear only as order notes and in the logs.
+
+**Running it.** Every step is recorded as a note on the order in the Dashboard, and each payment appears as a charge on the
+order's transaction. The plan itself is stored on the order in private metadata (`paper.installments.plan`), with its status
+also in public metadata (`paper.installments`: `active`, `complete`, `defaulted`, `cancelled`, `needs_review`).
+
+- **To cancel a plan, cancel the order in Saleor.** The next run stops charging and deletes the saved card. Refund what the
+  customer already paid: the deposit can be refunded from the Dashboard; a later installment has to be refunded in the
+  Authorize.net dashboard and recorded in Saleor.
+- **`defaulted`:** a payment was declined three times. Charging has stopped and staff were alerted. Contact the customer to
+  finish the order, or cancel it and refund.
+- **`needs_review`:** a charge started, or wasn't confirmed (a network error, a fraud hold), and it is unknown whether the card
+  was charged, so nothing more is charged until someone checks. Look in Authorize.net for the invoice named in the alert
+  (`WV<order number>-<payment number>`). If it went through, set that payment to `paid` (with the transaction id) and
+  `reported` to false in the order's private metadata, so the job tells Saleor; if it didn't, set the payment back to `pending`.
+  Then set the plan's `status` back to `active` (and the public `paper.installments` marker to `active`).
+- **A payment taken but Saleor not told:** the job retries telling Saleor every run, and alerts staff meanwhile. The order shows
+  unpaid until it succeeds, so it won't ship early.
+
+**Testing in the sandbox.** Use a sandbox card (4111 1111 1111 1111) on the CAD channel. To try a later payment without waiting
+two weeks, move that payment's `dueOn` date in the order's private metadata to today, then run the job by hand:
+`curl -H "Authorization: Bearer $CRON_SECRET" https://<your-domain>/api/installments/run`.
+
+**Not yet exercised against live services.** The logic is unit-tested with fakes, and every request to Authorize.net and Saleor
+has been checked against their published schemas, but a full run (deposit, order, saved card, a later charge, the final
+payment marking the order paid) has not been done against a real sandbox account and an installed app. Do that before enabling it
+for customers. Also not built: automatic refunds of later installments, letting the shopper update an expired card, and a
+Dashboard screen for plans.
+
+## Vapor Tokens (rewards)
+
+Customers earn Vapor Tokens on what they pay for products and spend them at checkout as money off. One token is worth one
+cent, so the default of **3 tokens per $1** is 3% back, and 100 tokens take $1.00 off. Tokens **expire 12 months after they are
+earned**. Only signed-in customers earn: a guest order earns nothing.
+
+**What happens.**
+
+1. When an order is paid in full (`ORDER_FULLY_PAID`), the rewards app creates a Saleor gift card for the customer, a "lot",
+   worth the tokens earned. It is tagged `vapor-tokens`, assigned to the customer, and given its own expiry date. The customer
+   is emailed. Tokens are earned on what was paid **in money** for products: shipping, tax, gift cards and tokens earn nothing,
+   so paying part of an order with tokens earns tokens on the rest only.
+2. At checkout a signed-in customer with tokens sees their balance and a **Use my tokens** button. The server puts their lots on
+   the checkout, soonest-expiring first and only as many as the order needs, using Saleor's gift card mechanism. Saleor
+   lowers the total, and the payment (card, e-Transfer, crypto, Pay in 4) is for what is left. Tokens that aren't needed stay on
+   the lot. The gift card codes never reach the browser.
+3. If the order is cancelled (`ORDER_CANCELLED`) or fully refunded (`ORDER_FULLY_REFUNDED`), the tokens it earned are
+   deactivated and the tokens it spent are returned to the lots they came from; the customer is emailed. Saleor doesn't give a
+   gift card's balance back on its own, which is why the app does it. Running the same event twice does nothing the second time.
+4. The customer's account has a **Vapor Tokens** page (`/account/tokens`): balance, what is about to expire, how it works, and
+   each lot's history.
+
+**Set up.**
+
+1. In Saleor, make sure the channel allows gift cards at checkout: `allowLegacyGiftCardUse` (Configuration, Channels; it is on by
+   default, and gift card redemption on this site relies on it too). Saleor documents that flow as deprecated, so check
+   the release notes when you upgrade Saleor.
+2. Install the app: Dashboard, Apps, **Install external app**, `https://<your-domain>/api/rewards-app/manifest`. Saleor shows
+   the permissions before you approve: `MANAGE_ORDERS` (read orders, leave notes) and `MANAGE_GIFT_CARD` (create, adjust and
+   deactivate token gift cards). It is separate from the payments app on purpose, so the payments app never gets to create
+   gift cards.
+3. Open the installed app in the Dashboard, create a token, and set it as `REWARDS_APP_TOKEN` (server-only, never `NEXT_PUBLIC_`).
+4. Allow `/api/rewards-app/*` through Vercel's firewall (Bot Protection in challenge mode answers non-browser callers such
+   as Saleor with a 429), the same as `/api/saleor-app/*`.
+5. Set `NEXT_PUBLIC_ENABLE_REWARDS=true`. Optionally set `NEXT_PUBLIC_REWARDS_TOKENS_PER_DOLLAR` (default 3) and
+   `NEXT_PUBLIC_REWARDS_EXPIRY_MONTHS` (default 12; `0` means tokens never expire). A change applies to tokens earned from then
+   on: tokens already earned keep their value and expiry date. Email (`RESEND_API_KEY`) sends the customer's emails and staff
+   alerts; without it, alerts appear only as order notes and in the logs.
+
+**Running it.** Every award and return is noted on the order in the Dashboard. Each lot is a gift card you can see in Gift
+Cards, filtered by the tag `vapor-tokens`; its public metadata names the order that earned it (`paper.vt.order`) and the tokens it
+started with (`paper.vt.tokens`). Its private metadata holds the code the app needs to apply it (`paper.vt.code`): don't delete it.
+
+- **To give a customer tokens by hand,** create a gift card in the Dashboard with the tag `vapor-tokens`, assign it to the customer,
+  and set its balance and expiry. 1 token = 1 cent of balance. It then behaves like any other lot, but it has no stored code
+  (`paper.vt.code`), so the app reads the code from Saleor when the customer uses it, which Saleor only shows for a card nobody has
+  used yet. Add the code to private metadata under `paper.vt.code` yourself to be safe.
+- **To extend or shorten a lot's life,** change the gift card's expiry date.
+- **A staff alert** names the order and what failed: tokens not created (the customer was not rewarded, so create the lot by hand),
+  a missing code, a duplicate award (two lots for one order; the app deactivates the extra one but check), tokens that couldn't be
+  returned or taken back. The order note says the same.
+
+**Things to know.**
+
+- A lot can only be spent in its own currency, so on a store with CAD and USD channels a customer's CAD tokens don't count at
+  a USD checkout. The checkout and the account page show only what can be spent.
+- Tokens returned from a cancelled order go back to the lot they came from. If that lot has expired by then, they come back
+  expired: extend its expiry date in the Dashboard if you want the customer to keep them.
+- A **partial** refund doesn't take tokens back; only a cancellation or a full refund does. Cancelling an order that already
+  spent some of its earned tokens deactivates what is left of that lot.
+- Tokens are Saleor gift cards, so they could also be spent on a gift card product if one is ever published (the gift card product
+  is unpublished today): a customer could convert tokens into a gift card that doesn't expire. Keep it unpublished, or exclude it
+  from the program, before you turn this on if that matters to you.
+- Rewards programs can carry rules: loyalty terms, expiry notices, and in some places unclaimed-balance or consumer-protection
+  rules. Have the terms (how tokens are earned, that they expire, and that they have no cash value) checked and published on the site.
+
+**Not yet exercised against live services.** The earn, return, plan and apply logic is unit-tested with fakes, and every
+request to Saleor has been checked against Saleor's schema, but a full run (install the app, pay an order, see the lot, spend it at
+checkout, cancel the order) has not been done against a running Saleor with the app installed. Do that on a test order before
+enabling it for customers.
 
 ## Before any Canadian order can complete
 
@@ -195,4 +333,4 @@ Things to know:
 Everything above is covered by unit tests and a browser walkthrough of the checkout UI states, but **none of the Adyen or
 crypto paths have run against a real Adyen or NOWPayments account**: the Drop-in rendering, PayPal pop-up, lender redirects,
 3-D Secure challenges, and the IPN signature against NOWPayments' own callbacks are unverified until you test them with your
-accounts. Authorize.net is in the same position.
+accounts. Authorize.net is in the same position, as are Pay in 4 and Vapor Tokens (see their sections).

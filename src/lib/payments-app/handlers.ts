@@ -11,6 +11,14 @@ import {
 	type BillingAddress,
 	type OpaqueData,
 } from "./authorizenet";
+import {
+	INSTALLMENT_PSP_PREFIX,
+	buildInstallmentPlan,
+	checkInstallmentEligibility,
+	installmentTransactionId,
+	readInstallmentConfig,
+	type InstallmentConfig,
+} from "@/lib/installments/plan";
 import { CRYPTO_PSP_PREFIX } from "./constants";
 import { createInvoice, readNowPaymentsConfig, type NowPaymentsConfig } from "./nowpayments";
 
@@ -50,6 +58,10 @@ export type TransactionInitializePayload = {
 		number?: string | null;
 		billingAddress?: SaleorAddress | null;
 		shippingAddress?: SaleorAddress | null;
+		/** The checkout's total, channel and how much of it is already paid: Pay in 4 is checked against these, not the browser. */
+		totalPrice?: { gross?: { amount?: number; currency?: string } | null } | null;
+		channel?: { slug?: string } | null;
+		chargeStatus?: string | null;
 	};
 };
 
@@ -73,6 +85,8 @@ type Deps = {
 		/** Public origin of this storefront — where the crypto provider sends the shopper back and calls our IPN. */
 		storefrontOrigin: string;
 	};
+	/** Pay in 4 settings. Optional: read from the environment when absent. */
+	installments?: { config: InstallmentConfig };
 };
 
 export function defaultDeps(): Deps {
@@ -87,6 +101,7 @@ export function defaultDeps(): Deps {
 				"",
 			),
 		},
+		installments: { config: readInstallmentConfig() },
 	};
 }
 
@@ -130,6 +145,7 @@ export function handleGatewayInitialize(deps: Deps = defaultDeps()) {
 			clientKey: config.clientKey,
 			scriptUrl: acceptJsUrl(config.environment),
 		};
+		if ((deps.installments?.config ?? readInstallmentConfig()).enabled) methods.push("installments");
 	}
 
 	if (deps.crypto?.config) {
@@ -207,11 +223,146 @@ async function handleCryptoInitialize(
 	};
 }
 
+/** What the shopper is told when Pay in 4 can't be used for this order. */
+function installmentsRefusal(
+	reason: "disabled" | "channel" | "currency" | "amount",
+	currency: string,
+	config: InstallmentConfig,
+): string {
+	switch (reason) {
+		case "currency":
+			return `Pay in 4 isn't available in ${currency}.`;
+		case "amount":
+			return `Pay in 4 is available for orders from ${config.minTotal} to ${config.maxTotal} ${currency}.`;
+		default:
+			return "Pay in 4 isn't available for this order.";
+	}
+}
+
+/**
+ * Pay in 4: charge only the deposit (a quarter of the order) with the shopper's agreement to the schedule. Everything is
+ * checked against Saleor's own checkout — the total, the currency, the channel — and never against what the browser says:
+ * the deposit has to be exactly a quarter of Saleor's total, so nobody can pay less up front.
+ *
+ * The later payments are not taken here. Once the order exists, the installment job saves the card and collects them (see
+ * src/lib/installments). The deposit's `pspReference` carries a prefix so the job can recognise installment orders.
+ */
+async function handleInstallmentsInitialize(payload: TransactionInitializePayload, deps: Deps) {
+	const amount = payload.action?.amount;
+	const currency = payload.action?.currency?.toUpperCase() ?? "";
+	const failure = (message: string, reason: string) => ({
+		result: "CHARGE_FAILURE" as const,
+		amount: typeof amount === "number" ? amount : 0,
+		message,
+		data: { reason },
+	});
+
+	if (!deps.config) return failure("Card payments aren't set up yet.", "not_configured");
+
+	const installments = deps.installments?.config ?? readInstallmentConfig();
+	const source = payload.sourceObject;
+	if (source?.__typename !== "Checkout") {
+		return failure("Pay in 4 can only be used at checkout.", "installments_not_checkout");
+	}
+
+	const gross = source.totalPrice?.gross;
+	const total = gross?.amount;
+	if (typeof total !== "number" || !Number.isFinite(total) || !gross?.currency) {
+		return failure("The order total couldn't be read. Please refresh and try again.", "invalid_amount");
+	}
+	if (gross.currency.toUpperCase() !== currency) {
+		return failure(
+			"The payment currency doesn't match the order. Please refresh and try again.",
+			"currency_mismatch",
+		);
+	}
+
+	const eligibility = checkInstallmentEligibility(
+		{ total, currency, channel: source.channel?.slug },
+		installments,
+	);
+	if (!eligibility.ok) {
+		return failure(
+			installmentsRefusal(eligibility.reason, currency, installments),
+			`installments_${eligibility.reason}`,
+		);
+	}
+
+	const plan = buildInstallmentPlan(total);
+	if (!plan) return failure("The order total can't be split into payments.", "invalid_amount");
+	if (typeof amount !== "number" || Math.round(amount * 100) !== plan.depositCents) {
+		return failure(
+			"The deposit doesn't match the order total. Please refresh the page and try again.",
+			"deposit_mismatch",
+		);
+	}
+
+	// Part of this checkout is already paid (an earlier deposit): a second deposit would charge the shopper twice.
+	if (source.chargeStatus && source.chargeStatus !== "NONE") {
+		return failure(
+			"Part of this order has already been paid. Complete your order instead of paying again.",
+			"already_paid",
+		);
+	}
+
+	const data = payload.data as { consent?: unknown } | null;
+	if (data?.consent !== true) {
+		return failure("Please agree to the payment schedule to continue.", "consent_required");
+	}
+
+	const email = source.email?.trim();
+	if (!email) return failure("An email address is needed to send your payment reminders.", "email_required");
+
+	const opaqueData = parseOpaqueData(payload.data);
+	if (!opaqueData) {
+		return failure("The card details were missing. Please re-enter your card.", "missing_card_token");
+	}
+
+	const outcome = await deps.authorizenet.chargeCard(
+		// Installments always capture at once: an authorisation would expire before the later payments.
+		{ ...deps.config, transactionType: "authCaptureTransaction" },
+		{
+			amount: plan.deposit,
+			currency,
+			opaqueData,
+			invoiceNumber: payload.merchantReference || `WV-${Date.now().toString(36)}`.toUpperCase(),
+			description: "Worldwide Vapor order (Pay in 4 deposit)",
+			customerEmail: email,
+			billTo: toBilling(source.billingAddress),
+			shipTo: toBilling(source.shippingAddress),
+			customerIp: payload.customerIpAddress ?? null,
+			firstRecurringPayment: true,
+		},
+	);
+
+	if (!outcome.ok) {
+		const message =
+			outcome.reason === "held" ? "Your payment is being reviewed. Please contact support." : outcome.message;
+		return { ...failure(message, outcome.reason), data: { reason: outcome.reason, code: outcome.code } };
+	}
+
+	return {
+		result: "CHARGE_SUCCESS" as const,
+		pspReference: `${INSTALLMENT_PSP_PREFIX}${outcome.transactionId}`,
+		amount: plan.deposit,
+		message: outcome.message,
+		data: {
+			brand: outcome.accountType,
+			last4: outcome.accountLast4,
+			authCode: outcome.authCode,
+			installments: { deposit: plan.deposit, installment: plan.installment, payments: 3 },
+		},
+	};
+}
+
 export async function handleTransactionInitialize(
 	payload: TransactionInitializePayload,
 	deps: Deps = defaultDeps(),
 ) {
 	const method = (payload.data as { method?: string } | null)?.method;
+	if (method === "installments") {
+		return handleInstallmentsInitialize(payload, deps);
+	}
 	if (method === "crypto") {
 		return handleCryptoInitialize(
 			payload,
@@ -280,6 +431,8 @@ export async function handleTransactionInitialize(
 export async function handleTransactionRefund(payload: TransactionActionPayload, deps: Deps = defaultDeps()) {
 	const amount = payload.action?.amount ?? 0;
 	const pspReference = payload.transaction?.pspReference ?? undefined;
+	// An installment deposit's reference is the Authorize.net id behind a prefix.
+	const reference = installmentTransactionId(pspReference) ?? pspReference;
 	const failure = (message: string) => ({ result: "REFUND_FAILURE" as const, amount, pspReference, message });
 
 	if (pspReference?.startsWith(CRYPTO_PSP_PREFIX)) {
@@ -288,10 +441,10 @@ export async function handleTransactionRefund(payload: TransactionActionPayload,
 		);
 	}
 	if (!deps.config) return failure("Card payments aren't set up.");
-	if (!pspReference) return failure("This payment has no Authorize.net transaction to refund.");
+	if (!reference) return failure("This payment has no Authorize.net transaction to refund.");
 	if (!(amount > 0)) return failure("The refund amount is invalid.");
 
-	const details = await deps.authorizenet.getTransactionDetails(deps.config, pspReference);
+	const details = await deps.authorizenet.getTransactionDetails(deps.config, reference);
 	if (!details) return failure("Couldn't look up the original payment at Authorize.net.");
 
 	if (details.status === "capturedPendingSettlement" || details.status === "authorizedPendingCapture") {
@@ -301,7 +454,7 @@ export async function handleTransactionRefund(payload: TransactionActionPayload,
 				"A partial refund is only possible after the payment settles (usually the next business day).",
 			);
 		}
-		const voided = await deps.authorizenet.voidTransaction(deps.config, pspReference);
+		const voided = await deps.authorizenet.voidTransaction(deps.config, reference);
 		return voided.ok
 			? {
 					result: "REFUND_SUCCESS" as const,
@@ -315,7 +468,7 @@ export async function handleTransactionRefund(payload: TransactionActionPayload,
 	if (details.status === "settledSuccessfully") {
 		if (!details.accountLast4) return failure("Authorize.net didn't return the card's last four digits.");
 		const refund = await deps.authorizenet.refundTransaction(deps.config, {
-			transactionId: pspReference,
+			transactionId: reference,
 			amount,
 			accountLast4: details.accountLast4,
 		});
@@ -336,15 +489,16 @@ export async function handleTransactionRefund(payload: TransactionActionPayload,
 export async function handleTransactionCancel(payload: TransactionActionPayload, deps: Deps = defaultDeps()) {
 	const amount = payload.action?.amount ?? 0;
 	const pspReference = payload.transaction?.pspReference ?? undefined;
+	const reference = installmentTransactionId(pspReference) ?? pspReference;
 	const failure = (message: string) => ({ result: "CANCEL_FAILURE" as const, amount, pspReference, message });
 
 	if (pspReference?.startsWith(CRYPTO_PSP_PREFIX)) {
 		return failure("Crypto payments can't be cancelled from here; an unpaid crypto invoice simply expires.");
 	}
 	if (!deps.config) return failure("Card payments aren't set up.");
-	if (!pspReference) return failure("This payment has no Authorize.net transaction to cancel.");
+	if (!reference) return failure("This payment has no Authorize.net transaction to cancel.");
 
-	const voided = await deps.authorizenet.voidTransaction(deps.config, pspReference);
+	const voided = await deps.authorizenet.voidTransaction(deps.config, reference);
 	return voided.ok
 		? {
 				result: "CANCEL_SUCCESS" as const,

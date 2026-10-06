@@ -94,6 +94,11 @@ export type ChargeInput = {
 	billTo?: BillingAddress | null;
 	shipTo?: BillingAddress | null;
 	customerIp?: string | null;
+	/**
+	 * The first payment of a series the shopper agreed to (the deposit of an installment plan). Flags it to the card networks
+	 * as such, which is what makes the later merchant-initiated charges on the stored card legitimate.
+	 */
+	firstRecurringPayment?: boolean;
 };
 
 function addressBlock(address: BillingAddress | null | undefined) {
@@ -131,6 +136,7 @@ export function buildChargeRequest(config: AuthorizeNetConfig, input: ChargeInpu
 				customerIP: clip(input.customerIp, 39),
 				// Guards against a double submit charging twice: an identical charge within 2 minutes is rejected.
 				transactionSettings: { setting: [{ settingName: "duplicateWindow", settingValue: "120" }] },
+				processingOptions: input.firstRecurringPayment ? { isFirstRecurringPayment: true } : undefined,
 			},
 		},
 	};
@@ -319,5 +325,202 @@ export async function refundTransaction(
 	} catch (error) {
 		console.error("[authorizenet] refund failed", error instanceof Error ? error.message : error);
 		return { ok: false, reason: "error", code: null, message: "We couldn't reach the payment processor." };
+	}
+}
+
+/** A stored card: Authorize.net's customer profile and the payment profile (the card) inside it. */
+export type StoredCard = { customerProfileId: string; paymentProfileId: string };
+
+export type StoredCardOutcome =
+	| { ok: true; card: StoredCard }
+	| { ok: false; code: string | null; message: string };
+
+/** Body for `createCustomerProfileFromTransactionRequest`: saves the card used by an approved transaction. */
+export function buildCreateProfileFromTransactionRequest(
+	config: AuthorizeNetConfig,
+	input: {
+		transactionId: string;
+		merchantCustomerId?: string | null;
+		description?: string | null;
+		email?: string | null;
+	},
+) {
+	const merchantCustomerId = clip(input.merchantCustomerId, 20);
+	const description = clip(input.description, 255);
+	const email = clip(input.email, 255);
+	return {
+		createCustomerProfileFromTransactionRequest: {
+			merchantAuthentication: auth(config),
+			transId: input.transactionId,
+			customer:
+				merchantCustomerId || description || email ? { merchantCustomerId, description, email } : undefined,
+		},
+	};
+}
+
+type RawProfileResponse = {
+	customerProfileId?: string;
+	customerPaymentProfileIdList?: string[];
+	profile?: { customerProfileId?: string; paymentProfiles?: Array<{ customerPaymentProfileId?: string }> };
+	messages?: { resultCode?: string; message?: Array<{ code?: string; text?: string }> };
+};
+
+const firstMessage = (json: RawProfileResponse) => json.messages?.message?.[0];
+
+/** Authorize.net's "A duplicate record with ID 123 already exists." — the id is the profile that already holds this card. */
+const DUPLICATE_PROFILE_CODE = "E00039";
+
+function duplicateProfileId(json: RawProfileResponse): string | null {
+	const message = firstMessage(json);
+	if (message?.code !== DUPLICATE_PROFILE_CODE) return null;
+	return json.customerProfileId ?? /\b(\d{4,})\b/.exec(message.text ?? "")?.[1] ?? null;
+}
+
+/**
+ * Saves the card of an approved transaction as a customer profile, so later payments can be charged without the card
+ * number. Safe to repeat: when the transaction's card is already saved, Authorize.net reports the existing profile and we
+ * look its card up, so a retried webhook never creates a second profile.
+ */
+export async function createStoredCardFromTransaction(
+	config: AuthorizeNetConfig,
+	input: Parameters<typeof buildCreateProfileFromTransactionRequest>[1],
+	fetchImpl: Fetcher = fetch,
+): Promise<StoredCardOutcome> {
+	try {
+		const json = (await post(
+			config,
+			buildCreateProfileFromTransactionRequest(config, input),
+			fetchImpl,
+		)) as RawProfileResponse;
+
+		if (json.messages?.resultCode === "Ok" && json.customerProfileId) {
+			const paymentProfileId = json.customerPaymentProfileIdList?.[0];
+			if (paymentProfileId) {
+				return { ok: true, card: { customerProfileId: json.customerProfileId, paymentProfileId } };
+			}
+		}
+
+		const existing = duplicateProfileId(json);
+		if (existing) return await lookUpStoredCard(config, existing, fetchImpl);
+
+		const message = firstMessage(json);
+		return {
+			ok: false,
+			code: message?.code ?? null,
+			message: message?.text ?? "The card could not be saved for later payments.",
+		};
+	} catch (error) {
+		console.error("[authorizenet] saving the card failed", error instanceof Error ? error.message : error);
+		return { ok: false, code: null, message: "We couldn't reach the payment processor." };
+	}
+}
+
+/** The card inside an existing customer profile. */
+export async function lookUpStoredCard(
+	config: AuthorizeNetConfig,
+	customerProfileId: string,
+	fetchImpl: Fetcher = fetch,
+): Promise<StoredCardOutcome> {
+	try {
+		const json = (await post(
+			config,
+			{ getCustomerProfileRequest: { merchantAuthentication: auth(config), customerProfileId } },
+			fetchImpl,
+		)) as RawProfileResponse;
+		const paymentProfileId = json.profile?.paymentProfiles?.[0]?.customerPaymentProfileId;
+		if (json.messages?.resultCode === "Ok" && paymentProfileId) {
+			return { ok: true, card: { customerProfileId, paymentProfileId } };
+		}
+		const message = firstMessage(json);
+		return {
+			ok: false,
+			code: message?.code ?? null,
+			message: message?.text ?? "The saved card could not be found.",
+		};
+	} catch (error) {
+		console.error("[authorizenet] profile lookup failed", error instanceof Error ? error.message : error);
+		return { ok: false, code: null, message: "We couldn't reach the payment processor." };
+	}
+}
+
+export type ProfileChargeInput = {
+	card: StoredCard;
+	amount: number;
+	currency: string;
+	/** Our reference for this one payment, max 20 chars. A repeat of the same payment reuses it, which the duplicate window catches. */
+	invoiceNumber: string;
+	description?: string;
+};
+
+/**
+ * Body for a merchant-initiated charge of a stored card (an installment after the deposit). `recurringBilling` and
+ * `isSubsequentAuth` tell the card networks this is a payment the shopper agreed to up front. Key order follows the schema.
+ */
+export function buildProfileChargeRequest(config: AuthorizeNetConfig, input: ProfileChargeInput) {
+	return {
+		createTransactionRequest: {
+			merchantAuthentication: auth(config),
+			refId: clip(input.invoiceNumber, 20),
+			transactionRequest: {
+				transactionType: "authCaptureTransaction",
+				amount: money(input.amount),
+				currencyCode: input.currency.toUpperCase(),
+				profile: {
+					customerProfileId: input.card.customerProfileId,
+					paymentProfile: { paymentProfileId: input.card.paymentProfileId },
+				},
+				order: { invoiceNumber: clip(input.invoiceNumber, 20), description: clip(input.description, 255) },
+				// The longest window Authorize.net allows (8 hours): an identical payment re-sent after a crash is refused.
+				transactionSettings: {
+					setting: [
+						{ settingName: "recurringBilling", settingValue: "true" },
+						{ settingName: "duplicateWindow", settingValue: "28800" },
+					],
+				},
+				processingOptions: { isSubsequentAuth: true },
+			},
+		},
+	};
+}
+
+/** Charges a stored card. A network/HTTP failure becomes an "error" outcome, never a throw. */
+export async function chargeStoredCard(
+	config: AuthorizeNetConfig,
+	input: ProfileChargeInput,
+	fetchImpl: Fetcher = fetch,
+): Promise<TransactionOutcome> {
+	try {
+		return parseTransactionResponse(await post(config, buildProfileChargeRequest(config, input), fetchImpl));
+	} catch (error) {
+		console.error("[authorizenet] stored-card charge failed", error instanceof Error ? error.message : error);
+		return {
+			ok: false,
+			reason: "error",
+			code: null,
+			message: "We couldn't reach the payment processor.",
+		};
+	}
+}
+
+/** Deletes a customer profile (the stored card), once its plan is finished or cancelled. Never throws. */
+export async function deleteStoredCard(
+	config: AuthorizeNetConfig,
+	customerProfileId: string,
+	fetchImpl: Fetcher = fetch,
+): Promise<{ ok: boolean; message: string }> {
+	try {
+		const json = (await post(
+			config,
+			{ deleteCustomerProfileRequest: { merchantAuthentication: auth(config), customerProfileId } },
+			fetchImpl,
+		)) as RawProfileResponse;
+		const message = firstMessage(json);
+		// "E00040": already gone, which is what we wanted.
+		if (json.messages?.resultCode === "Ok" || message?.code === "E00040")
+			return { ok: true, message: "Deleted." };
+		return { ok: false, message: message?.text ?? "The saved card could not be deleted." };
+	} catch (error) {
+		console.error("[authorizenet] profile delete failed", error instanceof Error ? error.message : error);
+		return { ok: false, message: "We couldn't reach the payment processor." };
 	}
 }

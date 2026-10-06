@@ -60,6 +60,7 @@ fragment ShippingFragment on ShippingMethod {
 fragment OrderFragment on Order {
 	id
 	number
+	created
 	userEmail
 	isPaid
 	metadata {

@@ -11,7 +11,8 @@ import {
 
 export type WvPayConfigState =
 	| { status: "loading" }
-	| { status: "ready"; authorizenet: AuthorizeNetClientConfig }
+	/** `offersInstallments`: the payments app also advertises Pay in 4 (its own switch, besides the storefront flag). */
+	| { status: "ready"; authorizenet: AuthorizeNetClientConfig; offersInstallments: boolean }
 	| { status: "error"; reason: "request" | "not_configured"; message?: string };
 
 /** Asks Saleor (→ the payments app) for the browser-safe Authorize.net settings. */
@@ -43,7 +44,11 @@ export function useWvPayGatewayConfig(checkout: CheckoutFragment): WvPayConfigSt
 					return;
 				}
 
-				setState({ status: "ready", authorizenet: parsed.authorizenet });
+				setState({
+					status: "ready",
+					authorizenet: parsed.authorizenet,
+					offersInstallments: parsed.methods.includes("installments"),
+				});
 			})
 			.catch(() => {
 				if (!cancelled) setState({ status: "error", reason: "request" });

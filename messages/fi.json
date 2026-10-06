@@ -289,7 +289,37 @@
 			"overview": "Yleiskatsaus",
 			"orders": "Tilaukset",
 			"addresses": "Osoitteet",
-			"settings": "Asetukset"
+			"settings": "Asetukset",
+			"tokens": "Vapor Tokens"
+		},
+		"tokens": {
+			"title": "Vapor Tokens",
+			"subtitle": "Earn tokens on every order and spend them at checkout.",
+			"balanceTitle": "Your balance",
+			"balanceValue": "{tokens, number} tokens",
+			"balanceWorth": "Worth {amount} off your next order",
+			"noBalance": "You don't have any tokens to spend yet.",
+			"expiringSoon": "{tokens, number} tokens expire on {date}.",
+			"howTitle": "How it works",
+			"howEarn": "Earn {rate, number} tokens for every $1 you spend on products. Shipping and taxes don't earn tokens.",
+			"howSpend": "Spend them at checkout: 100 tokens take {amount} off your order.",
+			"howExpire": "Tokens expire {months, plural, one {# month} other {# months}} after you earn them.",
+			"howNeverExpire": "Tokens don't expire.",
+			"howRefund": "If an order is cancelled or refunded, the tokens it earned are taken back and any you spent on it are returned.",
+			"historyTitle": "History",
+			"empty": "Place an order to start earning tokens.",
+			"earnedOn": "Earned",
+			"earnedTokens": "Tokens earned",
+			"remainingTokens": "Tokens left",
+			"expires": "Expires",
+			"never": "Never",
+			"status": {
+				"active": "Active",
+				"expired": "Expired",
+				"used": "Used",
+				"closed": "Returned"
+			},
+			"loadFailed": "We couldn't load your tokens. Please try again in a moment."
 		},
 		"overview": {
 			"welcome": "Tervetuloa takaisin, {name}",
@@ -485,6 +515,30 @@
 			"giftCardBalance": "Balance: {balance}",
 			"removeGiftCardAriaLabel": "Remove gift card {code}"
 		},
+		"tokens": {
+			"title": "Vapor Tokens",
+			"balance": "{tokens, number} tokens available, worth {amount}",
+			"rate": "100 tokens take {amount} off your order.",
+			"use": "Use my tokens",
+			"applying": "Applying…",
+			"removing": "Removing…",
+			"applied": "{tokens, number} tokens applied (−{amount})",
+			"coversOrder": "Your Vapor Tokens cover this order",
+			"removeAriaLabel": "Remove Vapor Tokens",
+			"earnEstimate": "You'll earn about {tokens, number} Vapor Tokens when this order is paid.",
+			"guestEarnEstimate": "Sign in to earn about {tokens, number} Vapor Tokens on this order.",
+			"expiringSoon": "{tokens, number} tokens expire on {date}.",
+			"signInAction": "Log in or create an account",
+			"availableAtPayment": "{tokens, number} tokens available. Use them in the payment step.",
+			"errors": {
+				"signIn": "Sign in to use your Vapor Tokens.",
+				"notYours": "These tokens can't be used on this checkout.",
+				"noTokens": "You have no Vapor Tokens to use on this order.",
+				"unavailable": "Your Vapor Tokens aren't available right now. Please try again in a moment.",
+				"failed": "Your Vapor Tokens couldn't be applied. Please try again.",
+				"removeFailed": "Your Vapor Tokens couldn't be removed. Please try again."
+			}
+		},
 		"shipping": {
 			"methodTitle": "Toimitustapa",
 			"loadingMethods": "Ladataan toimitustapoja…",
@@ -585,6 +639,17 @@
 				"loadFailed": "We couldn't load PayPal and pay-later options. Please refresh the page or choose another payment method.",
 				"pendingApproval": "Your payment is waiting for approval. This can take a moment — please don't close this page or pay again."
 			},
+			"installments": {
+				"methodTitle": "Pay in 4",
+				"methodDescription": "A quarter today, the rest in 3 payments every 2 weeks. No interest or fees.",
+				"scheduleTitle": "Your payment schedule",
+				"today": "Today",
+				"noFees": "No interest or fees. Your order ships after the last payment.",
+				"consent": "I agree to this payment schedule and authorize Worldwide Vapor to charge this card for the remaining payments on the dates above.",
+				"consentRequired": "Please agree to the payment schedule to continue.",
+				"payToday": "Pay {amount} today",
+				"notConfigured": "Pay in 4 isn't set up yet. Please choose another payment method."
+			},
 			"crypto": {
 				"methodTitle": "Crypto",
 				"methodDescription": "Pay with Bitcoin, Ethereum and other coins.",
@@ -626,6 +691,12 @@
 			"shippingAddress": "Toimitusosoite",
 			"billingAddress": "Laskutusosoite",
 			"estimatedDelivery": "Arvioitu toimitus",
+			"tokensEarned": "This order earns about {tokens, number} Vapor Tokens. They're added to your account once the order is paid.",
+			"installments": {
+				"title": "Your payment plan",
+				"intro": "You paid {deposit} today. The rest is charged to the card you used, on the dates below.",
+				"outro": "We'll email you before each payment. Your order ships once the last payment has gone through."
+			},
 			"etransfer": {
 				"title": "Send your Interac e-Transfer to finish your order",
 				"intro": "Your order is reserved. We ship it as soon as your payment arrives.",
@@ -707,6 +778,7 @@
 			"wvpayNotEnabled": "Card payments are not enabled in this environment. Set NEXT_PUBLIC_ENABLE_AUTHORIZENET_PAYMENTS=true on the storefront.",
 			"eTransferCountry": "Interac e-Transfer is only available for customers in Canada.",
 			"cryptoNotEnabled": "Crypto payments are not enabled in this environment. Set NEXT_PUBLIC_ENABLE_CRYPTO_PAYMENTS=true on the storefront.",
+			"installmentsNotEnabled": "Pay in 4 is not enabled in this environment. Set NEXT_PUBLIC_ENABLE_INSTALLMENTS=true on the storefront.",
 			"adyenNotEnabled": "Adyen payments are not enabled in this environment. Set NEXT_PUBLIC_ENABLE_ADYEN_PAYMENTS=true on the storefront."
 		},
 		"gateways": {

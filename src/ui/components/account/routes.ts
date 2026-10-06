@@ -4,4 +4,5 @@ export const accountRoutes = {
 	orderDetail: (number: string) => `/account/orders/${number}`,
 	addresses: "/account/addresses",
 	settings: "/account/settings",
+	tokens: "/account/tokens",
 } as const;

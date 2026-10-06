@@ -85,6 +85,10 @@ import { getStripePaymentGuardError, isStripePaymentEnabled } from "@/checkout/l
 import { getAdyenGuardError, isAdyenEnabled } from "@/checkout/lib/payment/providers/adyen";
 import { getCryptoPaymentGuardError } from "@/checkout/lib/payment/providers/crypto";
 import { getWvPayGuardError, isWvPayEnabled } from "@/checkout/lib/payment/providers/wvpay";
+import {
+	expectedInitializeAmount,
+	getInstallmentsGuardError,
+} from "@/checkout/lib/payment/providers/installments";
 import { buildMarketingConsentMetadata } from "@/checkout/lib/marketing-consent";
 import { fetchCheckoutOnServer } from "@/checkout/lib/server/fetch-checkout";
 import { getCheckoutServerTranslations } from "@/checkout/lib/server/get-checkout-server-translations";
@@ -500,6 +504,14 @@ export async function initializeCheckoutTransaction(
 		return { ok: false, error: t("cryptoNotEnabled") };
 	}
 
+	const installmentsGuardError = getInstallmentsGuardError(
+		variables.paymentGateway?.id,
+		variables.paymentGateway?.data,
+	);
+	if (installmentsGuardError) {
+		return { ok: false, error: t("installmentsNotEnabled") };
+	}
+
 	const adyenGuardError = getAdyenGuardError(variables.paymentGateway?.id);
 	if (adyenGuardError) {
 		return { ok: false, error: t("adyenNotEnabled") };
@@ -514,7 +526,9 @@ export async function initializeCheckoutTransaction(
 		}
 
 		const liveAmount = getCheckoutPayAmount(live.checkout);
-		if (liveAmount === null || hasMaterialCheckoutTotalChange(liveAmount, variables.amount)) {
+		// Pay in 4 charges a quarter of the order up front, so that is the amount to expect; the payments app checks it to the cent.
+		const expectedAmount = expectedInitializeAmount(liveAmount, variables.paymentGateway?.data);
+		if (expectedAmount === null || hasMaterialCheckoutTotalChange(expectedAmount, variables.amount)) {
 			return {
 				ok: false,
 				error: t("totalChanged"),

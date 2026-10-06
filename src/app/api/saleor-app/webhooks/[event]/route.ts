@@ -6,6 +6,7 @@ import {
 	handleTransactionRefund,
 } from "@/lib/payments-app/handlers";
 import { WEBHOOK_DEFINITIONS } from "@/lib/payments-app/manifest";
+import { handleOrderCreated } from "@/lib/installments/run";
 import { verifySaleorSignature } from "@/lib/payments-app/saleor-signature";
 
 type Handler = (payload: never) => unknown | Promise<unknown>;
@@ -15,6 +16,7 @@ const HANDLERS: Record<(typeof WEBHOOK_DEFINITIONS)[number]["slug"], Handler> = 
 	"transaction-initialize": handleTransactionInitialize as Handler,
 	"transaction-refund": handleTransactionRefund as Handler,
 	"transaction-cancel": handleTransactionCancel as Handler,
+	"order-created": handleOrderCreated as Handler,
 };
 
 /**

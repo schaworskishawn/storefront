@@ -24,6 +24,7 @@ import {
 	getTransactionInitializeError,
 } from "@/checkout/lib/payment/gateway-messages";
 import { WVPAY_GATEWAY_ID } from "@/checkout/lib/payment/providers/wvpay";
+import { buildInstallmentPlan } from "@/lib/installments/plan";
 import { updateCheckoutBilling } from "@/checkout/lib/payment/update-billing";
 import { rethrowNextInternalError } from "@/checkout/lib/rethrow-next-internal-error";
 
@@ -43,6 +44,11 @@ type Params = {
 	tokenize: () => Promise<TokenizeResult>;
 	messages: CheckoutPaymentMessages;
 	gatewayMessages: CheckoutGatewayMessages;
+	/**
+	 * Pay in 4: charge only the deposit (a quarter of the order) and say the shopper agreed to the schedule. The caller must
+	 * have asked for that agreement first; the payments app refuses a deposit that isn't exactly a quarter of Saleor's total.
+	 */
+	installments?: boolean;
 };
 
 let payInFlight: Promise<WvPayResult> | null = null;
@@ -75,6 +81,7 @@ async function runWvPayPayment({
 	tokenize,
 	messages,
 	gatewayMessages,
+	installments = false,
 }: Params): Promise<WvPayResult> {
 	const flowGeneration = beginCheckoutPaymentFlow();
 	let charged = false;
@@ -122,6 +129,12 @@ async function runWvPayPayment({
 			};
 		}
 
+		// Pay in 4 charges the deposit now; the rest is collected later by the installment job.
+		const plan = installments ? buildInstallmentPlan(payAmount) : null;
+		if (installments && !plan) {
+			return { ok: false, kind: "error", message: messages.totalUnavailable };
+		}
+
 		const token = await tokenize();
 		if (!token.ok) {
 			const field = (token.code && ACCEPT_FIELD_ERRORS[token.code]) || null;
@@ -135,10 +148,12 @@ async function runWvPayPayment({
 
 		const initResult = await getCheckoutTransport().initializeTransaction({
 			checkoutId: liveCheckout.id,
-			amount: payAmount,
+			amount: plan ? plan.deposit : payAmount,
 			paymentGateway: {
 				id: WVPAY_GATEWAY_ID,
-				data: { method: "authorizenet", opaqueData: token.opaqueData },
+				data: plan
+					? { method: "installments", consent: true, opaqueData: token.opaqueData }
+					: { method: "authorizenet", opaqueData: token.opaqueData },
 			},
 		});
 		if (!initResult.ok) {

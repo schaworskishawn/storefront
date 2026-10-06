@@ -54,6 +54,42 @@ export function resolveAgeCheckerApi(
 	return null;
 }
 
+const KEY_INFO_URL = "https://api.agechecker.net/v1/info";
+
+export type AgeCheckerKeyCheck = { ok: true } | { ok: false; code: string; message: string };
+
+/**
+ * Asks AgeChecker whether this key may be used on the current domain — the first thing its popup does too. When the
+ * answer is no (`invalid_origin`: the domain is not in the key's allowed domains, which includes localhost until it is
+ * added) the popup crashes instead of reporting it: its modal stays invisible, page scrolling stays locked, and "Try
+ * again" appears to do nothing. Asking first lets us fail straight away, without loading the popup at all.
+ *
+ * Only a definite refusal (a 4xx carrying an error code) blocks. A network error, a 5xx or an unreadable answer is left
+ * to the widget, so a hiccup here never stops a shopper who could still have verified.
+ */
+export async function checkAgeCheckerKey(
+	apiKey: string,
+	fetchImpl: typeof fetch = fetch,
+): Promise<AgeCheckerKeyCheck> {
+	try {
+		const response = await fetchImpl(`${KEY_INFO_URL}/${encodeURIComponent(apiKey)}`);
+		if (response.ok || response.status < 400 || response.status >= 500) {
+			return { ok: true };
+		}
+		const body = (await response.json().catch(() => null)) as {
+			error?: { code?: unknown; message?: unknown };
+		} | null;
+		const code = body?.error?.code;
+		if (typeof code !== "string") {
+			return { ok: true };
+		}
+		const message = body?.error?.message;
+		return { ok: false, code, message: typeof message === "string" ? message : "" };
+	} catch {
+		return { ok: true };
+	}
+}
+
 let widgetPromise: Promise<AgeCheckerWidgetInstanceApi> | null = null;
 let currentHandlers: {
 	onStatusChanged?: (event: AgeCheckerWidgetVerificationEvent) => void;
@@ -82,7 +118,27 @@ export function loadAgeCheckerWidget(
 		return widgetPromise;
 	}
 
-	widgetPromise = new Promise<AgeCheckerWidgetInstanceApi>((resolve, reject) => {
+	widgetPromise = (async () => {
+		const check = await checkAgeCheckerKey(apiKey);
+		if (!check.ok) {
+			throw new Error(
+				`AgeChecker.Net refused this API key on ${window.location.host} (${check.code}${check.message ? `: ${check.message}` : ""}). ` +
+					"Add this domain to the key's allowed domains in the AgeChecker.Net dashboard.",
+			);
+		}
+		return injectWidgetScript(apiKey);
+	})();
+
+	// A failed load must not be remembered: "Try again" has to attempt a fresh load instead of replaying the failure.
+	widgetPromise.catch(() => {
+		widgetPromise = null;
+	});
+
+	return widgetPromise;
+}
+
+function injectWidgetScript(apiKey: string): Promise<AgeCheckerWidgetInstanceApi> {
+	return new Promise<AgeCheckerWidgetInstanceApi>((resolve, reject) => {
 		// The widget checks the key (and that this domain is allowed to use it) before it calls onready. If that never
 		// happens the shopper would be left staring at nothing, so give up after a while and let "Try again" start over.
 		const timer = setTimeout(
@@ -131,11 +187,4 @@ export function loadAgeCheckerWidget(
 		};
 		document.head.appendChild(script);
 	});
-
-	// A failed load must not be remembered: "Try again" has to attempt a fresh load instead of replaying the failure.
-	widgetPromise.catch(() => {
-		widgetPromise = null;
-	});
-
-	return widgetPromise;
 }
