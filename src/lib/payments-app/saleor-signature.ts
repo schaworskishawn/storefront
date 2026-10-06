@@ -9,6 +9,10 @@ import { createPublicKey, verify, type JsonWebKey } from "node:crypto";
  * `saleor-signature` header; the matching public keys are published at `<saleor origin>/.well-known/jwks.json`.
  * We only ever trust the Saleor URL from our own config (never the one named in the request), so an attacker cannot
  * point us at their own key set.
+ *
+ * What is signed matters: Saleor's header carries `"b64": false` with `"crit": ["b64"]` (RFC 7797), which means the
+ * signature covers the raw body bytes, not their base64url form. Assuming the usual base64url form rejected every genuine
+ * webhook ("bad or missing signature"), so both forms are handled, chosen by the header, as the standard says.
  */
 
 type Jwk = JsonWebKey & { kid?: string; alg?: string; use?: string };
@@ -68,19 +72,32 @@ export async function verifySaleorSignature({
 	// Detached payload: header, empty payload, signature.
 	if (parts.length !== 3 || parts[1] !== "" || !parts[0] || !parts[2]) return false;
 
-	let header: { alg?: string; kid?: string };
+	let header: { alg?: string; kid?: string; b64?: boolean; crit?: unknown };
 	try {
 		header = JSON.parse(Buffer.from(parts[0], "base64url").toString("utf8")) as {
 			alg?: string;
 			kid?: string;
+			b64?: boolean;
+			crit?: unknown;
 		};
 	} catch {
 		return false;
 	}
 	// Pin the algorithm — never let the token choose how it is verified.
 	if (header.alg !== "RS256") return false;
+	// `crit` lists extensions the verifier must understand; "b64" is the only one handled here.
+	if (
+		header.crit !== undefined &&
+		(!Array.isArray(header.crit) || header.crit.some((name) => name !== "b64"))
+	) {
+		return false;
+	}
 
-	const signingInput = Buffer.from(`${parts[0]}.${Buffer.from(rawBody, "utf8").toString("base64url")}`);
+	const payload = Buffer.from(rawBody, "utf8");
+	const signingInput =
+		header.b64 === false
+			? Buffer.concat([Buffer.from(`${parts[0]}.`), payload])
+			: Buffer.from(`${parts[0]}.${payload.toString("base64url")}`);
 	const signatureBytes = Buffer.from(parts[2], "base64url");
 	const jwksUrl = jwksUrlFor(expectedApiUrl);
 
