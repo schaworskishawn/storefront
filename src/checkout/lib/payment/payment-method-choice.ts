@@ -1,6 +1,6 @@
-export type PaymentMethodChoice = "card" | "etransfer" | "adyen" | "crypto";
+export type PaymentMethodChoice = "card" | "installments" | "etransfer" | "adyen" | "crypto";
 
-const CHOICES: readonly PaymentMethodChoice[] = ["card", "etransfer", "adyen", "crypto"];
+const CHOICES: readonly PaymentMethodChoice[] = ["card", "installments", "etransfer", "adyen", "crypto"];
 
 const keyFor = (checkoutId: string) => `checkout:payment-method:${checkoutId}`;
 

@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { AlertTriangle } from "lucide-react";
 import { type CheckoutFragment } from "@/checkout/graphql";
 import { isCheckoutReadyToComplete } from "@/checkout/lib/payment/checkout-payment-status";
+import { hasInstallmentDeposit } from "@/checkout/lib/payment/providers/installments";
 import {
 	isCheckoutPaymentActive,
 	markPaymentCompleting,
@@ -21,7 +22,7 @@ type AuthorizedPaymentRecoveryProps = {
 	onError: (message: string) => void;
 };
 
-/** Fallback when authorizeStatus is FULL but checkoutComplete did not run. */
+/** Fallback when authorizeStatus is FULL (or a Pay in 4 deposit is paid) but checkoutComplete did not run. */
 export const AuthorizedPaymentRecovery: FC<AuthorizedPaymentRecoveryProps> = ({ checkout, onError }) => {
 	const searchParams = useSearchParams()!;
 	const paymentMessages = useCheckoutPaymentMessages();
@@ -32,7 +33,8 @@ export const AuthorizedPaymentRecovery: FC<AuthorizedPaymentRecoveryProps> = ({ 
 		return null;
 	}
 
-	if (!isCheckoutReadyToComplete(checkout)) {
+	// A Pay in 4 deposit leaves the checkout part-paid; it can still become an order, and must not be paid twice.
+	if (!isCheckoutReadyToComplete(checkout) && !hasInstallmentDeposit(checkout)) {
 		return null;
 	}
 

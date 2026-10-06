@@ -9,13 +9,15 @@ export type PaymentMethodOffers = {
 	/** The primary card gateway (Authorize.net / Stripe) is integrated. */
 	card: boolean;
 	etransfer: boolean;
+	/** The store's own "Pay in 4" plan (a card deposit now, the rest charged later). Absent means not offered. */
+	installments?: boolean;
 	/** PayPal and buy-now-pay-later through the Adyen app. */
 	adyen: boolean;
 	crypto: boolean;
 };
 
-/** Display order: cards first, then the wallet/lender options, then the pay-after-order and crypto methods. */
-const METHOD_ORDER: readonly PaymentMethodChoice[] = ["card", "adyen", "etransfer", "crypto"];
+/** Display order: cards first, then Pay in 4, the wallet/lender options, then the pay-after-order and crypto methods. */
+const METHOD_ORDER: readonly PaymentMethodChoice[] = ["card", "installments", "adyen", "etransfer", "crypto"];
 
 export function listPaymentMethods(offers: PaymentMethodOffers): PaymentMethodChoice[] {
 	return METHOD_ORDER.filter((method) => offers[method]);

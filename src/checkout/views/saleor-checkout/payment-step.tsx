@@ -30,6 +30,8 @@ import { isCheckoutFreeOrder } from "@/checkout/lib/payment/checkout-pay-amount"
 import { shouldShowPaymentMethodArea } from "@/checkout/lib/payment/should-show-payment-method-area";
 import { isIntegratedPaymentProvider, usesClientPaymentSubmit } from "@/checkout/lib/payment";
 import { CryptoPayment } from "@/checkout/components/payment/crypto/crypto-payment";
+import { WvPayPayment } from "@/checkout/components/payment/wvpay/wvpay-payment";
+import { isInstallmentsOffered } from "@/checkout/lib/payment/providers/installments";
 import { ETransferPayment } from "@/checkout/components/payment/etransfer/etransfer-payment";
 import { PaymentMethodTabs } from "@/checkout/components/payment/payment-method-tabs";
 import { isETransferCountry, isETransferCurrency, isETransferEnabled } from "@/lib/etransfer";
@@ -130,9 +132,13 @@ export const PaymentStep: FC<PaymentStepProps> = ({
 		!isFreeOrder;
 	const hasCardMethod = isIntegratedPaymentProvider(provider);
 	const gatewayOffers = getGatewayPaymentOffers(checkout.availablePaymentGateways, isFreeOrder);
+	// Pay in 4 (the store's own installment plan) needs the card app, its flags, and an order in an allowed channel and range.
+	const installmentsOffered =
+		!isFreeOrder && isInstallmentsOffered(checkout, checkout.availablePaymentGateways);
 	const availableMethods = listPaymentMethods({
 		card: hasCardMethod,
 		etransfer: eTransferOffered,
+		installments: installmentsOffered,
 		...gatewayOffers,
 	});
 	const [pickedMethod, setPickedMethod] = useState<PaymentMethodChoice>("card");
@@ -158,6 +164,10 @@ export const PaymentStep: FC<PaymentStepProps> = ({
 	const usesClientSubmit = method !== "card" || cardUsesClientSubmit;
 	const methodLabels: Record<PaymentMethodChoice, { label: string; description?: string }> = {
 		card: { label: tPayment("etransfer.methodCard") },
+		installments: {
+			label: tPayment("installments.methodTitle"),
+			description: tPayment("installments.methodDescription"),
+		},
 		adyen: { label: tPayment("adyen.methodTitle"), description: tPayment("adyen.methodDescription") },
 		etransfer: {
 			label: tPayment("etransfer.methodTitle"),
@@ -345,6 +355,23 @@ export const PaymentStep: FC<PaymentStepProps> = ({
 					}}
 					onPaymentError={handlePaymentError}
 					onBillingErrors={setBillingErrors}
+					onPaymentActivityChange={handlePaymentActivityChange}
+				/>
+			) : method === "installments" ? (
+				<WvPayPayment
+					installments
+					checkout={checkout}
+					billing={{
+						billingData,
+						sameAsBilling,
+						hasShippingAddress,
+						shippingAddress,
+						userAddresses: user?.addresses,
+						authenticated,
+					}}
+					onPaymentError={handlePaymentError}
+					onBillingErrors={setBillingErrors}
+					onPriceChangeNotice={setPriceChangeNotice}
 					onPaymentActivityChange={handlePaymentActivityChange}
 				/>
 			) : method === "adyen" ? (

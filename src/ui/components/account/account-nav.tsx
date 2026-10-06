@@ -3,28 +3,33 @@
 import { usePathname, useParams } from "next/navigation";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { LayoutGrid, Receipt, MapPin, Settings, ArrowLeft } from "lucide-react";
+import { LayoutGrid, Receipt, MapPin, Settings, Coins, ArrowLeft } from "lucide-react";
 import { LinkWithChannel } from "@/ui/atoms/link-with-channel";
 import { cn } from "@/lib/utils";
 import { LogoutButton } from "@/lib/auth/logout-button";
 import { useAccountUser } from "@/ui/components/account/account-context";
 import { accountRoutes } from "@/ui/components/account/routes";
 import { stripStorefrontPrefix } from "@/lib/storefront-path";
+import { readRewardsConfig } from "@/lib/rewards/tokens";
 
 const navItems: ReadonlyArray<{
 	href: string;
-	labelKey: "overview" | "orders" | "addresses" | "settings";
+	labelKey: "overview" | "orders" | "addresses" | "tokens" | "settings";
 	icon: typeof LayoutGrid;
 	exact?: boolean;
 }> = [
 	{ href: accountRoutes.overview, labelKey: "overview", icon: LayoutGrid, exact: true },
 	{ href: accountRoutes.orders, labelKey: "orders", icon: Receipt },
 	{ href: accountRoutes.addresses, labelKey: "addresses", icon: MapPin },
+	{ href: accountRoutes.tokens, labelKey: "tokens", icon: Coins },
 	{ href: accountRoutes.settings, labelKey: "settings", icon: Settings },
 ];
 
 export function AccountNav() {
 	const t = useTranslations("account.nav");
+	// The Vapor Tokens page only exists while rewards are on.
+	const rewardsOn = readRewardsConfig().enabled;
+	const visibleNavItems = navItems.filter((item) => rewardsOn || item.labelKey !== "tokens");
 	const user = useAccountUser();
 	const pathname = usePathname() ?? "";
 	const { locale, channel } = useParams<{ locale?: string; channel?: string }>()!;
@@ -77,7 +82,7 @@ export function AccountNav() {
 					"md:flex md:flex-col md:gap-0.5 md:rounded-none md:bg-transparent md:p-0",
 				)}
 			>
-				{navItems.map(({ href, labelKey, icon: Icon, exact }) => {
+				{visibleNavItems.map(({ href, labelKey, icon: Icon, exact }) => {
 					const active = isActive(href, exact);
 					return (
 						<LinkWithChannel

@@ -7,6 +7,9 @@ import { PAYMENTS_APP_ID, PAYMENTS_APP_NAME, PAYMENTS_APP_VERSION } from "./cons
  * Only the events this app handles are registered. `TRANSACTION_PROCESS_SESSION` is deliberately absent: card payments finish
  * inside `TRANSACTION_INITIALIZE_SESSION` (no redirect / 3-D Secure step), and crypto payments are confirmed by the provider's
  * IPN call (src/app/api/saleor-app/crypto/ipn), which reports to Saleor itself — so Saleor has nothing to process afterwards.
+ *
+ * The one asynchronous event is ORDER_CREATED, which gives a "Pay in 4" order its plan (src/lib/installments). It needs the
+ * MANAGE_ORDERS permission, which the installment job also uses to read orders and store each plan on its order.
  */
 
 const ADDRESS_FIELDS = `
@@ -23,9 +26,17 @@ const ADDRESS_FIELDS = `
 
 export type WebhookDefinition = {
 	/** URL segment under /api/saleor-app/webhooks/ — the route dispatches on it. */
-	slug: "payment-gateway-initialize" | "transaction-initialize" | "transaction-refund" | "transaction-cancel";
+	slug:
+		| "payment-gateway-initialize"
+		| "transaction-initialize"
+		| "transaction-refund"
+		| "transaction-cancel"
+		| "order-created";
 	name: string;
-	syncEvents: string[];
+	/** Saleor waits for the answer to these. */
+	syncEvents?: string[];
+	/** Saleor delivers these in the background and only needs a 2xx back. */
+	asyncEvents?: string[];
 	query: string;
 };
 
@@ -58,6 +69,9 @@ export const WEBHOOK_DEFINITIONS: readonly WebhookDefinition[] = [
 				... on Checkout {
 					id
 					email
+					totalPrice { gross { amount currency } }
+					channel { slug }
+					chargeStatus
 					billingAddress {${ADDRESS_FIELDS}
 					}
 					shippingAddress {${ADDRESS_FIELDS}
@@ -103,6 +117,18 @@ export const WEBHOOK_DEFINITIONS: readonly WebhookDefinition[] = [
 	}
 }`,
 	},
+	{
+		slug: "order-created",
+		name: "Order created (Pay in 4)",
+		asyncEvents: ["ORDER_CREATED"],
+		query: `subscription {
+	event {
+		... on OrderCreated {
+			order { id }
+		}
+	}
+}`,
+	},
 ];
 
 export function buildPaymentsAppManifest(origin: string) {
@@ -112,14 +138,15 @@ export function buildPaymentsAppManifest(origin: string) {
 		version: PAYMENTS_APP_VERSION,
 		name: PAYMENTS_APP_NAME,
 		about:
-			"Takes credit and debit card payments through Authorize.net, and crypto payments through NOWPayments, for this storefront.",
-		permissions: ["HANDLE_PAYMENTS"],
+			"Takes credit and debit card payments through Authorize.net (including Pay in 4 installment plans), and crypto payments through NOWPayments, for this storefront.",
+		permissions: ["HANDLE_PAYMENTS", "MANAGE_ORDERS"],
 		appUrl: base,
 		tokenTargetUrl: `${base}/api/saleor-app/register`,
 		author: "Worldwide Vapor",
 		webhooks: WEBHOOK_DEFINITIONS.map((definition) => ({
 			name: definition.name,
-			syncEvents: definition.syncEvents,
+			...(definition.syncEvents ? { syncEvents: definition.syncEvents } : {}),
+			...(definition.asyncEvents ? { asyncEvents: definition.asyncEvents } : {}),
 			query: definition.query,
 			targetUrl: `${base}/api/saleor-app/webhooks/${definition.slug}`,
 			isActive: true,

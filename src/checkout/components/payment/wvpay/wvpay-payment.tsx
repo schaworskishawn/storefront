@@ -7,16 +7,21 @@ import { type CheckoutFragment } from "@/checkout/graphql";
 import { useCheckoutGatewayMessages } from "@/checkout/hooks/use-checkout-gateway-messages";
 import { useCheckoutPaymentMessages } from "@/checkout/hooks/use-checkout-payment-messages";
 import {
+	getCheckoutPayAmount,
+	getCheckoutPayCurrency,
 	isCheckoutFreeOrder,
 	type CheckoutPriceChangeNotice,
 } from "@/checkout/lib/payment/checkout-pay-amount";
 import { clearPaymentCompleting } from "@/checkout/lib/payment/checkout-payment-completion";
 import { executeWvPayPayment } from "@/checkout/lib/payment/execute-wvpay-payment";
-import { formatMoneyWithFallback } from "@/checkout/lib/utils/money";
+import { formatMoneyWithFallback, getFormattedMoney } from "@/checkout/lib/utils/money";
 import { useCheckoutData } from "@/checkout/providers/checkout-data";
 import { LoadingSpinner } from "@/checkout/ui-kit/loading-spinner";
 import { Button } from "@/ui/components/ui/button";
+import { Checkbox } from "@/ui/components/ui/checkbox";
 import { Input } from "@/ui/components/ui/input";
+import { buildInstallmentPlan } from "@/lib/installments/plan";
+import { InstallmentsSchedule } from "@/checkout/components/payment/installments/installments-schedule";
 import { FreeOrderCheckout } from "@/checkout/components/payment/stripe/free-order-checkout";
 import { type StripeBillingContext } from "@/checkout/components/payment/stripe/stripe-billing-context";
 import { loadAcceptJs, tokenizeCard } from "./accept-js";
@@ -37,6 +42,8 @@ type WvPayPaymentProps = {
 	onBillingErrors: (errors: Record<string, string>, focusField?: string) => void;
 	onPriceChangeNotice: (notice: CheckoutPriceChangeNotice) => void;
 	onPaymentActivityChange?: (active: boolean) => void;
+	/** Pay in 4: shows the schedule, asks the shopper to agree to it, and charges only the deposit. */
+	installments?: boolean;
 };
 
 const BRAND_LABELS = {
@@ -70,8 +77,10 @@ const WvPayCardForm: FC<WvPayPaymentProps> = ({
 	onBillingErrors,
 	onPriceChangeNotice,
 	onPaymentActivityChange,
+	installments = false,
 }) => {
 	const t = useTranslations("checkout.payment.wvpay");
+	const tInstallments = useTranslations("checkout.payment.installments");
 	const tActions = useTranslations("checkout.actions");
 	const paymentMessages = useCheckoutPaymentMessages();
 	const gatewayMessages = useCheckoutGatewayMessages();
@@ -85,9 +94,15 @@ const WvPayCardForm: FC<WvPayPaymentProps> = ({
 	const [errors, setErrors] = useState<CardErrors>({});
 	const [fieldMessage, setFieldMessage] = useState<string | null>(null);
 	const [busy, setBusy] = useState(false);
+	const [agreed, setAgreed] = useState(false);
+	const [consentMissing, setConsentMissing] = useState(false);
 
 	const brand = detectBrand(number);
 	const totalStr = formatMoneyWithFallback(checkout.totalPrice?.gross);
+	const payAmount = getCheckoutPayAmount(checkout);
+	const currency = getCheckoutPayCurrency(checkout);
+	// The schedule is worked out from the same total Saleor will check the deposit against.
+	const plan = installments && payAmount !== null ? buildInstallmentPlan(payAmount) : null;
 
 	useEffect(() => {
 		if (config.status !== "ready") return;
@@ -118,6 +133,15 @@ const WvPayCardForm: FC<WvPayPaymentProps> = ({
 		);
 	}
 
+	if (installments && config.status === "ready" && !config.offersInstallments) {
+		return (
+			<div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4" role="alert">
+				<AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
+				<p className="text-sm text-amber-800">{tInstallments("notConfigured")}</p>
+			</div>
+		);
+	}
+
 	if (config.status === "error" || scriptState === "error") {
 		const message =
 			config.status === "error" && config.reason === "not_configured"
@@ -138,6 +162,11 @@ const WvPayCardForm: FC<WvPayPaymentProps> = ({
 		onPaymentError("");
 		setFieldMessage(null);
 
+		if (installments && !agreed) {
+			setConsentMissing(true);
+			return;
+		}
+
 		const cardErrors = validateCard({ number, expiry, cvv });
 		setErrors(cardErrors);
 		if (Object.keys(cardErrors).length > 0) return;
@@ -155,6 +184,7 @@ const WvPayCardForm: FC<WvPayPaymentProps> = ({
 			refreshCheckout,
 			messages: paymentMessages,
 			gatewayMessages,
+			installments,
 			tokenize: () =>
 				tokenizeCard({
 					card: {
@@ -202,6 +232,8 @@ const WvPayCardForm: FC<WvPayPaymentProps> = ({
 
 	return (
 		<div className="space-y-4 rounded-lg border border-border bg-card p-4 md:p-5">
+			{plan && currency ? <InstallmentsSchedule plan={plan} currency={currency} /> : null}
+
 			<div className="space-y-4">
 				<div className="space-y-1.5">
 					<label htmlFor="wvpay-number" className="flex items-center justify-between text-sm font-medium">
@@ -276,6 +308,29 @@ const WvPayCardForm: FC<WvPayPaymentProps> = ({
 				</div>
 			</div>
 
+			{plan ? (
+				<div className="space-y-1.5">
+					<label className="flex cursor-pointer items-start gap-3 text-sm">
+						<Checkbox
+							checked={agreed}
+							onCheckedChange={(checked) => {
+								setAgreed(checked);
+								if (checked) setConsentMissing(false);
+							}}
+							disabled={busy}
+							aria-invalid={consentMissing}
+							className="mt-0.5"
+						/>
+						<span>{tInstallments("consent")}</span>
+					</label>
+					{consentMissing ? (
+						<p className="text-sm text-destructive" role="alert">
+							{tInstallments("consentRequired")}
+						</p>
+					) : null}
+				</div>
+			) : null}
+
 			{fieldMessage ? (
 				<p className="text-sm text-destructive" role="alert">
 					{fieldMessage}
@@ -290,7 +345,7 @@ const WvPayCardForm: FC<WvPayPaymentProps> = ({
 			<Button
 				type="button"
 				className="h-12 w-full md:w-auto md:min-w-[200px]"
-				disabled={busy || scriptState !== "ready"}
+				disabled={busy || scriptState !== "ready" || (installments && !plan)}
 				onClick={() => void handlePay()}
 			>
 				{busy ? (
@@ -298,6 +353,8 @@ const WvPayCardForm: FC<WvPayPaymentProps> = ({
 						<LoadingSpinner />
 						{tActions("processingPayment")}
 					</span>
+				) : plan && currency ? (
+					tInstallments("payToday", { amount: getFormattedMoney({ amount: plan.deposit, currency }) })
 				) : (
 					tActions("payTotal", { total: totalStr })
 				)}

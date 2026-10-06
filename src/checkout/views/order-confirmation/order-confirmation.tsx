@@ -6,6 +6,7 @@ import { useCheckoutBrowseLocale } from "@/checkout/providers/checkout-browse";
 import { CheckCircle, Mail, MapPin, Package, CreditCard } from "lucide-react";
 import { Button } from "@/ui/components/ui/button";
 import { useOrder } from "@/checkout/hooks/use-order";
+import { useUser } from "@/checkout/hooks/use-user";
 import { OrderSummary } from "@/checkout/views/saleor-checkout/order-summary";
 import { OrderConfirmationPageShell } from "./order-confirmation-page-shell";
 import { PageNotFound } from "@/checkout/views/page-not-found";
@@ -13,6 +14,12 @@ import { useTranslations } from "next-intl";
 import { getLocaleDefinition } from "@/config/locale";
 import { parseETransferDetails } from "@/lib/etransfer";
 import { ETransferInstructions } from "./etransfer-instructions";
+import { InstallmentsNotice } from "./installments-notice";
+import { TokensEarnedNotice } from "./tokens-earned-notice";
+import { estimateOrderTokens } from "@/checkout/lib/vapor-tokens";
+import { readRewardsConfig } from "@/lib/rewards/tokens";
+import { isInstallmentsEnabled } from "@/checkout/lib/payment/providers/installments";
+import { buildInstallmentPlan } from "@/lib/installments/plan";
 
 /** Format address for display */
 function formatAddress(address: {
@@ -31,6 +38,7 @@ function formatAddress(address: {
  */
 export const OrderConfirmation = () => {
 	const { order } = useOrder();
+	const { authenticated } = useUser();
 	const storefrontLocale = useCheckoutBrowseLocale();
 	const t = useTranslations("checkout.confirmation");
 	const tErrors = useTranslations("checkout.errors");
@@ -67,6 +75,18 @@ export const OrderConfirmation = () => {
 	const eTransfer = order.isPaid ? null : parseETransferDetails(order.metadata);
 	const orderTotal = order.total?.gross;
 
+	// A Pay in 4 order is placed part-paid: show what was paid and when the rest is charged. The dates count from the order's
+	// own date, so they match the emails and don't move if the page is opened later.
+	const installmentsPlan =
+		!eTransfer && orderTotal && isInstallmentsEnabled() && order.chargeStatus === "PARTIAL"
+			? buildInstallmentPlan(orderTotal.amount)
+			: null;
+
+	// Only a signed-in customer earns Vapor Tokens: a guest order earns nothing, so the note stays off.
+	const rewards = readRewardsConfig();
+	const tokensEarned =
+		rewards.enabled && authenticated ? estimateOrderTokens(order, rewards.tokensPerDollar) : 0;
+
 	return (
 		<OrderConfirmationPageShell storefrontChannel={channel}>
 			<main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -96,6 +116,16 @@ export const OrderConfirmation = () => {
 										locale={localeBcp47}
 									/>
 								) : null}
+
+								{installmentsPlan && orderTotal ? (
+									<InstallmentsNotice
+										plan={installmentsPlan}
+										currency={orderTotal.currency}
+										orderedAt={new Date(order.created)}
+									/>
+								) : null}
+
+								{tokensEarned > 0 ? <TokensEarnedNotice tokens={tokensEarned} /> : null}
 
 								<div className="overflow-hidden rounded-lg border border-border">
 									<div className="border-b border-border bg-secondary/50 p-4">
@@ -133,7 +163,7 @@ export const OrderConfirmation = () => {
 												</div>
 											</div>
 										)}
-										{eTransfer ? null : (
+										{eTransfer || installmentsPlan ? null : (
 											<div className="flex items-start gap-3">
 												<Package className="mt-0.5 h-5 w-5 text-muted-foreground" />
 												<div>
