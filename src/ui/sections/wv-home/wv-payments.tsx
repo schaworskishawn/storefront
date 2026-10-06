@@ -2,6 +2,8 @@ import Link from "next/link";
 import { WvFooter, WvHeader } from "./wv-chrome";
 import { CardNewsletterForm } from "./wv-newsletter-client";
 import "./wv-home.css";
+import { describeProgram } from "@/lib/rewards/program-copy";
+import { readRewardsConfig } from "@/lib/rewards/tokens";
 
 /**
  * Worldwide Vapor payments page — Figma "6.03 - High Fidelity - Payments".
@@ -43,6 +45,13 @@ const METHODS = [
 	},
 ];
 
+/** The rewards program, listed with the other ways to pay only while it is switched on, worded from its live settings. */
+function vaporTokensMethod() {
+	const config = readRewardsConfig();
+	if (!config.enabled) return [];
+	return [{ icon: "⭐", title: "Vapor Tokens", text: describeProgram(config) }];
+}
+
 const TRUST = [
 	{ icon: "🛡️", title: "100% Secure Payments", text: "AES-256 bank-level encryption standard." },
 	{ icon: "⚡", title: "Fast & Reliable", text: "Immediate order updates and validation." },
@@ -76,6 +85,8 @@ function OutlineLink({ href, children }: { href: string; children: string }) {
 }
 
 export function WvPayments() {
+	const methods = [...METHODS, ...vaporTokensMethod()];
+
 	return (
 		<div className="min-h-dvh overflow-x-clip bg-[var(--wv-bg)] text-white">
 			<WvHeader />
@@ -158,7 +169,7 @@ export function WvPayments() {
 					<div className="h-[3px] w-[60px] rounded-full bg-[var(--wv-cyan-soft)] xl:w-20" />
 				</div>
 				<div className="grid w-full max-w-[1280px] grid-cols-1 gap-3 md:grid-cols-2 md:gap-4 xl:grid-cols-4 xl:gap-6">
-					{METHODS.map((m) => (
+					{methods.map((m) => (
 						<article
 							key={m.title}
 							className="flex flex-col gap-3 rounded-2xl border border-[var(--wv-cyan-soft)] bg-[var(--wv-control)] p-5 xl:p-6"
