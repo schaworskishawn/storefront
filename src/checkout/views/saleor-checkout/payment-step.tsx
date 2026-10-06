@@ -11,6 +11,8 @@ import {
 } from "./checkout-summary-context";
 import { type CheckoutFragment, type CountryCode, type AddressFragment } from "@/checkout/graphql";
 import { useUser } from "@/checkout/hooks/use-user";
+import { useVaporTokens } from "@/checkout/hooks/use-vapor-tokens";
+import { VaporTokensPanel } from "@/checkout/views/saleor-checkout/vapor-tokens-panel";
 import { useCheckoutPayment } from "@/checkout/hooks/use-checkout-payment";
 import { MobileStickyAction } from "./mobile-sticky-action";
 import { useCheckoutStepNumber } from "@/checkout/hooks/use-checkout-steps";
@@ -72,6 +74,7 @@ export const PaymentStep: FC<PaymentStepProps> = ({
 	onPaymentBusyChange,
 }) => {
 	const { user, authenticated } = useUser();
+	const vaporTokens = useVaporTokens(checkout);
 	const tActions = useTranslations("checkout.actions");
 	const tPayment = useTranslations("checkout.payment");
 	const isShippingRequired = checkout.isShippingRequired;
@@ -313,6 +316,14 @@ export const PaymentStep: FC<PaymentStepProps> = ({
 			{(method === "card" ? cardUsesClientSubmit : method !== "etransfer") && !isFreeOrder ? (
 				<AuthorizedPaymentRecovery checkout={checkout} onError={handlePaymentError} />
 			) : null}
+
+			{/* Vapor Tokens come off the order total like a gift card, so they are chosen before the payment method. */}
+			<VaporTokensPanel
+				variant="payment"
+				checkout={checkout}
+				view={vaporTokens.view}
+				onSignIn={onGoToInformation}
+			/>
 
 			{availableMethods.length > 1 ? (
 				<PaymentMethodTabs

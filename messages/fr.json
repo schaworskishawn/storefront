@@ -528,6 +528,8 @@
 			"earnEstimate": "You'll earn about {tokens, number} Vapor Tokens when this order is paid.",
 			"guestEarnEstimate": "Sign in to earn about {tokens, number} Vapor Tokens on this order.",
 			"expiringSoon": "{tokens, number} tokens expire on {date}.",
+			"signInAction": "Log in or create an account",
+			"availableAtPayment": "{tokens, number} tokens available. Use them in the payment step.",
 			"errors": {
 				"signIn": "Sign in to use your Vapor Tokens.",
 				"notYours": "These tokens can't be used on this checkout.",

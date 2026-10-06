@@ -16,6 +16,13 @@ import { centsForTokens } from "@/lib/rewards/tokens";
 type VaporTokensPanelProps = {
 	checkout: ServerCheckout;
 	view: TokensView | null;
+	/**
+	 * "summary" (the order summary, on every step) shows what is applied and what the order earns, and points to the payment step.
+	 * "payment" (the payment step) is the full card: balance, the Use button, and a way for a guest to sign in.
+	 */
+	variant?: "summary" | "payment";
+	/** Takes a guest to where they can log in (the contact step). */
+	onSignIn?: () => void;
 	/** Called after tokens go on or off, like the promo code form's own change callback. */
 	onCheckoutChange?: () => void;
 };
@@ -31,7 +38,13 @@ const ERROR_KEYS = {
 } as const satisfies Record<TokensErrorCode, string>;
 
 /** Vapor Tokens on the checkout: the balance, a button to spend it, what is applied, and what the order will earn. */
-export function VaporTokensPanel({ checkout, view, onCheckoutChange }: VaporTokensPanelProps) {
+export function VaporTokensPanel({
+	checkout,
+	view,
+	variant = "summary",
+	onSignIn,
+	onCheckoutChange,
+}: VaporTokensPanelProps) {
 	const t = useTranslations("checkout.tokens");
 	const localeSlug = useCheckoutBrowseLocale();
 	const locale = getLocaleDefinition(localeSlug)?.bcp47 ?? localeConfig.default;
@@ -47,6 +60,31 @@ export function VaporTokensPanel({ checkout, view, onCheckoutChange }: VaporToke
 
 	if (view.status === "guest") {
 		if (view.willEarnTokens <= 0) return null;
+		if (variant === "payment") {
+			return (
+				<div className="rounded-lg border border-border bg-secondary/30 p-3">
+					<div className="flex flex-wrap items-center gap-3">
+						<Coins aria-hidden className="h-4 w-4 shrink-0 text-muted-foreground" />
+						<div className="min-w-[10rem] flex-1">
+							<p className="text-sm font-medium">{t("title")}</p>
+							<p className="text-xs text-muted-foreground">
+								{t("guestEarnEstimate", { tokens: view.willEarnTokens })}
+							</p>
+						</div>
+						{onSignIn ? (
+							<Button
+								type="button"
+								variant="outline-solid"
+								onClick={onSignIn}
+								className="h-9 shrink-0 bg-white px-3 text-sm"
+							>
+								{t("signInAction")}
+							</Button>
+						) : null}
+					</div>
+				</div>
+			);
+		}
 		return (
 			<p className="flex items-center gap-2 text-xs text-muted-foreground">
 				<Coins aria-hidden className="h-4 w-4 shrink-0" />
@@ -112,11 +150,18 @@ export function VaporTokensPanel({ checkout, view, onCheckoutChange }: VaporToke
 				</div>
 			) : null}
 
-			{view.canApply ? (
+			{view.canApply && variant === "summary" ? (
+				<p className="flex items-center gap-2 text-xs text-muted-foreground">
+					<Coins aria-hidden className="h-4 w-4 shrink-0" />
+					{t("availableAtPayment", { tokens: view.balanceTokens })}
+				</p>
+			) : null}
+
+			{view.canApply && variant === "payment" ? (
 				<div className="rounded-lg border border-border bg-secondary/30 p-3">
-					<div className="flex items-center gap-3">
+					<div className="flex flex-wrap items-center gap-3">
 						<Coins aria-hidden className="h-4 w-4 shrink-0 text-muted-foreground" />
-						<div className="min-w-0 flex-1">
+						<div className="min-w-[10rem] flex-1">
 							<p className="text-sm font-medium">{t("title")}</p>
 							<p className="text-xs text-muted-foreground">
 								{t("balance", { tokens: view.balanceTokens, amount: money(view.balanceCents) })}
