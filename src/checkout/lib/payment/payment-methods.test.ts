@@ -8,7 +8,7 @@ import {
 import { resolvePaymentProvider } from "./resolve-provider";
 
 const ADYEN = { id: "app.saleor.adyen", name: "Adyen" };
-const WVPAY = { id: "app.worldwide-vapor.payments", name: "Worldwide Vapor Payments" };
+const WVPAY = { id: "worldwide-vapor.payments", name: "Worldwide Vapor Payments" };
 const STRIPE = { id: "saleor.app.payment.stripe", name: "Stripe" };
 
 afterEach(() => {
@@ -43,6 +43,25 @@ describe("resolvePaymentMethod", () => {
 
 	it("stays on card when nothing is on offer so the gateway alerts still show", () => {
 		expect(resolvePaymentMethod([], "crypto")).toBe("card");
+	});
+});
+
+describe("the gateways the live store lists", () => {
+	// What Saleor returned for this store's checkouts (shop.availablePaymentGateways), ids exactly as given.
+	const LIVE_GATEWAYS = [
+		{ id: "app.saleor.adyen", name: "Adyen" },
+		{ id: "saleor.io.dummy-payment-app", name: "Dummy Payment App" },
+		{ id: "worldwide-vapor.payments", name: "Worldwide Vapor Payments" },
+		{ id: "saleor.io.gift-card-payment-gateway", name: "Gift Card Payment Gateway" },
+	];
+
+	it("offers crypto once its flag is on, because the payments app is recognised", () => {
+		vi.stubEnv("NEXT_PUBLIC_ENABLE_CRYPTO_PAYMENTS", "true");
+		expect(getGatewayPaymentOffers(LIVE_GATEWAYS, false)).toEqual({ adyen: false, crypto: true });
+	});
+
+	it("offers nothing while the flag is off", () => {
+		expect(getGatewayPaymentOffers(LIVE_GATEWAYS, false)).toEqual({ adyen: false, crypto: false });
 	});
 });
 

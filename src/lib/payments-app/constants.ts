@@ -4,12 +4,16 @@
  * through Saleor's Transactions API (see https://docs.saleor.io/developer/extending/apps/building-payment-app).
  *
  * Install it once in the Saleor Dashboard: Apps → Install external app → https://<your-domain>/api/saleor-app/manifest.
- * Saleor then lists it on every checkout as the gateway `app.worldwide-vapor.payments`.
+ * Saleor then lists it on every checkout as the gateway `worldwide-vapor.payments`: the manifest id, as is.
  */
 export const PAYMENTS_APP_ID = "worldwide-vapor.payments";
 
-/** Gateway id Saleor shows in `checkout.availablePaymentGateways` ("app." + the manifest id). */
-export const PAYMENTS_GATEWAY_ID = `app.${PAYMENTS_APP_ID}`;
+/**
+ * Gateway id Saleor shows in `checkout.availablePaymentGateways`: exactly the manifest id. (Adyen's reads `app.saleor.adyen`
+ * only because its manifest id is `app.saleor.adyen`; Saleor adds no prefix. This was once assumed to add "app.", which
+ * hid every method this app serves.)
+ */
+export const PAYMENTS_GATEWAY_ID = PAYMENTS_APP_ID;
 
 export const PAYMENTS_APP_NAME = "Worldwide Vapor Payments";
 export const PAYMENTS_APP_VERSION = "1.2.0";

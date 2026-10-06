@@ -89,7 +89,7 @@ describe("executeCryptoPayment", () => {
 			amount: 25,
 			action: "CHARGE",
 			paymentGateway: {
-				id: "app.worldwide-vapor.payments",
+				id: "worldwide-vapor.payments",
 				data: { method: "crypto", returnUrl: RETURN_URL },
 			},
 		});

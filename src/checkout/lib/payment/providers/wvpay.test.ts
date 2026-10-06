@@ -13,9 +13,14 @@ afterEach(() => vi.unstubAllEnvs());
 
 describe("wvpay gateway identity", () => {
 	it("matches the Saleor app's gateway id", () => {
-		expect(WVPAY_GATEWAY_ID).toBe("app.worldwide-vapor.payments");
-		expect(isWvPayGateway("app.worldwide-vapor.payments")).toBe(true);
+		expect(WVPAY_GATEWAY_ID).toBe("worldwide-vapor.payments");
+		expect(isWvPayGateway("worldwide-vapor.payments")).toBe(true);
 		expect(isWvPayGateway("saleor.app.payment.stripe")).toBe(false);
+	});
+
+	it("is the manifest id as is: Saleor adds no `app.` prefix", () => {
+		// The live store lists this app as `worldwide-vapor.payments`. An id with an invented prefix hid every method it serves.
+		expect(isWvPayGateway("app.worldwide-vapor.payments")).toBe(false);
 	});
 
 	it("finds the gateway among others", () => {
