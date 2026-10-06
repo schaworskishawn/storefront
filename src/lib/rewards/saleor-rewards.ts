@@ -8,6 +8,7 @@ import {
 	TOKEN_TAG,
 	centsForTokens,
 } from "./tokens";
+import { saleorGraphqlUrl } from "@/lib/saleor-endpoint";
 import type { TokenLot } from "./lots";
 
 /**
@@ -32,7 +33,7 @@ async function request<T>(
 	variables: Record<string, unknown>,
 	options: Options,
 ): Promise<RewardsResult<T>> {
-	const apiUrl = (options.apiUrl ?? process.env.NEXT_PUBLIC_SALEOR_API_URL)?.replace(/\/+$/, "");
+	const apiUrl = saleorGraphqlUrl(options.apiUrl ?? process.env.NEXT_PUBLIC_SALEOR_API_URL);
 	const token = options.token === undefined ? readRewardsAppToken() : options.token;
 	if (!apiUrl) return { ok: false, message: "NEXT_PUBLIC_SALEOR_API_URL is not set." };
 	if (!token) return { ok: false, message: "REWARDS_APP_TOKEN is not set." };

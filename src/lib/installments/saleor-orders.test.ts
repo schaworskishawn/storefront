@@ -104,6 +104,16 @@ describe("toSnapshot", () => {
 	});
 });
 
+describe("the address Saleor is called at", () => {
+	it("keeps Saleor's trailing slash, whether or not the setting has one (Saleor 404s on /graphql)", async () => {
+		for (const apiUrl of ["https://saleor.example/graphql/", "https://saleor.example/graphql"]) {
+			const impl = reply({ order: null });
+			await fetchOrder("x", { ...options(impl), apiUrl });
+			expect(vi.mocked(impl).mock.calls[0][0]).toBe("https://saleor.example/graphql/");
+		}
+	});
+});
+
 describe("fetchOrder", () => {
 	it("asks Saleor for the order with the app's token", async () => {
 		const impl = reply({ order: raw() });

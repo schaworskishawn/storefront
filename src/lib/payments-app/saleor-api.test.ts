@@ -40,7 +40,8 @@ describe("reportTransactionEvent", () => {
 
 		expect(outcome).toEqual({ ok: true, alreadyProcessed: false });
 		const [url, init] = fetchImpl.mock.calls[0] as [string, RequestInit];
-		expect(url).toBe("https://saleor.example/graphql");
+		// Saleor answers /graphql/ and gives a 404 to /graphql, so the trailing slash must stay.
+		expect(url).toBe("https://saleor.example/graphql/");
 		expect((init.headers as Record<string, string>).Authorization).toBe("Bearer app-token");
 		const body = JSON.parse(init.body as string) as { query: string; variables: unknown };
 		expect(body.variables).toEqual({
