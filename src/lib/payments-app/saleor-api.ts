@@ -1,5 +1,7 @@
 import "server-only";
 
+import { saleorGraphqlUrl } from "@/lib/saleor-endpoint";
+
 /**
  * The one place the payments app calls Saleor's API itself. Everything else answers Saleor's webhooks; this is for results
  * that arrive later, outside any Saleor request (a crypto payment confirming minutes after checkout).
@@ -48,7 +50,7 @@ export async function reportTransactionEvent(
 	input: ReportEventInput,
 	options: { apiUrl?: string; token?: string | null; fetchImpl?: typeof fetch } = {},
 ): Promise<ReportEventOutcome> {
-	const apiUrl = (options.apiUrl ?? process.env.NEXT_PUBLIC_SALEOR_API_URL)?.replace(/\/+$/, "");
+	const apiUrl = saleorGraphqlUrl(options.apiUrl ?? process.env.NEXT_PUBLIC_SALEOR_API_URL);
 	const token = options.token === undefined ? readPaymentsAppToken() : options.token;
 	if (!apiUrl) return { ok: false, message: "NEXT_PUBLIC_SALEOR_API_URL is not set.", retryable: false };
 	if (!token) return { ok: false, message: "PAYMENTS_APP_TOKEN is not set.", retryable: false };

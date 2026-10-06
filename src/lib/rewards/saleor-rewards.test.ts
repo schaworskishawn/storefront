@@ -33,6 +33,16 @@ const bodyOf = (impl: typeof fetch, call = 0) =>
 		variables: Record<string, any>;
 	};
 
+describe("the address Saleor is called at", () => {
+	it("keeps Saleor's trailing slash, whether or not the setting has one (Saleor 404s on /graphql)", async () => {
+		for (const apiUrl of ["https://saleor.example/graphql/", "https://saleor.example/graphql"]) {
+			const impl = reply({ giftCards: { edges: [] } });
+			await listLots("VXNlcjox", { ...options(impl), apiUrl });
+			expect(vi.mocked(impl).mock.calls[0][0]).toBe("https://saleor.example/graphql/");
+		}
+	});
+});
+
 const rawOrder = (patch: Record<string, unknown> = {}) => ({
 	id: "T3JkZXI6MQ==",
 	number: "1042",

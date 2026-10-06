@@ -1,3 +1,5 @@
+import { saleorGraphqlUrl } from "@/lib/saleor-endpoint";
+
 /**
  * Saleor calls an app's `tokenTargetUrl` once while the app is being installed, handing over its API token. Both of this
  * storefront's apps (payments and rewards) answer it the same way, so the logic lives here.
@@ -53,7 +55,8 @@ async function grantedPermissions(
 
 export async function registerApp(request: Request, options: RegisterOptions): Promise<Response> {
 	const warn = options.warn ?? ((message: string) => console.warn(message));
-	const expectedApiUrl = trimSlashes(options.apiUrl ?? process.env.NEXT_PUBLIC_SALEOR_API_URL);
+	const configuredApiUrl = options.apiUrl ?? process.env.NEXT_PUBLIC_SALEOR_API_URL;
+	const expectedApiUrl = trimSlashes(configuredApiUrl);
 	const requestApiUrl = trimSlashes(request.headers.get("saleor-api-url"));
 	if (!expectedApiUrl || requestApiUrl !== expectedApiUrl) return refuse("Unknown Saleor instance", 403);
 
@@ -61,7 +64,12 @@ export async function registerApp(request: Request, options: RegisterOptions): P
 	const token = typeof body?.auth_token === "string" ? body.auth_token : null;
 	if (!token) return refuse("Missing auth_token", 400);
 
-	const granted = await grantedPermissions(expectedApiUrl, token, options.fetchImpl ?? fetch);
+	// Compared without the trailing slash above, but Saleor itself must be called with it (see saleorGraphqlUrl).
+	const granted = await grantedPermissions(
+		saleorGraphqlUrl(configuredApiUrl) ?? expectedApiUrl,
+		token,
+		options.fetchImpl ?? fetch,
+	);
 	if (granted === null) {
 		warn(
 			"[saleor-app] couldn't confirm the new app's permissions during install; accepting the install anyway.",

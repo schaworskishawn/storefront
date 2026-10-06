@@ -1,6 +1,7 @@
 import "server-only";
 
 import { readPaymentsAppToken } from "@/lib/payments-app/saleor-api";
+import { saleorGraphqlUrl } from "@/lib/saleor-endpoint";
 import {
 	RECORD_METADATA_KEY,
 	STATUS_METADATA_KEY,
@@ -134,7 +135,7 @@ async function request<T>(
 	variables: Record<string, unknown>,
 	options: Options,
 ): Promise<SaleorResult<T>> {
-	const apiUrl = (options.apiUrl ?? process.env.NEXT_PUBLIC_SALEOR_API_URL)?.replace(/\/+$/, "");
+	const apiUrl = saleorGraphqlUrl(options.apiUrl ?? process.env.NEXT_PUBLIC_SALEOR_API_URL);
 	const token = options.token === undefined ? readPaymentsAppToken() : options.token;
 	if (!apiUrl) return { ok: false, message: "NEXT_PUBLIC_SALEOR_API_URL is not set." };
 	if (!token) return { ok: false, message: "PAYMENTS_APP_TOKEN is not set." };
