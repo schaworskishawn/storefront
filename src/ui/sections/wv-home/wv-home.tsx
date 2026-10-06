@@ -3,7 +3,6 @@ import Link from "next/link";
 import { type WvCategoryTile } from "@/lib/catalog/get-home-products";
 import { WvFooter, WvHeader } from "./wv-chrome";
 import { CATEGORY_ART } from "./wv-category-art";
-import { BRAND_LOGOS } from "./wv-data";
 import { BrandCarousel } from "./wv-home-client";
 import { type HomeMembership } from "@/lib/catalog/home-collections";
 import { HomeCollections } from "./wv-home-collections";
@@ -203,22 +202,6 @@ export function WvHome({
 			<section className="flex flex-col items-center gap-6 border-b border-[var(--wv-purple)] bg-[var(--wv-deep)] px-4 pb-8 pt-7 md:px-8 xl:px-20">
 				<SectionHeading eyebrow="OFFICIAL PARTNERS" title="OUR BRANDS" size="brands" bar="w-12 xl:w-[60px]" />
 				<BrandCarousel />
-				<div className="grid w-full grid-cols-2 gap-[10px] md:grid-cols-3 md:gap-4 xl:hidden">
-					{BRAND_LOGOS.map((b) => (
-						<div
-							key={b.name}
-							className="relative h-[70px] overflow-hidden rounded-xl border border-[var(--wv-cyan)] md:h-[85px]"
-						>
-							<Image
-								src={b.src}
-								alt={b.name}
-								fill
-								sizes="(min-width: 768px) 216px, 159px"
-								className="object-cover"
-							/>
-						</div>
-					))}
-				</div>
 			</section>
 
 			{/* Promo */}
