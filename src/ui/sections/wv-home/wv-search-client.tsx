@@ -5,6 +5,11 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import type { HomeProduct } from "@/lib/catalog/get-home-products";
+import { type SearchSort, sortSearchResults } from "@/lib/catalog/search-sort";
+import { activeFilterChips, categoryNames } from "@/lib/catalog/shop-filter-options";
+import { useShopFilters } from "@/lib/catalog/use-shop-filters";
+import { useShuffleSeed } from "@/lib/catalog/use-shuffle-seed";
+import { ShopFilterSidebar } from "./wv-shop-filter-sidebar";
 import { WishlistHeart } from "./wv-wishlist-client";
 import { formatPrice } from "@/ui/components/plp/utils";
 
@@ -14,8 +19,7 @@ const orbitron = "font-[family-name:var(--font-orbitron)]";
 
 const PER_PAGE = 9;
 
-type Sort = "relevance" | "price-asc" | "price-desc" | "newest" | "name";
-const SORTS: { value: Sort; label: string }[] = [
+const SORTS: { value: SearchSort; label: string }[] = [
 	{ value: "relevance", label: "Relevance" },
 	{ value: "newest", label: "Newest" },
 	{ value: "price-asc", label: "Price: Low to High" },
@@ -37,21 +41,6 @@ function score(p: HomeProduct, terms: string[]): number {
 		else return 0;
 	}
 	return total;
-}
-
-function Check({ on }: { on: boolean }) {
-	return (
-		<span
-			aria-hidden
-			className={`flex size-[18px] shrink-0 items-center justify-center rounded border text-[11px] ${
-				on
-					? "bg-[var(--wv-cyan)]/10 border-[var(--wv-cyan)] text-[var(--wv-cyan)]"
-					: "border-[var(--wv-section)] bg-[var(--wv-section)]"
-			}`}
-		>
-			{on ? "✓" : ""}
-		</span>
-	);
 }
 
 function ResultCard({ p, money }: { p: HomeProduct; money: (n: number) => string }) {
@@ -106,15 +95,11 @@ export function SearchExperience({
 }) {
 	const params = useSearchParams();
 	const [query, setQuery] = useState(params?.get("q") ?? "");
-	const [cats, setCats] = useState<string[]>([]);
-	const bounds = useMemo(() => {
-		const prices = products.map((p) => p.price);
-		return prices.length
-			? { min: Math.floor(Math.min(...prices)), max: Math.ceil(Math.max(...prices)) }
-			: { min: 0, max: 0 };
-	}, [products]);
-	const [range, setRange] = useState<[number, number]>([bounds.min, bounds.max]);
-	const [sort, setSort] = useState<Sort>("relevance");
+	const [sort, setSort] = useState<SearchSort>("relevance");
+	const pageSeed = useShuffleSeed();
+	// Picking a sort in the dropdown deals a fresh shuffle, as in the shop.
+	const [reshuffles, setReshuffles] = useState(0);
+	const shuffleSeed = (pageSeed + reshuffles * 7919) | 0;
 	const [page, setPage] = useState(1);
 	const [filtersOpen, setFiltersOpen] = useState(false);
 
@@ -123,16 +108,21 @@ export function SearchExperience({
 
 	const terms = useMemo(() => query.toLowerCase().split(/\s+/).filter(Boolean), [query]);
 
-	const categories = useMemo(() => {
-		const map = new Map<string, { slug: string; name: string; count: number }>();
-		for (const p of products) {
-			if (!p.categorySlug || score(p, terms) === 0) continue;
-			const e = map.get(p.categorySlug) ?? { slug: p.categorySlug, name: p.brand, count: 0 };
-			e.count += 1;
-			map.set(p.categorySlug, e);
-		}
-		return [...map.values()].sort((a, b) => b.count - a.count);
-	}, [products, terms]);
+	// The products matching the search words, with how well. The filters work on these only, so the sidebar's
+	// counts, sub-filters and price extremes follow what is being searched for.
+	const matches = useMemo(
+		() =>
+			products.flatMap((p) => {
+				const s = score(p, terms);
+				return s > 0 ? [{ p, s }] : [];
+			}),
+		[products, terms],
+	);
+	const matching = useMemo(() => matches.map((m) => m.p), [matches]);
+	const relevance = useMemo(() => new Map(matches.map((m) => [m.p.id, m.s])), [matches]);
+
+	// Draft-then-apply filter state, shared with the shop (see use-shop-filters.ts).
+	const filters = useShopFilters(matching, { onApplied: () => setPage(1) });
 
 	const popular = useMemo(() => {
 		const map = new Map<string, number>();
@@ -143,31 +133,23 @@ export function SearchExperience({
 			.map(([n]) => n);
 	}, [products]);
 
-	const results = useMemo(() => {
-		const scored = products
-			.map((p) => ({ p, s: score(p, terms) }))
-			.filter(
-				({ p, s }) =>
-					s > 0 &&
-					(cats.length === 0 || (p.categorySlug !== null && cats.includes(p.categorySlug))) &&
-					p.price >= range[0] &&
-					p.price <= range[1],
-			);
-		if (sort === "relevance") scored.sort((a, b) => b.s - a.s);
-		else if (sort === "price-asc") scored.sort((a, b) => a.p.price - b.p.price);
-		else if (sort === "price-desc") scored.sort((a, b) => b.p.price - a.p.price);
-		else if (sort === "newest") scored.sort((a, b) => b.p.created.localeCompare(a.p.created));
-		else scored.sort((a, b) => a.p.name.localeCompare(b.p.name));
-		return scored.map((x) => x.p);
-	}, [products, terms, cats, range, sort]);
+	// Best matches first; products that match equally well are shuffled, so with no search words the page is random like
+	// the shop's Featured sort (see search-sort.ts).
+	const results = useMemo(
+		() => sortSearchResults(filters.filtered, sort, (p) => relevance.get(p.id) ?? 0, shuffleSeed),
+		[filters.filtered, relevance, sort, shuffleSeed],
+	);
 
 	const pageCount = Math.max(1, Math.ceil(results.length / PER_PAGE));
 	const current = Math.min(page, pageCount);
 	const pageItems = results.slice((current - 1) * PER_PAGE, current * PER_PAGE);
 
-	const priceActive = range[0] !== bounds.min || range[1] !== bounds.max;
-	const catName = (slug: string) => products.find((p) => p.categorySlug === slug)?.brand ?? slug;
-	const hasFilters = cats.length > 0 || priceActive;
+	// Named from the whole catalog, so a ticked category stays named when the search words stop matching it.
+	const names = useMemo(() => categoryNames(products), [products]);
+	const chips = activeFilterChips(filters.applied, {
+		categoryName: (slug) => names.get(slug) ?? slug,
+		money,
+	});
 
 	const updateQuery = (v: string) => {
 		setQuery(v);
@@ -177,101 +159,8 @@ export function SearchExperience({
 		else url.searchParams.delete("q");
 		window.history.replaceState(null, "", url);
 	};
-	const toggleCat = (slug: string) => {
-		setCats((c) => (c.includes(slug) ? c.filter((x) => x !== slug) : [...c, slug]));
-		setPage(1);
-	};
-	const clearAll = () => {
-		setCats([]);
-		setRange([bounds.min, bounds.max]);
-		setPage(1);
-	};
 
 	const pill = `${heyComic} flex items-center gap-[6px] rounded-lg border border-[var(--wv-cyan)] bg-[var(--wv-cyan)]/10 px-[14px] py-2 text-xs text-[var(--wv-cyan)]`;
-
-	const sidebar = (
-		<div className="flex flex-col gap-8">
-			<div className="flex flex-col gap-4">
-				<h2 className={`${bungee} text-xs`}>CATEGORIES</h2>
-				{categories.length === 0 && (
-					<p className={`${orbitron} text-xs text-[var(--wv-text-dim)]`}>No categories match.</p>
-				)}
-				<ul className="flex flex-col gap-2">
-					{categories.map((c) => {
-						const on = cats.includes(c.slug);
-						return (
-							<li key={c.slug}>
-								<button
-									type="button"
-									role="checkbox"
-									aria-checked={on}
-									onClick={() => toggleCat(c.slug)}
-									className="flex w-full items-center gap-3 py-1 text-left"
-								>
-									<Check on={on} />
-									<span
-										className={`${heyComic} flex-1 text-sm ${on ? "text-white" : "text-[var(--wv-text-dim)]"}`}
-									>
-										{c.name}
-									</span>
-									<span className="font-mono text-xs text-[var(--wv-muted)]">{c.count}</span>
-								</button>
-							</li>
-						);
-					})}
-				</ul>
-			</div>
-			<hr className="border-[var(--wv-control)]" />
-			<div className="flex flex-col gap-4">
-				<h2 className={`${bungee} text-xs`}>PRICE RANGE</h2>
-				<div className="flex items-center gap-3">
-					<label className="sr-only" htmlFor="s-min">
-						Minimum price
-					</label>
-					<input
-						id="s-min"
-						type="number"
-						min={bounds.min}
-						max={range[1]}
-						value={range[0]}
-						onChange={(e) => {
-							setRange([Math.min(Number(e.target.value) || bounds.min, range[1]), range[1]]);
-							setPage(1);
-						}}
-						className={`${bungee} w-full min-w-0 rounded-md border border-[var(--wv-section)] bg-[var(--wv-section)] px-3 py-2 text-[13px] text-[var(--wv-text-dim)]`}
-					/>
-					<span className="text-[var(--wv-muted)]">—</span>
-					<label className="sr-only" htmlFor="s-max">
-						Maximum price
-					</label>
-					<input
-						id="s-max"
-						type="number"
-						min={range[0]}
-						max={bounds.max}
-						value={range[1]}
-						onChange={(e) => {
-							setRange([range[0], Math.max(Number(e.target.value) || bounds.max, range[0])]);
-							setPage(1);
-						}}
-						className={`${bungee} w-full min-w-0 rounded-md border border-[var(--wv-cyan)] bg-[var(--wv-section)] px-3 py-2 text-[13px] text-white`}
-					/>
-				</div>
-				<input
-					type="range"
-					aria-label="Maximum price"
-					min={bounds.min}
-					max={bounds.max}
-					value={range[1]}
-					onChange={(e) => {
-						setRange([range[0], Math.max(Number(e.target.value), range[0])]);
-						setPage(1);
-					}}
-					className="wv-range"
-				/>
-			</div>
-		</div>
-	);
 
 	return (
 		<>
@@ -366,14 +255,15 @@ export function SearchExperience({
 							aria-expanded={filtersOpen}
 							className={`${heyComic} rounded-lg border border-[var(--wv-section)] bg-[var(--wv-surface)] px-4 py-[10px] text-xs xl:hidden`}
 						>
-							FILTERS{hasFilters ? ` (${cats.length + (priceActive ? 1 : 0)})` : ""}
+							FILTERS{chips.length > 0 ? ` (${chips.length})` : ""}
 						</button>
 						<label className="flex items-center gap-2 rounded-lg border border-[var(--wv-section)] bg-[var(--wv-surface)] px-4 py-[10px] font-mono text-[13px] text-[var(--wv-text-dim)]">
 							Sort by:
 							<select
 								value={sort}
 								onChange={(e) => {
-									setSort(e.target.value as Sort);
+									setSort(e.target.value as SearchSort);
+									setReshuffles((n) => n + 1);
 									setPage(1);
 								}}
 								className="bg-transparent font-bold text-[var(--wv-cyan)] focus:outline-none"
@@ -387,33 +277,27 @@ export function SearchExperience({
 						</label>
 					</div>
 				</div>
-				{hasFilters && (
+				{chips.length > 0 && (
 					<div className="flex flex-wrap items-center gap-3">
 						<span className={`${orbitron} text-[11px] font-bold text-[var(--wv-muted)]`}>
 							ACTIVE FILTERS:
 						</span>
-						{cats.map((c) => (
+						{chips.map((chip) => (
 							<button
-								key={c}
+								key={chip.id}
 								type="button"
-								onClick={() => toggleCat(c)}
+								onClick={() => filters.remove(chip.filter)}
 								className={pill}
-								aria-label={`Remove filter ${catName(c)}`}
+								aria-label={`Remove filter ${chip.label}`}
 							>
-								{catName(c)} <span aria-hidden>⊗</span>
+								{chip.label} <span aria-hidden>⊗</span>
 							</button>
 						))}
-						{priceActive && (
-							<button
-								type="button"
-								onClick={() => setRange([bounds.min, bounds.max])}
-								className={pill}
-								aria-label="Remove price filter"
-							>
-								{money(range[0])} – {money(range[1])} <span aria-hidden>⊗</span>
-							</button>
-						)}
-						<button type="button" onClick={clearAll} className={`${heyComic} text-xs text-[var(--wv-pink)]`}>
+						<button
+							type="button"
+							onClick={filters.clearAll}
+							className={`${heyComic} text-xs text-[var(--wv-pink)]`}
+						>
 							Clear All
 						</button>
 					</div>
@@ -422,12 +306,12 @@ export function SearchExperience({
 
 			{/* Grid */}
 			<section className="flex flex-col gap-6 px-4 pb-8 md:px-6 xl:flex-row xl:gap-10 xl:px-16">
-				<aside
-					aria-label="Filters"
-					className={`${filtersOpen ? "block" : "hidden"} rounded-xl border border-[var(--wv-section)] bg-[var(--wv-surface)] p-5 xl:sticky xl:top-6 xl:block xl:w-[280px] xl:shrink-0 xl:self-start xl:border-0 xl:bg-transparent xl:p-0`}
-				>
-					{sidebar}
-				</aside>
+				{/* Under xl the panel opens and closes with the FILTERS button; from xl it sits beside the results. */}
+				<ShopFilterSidebar
+					filters={filters}
+					money={money}
+					className={`${filtersOpen ? "flex" : "hidden"} w-full xl:flex xl:w-[280px] xl:shrink-0 xl:self-start`}
+				/>
 				<div className="min-w-0 flex-1">
 					{pageItems.length === 0 ? (
 						<div className="flex flex-col items-center gap-4 rounded-xl border border-[var(--wv-purple)] bg-[var(--wv-surface)] px-6 py-16 text-center">
@@ -439,7 +323,7 @@ export function SearchExperience({
 								type="button"
 								onClick={() => {
 									updateQuery("");
-									clearAll();
+									filters.clearAll();
 								}}
 								className={`${heyComic} rounded-lg bg-[var(--wv-cyan-soft)] px-6 py-3 text-sm text-[var(--wv-ink)]`}
 							>
