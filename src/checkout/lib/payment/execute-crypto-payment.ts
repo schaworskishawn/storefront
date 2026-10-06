@@ -128,7 +128,9 @@ async function runCryptoPayment({
 		const initResult = await getCheckoutTransport().initializeTransaction({
 			checkoutId: liveCheckout.id,
 			amount: payAmount,
-			action: "CHARGE",
+			// No `action`: naming a flow strategy needs the HANDLE_PAYMENTS permission, which a shopper's session doesn't have, so
+			// Saleor refused the whole call and the checkout showed "No response from Saleor". The channel's default is used,
+			// and the payments app answers with a charge either way.
 			paymentGateway: { id: WVPAY_GATEWAY_ID, data: { method: "crypto", returnUrl } },
 		});
 		if (!initResult.ok) {
