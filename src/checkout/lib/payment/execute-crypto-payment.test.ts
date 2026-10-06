@@ -81,18 +81,19 @@ beforeEach(() => {
 });
 
 describe("executeCryptoPayment", () => {
-	it("saves billing, confirms the total, asks for a CHARGE invoice, remembers it, then leaves for the hosted page", async () => {
+	it("saves billing, confirms the total, asks for an invoice, remembers it, then leaves for the hosted page", async () => {
 		expect(await run()).toEqual({ ok: true, invoiceUrl: "https://nowpayments.io/payment/?iid=42" });
 
 		expect(initializeTransaction).toHaveBeenCalledWith({
 			checkoutId: "co-1",
 			amount: 25,
-			action: "CHARGE",
 			paymentGateway: {
 				id: "worldwide-vapor.payments",
 				data: { method: "crypto", returnUrl: RETURN_URL },
 			},
 		});
+		// Saleor refuses a shopper's call that names a flow strategy (it needs HANDLE_PAYMENTS), so none may be sent.
+		expect(initializeTransaction.mock.calls[0][0]).not.toHaveProperty("action");
 		expect(readPendingPayment("crypto", "co-1")).toEqual({
 			checkoutId: "co-1",
 			transactionId: "tx-1",
