@@ -90,7 +90,7 @@ describe("executeWvPayPayment with Pay in 4", () => {
 			checkoutId: "co-1",
 			amount: 30,
 			paymentGateway: {
-				id: "app.worldwide-vapor.payments",
+				id: "worldwide-vapor.payments",
 				data: {
 					method: "installments",
 					consent: true,
@@ -116,7 +116,7 @@ describe("executeWvPayPayment with Pay in 4", () => {
 			checkoutId: "co-1",
 			amount: 120,
 			paymentGateway: {
-				id: "app.worldwide-vapor.payments",
+				id: "worldwide-vapor.payments",
 				data: { method: "authorizenet", opaqueData: { dataDescriptor: "d", dataValue: "tok" } },
 			},
 		});

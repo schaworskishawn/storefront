@@ -85,7 +85,7 @@ describe("executeWvPayPayment", () => {
 			checkoutId: "co-1",
 			amount: 25,
 			paymentGateway: {
-				id: "app.worldwide-vapor.payments",
+				id: "worldwide-vapor.payments",
 				data: { method: "authorizenet", opaqueData: { dataDescriptor: "d", dataValue: "tok" } },
 			},
 		});

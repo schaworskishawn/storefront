@@ -42,7 +42,7 @@ describe("Adyen enablement", () => {
 
 	it("finds the gateway on a checkout", () => {
 		const gateways = [
-			{ id: "app.worldwide-vapor.payments", name: "WV" },
+			{ id: "worldwide-vapor.payments", name: "WV" },
 			{ id: ADYEN_GATEWAY_ID, name: "Adyen" },
 		];
 		expect(findAdyenGateway(gateways)?.name).toBe("Adyen");
