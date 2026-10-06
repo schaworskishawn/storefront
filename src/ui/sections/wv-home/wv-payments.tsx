@@ -13,38 +13,13 @@ const bungee = "font-[family-name:var(--font-bungee)]";
 const orbitron = "font-[family-name:var(--font-orbitron)]";
 const marker = "font-[family-name:var(--font-permanent-marker)]";
 
-const BADGES = [
-	"Visa",
-	"Mastercard",
-	"Amex",
-	"Discover",
-	"PayPal",
-	"Apple Pay",
-	"Google Pay",
-	"Interac e-Transfer",
-	"⚡ Bitcoin",
-];
+const BADGES = ["Visa", "Mastercard", "Amex", "Discover", "Interac e-Transfer", "⚡ Bitcoin"];
 
 const METHODS = [
 	{
 		icon: "💳",
 		title: "Credit & Debit Cards",
 		text: "Visa, Mastercard, Discover, and American Express processed globally with instant validation.",
-	},
-	{
-		icon: "🅿️",
-		title: "PayPal Integration",
-		text: "Express Checkout with PayPal balance, connected bank accounts, or pay-later arrangements.",
-	},
-	{
-		icon: "🍎",
-		title: "Apple Pay",
-		text: "Seamless one-touch transactions secure from iOS, iPadOS, and macOS devices instantly.",
-	},
-	{
-		icon: "🤖",
-		title: "Google Pay",
-		text: "Quick verification and secure credit tokens directly via Android or Chrome payment agents.",
 	},
 	{
 		icon: "🏦",

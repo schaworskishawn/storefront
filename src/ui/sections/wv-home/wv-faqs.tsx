@@ -17,7 +17,7 @@ const PENDING = `Details for this answer are coming soon. Contact ${SUPPORT} in 
 const FAQS: Faq[] = [
 	{
 		q: "What payment methods do you accept?",
-		a: "We accept Visa, Mastercard, American Express, PayPal, and store gift cards. All transactions are securely processed with 256-bit encryption.",
+		a: "We accept Visa, Mastercard, American Express, and store gift cards. All transactions are securely processed with 256-bit encryption.",
 	},
 	{
 		q: "How long does shipping take?",
