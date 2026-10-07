@@ -1,6 +1,7 @@
 import { Search, ShoppingCart, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { WvBadges } from "./wv-badge-row";
 import { WishlistLink } from "./wv-wishlist-client";
 import { NAV } from "./wv-data";
 import { readRewardsConfig } from "@/lib/rewards/tokens";
@@ -34,7 +35,7 @@ export function WvHeader() {
 				<div className="flex items-center gap-4 xl:gap-[23px]">
 					<Link
 						href="/home"
-						className="relative block h-[45px] w-[100px] md:h-14 md:w-28 xl:h-[71px] xl:w-[142px]"
+						className="wv-glitch relative block h-[45px] w-[100px] md:h-14 md:w-28 xl:h-[71px] xl:w-[142px]"
 					>
 						<Image
 							src="/home/imgBrand.png"
@@ -132,7 +133,7 @@ export function WvFooter() {
 				    centers the crop on that content instead of the image canvas's own (slightly
 				    top-heavy) padding, leaving an even few-pixel margin top and bottom. */}
 				<div className="flex w-full items-center justify-between gap-4 xl:contents">
-					<div className="relative aspect-[6/5] w-full shrink-0 overflow-hidden md:hidden">
+					<div className="wv-glitch relative aspect-[6/5] w-full shrink-0 overflow-hidden md:hidden">
 						<Image
 							src="/home/imgHeroLogo.png"
 							alt="Worldwide Vapor"
@@ -141,7 +142,7 @@ export function WvFooter() {
 							className="object-cover object-[50%_49%]"
 						/>
 					</div>
-					<div className="relative hidden size-[240px] shrink-0 overflow-hidden md:block xl:hidden">
+					<div className="wv-glitch relative hidden size-[240px] shrink-0 overflow-hidden md:block xl:hidden">
 						<Image
 							src="/home/imgHeroLogo.png"
 							alt="Worldwide Vapor"
@@ -150,7 +151,7 @@ export function WvFooter() {
 							className="object-cover"
 						/>
 					</div>
-					<div className="relative hidden size-[160px] shrink-0 overflow-hidden xl:block">
+					<div className="wv-glitch relative hidden size-[160px] shrink-0 overflow-hidden xl:block">
 						<Image
 							src="/home/imgHeroLogo.png"
 							alt="Worldwide Vapor"
@@ -186,6 +187,7 @@ export function WvFooter() {
 
 				<FooterSocials className="flex flex-col items-start gap-3 md:hidden xl:flex xl:w-[250px] xl:shrink-0 xl:items-end xl:gap-4" />
 			</div>
+			<WvBadges />
 			<div className="mx-auto mt-6 flex w-full max-w-[1440px] flex-col gap-2 border-t border-[var(--wv-cyan-soft)] pt-4 font-sans text-[10px] text-[var(--wv-footer-link)] md:flex-row md:items-center md:justify-between xl:mt-8 xl:border-0 xl:pt-0">
 				<p>© 2026 Worldwide Vapor. All rights reserved.</p>
 				<nav aria-label="Legal" className="flex flex-wrap items-center gap-x-2">
