@@ -70,7 +70,7 @@ export function SectionHeading({
 				{eyebrow}
 			</p>
 			<h2 className={`${bungee} tracking-[1px] text-white ${HEADING_SIZE[size]}`}>{title}</h2>
-			<div className={`h-[3px] rounded-full bg-[var(--wv-cyan-soft)] ${bar}`} />
+			<div className={`wv-bar h-[3px] rounded-full bg-[var(--wv-cyan-soft)] ${bar}`} />
 		</div>
 	);
 }
@@ -93,7 +93,7 @@ export function OutlineButton({
 	return (
 		<Link
 			href={href}
-			className={`${heyComic} flex h-9 items-center justify-center rounded-xl border-[1.5px] px-6 text-sm tracking-[1px] md:h-[45px] ${c} ${className}`}
+			className={`${heyComic} wv-btn wv-btn-outline flex h-9 items-center justify-center rounded-xl border-[1.5px] px-6 text-sm tracking-[1px] md:h-[45px] ${c} ${className}`}
 		>
 			{children}
 		</Link>
@@ -112,7 +112,7 @@ function ProductCard({ product, ctx }: { product: CardProduct; ctx: CatalogConte
 			: null;
 
 	return (
-		<article className="flex flex-col overflow-hidden rounded-[13px] border border-[var(--wv-cyan)] bg-[var(--wv-section)]">
+		<article className="wv-lift flex flex-col overflow-hidden rounded-[13px] border border-[var(--wv-cyan)] bg-[var(--wv-section)]">
 			<Link href={href} className="relative block h-[130px] w-full bg-[var(--wv-deep)] md:h-[194px]">
 				{product.image && (
 					<Image

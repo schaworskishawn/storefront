@@ -37,7 +37,7 @@ function ShopProductCard({ product, ctx }: { product: HomeProduct; ctx: Ctx }) {
 	const href = `/product/${product.slug}`;
 
 	return (
-		<article className="flex flex-col gap-[10px] rounded-xl border border-[var(--wv-purple)] bg-[var(--wv-surface)] p-3">
+		<article className="wv-lift flex flex-col gap-[10px] rounded-xl border border-[var(--wv-purple)] bg-[var(--wv-surface)] p-3">
 			<Link
 				href={href}
 				className="relative block h-40 w-full overflow-hidden rounded-[10px] bg-[var(--wv-deep)]"
@@ -172,7 +172,7 @@ export function ShopCatalog({
 							Browse Collections
 						</p>
 						<h2 className={`${bungee} text-2xl tracking-[1px] text-white`}>CATEGORIES</h2>
-						<div className="h-[3px] w-[60px] rounded-full bg-[var(--wv-cyan-soft)]" />
+						<div className="wv-bar h-[3px] w-[60px] rounded-full bg-[var(--wv-cyan-soft)]" />
 					</div>
 					<div className="flex w-full justify-end">
 						<button

@@ -23,7 +23,10 @@ const SOCIALS = [
 
 export function WvHeader() {
 	return (
-		<header className="relative border-b border-[var(--wv-cyan)] bg-[var(--wv-header)] px-4 py-3 md:px-6 xl:px-[14px] xl:py-[7px]">
+		<header
+			data-wv-header
+			className="relative border-b border-[var(--wv-cyan)] bg-[var(--wv-header)] px-4 py-3 md:px-6 xl:px-[14px] xl:py-[7px]"
+		>
 			{/* The band above (border/background) stays full-bleed on ultra-wide monitors; only the
 			    actual nav content is capped at the widest width we have a real design for (1440,
 			    Figma desktop) so logo/links/icons don't stretch apart on a 1920+/4K screen. */}
@@ -47,7 +50,7 @@ export function WvHeader() {
 						className={`${heyComic} hidden items-center gap-3 text-[13px] uppercase tracking-[1px] md:flex xl:gap-[21px]`}
 					>
 						{NAV.map((item) => (
-							<Link key={item.label} href={item.href}>
+							<Link key={item.label} href={item.href} className="wv-link">
 								{item.label}
 							</Link>
 						))}
@@ -57,7 +60,7 @@ export function WvHeader() {
 					<Link
 						href="/search"
 						aria-label="Search"
-						className="flex size-8 items-center justify-center rounded-lg border border-[var(--wv-cyan)] text-[var(--wv-cyan)]"
+						className="wv-icon-btn flex size-8 items-center justify-center rounded-lg border border-[var(--wv-cyan)] text-[var(--wv-cyan)]"
 					>
 						<Search className="size-4" strokeWidth={2} />
 					</Link>
@@ -65,14 +68,14 @@ export function WvHeader() {
 					<Link
 						href="/account"
 						aria-label="Account"
-						className="flex size-8 items-center justify-center rounded-lg border border-[var(--wv-cyan)] text-[var(--wv-cyan)]"
+						className="wv-icon-btn flex size-8 items-center justify-center rounded-lg border border-[var(--wv-cyan)] text-[var(--wv-cyan)]"
 					>
 						<User className="size-4" strokeWidth={2} />
 					</Link>
 					<Link
 						href="/cart"
 						aria-label="Cart"
-						className="relative flex size-8 items-center justify-center rounded-lg border border-[var(--wv-cyan)] text-[var(--wv-cyan)]"
+						className="wv-icon-btn relative flex size-8 items-center justify-center rounded-lg border border-[var(--wv-cyan)] text-[var(--wv-cyan)]"
 					>
 						<ShoppingCart className="size-4" strokeWidth={2} />
 						<span
@@ -97,7 +100,7 @@ function FooterSocials({ className }: { className: string }) {
 						key={s.name}
 						href="#"
 						aria-label={s.name}
-						className="flex size-10 items-center justify-center rounded-full border border-[var(--wv-cyan)] bg-[var(--wv-bg)]"
+						className="wv-icon-btn flex size-10 items-center justify-center rounded-full border border-[var(--wv-cyan)] bg-[var(--wv-bg)]"
 					>
 						<Image src={s.src} alt="" width={18} height={18} />
 					</a>
@@ -172,7 +175,7 @@ export function WvFooter() {
 									<a
 										key={l}
 										href={FOOTER_HREFS[l] ?? "#"}
-										className={`${heyComic} whitespace-nowrap text-[13px] text-[var(--wv-footer-link)]`}
+										className={`${heyComic} wv-foot-link whitespace-nowrap text-[13px] text-[var(--wv-footer-link)]`}
 									>
 										{l}
 									</a>

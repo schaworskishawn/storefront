@@ -1,5 +1,6 @@
 /* postcss-import inlines this BEFORE Tailwind processes */
 @import "../styles/brand.css";
+@import "../styles/motion.css";
 
 @tailwind base;
 @tailwind components;

@@ -103,7 +103,7 @@ export function FaqExperience({
 									return (
 										<li
 											key={f.q}
-											className={`rounded-xl border bg-[var(--ct-card)] p-4 md:p-5 xl:p-6 ${isOpen ? "border-[var(--ct-cyan)] shadow-[0_0_8px_rgba(0,255,224,0.13)]" : "border-[var(--ct-border)]"}`}
+											className={`rounded-xl border bg-[var(--ct-card)] p-4 transition-[border-color,box-shadow] duration-300 md:p-5 xl:p-6 ${isOpen ? "border-[var(--ct-cyan)] shadow-[0_0_8px_rgba(0,255,224,0.13)]" : "border-[var(--ct-border)]"}`}
 										>
 											<h3>
 												<button
@@ -130,7 +130,7 @@ export function FaqExperience({
 												<div
 													id={`faq-${i}`}
 													role="region"
-													className="mt-4 border-t border-[var(--ct-border)] pt-3 text-sm leading-[1.6] text-[var(--ct-text)]"
+													className="wv-unfold mt-4 border-t border-[var(--ct-border)] pt-3 text-sm leading-[1.6] text-[var(--ct-text)]"
 												>
 													{f.a}
 													{f.link && (

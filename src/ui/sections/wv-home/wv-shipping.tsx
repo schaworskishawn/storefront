@@ -108,7 +108,7 @@ function Heading({
 				{eyebrow}
 			</p>
 			<h2 className={`${bungee} text-[22px] tracking-[1px] md:text-[26px] xl:text-[32px]`}>{title}</h2>
-			<div className={`h-[3px] rounded-full bg-[var(--wv-cyan-soft)] ${bar}`} />
+			<div className={`wv-bar h-[3px] rounded-full bg-[var(--wv-cyan-soft)] ${bar}`} />
 		</div>
 	);
 }

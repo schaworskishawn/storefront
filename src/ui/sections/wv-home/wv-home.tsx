@@ -85,7 +85,7 @@ export function WvHome({
 				))}
 				<div className="relative flex flex-col gap-4 p-4 md:flex-row md:items-center md:gap-6 md:px-8 md:py-6 xl:min-h-[231px] xl:gap-10 xl:py-0 xl:pl-14 xl:pr-10">
 					<div className="flex items-center gap-3 md:contents">
-						<div className="relative h-[125px] w-[130px] shrink-0 overflow-hidden md:h-[173px] md:w-[180px] xl:h-[219px] xl:w-[227px]">
+						<div className="wv-float relative h-[125px] w-[130px] shrink-0 overflow-hidden md:h-[173px] md:w-[180px] xl:h-[219px] xl:w-[227px]">
 							{/* eslint-disable-next-line @next/next/no-img-element -- cropped artwork positioned by percentage */}
 							<img
 								src="/home/imgHeroLogo.png"
