@@ -1,4 +1,4 @@
-import { mkdir, readFile, readdir, stat, writeFile } from "node:fs/promises";
+import { mkdir, readFile, readdir, rm, stat, writeFile } from "node:fs/promises";
 import { dirname, join, normalize, sep } from "node:path";
 import { sha256Hex } from "../hash";
 
@@ -16,6 +16,8 @@ export interface FileStorage {
 	get(path: string): Promise<Uint8Array | null>;
 	/** Every stored path under a prefix, for backups. */
 	list(prefix: string): Promise<string[]>;
+	/** Deletes files (used only to retire old backups). Paths that don't exist are ignored. */
+	remove(paths: string[]): Promise<void>;
 }
 
 /** Storage paths are plain relative paths made of safe characters: no leading slash, no "..", no odd characters. */
@@ -73,6 +75,9 @@ export function createFolderStorage(root: string): FileStorage {
 		},
 		async list(prefix) {
 			return (await walk(root, "")).filter((p) => p.startsWith(prefix)).sort();
+		},
+		async remove(paths) {
+			for (const path of paths) await rm(resolve(path), { force: true });
 		},
 	};
 }
@@ -142,6 +147,15 @@ export function createSupabaseStorage({
 				}
 			}
 			return out.sort();
+		},
+		async remove(paths) {
+			if (!paths.length) return;
+			const response = await fetchImpl(`${base}/object/${bucket}`, {
+				method: "DELETE",
+				headers: { ...auth, "Content-Type": "application/json" },
+				body: JSON.stringify({ prefixes: paths.map(safePath) }),
+			});
+			if (!response.ok) throw new Error(`Storage couldn't delete files (${response.status}).`);
 		},
 	};
 }

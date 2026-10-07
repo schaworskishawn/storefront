@@ -1,6 +1,8 @@
+import type { ModelHandle } from "../ai/model";
 import type { WorldwideAiConfig } from "../config";
 import type { Sql } from "../db/sql";
-import type { ModelHandle } from "../ai/model";
+import type { OpenClawConnector } from "../openclaw/connector";
+import type { FileStorage } from "../storage/files";
 import type { TaskRecord } from "../tasks/repo";
 
 /**
@@ -13,6 +15,15 @@ export type WorkflowDeps = {
 	config: WorldwideAiConfig;
 	now: () => Date;
 	model: ModelHandle | null;
+	/** Where evidence files and uploads are kept. Null when storage isn't configured. */
+	storage?: FileStorage | null;
+	/** The OpenClaw worker's adapter. Null when it isn't configured. */
+	openclaw?: OpenClawConnector | null;
+	/** Waiting between polls (tests make this instant). */
+	sleep?: (ms: number) => Promise<void>;
+	/** How often to check a running OpenClaw job. */
+	pollMs?: number;
+	fetchImpl?: typeof fetch;
 };
 
 export type RunOutcome =

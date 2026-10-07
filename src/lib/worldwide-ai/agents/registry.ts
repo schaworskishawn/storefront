@@ -309,6 +309,21 @@ export function mayUseTool(role: RoleId, tool: ToolId): boolean {
 	return ROLE_BY_ID[role].tools.includes(tool);
 }
 
+export class ToolForbiddenError extends Error {
+	constructor(
+		readonly role: RoleId,
+		readonly tool: ToolId,
+	) {
+		super(`${ROLE_BY_ID[role].name} is not permitted to use ${tool}.`);
+		this.name = "ToolForbiddenError";
+	}
+}
+
+/** For workflows that call an outside system directly: refuse unless the role's registry entry lists the tool. */
+export function requireTool(role: RoleId, tool: ToolId): void {
+	if (!mayUseTool(role, tool)) throw new ToolForbiddenError(role, tool);
+}
+
 export function mayReadCollection(role: RoleId, collection: string): boolean {
 	return ROLE_BY_ID[role].knowledge.includes(collection);
 }

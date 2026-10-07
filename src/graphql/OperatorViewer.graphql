@@ -1,0 +1,10 @@
+query OperatorViewer {
+	me {
+		id
+		email
+		firstName
+		lastName
+		isStaff
+		isActive
+	}
+}

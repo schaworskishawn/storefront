@@ -6,7 +6,7 @@ export default defineConfig({
 		globals: true,
 		environment: "node",
 		setupFiles: ["./vitest.setup.ts"],
-		include: ["src/**/*.test.ts", "scripts/**/*.test.mjs"],
+		include: ["src/**/*.test.ts", "scripts/**/*.test.mjs", "openclaw-host/**/*.test.mjs"],
 		exclude: ["src/**/*.export-harness.test.ts"],
 	},
 	resolve: {
