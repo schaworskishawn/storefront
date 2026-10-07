@@ -123,7 +123,7 @@ describe("readTokensView", () => {
 		expect(await readTokensView("checkout-1", deps)).toMatchObject({
 			status: "ready",
 			currency: "CAD",
-			balanceTokens: 750,
+			balanceTokens: 150,
 			canApply: true,
 			willEarnTokens: 45,
 		});
@@ -141,7 +141,7 @@ describe("readTokensView", () => {
 
 	it("treats a checkout with no customer yet as the signed-in customer's", async () => {
 		const { deps } = setup({ checkout: checkoutOf({ userId: null }), lots: [lot()] });
-		expect(await readTokensView("checkout-1", deps)).toMatchObject({ status: "ready", balanceTokens: 500 });
+		expect(await readTokensView("checkout-1", deps)).toMatchObject({ status: "ready", balanceTokens: 100 });
 	});
 
 	it("is unavailable, and reports it, when the tokens can't be read, rather than showing a zero balance", async () => {

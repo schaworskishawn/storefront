@@ -1,6 +1,6 @@
 /**
  * Vapor Tokens: the store's loyalty points. A customer earns tokens when an order is paid in full and spends them at checkout
- * as money off. One token is worth one cent, so 100 tokens take $1.00 off.
+ * as money off. One token is worth five cents, so 100 tokens take $5.00 off.
  *
  * Each order's tokens are kept as one Saleor gift card (a "lot") tagged `vapor-tokens`, restricted to the customer and with
  * its own expiry. Saleor already knows how to expire, apply and spend a gift card, so tokens need no ledger of their own.
@@ -9,8 +9,14 @@
  * what to award. Money is handled in whole cents.
  */
 
-/** One token is worth this many cents. Changing it changes what every existing token is worth, so it is not a setting. */
-const TOKEN_VALUE_CENTS = 1;
+/**
+ * One token is worth this many cents. Changing it changes what every existing token is worth, so it is not a setting.
+ *
+ * What a customer gets back is this times the earn rate: 5 cents a token and 1 token per $1 is 5% back. A token worth more
+ * than a cent means the last few cents of a part-used lot (under one token's worth) are still spendable money in Saleor but
+ * don't add up to a whole token, so the screens always show a balance as whole tokens times this value.
+ */
+const TOKEN_VALUE_CENTS = 5;
 
 /** Every token lot carries this gift-card tag, which is how the app finds a customer's tokens. */
 export const TOKEN_TAG = "vapor-tokens";
@@ -27,7 +33,7 @@ export const LOT_CODE_KEY = "paper.vt.code";
 /** Private metadata on a lot: set to "1" once this order's spending has been given back, so a repeat does nothing. */
 export const LOT_RESTORED_PREFIX = "paper.vt.restored.";
 
-export const DEFAULT_TOKENS_PER_DOLLAR = 3;
+export const DEFAULT_TOKENS_PER_DOLLAR = 1;
 export const DEFAULT_EXPIRY_MONTHS = 12;
 
 export type RewardsConfig = {

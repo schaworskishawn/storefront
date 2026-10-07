@@ -11,13 +11,13 @@ import {
 } from "./tokens";
 
 describe("readRewardsConfig", () => {
-	it("is off, at 3 tokens per dollar and 12 months, when nothing is set", () => {
+	it("is off, at 1 token per dollar and 12 months, when nothing is set", () => {
 		expect(readRewardsConfig({})).toEqual({
 			enabled: false,
 			tokensPerDollar: DEFAULT_TOKENS_PER_DOLLAR,
 			expiryMonths: DEFAULT_EXPIRY_MONTHS,
 		});
-		expect(DEFAULT_TOKENS_PER_DOLLAR).toBe(3);
+		expect(DEFAULT_TOKENS_PER_DOLLAR).toBe(1);
 		expect(DEFAULT_EXPIRY_MONTHS).toBe(12);
 	});
 
@@ -32,9 +32,9 @@ describe("readRewardsConfig", () => {
 
 	it("falls back to the defaults for nonsense", () => {
 		const config = readRewardsConfig({ tokensPerDollar: "lots", expiryMonths: "-3" });
-		expect(config.tokensPerDollar).toBe(3);
+		expect(config.tokensPerDollar).toBe(DEFAULT_TOKENS_PER_DOLLAR);
 		expect(config.expiryMonths).toBe(12);
-		expect(readRewardsConfig({ tokensPerDollar: "0" }).tokensPerDollar).toBe(3);
+		expect(readRewardsConfig({ tokensPerDollar: "0" }).tokensPerDollar).toBe(DEFAULT_TOKENS_PER_DOLLAR);
 	});
 
 	it("only treats the literal string 'true' as on", () => {
@@ -71,14 +71,25 @@ describe("tokensForCents", () => {
 });
 
 describe("token value", () => {
-	it("is one cent a token, so 100 tokens are worth a dollar", () => {
-		expect(centsForTokens(100)).toBe(100);
-		expect(centsForTokens(1240)).toBe(1240);
-		expect(tokensInCents(1240)).toBe(1240);
+	it("is five cents a token, so 100 tokens are worth five dollars", () => {
+		expect(centsForTokens(100)).toBe(500);
+		expect(centsForTokens(1240)).toBe(6200);
+		expect(tokensInCents(6200)).toBe(1240);
+	});
+
+	it("counts only whole tokens: the last few cents of a part-used lot are not a token", () => {
+		expect(tokensInCents(4)).toBe(0);
+		expect(tokensInCents(767)).toBe(153);
 	});
 
 	it("round-trips whole tokens", () => {
 		for (const tokens of [0, 1, 99, 5000]) expect(tokensInCents(centsForTokens(tokens))).toBe(tokens);
+	});
+
+	it("with the default rate pays back 5%: $100 of products earns 100 tokens, worth $5", () => {
+		const tokens = tokensForCents(10000, DEFAULT_TOKENS_PER_DOLLAR);
+		expect(tokens).toBe(100);
+		expect(centsForTokens(tokens)).toBe(500);
 	});
 });
 

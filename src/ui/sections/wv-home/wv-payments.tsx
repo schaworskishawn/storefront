@@ -17,7 +17,9 @@ const marker = "font-[family-name:var(--font-permanent-marker)]";
 
 const BADGES = ["Visa", "Mastercard", "Amex", "Discover", "Interac e-Transfer", "⚡ Bitcoin"];
 
-const METHODS = [
+type Method = { icon: string; title: string; text: string; more?: { href: string; label: string } };
+
+const METHODS: Method[] = [
 	{
 		icon: "💳",
 		title: "Credit & Debit Cards",
@@ -46,10 +48,17 @@ const METHODS = [
 ];
 
 /** The rewards program, listed with the other ways to pay only while it is switched on, worded from its live settings. */
-function vaporTokensMethod() {
+function vaporTokensMethod(): Method[] {
 	const config = readRewardsConfig();
 	if (!config.enabled) return [];
-	return [{ icon: "⭐", title: "Vapor Tokens", text: describeProgram(config) }];
+	return [
+		{
+			icon: "⭐",
+			title: "Vapor Tokens",
+			text: describeProgram(config),
+			more: { href: "/rewards", label: "How Vapor Tokens work" },
+		},
+	];
 }
 
 const TRUST = [
@@ -179,6 +188,14 @@ export function WvPayments() {
 							</span>
 							<h3 className={`${heyComic} text-base`}>{m.title}</h3>
 							<p className={`${orbitron} text-[13px] leading-[1.5] text-[var(--wv-text-dim)]`}>{m.text}</p>
+							{m.more ? (
+								<Link
+									href={m.more.href}
+									className={`${orbitron} wv-link mt-auto self-start text-[13px] text-[var(--wv-cyan-soft)]`}
+								>
+									{m.more.label} →
+								</Link>
+							) : null}
 						</article>
 					))}
 				</div>

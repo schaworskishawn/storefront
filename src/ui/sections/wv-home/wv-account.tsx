@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { type ReactNode } from "react";
+import { readRewardsConfig } from "@/lib/rewards/tokens";
 import { WvFooter, WvHeader } from "./wv-chrome";
 import "./wv-home.css";
 
@@ -21,6 +22,7 @@ function navItems(active: string): NavItem[] {
 	return [
 		{ label: "My Orders", href: "/orders" },
 		{ label: "Wishlist", href: "/wishlist" },
+		...(readRewardsConfig().enabled ? [{ label: "Vapor Tokens", href: "/rewards" }] : []),
 		{ label: "Payment Methods", href: "/payment-methods" },
 		{ label: "My Reviews", href: "/my-reviews" },
 		{ label: "Addresses", href: "/addresses" },

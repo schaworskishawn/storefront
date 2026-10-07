@@ -271,10 +271,11 @@ describe("reverseForOrder", () => {
 
 		expect(h.deps.lots.adjust).toHaveBeenCalledWith("LOT-OTHER", 500);
 		expect(h.deps.lots.markRestored).toHaveBeenCalledWith("LOT-OTHER", "1042");
-		expect(outcome.returnedTokens).toBe(500);
-		expect(h.notes.at(-1)).toMatch(/500 tokens spent on this order were returned/);
+		// $5.00 went back to the lot, which is 100 tokens at five cents a token.
+		expect(outcome.returnedTokens).toBe(100);
+		expect(h.notes.at(-1)).toMatch(/100 tokens spent on this order were returned/);
 		expect(h.customerEmails[0].subject).toMatch(/returned/);
-		expect(h.customerEmails[0].text).toContain("500 Vapor Tokens");
+		expect(h.customerEmails[0].text).toContain("100 Vapor Tokens");
 	});
 
 	it("never gives the same spending back twice", async () => {
@@ -295,7 +296,7 @@ describe("reverseForOrder", () => {
 		const outcome = await reverseForOrder("ORDER-1", h.deps);
 		expect(h.deps.lots.adjust).toHaveBeenCalledWith("A", 200);
 		expect(h.deps.lots.adjust).toHaveBeenCalledWith("B", 300);
-		expect(outcome.returnedTokens).toBe(500);
+		expect(outcome.returnedTokens).toBe(100);
 	});
 
 	it("alerts staff, and doesn't mark it returned, when tokens can't be given back", async () => {

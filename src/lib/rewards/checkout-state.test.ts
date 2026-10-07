@@ -45,7 +45,7 @@ describe("buildCheckoutTokensState", () => {
 				],
 			}),
 		);
-		expect(state).toMatchObject({ balanceTokens: 750, balanceCents: 750 });
+		expect(state).toMatchObject({ balanceTokens: 150, balanceCents: 750 });
 	});
 
 	it("can apply tokens when there are some and something is left to pay", () => {
@@ -76,7 +76,7 @@ describe("buildCheckoutTokensState", () => {
 			input({ lots: [a, b, c], checkoutGiftCardIds: [a.id, b.id, "someone-elses-gift-card"] }),
 		);
 		expect(state.appliedLotIds.sort()).toEqual([a.id, b.id].sort());
-		expect(state.appliedTokens).toBe(500);
+		expect(state.appliedTokens).toBe(100);
 	});
 
 	it("still lists an applied lot that has since expired, so it can be taken off, but doesn't count its tokens", () => {
@@ -128,7 +128,7 @@ describe("buildCheckoutTokensState", () => {
 		const state = buildCheckoutTokensState(
 			input({ lots: [lot({ balanceCents: 400, expiryDate: "2026-10-20" })] }),
 		);
-		expect(state.expiringSoon).toEqual({ tokens: 400, firstDate: "2026-10-20" });
+		expect(state.expiringSoon).toEqual({ tokens: 80, firstDate: "2026-10-20" });
 		expect(buildCheckoutTokensState(input({ lots: [lot()] })).expiringSoon).toBeNull();
 	});
 });

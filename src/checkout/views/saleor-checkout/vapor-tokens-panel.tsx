@@ -164,7 +164,10 @@ export function VaporTokensPanel({
 						<div className="min-w-[10rem] flex-1">
 							<p className="text-sm font-medium">{t("title")}</p>
 							<p className="text-xs text-muted-foreground">
-								{t("balance", { tokens: view.balanceTokens, amount: money(view.balanceCents) })}
+								{t("balance", {
+									tokens: view.balanceTokens,
+									amount: money(centsForTokens(view.balanceTokens)),
+								})}
 							</p>
 						</div>
 						<Button
