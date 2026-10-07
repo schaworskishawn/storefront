@@ -242,6 +242,16 @@
 		transform: scale(0.92);
 	}
 
+	/* The footer's little retro badges hop when picked up, like a collectible. */
+	body.wv-motion .wv-badge img {
+		transition: transform var(--duration-fast) var(--ease-standard);
+	}
+	@media (hover: hover) {
+		body.wv-motion .wv-badge:hover img {
+			transform: translateY(-2px) rotate(-1.5deg);
+		}
+	}
+
 	body.wv-motion .wv-foot-link {
 		transition:
 			color var(--duration-base) var(--ease-standard),

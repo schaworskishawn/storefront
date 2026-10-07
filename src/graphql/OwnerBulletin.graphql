@@ -1,0 +1,13 @@
+# The owner's bulletin: one Saleor page (slug: see BULLETIN_SLUG in src/lib/bulletin/get-bulletin.ts) whose title is who it is
+# from, whose content is the message, and whose publication date is the "updated" date. A page that is missing or not
+# published comes back as null, and the panel is simply left off.
+query OwnerBulletin($slug: String!) {
+	page(slug: $slug) {
+		id
+		title
+		content
+		isPublished
+		publishedAt
+		created
+	}
+}
