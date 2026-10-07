@@ -1,0 +1,188 @@
+/* ============================================
+ * Worldwide Vapor — pointer effects
+ *
+ * `PointerFx` (src/ui/components/pointer-fx.tsx) drives these. All inside `prefers-reduced-motion: no-preference`, so
+ * visitors who asked for less motion get none of it.
+ *
+ *   .wv-fx            the fixed layer that holds the follower elements and the click pulses (never takes a click)
+ *   .wv-fx-glow       a soft glow that follows more slowly, so it trails the halo
+ *   .wv-fx-halo       a ring around the pointer: grows over anything clickable, shrinks while pressed
+ *   .wv-pulse         the twin rings that ripple out from a click or tap
+ *   [data-magnet]     a button the pointer is over: it drifts toward the pointer and its lettering splits cyan / pink
+ *   .wv-glitch        a logo that jitters and splits colour for a moment when hovered
+ * ============================================ */
+
+@media (prefers-reduced-motion: no-preference) {
+	.wv-fx {
+		position: fixed;
+		inset: 0;
+		z-index: 2147482000;
+		overflow: hidden;
+		pointer-events: none;
+		contain: layout paint;
+	}
+
+	/* ---------- Followers ---------- */
+	.wv-fx-glow,
+	.wv-fx-halo {
+		position: absolute;
+		left: 0;
+		top: 0;
+		border-radius: 9999px;
+		opacity: 0;
+		will-change: translate;
+		transition: opacity 300ms var(--ease-standard);
+	}
+	.wv-fx[data-on] .wv-fx-glow {
+		opacity: 1;
+	}
+	.wv-fx[data-on] .wv-fx-halo {
+		opacity: 0.95;
+	}
+
+	.wv-fx-glow {
+		width: 150px;
+		height: 150px;
+		margin: -75px 0 0 -75px;
+		background: radial-gradient(
+			circle,
+			hsl(300 100% 72% / 0.28),
+			hsl(185 100% 60% / 0.1) 46%,
+			transparent 70%
+		);
+	}
+	.wv-fx-halo {
+		width: 38px;
+		height: 38px;
+		margin: -19px 0 0 -19px;
+		border: 1.5px solid hsl(185 100% 65% / 0.75);
+		box-shadow:
+			0 0 14px hsl(185 100% 60% / 0.35),
+			inset 0 0 8px hsl(300 100% 70% / 0.25);
+		transition:
+			opacity 250ms var(--ease-standard),
+			scale 220ms var(--ease-emphasized),
+			border-color 220ms var(--ease-standard),
+			box-shadow 220ms var(--ease-standard);
+	}
+	/* Over something clickable the ring opens up and turns pink; while pressed it closes in. */
+	.wv-fx[data-halo="link"] .wv-fx-halo {
+		scale: 1.55;
+		border-color: hsl(300 100% 75% / 0.85);
+		box-shadow:
+			0 0 18px hsl(300 100% 70% / 0.4),
+			inset 0 0 10px hsl(185 100% 60% / 0.3);
+	}
+	.wv-fx[data-press] .wv-fx-halo {
+		scale: 0.68;
+	}
+
+	/* ---------- Click pulses ---------- */
+	.wv-pulse {
+		position: absolute;
+		width: 0;
+		height: 0;
+	}
+	.wv-pulse::before,
+	.wv-pulse::after {
+		content: "";
+		position: absolute;
+		left: -34px;
+		top: -34px;
+		width: 68px;
+		height: 68px;
+		border-radius: 9999px;
+		border: 2px solid hsl(185 100% 65%);
+		opacity: 0;
+		animation: wv-pulse-ring 580ms var(--ease-emphasized) both;
+	}
+	.wv-pulse::after {
+		border-color: hsl(300 100% 75%);
+		animation-delay: 90ms;
+	}
+	@keyframes wv-pulse-ring {
+		from {
+			opacity: 0.9;
+			transform: scale(0.15);
+		}
+		to {
+			opacity: 0;
+			transform: scale(1.55);
+		}
+	}
+
+	/* ---------- Magnetic buttons ---------- */
+	/* The button drifts toward the pointer (the individual `translate` property, so it stacks with the hover lift and the press),
+	 * and its lettering splits into a cyan and a pink ghost that lean the way the pointer does. */
+	body.wv-motion [data-magnet] {
+		translate: calc(var(--mag-x, 0) * 5px) calc(var(--mag-y, 0) * 3px);
+		text-shadow:
+			calc(var(--mag-x, 0) * -2px) calc(var(--mag-y, 0) * -1.5px) 0 hsl(185 100% 60% / 0.85),
+			calc(var(--mag-x, 0) * 2px) calc(var(--mag-y, 0) * 1.5px) 0 hsl(300 100% 72% / 0.85);
+		transition:
+			translate 140ms var(--ease-standard),
+			text-shadow 140ms var(--ease-standard);
+	}
+	body.wv-motion [data-magnet="leaving"] {
+		translate: 0 0;
+		text-shadow: none;
+		transition:
+			translate 420ms var(--ease-emphasized),
+			text-shadow 300ms var(--ease-standard);
+	}
+
+	/* ---------- Logo glitch ---------- */
+	/* A short jitter with a cyan and pink split and a few torn slices, once each time the pointer arrives. */
+	body.wv-motion .wv-glitch:hover img {
+		animation: wv-glitch 380ms steps(1, end) 1;
+	}
+	@keyframes wv-glitch {
+		0% {
+			transform: translate(0);
+			filter: none;
+			clip-path: inset(0);
+		}
+		8% {
+			transform: translate(-2px, 1px);
+			filter: drop-shadow(3px 0 0 hsl(185 100% 60% / 0.9)) drop-shadow(-3px 0 0 hsl(300 100% 70% / 0.9));
+		}
+		18% {
+			transform: translate(3px, -1px);
+			clip-path: inset(12% 0 58% 0);
+		}
+		28% {
+			transform: translate(-3px, 0);
+			clip-path: inset(62% 0 10% 0);
+		}
+		38% {
+			transform: translate(2px, 1px);
+			clip-path: inset(30% 0 40% 0);
+		}
+		50% {
+			transform: translate(-1px, 0);
+			filter: drop-shadow(-2px 0 0 hsl(185 100% 60% / 0.9)) drop-shadow(2px 0 0 hsl(300 100% 70% / 0.9));
+			clip-path: inset(0);
+		}
+		62% {
+			transform: translate(1px, -1px);
+			clip-path: inset(48% 0 22% 0);
+		}
+		75% {
+			transform: translate(0);
+			filter: drop-shadow(1px 0 0 hsl(185 100% 60% / 0.7)) drop-shadow(-1px 0 0 hsl(300 100% 70% / 0.7));
+			clip-path: inset(0);
+		}
+		100% {
+			transform: none;
+			filter: none;
+			clip-path: inset(0);
+		}
+	}
+}
+
+/* Nothing here prints, and a forced-colours (high contrast) display keeps its plain pointer. */
+@media print, (forced-colors: active) {
+	.wv-fx {
+		display: none;
+	}
+}
