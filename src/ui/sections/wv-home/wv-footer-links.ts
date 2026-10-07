@@ -27,7 +27,7 @@ export const FOOTER_COLUMNS: { title: string; links: string[] }[] = [
 			"Contact Us",
 		],
 	},
-	{ title: "ACCOUNT", links: ["My Account", "My Orders", "Wishlist", "Vapor Tokens", "Cart"] },
+	{ title: "ACCOUNT", links: ["My Account", "My Orders", "Wishlist", "My Desk", "Vapor Tokens", "Cart"] },
 	{ title: "CONTACT", links: ["support@worldwidevapor.com"] },
 ];
 
@@ -60,6 +60,7 @@ export const FOOTER_HREFS: Record<string, string> = {
 	"My Account": "/account",
 	"My Orders": "/orders",
 	Wishlist: "/wishlist",
+	"My Desk": "/desk",
 	"Vapor Tokens": "/rewards",
 	Cart: "/cart",
 	"support@worldwidevapor.com": "mailto:support@worldwidevapor.com",

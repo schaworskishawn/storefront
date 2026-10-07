@@ -133,7 +133,15 @@ export function HoloPanels() {
 			if (!frame) frame = window.requestAnimationFrame(update);
 		};
 
+		// A visitor can turn the effects off on My Desk (see DeskPrefs).
+		const effectsOff = () => document.documentElement.dataset.wvFx === "off";
+
 		const onMove = (event: PointerEvent) => {
+			if (effectsOff()) {
+				x = -1;
+				schedule();
+				return;
+			}
 			// Touch and pen have no hover; a held button means dragging something.
 			if (event.pointerType !== "mouse") return;
 			x = event.clientX;

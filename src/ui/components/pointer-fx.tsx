@@ -201,7 +201,14 @@ export function PointerFx() {
 		};
 
 		// ----- Listeners -----
+		// A visitor can turn the effects off on My Desk (see DeskPrefs).
+		const effectsOff = () => document.documentElement.dataset.wvFx === "off";
+
 		const onMove = (event: PointerEvent) => {
+			if (effectsOff()) {
+				if (shown) hide();
+				return;
+			}
 			if (event.pointerType !== "mouse" || !mouse.matches) return;
 			target = { x: event.clientX, y: event.clientY };
 			if (!shown) {
@@ -216,7 +223,7 @@ export function PointerFx() {
 			kick();
 		};
 		const onDown = (event: PointerEvent) => {
-			if (!event.isPrimary || (event.pointerType === "mouse" && event.button !== 0)) return;
+			if (effectsOff() || !event.isPrimary || (event.pointerType === "mouse" && event.button !== 0)) return;
 			spawnPulse(event.clientX, event.clientY);
 			if (event.pointerType === "mouse") root.setAttribute("data-press", "");
 		};

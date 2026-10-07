@@ -38,7 +38,7 @@ describe("footer badges", () => {
 	it("leaves no drawn badge unused (so a stale file doesn't linger)", () => {
 		const used = new Set(BADGES.map((b) => b.file));
 		// Badges for pages that arrive in later changes are generated now and listed when their page exists.
-		const planned = new Set(["my-desk.svg", "guestbook.svg"]);
+		const planned = new Set(["guestbook.svg"]);
 		for (const file of readdirSync("public/badges").filter((f) => f.endsWith(".svg"))) {
 			expect(used.has(file) || planned.has(file), `${file} is drawn but not listed`).toBe(true);
 		}
