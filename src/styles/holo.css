@@ -1,0 +1,92 @@
+/* ============================================
+ * Worldwide Vapor — holographic hover panels
+ *
+ * `HoloPanels` (src/ui/components/holo-panels.tsx) marks the card under a mouse pointer:
+ *   data-holo="on"       the pointer is over it; "leaving" while it settles back afterwards
+ *   data-holo-static     the panel is not a positioning context yet, so it becomes one (the foil is a layer inside it)
+ *   data-holo-tilt       lean toward the pointer (panels of a card's size, without form fields)
+ *   --holo-x / --holo-y  where the pointer is on the panel, in percent
+ *   --holo-rx / --holo-ry  the tilt, in degrees
+ *
+ * Only for a real mouse and never for reduced motion (the component doesn't start either), so none of this can touch a phone,
+ * a keyboard user, or someone who asked for less motion.
+ * ============================================ */
+
+@media (prefers-reduced-motion: no-preference) and (hover: hover) and (pointer: fine) {
+	/* Following the pointer is quick; settling back afterwards is slower. */
+	body.wv-motion [data-holo] {
+		transition:
+			transform 160ms var(--ease-standard),
+			box-shadow 300ms var(--ease-standard),
+			border-color 300ms var(--ease-standard);
+	}
+	body.wv-motion [data-holo="leaving"] {
+		transition:
+			transform 450ms var(--ease-emphasized),
+			box-shadow 450ms var(--ease-standard),
+			border-color 450ms var(--ease-standard);
+	}
+	body.wv-motion [data-holo-static] {
+		position: relative;
+	}
+
+	/* The neon edge: cyan fading to pink, with a soft glow of each. */
+	body.wv-motion [data-holo="on"] {
+		border-color: color-mix(in srgb, var(--wv-cyan) 70%, var(--wv-pink));
+		box-shadow:
+			0 0 0 1px color-mix(in srgb, var(--wv-cyan) 40%, transparent),
+			0 0 22px -4px color-mix(in srgb, var(--wv-cyan) 50%, transparent),
+			0 10px 36px -12px color-mix(in srgb, var(--wv-pink) 60%, transparent);
+	}
+
+	/* The foil, a layer over the whole panel (pictures included) that lets clicks through: a white glare under the pointer, a
+	 * band of iridescent colour that slides across as the pointer moves, and faint scanlines. */
+	body.wv-motion [data-holo]::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		z-index: 3;
+		border-radius: inherit;
+		pointer-events: none;
+		opacity: 0;
+		mix-blend-mode: screen;
+		transition: opacity 300ms var(--ease-standard);
+		background-image:
+			radial-gradient(
+				circle at var(--holo-x, 50%) var(--holo-y, 50%),
+				hsl(190 100% 86% / 0.2),
+				transparent 40%
+			),
+			linear-gradient(
+				105deg,
+				transparent 14%,
+				hsl(180 100% 60% / 0.26) 30%,
+				hsl(300 100% 72% / 0.3) 46%,
+				hsl(55 100% 70% / 0.14) 58%,
+				hsl(165 100% 60% / 0.22) 72%,
+				transparent 88%
+			),
+			repeating-linear-gradient(0deg, hsl(0 0% 100% / 0.04) 0 1px, transparent 1px 3px);
+		background-size:
+			100% 100%,
+			260% 260%,
+			auto;
+		background-position:
+			0 0,
+			var(--holo-x, 50%) var(--holo-y, 50%),
+			0 0;
+		background-repeat: no-repeat, no-repeat, repeat;
+	}
+	body.wv-motion [data-holo="on"]::after {
+		opacity: 1;
+	}
+
+	/* The lean. A card that also lifts on hover (.wv-lift) keeps its lift inside the same transform. */
+	body.wv-motion [data-holo="on"][data-holo-tilt] {
+		transform: perspective(900px) translateY(var(--holo-lift, 0px)) rotateX(var(--holo-rx, 0deg))
+			rotateY(var(--holo-ry, 0deg));
+	}
+	body.wv-motion .wv-lift[data-holo-tilt] {
+		--holo-lift: -4px;
+	}
+}

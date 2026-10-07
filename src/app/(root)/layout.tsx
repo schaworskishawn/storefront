@@ -4,6 +4,7 @@ import { rootMetadata } from "@/lib/seo";
 import { getDefaultLocaleSlug, resolveLocaleFromSlug } from "@/config/locale";
 import { getRootHtmlFontProps } from "@/lib/fonts";
 import { NativeTabBar } from "@/ui/components/native-tab-bar";
+import { HoloPanels } from "@/ui/components/holo-panels";
 import { PageMotion } from "@/ui/components/page-motion";
 
 export const metadata = rootMetadata;
@@ -26,6 +27,8 @@ export default function RootGroupLayout({ children }: { children: ReactNode }) {
 				<Suspense fallback={null}>
 					<PageMotion />
 				</Suspense>
+				{/* Holographic hover panels (a mouse over a card). Renders nothing. */}
+				<HoloPanels />
 				{/* Android app only: renders nothing on the server or in a browser. */}
 				<Suspense fallback={null}>
 					<NativeTabBar />

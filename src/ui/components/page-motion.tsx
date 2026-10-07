@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useLayoutEffect, useRef } from "react";
+import { isHydrated } from "@/lib/motion/is-hydrated";
 import { shouldStartProgress } from "@/lib/motion/nav-progress";
 import { isRevealable, planReveal, staggerDelay, type RevealMode } from "@/lib/motion/reveal-plan";
 
@@ -47,7 +48,6 @@ const CLEANUP_AFTER_MS = 1800;
  */
 const HYDRATION_RECHECK_MS = 150;
 const HYDRATION_WAIT_MS = 4000;
-const isHydrated = (el: Element) => Object.keys(el).some((key) => key.startsWith("__reactFiber$"));
 
 /** How long a navigation has to take before the current page eases back (quicker ones never flicker). */
 const LEAVE_AFTER_MS = 90;
