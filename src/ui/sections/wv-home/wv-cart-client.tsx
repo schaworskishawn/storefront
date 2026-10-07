@@ -44,6 +44,8 @@ export function WvCartClient({
 	const router = useRouter();
 	const [pending, start] = useTransition();
 	const [error, setError] = useState<string | null>(null);
+	// The line being removed slides away while the removal is saved; it comes back if that fails.
+	const [leaving, setLeaving] = useState<string | null>(null);
 	const money = (n: number) => formatPrice(n, currency, localeBcp47);
 	const count = lines.reduce((n, l) => n + l.quantity, 0);
 
@@ -51,8 +53,13 @@ export function WvCartClient({
 		setError(null);
 		start(async () => {
 			const r = await fn();
-			if (!r.ok) setError(r.error ?? "Something went wrong.");
+			if (!r.ok) {
+				setError(r.error ?? "Something went wrong.");
+				setLeaving(null);
+			}
 			router.refresh();
+			// Safety: if the line is somehow still there once the page has refreshed, bring it back.
+			window.setTimeout(() => setLeaving(null), 3000);
 		});
 	};
 
@@ -129,7 +136,7 @@ export function WvCartClient({
 						{lines.map((l) => (
 							<li
 								key={l.id}
-								className="flex flex-col gap-4 rounded-[14px] border border-[var(--wv-purple)] bg-[var(--wv-deep)] p-4 xl:flex-row xl:items-center xl:gap-5"
+								className={`flex flex-col gap-4 rounded-[14px] border border-[var(--wv-purple)] bg-[var(--wv-deep)] p-4 xl:flex-row xl:items-center xl:gap-5 ${leaving === l.id ? "wv-leave" : ""}`}
 							>
 								<div className="flex min-w-0 flex-1 items-center gap-4">
 									<Link
@@ -158,7 +165,10 @@ export function WvCartClient({
 										<button
 											type="button"
 											disabled={pending}
-											onClick={() => run(() => removeCartLines(channel, [l.id]))}
+											onClick={() => {
+												setLeaving(l.id);
+												run(() => removeCartLines(channel, [l.id]));
+											}}
 											className={`${orbitron} w-fit text-[11px] text-[var(--wv-cyan-soft)] hover:underline disabled:opacity-50`}
 										>
 											REMOVE

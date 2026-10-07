@@ -175,7 +175,7 @@ export function LegalSections({
 									<div
 										id={`${s.id}-body`}
 										role="region"
-										className={`${orbitron} mt-4 flex flex-col gap-3 border-t border-[var(--lg-border)] pt-3 text-sm leading-[1.6] text-[var(--lg-body)]`}
+										className={`${orbitron} wv-unfold mt-4 flex flex-col gap-3 border-t border-[var(--lg-border)] pt-3 text-sm leading-[1.6] text-[var(--lg-body)]`}
 									>
 										{s.body.map((p) => (
 											<p key={p}>{p}</p>

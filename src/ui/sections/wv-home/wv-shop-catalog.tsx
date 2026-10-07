@@ -253,7 +253,11 @@ export function ShopCatalog({
 					</div>
 
 					{pageItems.length > 0 ? (
-						<div className="grid grid-cols-1 gap-x-5 gap-y-6 md:grid-cols-2 xl:grid-cols-4">
+						<div
+							// A new page, sort or filter result replaces the grid, which then fades in.
+							key={`${current}|${sort}|${reshuffles}|${visible.length}|${pageItems[0]?.id}`}
+							className="wv-fade grid grid-cols-1 gap-x-5 gap-y-6 md:grid-cols-2 xl:grid-cols-4"
+						>
 							{pageItems.map((p) => (
 								<ShopProductCard key={p.id} product={p} ctx={ctx} />
 							))}

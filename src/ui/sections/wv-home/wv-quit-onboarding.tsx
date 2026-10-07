@@ -129,7 +129,7 @@ export function Onboarding({ today, onDone }: { today: string; onDone: (d: QuitD
 
 	if (step === 1) {
 		return (
-			<div className="flex flex-col gap-6">
+			<div key="step-1" className="wv-fade flex flex-col gap-6">
 				<section className={`${stageFrame} grid gap-8 p-6 md:p-9 xl:grid-cols-[1.1fr_0.9fr] xl:items-center`}>
 					<div className="flex flex-col gap-5">
 						<p className="text-lg font-extrabold text-[var(--qp-primary)]">Welcome</p>
@@ -190,7 +190,7 @@ export function Onboarding({ today, onDone }: { today: string; onDone: (d: QuitD
 
 	if (step === 2) {
 		return (
-			<div className="flex flex-col gap-6">
+			<div key="step-2" className="wv-fade flex flex-col gap-6">
 				<section className={`${stageFrame} p-6 md:p-9`}>
 					{head("What do you use?")}
 					<h2 className="mb-1 text-[26px] font-black">What do you use?</h2>
@@ -234,7 +234,7 @@ export function Onboarding({ today, onDone }: { today: string; onDone: (d: QuitD
 
 	if (step === 3) {
 		return (
-			<div className="flex flex-col gap-6">
+			<div key="step-3" className="wv-fade flex flex-col gap-6">
 				<section className={`${stageFrame} p-6 md:p-9`}>
 					{head(switching ? "Your smoking" : "Current nicotine strength")}
 					<h2 className="mb-1 text-[26px] font-black">
@@ -308,7 +308,7 @@ export function Onboarding({ today, onDone }: { today: string; onDone: (d: QuitD
 
 	if (step === 4) {
 		return (
-			<div className="flex flex-col gap-6">
+			<div key="step-4" className="wv-fade flex flex-col gap-6">
 				<section className={`${stageFrame} p-6 md:p-9`}>
 					{head("Daily use / baseline")}
 					<h2 className="mb-1 text-[26px] font-black">About how much do you use in a typical day?</h2>
@@ -379,7 +379,7 @@ export function Onboarding({ today, onDone }: { today: string; onDone: (d: QuitD
 
 	if (step === 5) {
 		return (
-			<div className="flex flex-col gap-6">
+			<div key="step-5" className="wv-fade flex flex-col gap-6">
 				<section className={`${stageFrame} p-6 md:p-9`}>
 					{head("Your goal and pace")}
 					<h2 className="mb-1 text-[26px] font-black">How would you like to quit?</h2>
@@ -431,7 +431,7 @@ export function Onboarding({ today, onDone }: { today: string; onDone: (d: QuitD
 	}
 
 	return (
-		<div className="flex flex-col gap-6">
+		<div key="step-6" className="wv-fade flex flex-col gap-6">
 			<section className={`${stageFrame} p-6 md:p-9`}>
 				{head("Your starting plan")}
 				<h2 className="mb-1 text-[26px] font-black">Your starting plan</h2>
