@@ -1,0 +1,7 @@
+query CommunityViewer {
+	me {
+		id
+		email
+		isStaff
+	}
+}
