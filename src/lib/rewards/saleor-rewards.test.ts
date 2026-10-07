@@ -230,13 +230,13 @@ describe("createLot", () => {
 		orderNumber: "1042",
 	};
 
-	it("creates a tagged gift card worth a cent a token, restricted to the customer and marked with its order", async () => {
+	it("creates a tagged gift card worth five cents a token, restricted to the customer and marked with its order", async () => {
 		const impl = reply({ giftCardCreate: { giftCard: { id: "GC1", code: "NEW-CODE" }, errors: [] } });
 		expect(await createLot(lot, options(impl))).toEqual({ ok: true, value: { id: "GC1", code: "NEW-CODE" } });
 
 		const { input } = bodyOf(impl).variables;
 		expect(input).toMatchObject({
-			balance: { amount: 3, currency: "CAD" },
+			balance: { amount: 15, currency: "CAD" },
 			isActive: true,
 			expiryDate: "2027-10-06",
 			addTags: [TOKEN_TAG],

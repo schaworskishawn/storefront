@@ -33,7 +33,7 @@ export function tokensEarnedEmail({ orderNumber, tokens, currency, expiryDate }:
 		text: [
 			`Thanks for your order #${orderNumber}. It's paid in full, and you earned ${formatTokens(tokens)} Vapor Tokens (worth ${worth}).`,
 			"",
-			"Spend them at checkout while you're signed in: they come off your total. 100 tokens take $1.00 off.",
+			`Spend them at checkout while you're signed in: they come off your total. 100 tokens take ${formatCents(centsForTokens(100), currency)} off.`,
 			expiryDate
 				? `These tokens expire on ${formatDate(expiryDate)}, so use them before then.`
 				: "These tokens don't expire.",

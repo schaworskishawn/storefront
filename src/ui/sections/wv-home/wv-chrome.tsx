@@ -3,7 +3,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { WishlistLink } from "./wv-wishlist-client";
 import { NAV } from "./wv-data";
-import { FOOTER_COLUMNS, FOOTER_HREFS, LEGAL_LINKS } from "./wv-footer-links";
+import { readRewardsConfig } from "@/lib/rewards/tokens";
+import { FOOTER_COLUMNS, FOOTER_HREFS, LEGAL_LINKS, REWARDS_FOOTER_LABEL } from "./wv-footer-links";
 import { MobileMenu } from "./wv-menu-client";
 import "./wv-home.css";
 
@@ -107,6 +108,7 @@ function FooterSocials({ className }: { className: string }) {
 }
 
 export function WvFooter() {
+	const rewardsOn = readRewardsConfig().enabled;
 	return (
 		<footer className="bg-[var(--wv-footer)] px-3 py-5 md:px-8 md:py-12 xl:px-20 xl:pb-4 xl:pt-16">
 			{/* Background band stays full-bleed on ultra-wide monitors; content is capped at 1440
@@ -164,15 +166,17 @@ export function WvFooter() {
 							<p className={`${heyComic} text-xs tracking-[2px] text-[var(--wv-cyan)] xl:mb-2`}>
 								{col.title}
 							</p>
-							{col.links.map((l) => (
-								<a
-									key={l}
-									href={FOOTER_HREFS[l] ?? "#"}
-									className={`${heyComic} whitespace-nowrap text-[13px] text-[var(--wv-footer-link)]`}
-								>
-									{l}
-								</a>
-							))}
+							{col.links
+								.filter((l) => l !== REWARDS_FOOTER_LABEL || rewardsOn)
+								.map((l) => (
+									<a
+										key={l}
+										href={FOOTER_HREFS[l] ?? "#"}
+										className={`${heyComic} whitespace-nowrap text-[13px] text-[var(--wv-footer-link)]`}
+									>
+										{l}
+									</a>
+								))}
 						</div>
 					))}
 				</div>

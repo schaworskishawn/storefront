@@ -53,11 +53,11 @@ describe("lotRows", () => {
 		expect(rows.map((row) => row.id)).toEqual(["new", "old"]);
 		expect(rows[0]).toMatchObject({
 			earnedOn: "2026-09-20",
-			earnedTokens: 900,
-			remainingTokens: 900,
+			earnedTokens: 180,
+			remainingTokens: 180,
 			status: "active",
 		});
-		expect(rows[1]).toMatchObject({ earnedOn: "2026-01-10", earnedTokens: 500, remainingTokens: 120 });
+		expect(rows[1]).toMatchObject({ earnedOn: "2026-01-10", earnedTokens: 100, remainingTokens: 24 });
 	});
 
 	it("keeps each lot's currency and expiry, and doesn't change the list it was given", () => {

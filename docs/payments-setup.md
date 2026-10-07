@@ -142,8 +142,8 @@ Dashboard screen for plans.
 
 ## Vapor Tokens (rewards)
 
-Customers earn Vapor Tokens on what they pay for products and spend them at checkout as money off. One token is worth one
-cent, so the default of **3 tokens per $1** is 3% back, and 100 tokens take $1.00 off. Tokens **expire 12 months after they are
+Customers earn Vapor Tokens on what they pay for products and spend them at checkout as money off. One token is worth five
+cents, so the default of **1 token per $1** is 5% back, and 100 tokens take $5.00 off. Tokens **expire 12 months after they are
 earned**. Only signed-in customers earn: a guest order earns nothing.
 
 **What happens.**
@@ -174,7 +174,7 @@ earned**. Only signed-in customers earn: a guest order earns nothing.
 3. Open the installed app in the Dashboard, create a token, and set it as `REWARDS_APP_TOKEN` (server-only, never `NEXT_PUBLIC_`).
 4. Allow `/api/rewards-app/*` through Vercel's firewall (Bot Protection in challenge mode answers non-browser callers such
    as Saleor with a 429), the same as `/api/saleor-app/*`.
-5. Set `NEXT_PUBLIC_ENABLE_REWARDS=true`. Optionally set `NEXT_PUBLIC_REWARDS_TOKENS_PER_DOLLAR` (default 3) and
+5. Set `NEXT_PUBLIC_ENABLE_REWARDS=true`. Optionally set `NEXT_PUBLIC_REWARDS_TOKENS_PER_DOLLAR` (default 1) and
    `NEXT_PUBLIC_REWARDS_EXPIRY_MONTHS` (default 12; `0` means tokens never expire). A change applies to tokens earned from then
    on: tokens already earned keep their value and expiry date. Email (`RESEND_API_KEY`) sends the customer's emails and staff
    alerts; without it, alerts appear only as order notes and in the logs.
@@ -184,7 +184,7 @@ Cards, filtered by the tag `vapor-tokens`; its public metadata names the order t
 started with (`paper.vt.tokens`). Its private metadata holds the code the app needs to apply it (`paper.vt.code`): don't delete it.
 
 - **To give a customer tokens by hand,** create a gift card in the Dashboard with the tag `vapor-tokens`, assign it to the customer,
-  and set its balance and expiry. 1 token = 1 cent of balance. It then behaves like any other lot, but it has no stored code
+  and set its balance and expiry. 1 token = 5 cents of balance (100 tokens = $5.00). It then behaves like any other lot, but it has no stored code
   (`paper.vt.code`), so the app reads the code from Saleor when the customer uses it, which Saleor only shows for a card nobody has
   used yet. Add the code to private metadata under `paper.vt.code` yourself to be safe.
 - **To extend or shorten a lot's life,** change the gift card's expiry date.

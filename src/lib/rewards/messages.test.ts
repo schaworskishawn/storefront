@@ -29,12 +29,12 @@ describe("tokensEarnedEmail", () => {
 		expect(email.subject).toContain("300 Vapor Tokens");
 		expect(email.subject).toContain("#1042");
 		expect(email.text).toContain("300 Vapor Tokens (worth");
-		expect(email.text).toContain("3.00");
+		expect(email.text).toContain("15.00");
 	});
 
 	it("says how to spend them and when they expire", () => {
 		expect(email.text).toMatch(/at checkout/);
-		expect(email.text).toMatch(/100 tokens take \$1.00 off/);
+		expect(email.text).toMatch(/100 tokens take \$5.00 off/);
 		expect(email.text).toContain("October 6, 2027");
 	});
 

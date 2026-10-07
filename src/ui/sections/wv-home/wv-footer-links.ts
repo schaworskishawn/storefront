@@ -27,9 +27,12 @@ export const FOOTER_COLUMNS: { title: string; links: string[] }[] = [
 			"Contact Us",
 		],
 	},
-	{ title: "ACCOUNT", links: ["My Account", "My Orders", "Wishlist", "Cart"] },
+	{ title: "ACCOUNT", links: ["My Account", "My Orders", "Wishlist", "Vapor Tokens", "Cart"] },
 	{ title: "CONTACT", links: ["support@worldwidevapor.com"] },
 ];
+
+/** The footer link to the rewards page, which exists only while the program is switched on (the footer hides it otherwise). */
+export const REWARDS_FOOTER_LABEL = "Vapor Tokens";
 
 /** Label -> link. A label with no entry here has no page yet and renders as a placeholder `#` link. */
 export const FOOTER_HREFS: Record<string, string> = {
@@ -57,6 +60,7 @@ export const FOOTER_HREFS: Record<string, string> = {
 	"My Account": "/account",
 	"My Orders": "/orders",
 	Wishlist: "/wishlist",
+	"Vapor Tokens": "/rewards",
 	Cart: "/cart",
 	"support@worldwidevapor.com": "mailto:support@worldwidevapor.com",
 };

@@ -63,8 +63,8 @@ describe("balances", () => {
 			lot({ currency: "CAD", balanceCents: 9999, isActive: false }),
 		];
 		expect(balances(lots, NOW)).toEqual([
-			{ currency: "CAD", cents: 750, tokens: 750 },
-			{ currency: "USD", cents: 1000, tokens: 1000 },
+			{ currency: "CAD", cents: 750, tokens: 150 },
+			{ currency: "USD", cents: 1000, tokens: 200 },
 		]);
 	});
 
@@ -77,7 +77,7 @@ describe("balances", () => {
 		});
 		expect(balanceFor([lot({ currency: "CAD", balanceCents: 250 })], NOW, "cad")).toEqual({
 			currency: "CAD",
-			tokens: 250,
+			tokens: 50,
 			cents: 250,
 		});
 	});
@@ -111,7 +111,7 @@ describe("expiringSoon", () => {
 			lot({ balanceCents: 999, expiryDate: "2026-12-30" }),
 			lot({ balanceCents: 999, expiryDate: null }),
 		];
-		expect(expiringSoon(lots, NOW, "CAD")).toEqual({ tokens: 500, firstDate: "2026-10-20" });
+		expect(expiringSoon(lots, NOW, "CAD")).toEqual({ tokens: 100, firstDate: "2026-10-20" });
 	});
 
 	it("includes the last day of the window and ignores other currencies, expired and empty lots", () => {
@@ -122,7 +122,7 @@ describe("expiringSoon", () => {
 			lot({ balanceCents: 100, expiryDate: "2026-10-01" }),
 			lot({ balanceCents: 0, expiryDate: "2026-10-10" }),
 		];
-		expect(expiringSoon(lots, NOW, "CAD")).toEqual({ tokens: 100, firstDate: "2026-11-05" });
+		expect(expiringSoon(lots, NOW, "CAD")).toEqual({ tokens: 20, firstDate: "2026-11-05" });
 	});
 
 	it("is null when nothing is about to expire", () => {
