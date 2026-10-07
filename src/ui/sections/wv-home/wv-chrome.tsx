@@ -3,8 +3,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { WishlistLink } from "./wv-wishlist-client";
 import { NAV } from "./wv-data";
+import { isCommunityEnabled } from "@/lib/community/config";
 import { readRewardsConfig } from "@/lib/rewards/tokens";
-import { FOOTER_COLUMNS, FOOTER_HREFS, LEGAL_LINKS, REWARDS_FOOTER_LABEL } from "./wv-footer-links";
+import {
+	COMMUNITY_FOOTER_LABEL,
+	FOOTER_COLUMNS,
+	FOOTER_HREFS,
+	LEGAL_LINKS,
+	REWARDS_FOOTER_LABEL,
+} from "./wv-footer-links";
 import { MobileMenu } from "./wv-menu-client";
 import "./wv-home.css";
 
@@ -112,6 +119,7 @@ function FooterSocials({ className }: { className: string }) {
 
 export function WvFooter() {
 	const rewardsOn = readRewardsConfig().enabled;
+	const communityOn = isCommunityEnabled();
 	return (
 		<footer className="bg-[var(--wv-footer)] px-3 py-5 md:px-8 md:py-12 xl:px-20 xl:pb-4 xl:pt-16">
 			{/* Background band stays full-bleed on ultra-wide monitors; content is capped at 1440
@@ -170,7 +178,11 @@ export function WvFooter() {
 								{col.title}
 							</p>
 							{col.links
-								.filter((l) => l !== REWARDS_FOOTER_LABEL || rewardsOn)
+								.filter(
+									(l) =>
+										(l !== REWARDS_FOOTER_LABEL || rewardsOn) &&
+										(l !== COMMUNITY_FOOTER_LABEL || communityOn),
+								)
 								.map((l) => (
 									<a
 										key={l}

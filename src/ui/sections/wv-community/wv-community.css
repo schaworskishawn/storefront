@@ -1,0 +1,41 @@
+/* The community page: thin scrollbars for its panes, and a flash on a message you jump to. */
+
+.wv-chat-scroll {
+	scrollbar-width: thin;
+	scrollbar-color: #3a2a55 transparent;
+	overscroll-behavior: contain;
+}
+.wv-chat-scroll::-webkit-scrollbar {
+	width: 8px;
+}
+.wv-chat-scroll::-webkit-scrollbar-thumb {
+	background: #3a2a55;
+	border-radius: 8px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	@keyframes wv-chat-flash {
+		from {
+			background-color: rgba(0, 229, 255, 0.22);
+		}
+		to {
+			background-color: transparent;
+		}
+	}
+	.wv-chat-flash {
+		animation: wv-chat-flash 1.6s ease-out;
+	}
+	@keyframes wv-chat-pop {
+		from {
+			opacity: 0;
+			transform: translateY(6px);
+		}
+		to {
+			opacity: 1;
+			transform: none;
+		}
+	}
+	.wv-chat-pop {
+		animation: wv-chat-pop 0.18s ease-out;
+	}
+}
