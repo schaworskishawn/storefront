@@ -15,7 +15,8 @@ import { isRevealable, planReveal, staggerDelay, type RevealMode } from "@/lib/m
  * - **Entrance on navigation.** Following a link plays the same fade-up for what is on screen. The first load of a page
  *   does not: the server has already painted it, and hiding it now would make it flash.
  * - **Progress bar.** A thin bar along the top while a page loads, since these routes have no loading screen. If the load takes
- *   more than a moment, the current page also eases back (its blocks get `data-leaving`) until the next one arrives.
+ *   more than a moment, the current page also eases back (its blocks get `data-leaving`) and the mouse cursor becomes the
+ *   loading one (`html[data-loading]`) until the next one arrives.
  *
  * Nothing here can leave content hidden for good: reduced-motion visitors get none of it (the hidden state is only
  * defined for `prefers-reduced-motion: no-preference`, and the observer is not even started), a safety check reveals
@@ -50,6 +51,8 @@ const isHydrated = (el: Element) => Object.keys(el).some((key) => key.startsWith
 
 /** How long a navigation has to take before the current page eases back (quicker ones never flicker). */
 const LEAVE_AFTER_MS = 90;
+/** How long each frame of the loading cursor's spinner shows (there are 8, see src/styles/cursors.css). */
+const CURSOR_FRAME_MS = 90;
 
 /** How often to check for something on screen that is still hidden, in case the observer never reported it. */
 const SAFETY_CHECK_MS = 2500;
@@ -62,12 +65,18 @@ export function PageMotion() {
 	const progressTimer = useRef<number | undefined>(undefined);
 	const progressActive = useRef(false);
 	const leaveTimer = useRef<number | undefined>(undefined);
+	const cursorTimer = useRef<number | undefined>(undefined);
 	const firstPath = useRef(pathname);
 
 	// The page easing back while the next one loads: the blocks on screen get `data-leaving` (styled in motion.css). Only the
-	// old blocks are marked, so the new page's blocks never inherit it.
+	// old blocks are marked, so the new page's blocks never inherit it. The same wait also turns the mouse cursor into the
+	// loading one (`html[data-loading]`, with `data-cursor-frame` turning its spinner; src/styles/cursors.css).
 	const stopLeaving = useCallback(() => {
 		window.clearTimeout(leaveTimer.current);
+		window.clearInterval(cursorTimer.current);
+		const root = document.documentElement;
+		root.removeAttribute("data-loading");
+		root.removeAttribute("data-cursor-frame");
 		document.querySelectorAll("[data-leaving]").forEach((el) => el.removeAttribute("data-leaving"));
 	}, []);
 
@@ -121,6 +130,17 @@ export function PageMotion() {
 				document
 					.querySelectorAll("[data-wv-header] ~ *:not(footer)")
 					.forEach((el) => el.setAttribute("data-leaving", ""));
+				const root = document.documentElement;
+				root.setAttribute("data-loading", "");
+				// A cursor can't animate, so turn the spinner by swapping frames (it holds still for reduced motion).
+				if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+					let frame = 0;
+					window.clearInterval(cursorTimer.current);
+					cursorTimer.current = window.setInterval(() => {
+						frame = (frame + 1) % 8;
+						root.setAttribute("data-cursor-frame", String(frame));
+					}, CURSOR_FRAME_MS);
+				}
 			}, LEAVE_AFTER_MS);
 		};
 		const onClick = (event: MouseEvent) => {
