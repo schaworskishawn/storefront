@@ -310,7 +310,7 @@ export function SearchExperience({
 				<ShopFilterSidebar
 					filters={filters}
 					money={money}
-					className={`${filtersOpen ? "flex" : "hidden"} w-full xl:flex xl:w-[280px] xl:shrink-0 xl:self-start`}
+					className={`${filtersOpen ? "flex" : "hidden"} wv-unfold-sm w-full xl:flex xl:w-[280px] xl:shrink-0 xl:self-start`}
 				/>
 				<div className="min-w-0 flex-1">
 					{pageItems.length === 0 ? (
@@ -331,7 +331,11 @@ export function SearchExperience({
 							</button>
 						</div>
 					) : (
-						<ul className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 xl:gap-6">
+						<ul
+							// New results replace the list, which then fades in.
+							key={pageItems.map((p) => p.id).join("|")}
+							className="wv-fade grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 xl:gap-6"
+						>
 							{pageItems.map((p) => (
 								<li key={p.id}>
 									<ResultCard p={p} money={money} />

@@ -1,0 +1,133 @@
+/* ============================================
+ * Worldwide Vapor — mouse cursors
+ *
+ * The pages under `<body class="wv-motion">` use the brand's cursors (public/cursors/*.svg, made by
+ * scripts/generate-cursors.mjs, whose hotspots must match the numbers below). Only a real mouse sees them: touch screens have no
+ * pointer, and anyone using a forced-colours or high-contrast mode keeps their system cursor. Text fields keep the system
+ * I-beam, which stays readable on any background. Every custom cursor ends in the standard keyword, so a browser that can't
+ * load the image falls back to it.
+ *
+ *   default   an arrow                       hotspot 4 3
+ *   pointer   a pointing hand: links, buttons, anything clickable     12 3
+ *   disabled  a muted arrow with a "no" badge                         3 3
+ *   grab / grabbing   a ring with arrows: the brand carousel          16 16
+ *   loading   an arrow with a spinner while a page loads (8 frames; browsers can't animate a cursor, so PageMotion swaps them)
+ * ============================================ */
+
+@media (hover: hover) and (pointer: fine) and (forced-colors: none) {
+	body.wv-motion {
+		cursor:
+			url("/cursors/default.svg") 4 3,
+			auto;
+	}
+	body.wv-motion [class~="cursor-default"] {
+		cursor:
+			url("/cursors/default.svg") 4 3,
+			default;
+	}
+
+	/* Anything that can be clicked. */
+	body.wv-motion
+		:is(
+			a[href],
+			button,
+			summary,
+			select,
+			label[for],
+			[role="button"],
+			[role="tab"],
+			[role="switch"],
+			[role="menuitem"],
+			input:is(
+				[type="submit"],
+				[type="button"],
+				[type="reset"],
+				[type="checkbox"],
+				[type="radio"],
+				[type="range"],
+				[type="file"]
+			),
+			[class~="cursor-pointer"]
+		):not(:disabled, [aria-disabled="true"]) {
+		cursor:
+			url("/cursors/pointer.svg") 12 3,
+			pointer;
+	}
+
+	/* Anything switched off. */
+	body.wv-motion :is(:disabled, [aria-disabled="true"], [class~="cursor-not-allowed"]) {
+		cursor:
+			url("/cursors/disabled.svg") 3 3,
+			not-allowed;
+	}
+
+	/* Something you can drag, and while you are dragging it. */
+	body.wv-motion [class~="cursor-grab"] {
+		cursor:
+			url("/cursors/grab.svg") 16 16,
+			grab;
+	}
+	body.wv-motion [class~="cursor-grabbing"],
+	body.wv-motion [class~="active:cursor-grabbing"]:active {
+		cursor:
+			url("/cursors/grabbing.svg") 16 16,
+			grabbing;
+	}
+
+	/* A section that is busy saving (the cart while a quantity changes): the system spinner, which really does spin. */
+	body.wv-motion [aria-busy="true"]:not([role="status"]),
+	body.wv-motion [aria-busy="true"]:not([role="status"]) * {
+		cursor: progress;
+	}
+
+	/* While a page loads (PageMotion sets data-loading, and turns data-cursor-frame while it waits): the arrow with a spinner,
+	 * everywhere, so it is clear the click was heard. Without data-cursor-frame (reduced motion) it holds still on frame 0. */
+	html[data-loading] body.wv-motion,
+	html[data-loading] body.wv-motion * {
+		cursor:
+			url("/cursors/loading-0.svg") 3 3,
+			progress !important;
+	}
+	html[data-loading][data-cursor-frame="1"] body.wv-motion,
+	html[data-loading][data-cursor-frame="1"] body.wv-motion * {
+		cursor:
+			url("/cursors/loading-1.svg") 3 3,
+			progress !important;
+	}
+	html[data-loading][data-cursor-frame="2"] body.wv-motion,
+	html[data-loading][data-cursor-frame="2"] body.wv-motion * {
+		cursor:
+			url("/cursors/loading-2.svg") 3 3,
+			progress !important;
+	}
+	html[data-loading][data-cursor-frame="3"] body.wv-motion,
+	html[data-loading][data-cursor-frame="3"] body.wv-motion * {
+		cursor:
+			url("/cursors/loading-3.svg") 3 3,
+			progress !important;
+	}
+	html[data-loading][data-cursor-frame="4"] body.wv-motion,
+	html[data-loading][data-cursor-frame="4"] body.wv-motion * {
+		cursor:
+			url("/cursors/loading-4.svg") 3 3,
+			progress !important;
+	}
+	html[data-loading][data-cursor-frame="5"] body.wv-motion,
+	html[data-loading][data-cursor-frame="5"] body.wv-motion * {
+		cursor:
+			url("/cursors/loading-5.svg") 3 3,
+			progress !important;
+	}
+	html[data-loading][data-cursor-frame="6"] body.wv-motion,
+	html[data-loading][data-cursor-frame="6"] body.wv-motion * {
+		cursor:
+			url("/cursors/loading-6.svg") 3 3,
+			progress !important;
+	}
+	html[data-loading][data-cursor-frame="7"] body.wv-motion,
+	html[data-loading][data-cursor-frame="7"] body.wv-motion * {
+		cursor:
+			url("/cursors/loading-7.svg") 3 3,
+			progress !important;
+	}
+}

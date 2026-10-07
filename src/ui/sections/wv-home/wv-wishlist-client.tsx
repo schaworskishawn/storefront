@@ -211,6 +211,16 @@ export function WishlistExperience({
 	const [view, setView] = useState<"grid" | "list">("grid");
 	const [filtersOpen, setFiltersOpen] = useState(false);
 	const [notice, setNotice] = useState<string | null>(null);
+	// An item being removed slides away for a moment before it leaves the list (immediately for reduced motion).
+	const [leaving, setLeaving] = useState<string | null>(null);
+	const removeWithExit = (slug: string) => {
+		if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return remove([slug]);
+		setLeaving(slug);
+		window.setTimeout(() => {
+			remove([slug]);
+			setLeaving(null);
+		}, 230);
+	};
 	const [moving, startMove] = useTransition();
 
 	const bySlug = useMemo(() => new Map(products.map((p) => [p.slug, p])), [products]);
@@ -457,7 +467,7 @@ export function WishlistExperience({
 					<section className="flex flex-col gap-6 px-4 pb-10 md:px-8 xl:flex-row xl:gap-6 xl:px-20 xl:pb-16">
 						<aside
 							aria-label="Filters"
-							className={`${filtersOpen ? "block" : "hidden"} rounded-xl border border-[var(--wv-purple)] bg-[var(--wv-deep)] p-5 xl:block xl:w-[240px] xl:shrink-0 xl:self-start`}
+							className={`${filtersOpen ? "block" : "hidden"} wv-unfold-sm rounded-xl border border-[var(--wv-purple)] bg-[var(--wv-deep)] p-5 xl:block xl:w-[240px] xl:shrink-0 xl:self-start`}
 						>
 							{filters}
 						</aside>
@@ -468,14 +478,16 @@ export function WishlistExperience({
 								</p>
 							) : (
 								<ul
-									className={
+									// Switching between grid and list replaces the layout, which then fades in.
+									key={view}
+									className={`wv-fade ${
 										view === "list"
 											? "flex flex-col gap-4"
 											: "grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4"
-									}
+									}`}
 								>
 									{visible.map((p) => (
-										<li key={p.id}>
+										<li key={p.id} className={leaving === p.slug ? "wv-leave" : undefined}>
 											<Card
 												p={p}
 												money={money}
@@ -483,7 +495,7 @@ export function WishlistExperience({
 												channel={channel}
 												locale={locale}
 												shared={shared}
-												onRemove={() => remove([p.slug])}
+												onRemove={() => removeWithExit(p.slug)}
 											/>
 										</li>
 									))}

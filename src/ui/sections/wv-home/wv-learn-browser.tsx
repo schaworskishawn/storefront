@@ -200,7 +200,10 @@ export function LearnBrowser({ articles }: { articles: LearnArticleSummary[] }) 
 					{filtering ? `RESULTS (${results.length})` : "LATEST ARTICLES"}
 				</h2>
 				{latest.length > 0 ? (
-					<div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5 xl:grid-cols-4 xl:gap-6">
+					<div
+						key={latest.map((a) => a.slug).join("|")}
+						className="wv-fade grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5 xl:grid-cols-4 xl:gap-6"
+					>
 						{latest.map((a) => (
 							<LearnCard key={a.slug} article={a} />
 						))}

@@ -34,7 +34,7 @@ export function ProductGallery({ images, name }: { images: ProductImage[]; name:
 		<div className="flex flex-col gap-3">
 			<div className="relative h-[284px] w-full overflow-hidden rounded-2xl border border-[var(--wv-cyan-soft)] bg-[var(--wv-bg)] md:h-[520px] xl:h-[650px]">
 				{cur ? (
-					<div className="absolute inset-6 md:inset-14">
+					<div key={cur.url} className="wv-fade absolute inset-6 md:inset-14">
 						<Image
 							src={cur.url}
 							alt={cur.alt || name}
@@ -77,7 +77,7 @@ export function ProductGallery({ images, name }: { images: ProductImage[]; name:
 							aria-label={`Show image ${n + 1}`}
 							aria-current={n === i}
 							onClick={() => setI(n)}
-							className={`relative size-14 shrink-0 overflow-hidden rounded-lg border ${n === i ? "border-[var(--wv-cyan-soft)]" : "border-[var(--wv-control)]"}`}
+							className={`relative size-14 shrink-0 overflow-hidden rounded-lg border transition-colors ${n === i ? "border-[var(--wv-cyan-soft)]" : "border-[var(--wv-control)]"}`}
 						>
 							<Image src={im.url} alt="" fill sizes="56px" className="object-cover" />
 						</button>

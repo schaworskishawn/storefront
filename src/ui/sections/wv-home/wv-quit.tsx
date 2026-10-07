@@ -222,9 +222,13 @@ export function WvQuit({ account }: { account: QuitAccountState }) {
 							<AccountNote account={account} sync={sync} />
 						</div>
 						{data.setup ? (
-							<Dashboard data={data} today={today} update={update} onRestart={restart} />
+							<div key="dashboard" className="wv-fade">
+								<Dashboard data={data} today={today} update={update} onRestart={restart} />
+							</div>
 						) : (
-							<Onboarding today={today} onDone={(d) => update(() => d)} />
+							<div key="onboarding" className="wv-fade">
+								<Onboarding today={today} onDone={(d) => update(() => d)} />
+							</div>
 						)}
 					</>
 				)}

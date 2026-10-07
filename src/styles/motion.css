@@ -10,6 +10,8 @@
  *  3. Ambient            hero logo float, title glow
  *  4. Small reveals      mobile menu, FAQ answers, "added to cart" message, heading underline
  *  5. Progress bar       the thin bar along the top while a page loads
+ *  6. Transitions        the page easing out while the next one loads, panels and lists that fade or unfold instead of
+ *                        snapping (accordions, filters, results, the gallery, alerts), and a cross-fade between full page loads
  * ============================================ */
 
 @keyframes wv-float {
@@ -42,6 +44,22 @@
 	to {
 		opacity: 1;
 		transform: none;
+	}
+}
+
+@keyframes wv-fold {
+	to {
+		opacity: 0;
+		transform: translateY(-8px);
+	}
+}
+
+@keyframes wv-fade {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
 	}
 }
 
@@ -258,6 +276,9 @@
 		animation: wv-unfold var(--duration-base) var(--ease-emphasized) both;
 		transform-origin: top center;
 	}
+	body.wv-motion .wv-menu-panel.wv-menu-leave {
+		animation: wv-fold 160ms var(--ease-standard) both;
+	}
 	body.wv-motion .wv-menu-item {
 		animation: wv-unfold var(--duration-slow) var(--ease-emphasized) both;
 		animation-delay: calc(var(--i, 0) * 45ms + 60ms);
@@ -283,5 +304,83 @@
 	}
 	body.wv-motion .wv-pop {
 		animation: wv-pop var(--duration-slow) var(--ease-emphasized) both;
+	}
+
+	/* ---------- 6. Transitions ---------- */
+	/* While the next page loads (PageMotion marks the blocks that are on screen `data-leaving` after a short wait, so quick
+	 * navigations never flicker), the current page eases back; the new one then arrives with the entrance in section 1. Only
+	 * the old blocks carry the mark, so a new page never starts out dimmed. (The base rule is wrapped in :where() so it
+	 * never outranks the reveal transition in section 1.) */
+	body.wv-motion :where([data-wv-header] ~ *:not(footer)) {
+		transition:
+			opacity var(--duration-base) var(--ease-standard),
+			transform var(--duration-base) var(--ease-standard);
+	}
+	body.wv-motion [data-leaving]:not([data-reveal]) {
+		opacity: 0.45;
+		transform: translateY(6px);
+	}
+
+	/* Results, steps and images that swap: the new one fades in. Add `key` so React replaces the element and this replays. */
+	body.wv-motion .wv-fade {
+		animation: wv-fade var(--duration-base) var(--ease-standard) both;
+	}
+	/* The same unfold, but only below the desktop width: for a panel that is a toggled drawer on phones and tablets and
+	 * simply always there on a desktop. */
+	@media (max-width: 1279px) {
+		body.wv-motion .wv-unfold-sm {
+			animation: wv-unfold var(--duration-base) var(--ease-emphasized) both;
+		}
+	}
+	/* A line that is being removed slides away while the change is saved. */
+	body.wv-motion .wv-leave {
+		opacity: 0;
+		transform: translateX(-16px);
+		pointer-events: none;
+		transition:
+			opacity var(--duration-base) var(--ease-standard),
+			transform var(--duration-base) var(--ease-standard);
+	}
+	/* A saved-changes or error message eases in, wherever a page shows one. */
+	body.wv-motion [role="alert"] {
+		animation: wv-unfold var(--duration-base) var(--ease-emphasized) both;
+	}
+	/* A section that is busy saving (the cart while a quantity changes) dims, then comes back. */
+	body.wv-motion [aria-busy="true"]:not([role="status"]) {
+		opacity: 0.6;
+		transition: opacity var(--duration-base) var(--ease-standard);
+	}
+
+	/* Every collapsible (<details>): the answer fades in as it opens, and in browsers that can animate it the height
+	 * eases open and shut too. */
+	body.wv-motion details[open] > :not(summary) {
+		animation: wv-unfold var(--duration-base) var(--ease-emphasized) both;
+	}
+	@supports selector(details::details-content) {
+		:root {
+			interpolate-size: allow-keywords;
+		}
+		body.wv-motion details::details-content {
+			block-size: 0;
+			overflow: clip;
+			transition:
+				block-size var(--duration-base) var(--ease-standard),
+				content-visibility var(--duration-base) allow-discrete;
+		}
+		body.wv-motion details[open]::details-content {
+			block-size: auto;
+		}
+	}
+}
+
+/* Between full page loads (a plain link, a footer link, a form that posts), the browsers that support it cross-fade the
+ * old page into the new one instead of blanking. Pages reached with a client navigation use the effects above. */
+@media (prefers-reduced-motion: no-preference) {
+	@view-transition {
+		navigation: auto;
+	}
+	::view-transition-old(root),
+	::view-transition-new(root) {
+		animation-duration: var(--duration-base);
 	}
 }

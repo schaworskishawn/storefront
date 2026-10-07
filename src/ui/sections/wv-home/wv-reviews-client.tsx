@@ -172,7 +172,11 @@ export function PendingReview({ product }: { product: ReviewableProduct }) {
 					</button>
 				)}
 			</div>
-			{open && <Editor productId={product.id} onDone={() => setOpen(false)} />}
+			{open && (
+				<div className="wv-unfold">
+					<Editor productId={product.id} onDone={() => setOpen(false)} />
+				</div>
+			)}
 		</article>
 	);
 }
