@@ -1,4 +1,4 @@
-import { ACCENTS, accentFor, type AccentId, type BannerId, type GlyphId } from "./model";
+import { accentFor, type AccentId, type BannerId, type GlyphId } from "./model";
 
 /**
  * The look of the cover choices: abstract banners drawn in pure CSS (no image files), and the avatar pictures. Colour data, kept
@@ -48,8 +48,3 @@ export function accentColors(id: AccentId): { color: string; ink: string } {
 	const accent = accentFor(id);
 	return { color: `hsl(${accent.hsl})`, ink: accent.ink };
 }
-
-/** The soft tint of an accent, for fills behind text. */
-export const accentTint = (id: AccentId, alpha = 0.16): string => `hsl(${accentFor(id).hsl} / ${alpha})`;
-
-export const ALL_ACCENT_IDS: AccentId[] = ACCENTS.map((a) => a.id);

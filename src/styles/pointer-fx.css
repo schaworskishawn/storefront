@@ -180,11 +180,6 @@
 	}
 }
 
-/* A visitor turned the effects off on My Desk: the layer goes (the magnet and the card shimmer stand down in the script). */
-html[data-wv-fx="off"] .wv-fx {
-	display: none;
-}
-
 /* Nothing here prints, and a forced-colours (high contrast) display keeps its plain pointer. */
 @media print, (forced-colors: active) {
 	.wv-fx {

@@ -23,5 +23,4 @@ export const BADGES: Badge[] = [
 	{ file: "vapor-tokens.svg", alt: "Vapor Tokens: earn and save", href: "/rewards", rewards: true },
 	{ file: "quit-plan.svg", alt: "Quit plan builder", href: "/quit" },
 	{ file: "learn.svg", alt: "Vape guides and how-tos", href: "/learn" },
-	{ file: "my-desk.svg", alt: "My Desk: make your own corner of the site", href: "/desk" },
 ];

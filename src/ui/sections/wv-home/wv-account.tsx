@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { type ReactNode } from "react";
 import { readRewardsConfig } from "@/lib/rewards/tokens";
-import { DeskCover } from "./wv-desk-cover";
+import { AccountCover } from "./wv-cover";
 import { WvFooter, WvHeader } from "./wv-chrome";
 import "./wv-home.css";
 
@@ -24,7 +24,6 @@ function navItems(active: string): NavItem[] {
 		{ label: "My Orders", href: "/orders" },
 		{ label: "Wishlist", href: "/wishlist" },
 		...(readRewardsConfig().enabled ? [{ label: "Vapor Tokens", href: "/rewards" }] : []),
-		{ label: "My Desk", href: "/desk" },
 		{ label: "Payment Methods", href: "/payment-methods" },
 		{ label: "My Reviews", href: "/my-reviews" },
 		{ label: "Addresses", href: "/addresses" },
@@ -198,19 +197,7 @@ export function WvAccount({ user, base }: AccountView) {
 			title="MY ACCOUNT"
 			subtitle="Manage orders, saved details, and account settings."
 		>
-			{user ? (
-				<DeskCover
-					fallbackName={user.name}
-					actions={
-						<Link
-							href="/desk"
-							className="rounded-lg border border-[var(--ac-cyan)] px-3 py-2 font-[family-name:var(--font-hey-comic)] text-xs text-[var(--ac-cyan)]"
-						>
-							CUSTOMIZE ON MY DESK
-						</Link>
-					}
-				/>
-			) : null}
+			{user ? <AccountCover fallbackName={user.name} /> : null}
 			{user ? (
 				<div className="grid gap-4 md:grid-cols-3">
 					<SummaryCard

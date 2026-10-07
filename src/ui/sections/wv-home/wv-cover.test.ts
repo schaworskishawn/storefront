@@ -1,9 +1,8 @@
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { DEFAULT_PROFILE, type Profile } from "@/lib/desk/model";
-import { AvatarBadge, DeskCover } from "./wv-desk-cover";
-import { DeskApp } from "./wv-desk-app";
+import { DEFAULT_PROFILE, type Profile } from "@/lib/cover/model";
+import { AccountCover, AvatarBadge, ProfileCover } from "./wv-cover";
 
 const text = (html: string) =>
 	html
@@ -34,17 +33,16 @@ describe("AvatarBadge", () => {
 	});
 });
 
-describe("on the server, before the browser's saved desk can be read", () => {
+describe("on the server, before the browser's saved cover can be read", () => {
 	it("the cover is a placeholder, not a flash of the default cover", () => {
-		const html = renderToStaticMarkup(createElement(DeskCover, { fallbackName: "Ada" }));
+		const html = renderToStaticMarkup(createElement(ProfileCover, { fallbackName: "Ada" }));
 		expect(html).toContain("animate-pulse");
 		expect(text(html)).toBe("");
 	});
 
-	it("the whole desk is a placeholder too, marked busy", () => {
-		const html = renderToStaticMarkup(createElement(DeskApp));
-		expect(html).toContain('aria-busy="true"');
-		expect(html.match(/animate-pulse/g)?.length).toBe(5);
-		expect(text(html)).toBe("");
+	it("the account page's cover is a placeholder too, with the editor closed", () => {
+		const html = renderToStaticMarkup(createElement(AccountCover, { fallbackName: "Ada" }));
+		expect(html).toContain("animate-pulse");
+		expect(html).not.toContain("Display name");
 	});
 });

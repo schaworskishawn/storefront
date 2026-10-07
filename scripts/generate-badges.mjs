@@ -204,18 +204,6 @@ const STAR = [
 	".#.....#.",
 ];
 
-const MONITOR = [
-	".........",
-	"#########",
-	"#aaaaaaa#",
-	"#abbbbba#",
-	"#abbbbba#",
-	"#aaaaaaa#",
-	"#########",
-	"...###...",
-	"..#####..",
-];
-
 const files = {};
 
 // 1. The site emblem (links home).
@@ -320,25 +308,6 @@ files["learn.svg"] = badge(
 		icon(BOOK, { "#": C.ice, a: C.cyan, b: C.pink }, 5, 11),
 		text("VAPE GUIDES", 20, 6, C.ice),
 		text("& HOW-TOS", 20, 16, C.gold),
-	].join(""),
-);
-
-// 6. My Desk (links to /desk).
-files["my-desk.svg"] = badge(
-	[
-		frame(
-			[
-				[11, "#2b0f52"],
-				[10, C.purple],
-				[10, C.deep],
-			],
-			C.gold,
-			C.ink,
-		),
-		rect(2, 2, 84, 1, C.gold),
-		icon(MONITOR, { "#": C.ice, a: C.deep, b: C.cyan }, 5, 11),
-		text("MY DESK", 20, 6, C.gold),
-		text("YOUR CORNER", 20, 16, C.pink),
 	].join(""),
 );
 

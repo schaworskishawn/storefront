@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import { BANNERS, GLYPHS, accentColors } from "@/lib/desk/art";
+import { BANNERS, GLYPHS, accentColors } from "@/lib/cover/art";
 import {
 	ACCENTS,
 	BANNER_IDS,
@@ -13,17 +13,19 @@ import {
 	coverName,
 	initialsOf,
 	type Profile,
-} from "@/lib/desk/model";
-import { useDesk, useMounted } from "@/lib/desk/store";
+} from "@/lib/cover/model";
+import { useCover, useMounted } from "@/lib/cover/store";
 
 /**
  * The visitor's cover: an abstract banner, an avatar (their initials or a picture), a display name and a short status line. It is
- * kept in this browser only (see `useDesk`), shown on My Desk and on the account page, and edited with `CoverEditor`.
+ * kept in this browser only (see `useCover`), shown at the top of the account page, and edited with `CoverEditor`.
  */
 
 const heyComic = "font-[family-name:var(--font-hey-comic)]";
 const bungee = "font-[family-name:var(--font-bungee)]";
 const orbitron = "font-[family-name:var(--font-orbitron)]";
+
+const outlineButton = `${heyComic} rounded-lg border border-[var(--wv-cyan)] px-3 py-2 text-xs text-[var(--wv-cyan)]`;
 
 export function AvatarBadge({ profile, name }: { profile: Profile; name: string }) {
 	const base =
@@ -56,11 +58,16 @@ export function CoverSkeleton() {
 }
 
 /** The cover itself. `fallbackName` is shown until the visitor picks a display name (the account's name, say). */
-export function DeskCover({ fallbackName, actions }: { fallbackName?: string | null; actions?: ReactNode }) {
-	const { desk } = useDesk();
+export function ProfileCover({
+	fallbackName,
+	actions,
+}: {
+	fallbackName?: string | null;
+	actions?: ReactNode;
+}) {
+	const { profile } = useCover();
 	const mounted = useMounted();
 	if (!mounted) return <CoverSkeleton />;
-	const profile = desk.profile;
 	const name = coverName(profile, fallbackName);
 
 	return (
@@ -92,17 +99,14 @@ export function DeskCover({ fallbackName, actions }: { fallbackName?: string | n
 const field =
 	"h-11 w-full rounded-lg border border-[var(--wv-purple)] bg-[var(--wv-bg)] px-3 text-sm text-white placeholder:text-[var(--wv-muted)]";
 const choice =
-	"block cursor-pointer rounded-lg border-2 border-transparent p-1 text-center text-[11px] peer-checked:border-[var(--desk-accent,var(--wv-cyan))] peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[var(--wv-cyan-soft)]";
+	"block cursor-pointer rounded-lg border-2 border-transparent p-1 text-center text-[11px] peer-checked:border-[var(--wv-cyan)] peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[var(--wv-cyan-soft)]";
 
 /** The form for the cover. Every change shows on the cover straight away and is saved as it is made. */
 export function CoverEditor() {
-	const { desk, update } = useDesk();
-	const profile = desk.profile;
+	const { profile, update } = useCover();
 	// What is typed is kept as typed (so a space between words can be entered); the saved copy is the cleaned one.
 	const [name, setName] = useState(profile.displayName);
 	const [status, setStatus] = useState(profile.status);
-
-	const change = (patch: Partial<Profile>) => update((d) => ({ ...d, profile: { ...d.profile, ...patch } }));
 	const avatar = profile.avatar;
 
 	return (
@@ -122,7 +126,7 @@ export function CoverEditor() {
 						autoComplete="nickname"
 						onChange={(event) => {
 							setName(event.target.value);
-							change({ displayName: cleanLine(event.target.value, NAME_MAX) });
+							update({ displayName: cleanLine(event.target.value, NAME_MAX) });
 						}}
 						onBlur={() => setName(cleanLine(name, NAME_MAX))}
 						className={field}
@@ -138,7 +142,7 @@ export function CoverEditor() {
 						placeholder="A few words about today"
 						onChange={(event) => {
 							setStatus(event.target.value);
-							change({ status: cleanLine(event.target.value, STATUS_MAX) });
+							update({ status: cleanLine(event.target.value, STATUS_MAX) });
 						}}
 						onBlur={() => setStatus(cleanLine(status, STATUS_MAX))}
 						className={field}
@@ -158,7 +162,7 @@ export function CoverEditor() {
 								name="cover-banner"
 								value={id}
 								checked={profile.banner === id}
-								onChange={() => change({ banner: id })}
+								onChange={() => update({ banner: id })}
 								className="peer sr-only"
 							/>
 							<span className={choice}>
@@ -185,7 +189,7 @@ export function CoverEditor() {
 								value={kind}
 								checked={avatar.kind === kind}
 								onChange={() =>
-									change({
+									update({
 										avatar:
 											kind === "glyph"
 												? { kind: "glyph", glyph: GLYPH_IDS[0] }
@@ -211,7 +215,7 @@ export function CoverEditor() {
 									name="cover-avatar-colour"
 									value={accent.id}
 									checked={avatar.accent === accent.id}
-									onChange={() => change({ avatar: { kind: "monogram", accent: accent.id } })}
+									onChange={() => update({ avatar: { kind: "monogram", accent: accent.id } })}
 									className="peer sr-only"
 								/>
 								<span className={choice}>
@@ -239,7 +243,7 @@ export function CoverEditor() {
 									name="cover-avatar-glyph"
 									value={id}
 									checked={avatar.glyph === id}
-									onChange={() => change({ avatar: { kind: "glyph", glyph: id } })}
+									onChange={() => update({ avatar: { kind: "glyph", glyph: id } })}
 									className="peer sr-only"
 								/>
 								<span className={choice}>
@@ -266,7 +270,7 @@ export function CoverEditor() {
 					onClick={() => {
 						setName("");
 						setStatus("");
-						change({ ...DEFAULT_PROFILE });
+						update({ ...DEFAULT_PROFILE });
 					}}
 					className={`${heyComic} rounded-lg border border-[var(--wv-pink)] px-4 py-2 text-xs text-[var(--wv-pink)]`}
 				>
@@ -274,5 +278,32 @@ export function CoverEditor() {
 				</button>
 			</div>
 		</form>
+	);
+}
+
+/** The cover at the top of the account page, with a button that opens the editor right below it. */
+export function AccountCover({ fallbackName }: { fallbackName?: string | null }) {
+	const [editing, setEditing] = useState(false);
+	return (
+		<div className="flex flex-col gap-4">
+			<ProfileCover
+				fallbackName={fallbackName}
+				actions={
+					<button
+						type="button"
+						aria-expanded={editing}
+						onClick={() => setEditing((open) => !open)}
+						className={outlineButton}
+					>
+						{editing ? "DONE" : "CUSTOMIZE COVER"}
+					</button>
+				}
+			/>
+			{editing ? (
+				<div className="wv-unfold">
+					<CoverEditor />
+				</div>
+			) : null}
+		</div>
 	);
 }
