@@ -29,7 +29,7 @@ export function WishlistLink() {
 		<Link
 			href="/wishlist"
 			aria-label={count ? `Wishlist (${count} saved)` : "Wishlist"}
-			className="relative flex size-8 items-center justify-center rounded-lg border border-[var(--wv-cyan)] text-[var(--wv-cyan)]"
+			className="wv-icon-btn relative flex size-8 items-center justify-center rounded-lg border border-[var(--wv-cyan)] text-[var(--wv-cyan)]"
 		>
 			<Heart className="size-4" strokeWidth={2} />
 			{count > 0 && (
@@ -98,7 +98,7 @@ function Card({
 
 	return (
 		<article
-			className={`relative flex overflow-hidden rounded-[14px] border border-[var(--wv-purple)] bg-[var(--wv-control)] ${list ? "flex-row" : "h-full flex-col"}`}
+			className={`wv-lift relative flex overflow-hidden rounded-[14px] border border-[var(--wv-purple)] bg-[var(--wv-control)] ${list ? "flex-row" : "h-full flex-col"}`}
 		>
 			<Link
 				href={href}

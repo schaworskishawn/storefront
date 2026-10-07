@@ -1,0 +1,287 @@
+/* ============================================
+ * Worldwide Vapor — motion
+ *
+ * Applies to the (root) pages only (`<body class="wv-motion">`). Everything that moves is inside
+ * `prefers-reduced-motion: no-preference`, so visitors who ask for less motion get none of it and nothing is ever
+ * left hidden. Durations and easings come from the tokens in brand.css.
+ *
+ *  1. Scroll reveal      `[data-reveal]` states, driven by `PageMotion` (src/ui/components/page-motion.tsx)
+ *  2. Hover / press      .wv-lift  .wv-btn  .wv-btn-outline  .wv-press  .wv-link  .wv-icon-btn  .wv-foot-link
+ *  3. Ambient            hero logo float, title glow
+ *  4. Small reveals      mobile menu, FAQ answers, "added to cart" message, heading underline
+ *  5. Progress bar       the thin bar along the top while a page loads
+ * ============================================ */
+
+@keyframes wv-float {
+	0%,
+	100% {
+		transform: translateY(0);
+	}
+	50% {
+		transform: translateY(-6px);
+	}
+}
+
+@keyframes wv-glow-pulse {
+	0%,
+	100% {
+		text-shadow: 0 0 24px color-mix(in srgb, var(--wv-cyan-soft) 33%, transparent);
+	}
+	50% {
+		text-shadow:
+			0 0 34px color-mix(in srgb, var(--wv-cyan-soft) 58%, transparent),
+			0 0 14px color-mix(in srgb, var(--wv-pink) 38%, transparent);
+	}
+}
+
+@keyframes wv-unfold {
+	from {
+		opacity: 0;
+		transform: translateY(-8px);
+	}
+	to {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+@keyframes wv-pop {
+	0% {
+		opacity: 0;
+		transform: translateY(6px) scale(0.96);
+	}
+	60% {
+		opacity: 1;
+		transform: translateY(0) scale(1.03);
+	}
+	100% {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+/* The progress bar is feedback, not decoration, so it shows for everyone (it just doesn't glide for reduced motion:
+ * PageMotion sets its own transition inline, which the guard below turns off). */
+.wv-nav-progress {
+	position: fixed;
+	inset: 0 0 auto 0;
+	z-index: 2147483000;
+	height: 3px;
+	pointer-events: none;
+	opacity: 0;
+	transform: scaleX(0);
+	transform-origin: left center;
+	background-image: linear-gradient(90deg, var(--wv-cyan), var(--wv-pink));
+	box-shadow: 0 0 10px color-mix(in srgb, var(--wv-cyan) 70%, transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.wv-nav-progress {
+		transition: none !important;
+	}
+}
+
+@media print {
+	.wv-nav-progress {
+		display: none;
+	}
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	/* ---------- 1. Scroll reveal ---------- */
+	body.wv-motion {
+		--reveal-distance: 20px;
+	}
+	@media (min-width: 768px) {
+		body.wv-motion {
+			--reveal-distance: 28px;
+		}
+	}
+
+	body.wv-motion [data-reveal] {
+		transition:
+			opacity 650ms var(--ease-emphasized) var(--reveal-delay, 0ms),
+			transform 650ms var(--ease-emphasized) var(--reveal-delay, 0ms);
+	}
+	body.wv-motion [data-reveal="out"] {
+		opacity: 0;
+		transform: translate3d(0, var(--reveal-distance), 0);
+	}
+	body.wv-motion [data-reveal="in"] {
+		opacity: 1;
+		transform: none;
+	}
+	/* A section heading's underline draws itself as its section arrives. */
+	body.wv-motion .wv-bar {
+		transition: transform 700ms var(--ease-emphasized) 250ms;
+		transform-origin: center;
+	}
+	body.wv-motion [data-reveal="out"] .wv-bar {
+		transform: scaleX(0);
+	}
+
+	/* ---------- 2. Hover / press ---------- */
+	/* Cards: lift, glow, and let the picture drift in. */
+	body.wv-motion .wv-lift {
+		transition:
+			transform var(--duration-base) var(--ease-standard),
+			box-shadow var(--duration-base) var(--ease-standard),
+			border-color var(--duration-base) var(--ease-standard);
+	}
+	body.wv-motion .wv-lift img {
+		transition: transform 600ms var(--ease-standard);
+	}
+	@media (hover: hover) {
+		body.wv-motion .wv-lift:hover {
+			transform: translateY(-4px);
+			box-shadow:
+				0 14px 30px -14px color-mix(in srgb, var(--wv-cyan) 55%, transparent),
+				0 0 0 1px color-mix(in srgb, var(--wv-cyan) 35%, transparent);
+		}
+		body.wv-motion .wv-lift:hover img {
+			transform: scale(1.06);
+		}
+	}
+
+	/* Buttons. `.wv-btn` opts in; any link or button drawn as a filled neon button (a rounded element whose background is
+	 * one of the cyan tokens) is picked up too, so every page's call-to-action behaves the same without each opting in.
+	 * Hover: glow and a hair of lift. `.wv-btn-outline` also fills with its own colour. */
+	body.wv-motion
+		:is(
+			.wv-btn,
+			:where(a, button)[class*="rounded"]:is([class*="bg-[var(--wv-cyan"], [class*="bg-[var(--ct-cyan"])
+		) {
+		transition:
+			transform var(--duration-fast) var(--ease-standard),
+			box-shadow var(--duration-base) var(--ease-standard),
+			background-color var(--duration-base) var(--ease-standard),
+			filter var(--duration-base) var(--ease-standard);
+	}
+	@media (hover: hover) {
+		body.wv-motion
+			:where(
+				.wv-btn,
+				:where(a, button)[class*="rounded"]:is([class*="bg-[var(--wv-cyan"], [class*="bg-[var(--ct-cyan"])
+			):not(:disabled):hover {
+			transform: translateY(-1px);
+			box-shadow: 0 6px 18px -6px color-mix(in srgb, var(--wv-cyan) 70%, transparent);
+		}
+		body.wv-motion
+			:where(
+				:where(a, button)[class*="rounded"]:is([class*="bg-[var(--wv-cyan"], [class*="bg-[var(--ct-cyan"]),
+				.wv-btn:not(.wv-btn-outline)
+			):not(:disabled):hover {
+			filter: brightness(1.1);
+		}
+		body.wv-motion .wv-btn-outline:hover {
+			background-color: color-mix(in srgb, currentColor 14%, transparent);
+			box-shadow: 0 6px 18px -6px color-mix(in srgb, currentColor 65%, transparent);
+		}
+	}
+
+	/* Press feedback on every rounded button or link (it outranks the hover rules above, so it still shows under a mouse),
+	 * written with Tailwind's own transform variables so a button that is
+	 * already positioned with a translate (the carousel arrows) keeps its place while it shrinks. */
+	body.wv-motion :where(button:not(:disabled), a)[class*="rounded"]:not(.wv-no-press):active,
+	body.wv-motion .wv-press:active {
+		transform: translate(var(--tw-translate-x, 0), var(--tw-translate-y, 0)) rotate(var(--tw-rotate, 0))
+			skewX(var(--tw-skew-x, 0)) skewY(var(--tw-skew-y, 0)) scaleX(calc(var(--tw-scale-x, 1) * 0.97))
+			scaleY(calc(var(--tw-scale-y, 1) * 0.97));
+	}
+
+	/* Text links: an underline that draws in from the left. */
+	body.wv-motion .wv-link {
+		background-image: linear-gradient(currentColor, currentColor);
+		background-repeat: no-repeat;
+		background-position: 0 100%;
+		background-size: 0 2px;
+		transition:
+			background-size var(--duration-base) var(--ease-standard),
+			color var(--duration-base) var(--ease-standard);
+	}
+	@media (hover: hover) {
+		body.wv-motion .wv-link:hover,
+		body.wv-motion .wv-link:focus-visible {
+			background-size: 100% 2px;
+		}
+	}
+
+	/* Round / square icon buttons in the header and footer. */
+	body.wv-motion .wv-icon-btn {
+		transition:
+			transform var(--duration-fast) var(--ease-standard),
+			background-color var(--duration-base) var(--ease-standard),
+			box-shadow var(--duration-base) var(--ease-standard);
+	}
+	@media (hover: hover) {
+		body.wv-motion .wv-icon-btn:hover {
+			transform: translateY(-2px);
+			background-color: color-mix(in srgb, var(--wv-cyan) 16%, transparent);
+			box-shadow: 0 0 14px color-mix(in srgb, var(--wv-cyan) 45%, transparent);
+		}
+	}
+	body.wv-motion .wv-icon-btn:active {
+		transform: scale(0.92);
+	}
+
+	body.wv-motion .wv-foot-link {
+		transition:
+			color var(--duration-base) var(--ease-standard),
+			transform var(--duration-base) var(--ease-standard);
+	}
+	@media (hover: hover) {
+		body.wv-motion .wv-foot-link:hover {
+			color: var(--wv-cyan-soft);
+			transform: translateX(3px);
+		}
+	}
+
+	/* Form fields glow in rather than snapping. */
+	body.wv-motion
+		:where(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), textarea, select) {
+		transition:
+			border-color var(--duration-base) var(--ease-standard),
+			box-shadow var(--duration-base) var(--ease-standard),
+			background-color var(--duration-base) var(--ease-standard);
+	}
+
+	/* ---------- 3. Ambient ---------- */
+	body.wv-motion .wv-float {
+		animation: wv-float 6s ease-in-out infinite;
+	}
+	body.wv-motion .wv-title-glow {
+		animation: wv-glow-pulse 4.5s ease-in-out infinite;
+	}
+
+	/* ---------- 4. Small reveals ---------- */
+	body.wv-motion .wv-menu-panel {
+		animation: wv-unfold var(--duration-base) var(--ease-emphasized) both;
+		transform-origin: top center;
+	}
+	body.wv-motion .wv-menu-item {
+		animation: wv-unfold var(--duration-slow) var(--ease-emphasized) both;
+		animation-delay: calc(var(--i, 0) * 45ms + 60ms);
+	}
+	body.wv-motion .wv-burger span {
+		transition:
+			transform var(--duration-base) var(--ease-emphasized),
+			opacity var(--duration-fast) var(--ease-standard);
+	}
+	body.wv-motion .wv-burger[aria-expanded="true"] span:nth-child(1) {
+		transform: translateY(6px) rotate(45deg);
+	}
+	body.wv-motion .wv-burger[aria-expanded="true"] span:nth-child(2) {
+		opacity: 0;
+		transform: scaleX(0);
+	}
+	body.wv-motion .wv-burger[aria-expanded="true"] span:nth-child(3) {
+		transform: translateY(-6px) rotate(-45deg);
+	}
+
+	body.wv-motion .wv-unfold {
+		animation: wv-unfold var(--duration-base) var(--ease-emphasized) both;
+	}
+	body.wv-motion .wv-pop {
+		animation: wv-pop var(--duration-slow) var(--ease-emphasized) both;
+	}
+}

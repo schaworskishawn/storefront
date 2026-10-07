@@ -166,7 +166,7 @@ export function WvPayments() {
 					<h2 className={`${bungee} text-[22px] tracking-[1px] md:text-[26px] xl:text-[32px]`}>
 						Payment Options
 					</h2>
-					<div className="h-[3px] w-[60px] rounded-full bg-[var(--wv-cyan-soft)] xl:w-20" />
+					<div className="wv-bar h-[3px] w-[60px] rounded-full bg-[var(--wv-cyan-soft)] xl:w-20" />
 				</div>
 				<div className="grid w-full max-w-[1280px] grid-cols-1 gap-3 md:grid-cols-2 md:gap-4 xl:grid-cols-4 xl:gap-6">
 					{methods.map((m) => (
