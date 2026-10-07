@@ -2,6 +2,7 @@
 @import "../styles/brand.css";
 @import "../styles/motion.css";
 @import "../styles/holo.css";
+@import "../styles/pointer-fx.css";
 @import "../styles/cursors.css";
 
 @tailwind base;
