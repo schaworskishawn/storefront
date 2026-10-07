@@ -1,5 +1,6 @@
 /** Each logo is an 800 x 320 transparent PNG (white logo, brand colours kept, filling about 94% x 78%), shown on a dark 2.5:1 card without cropping. */
 export const BRAND_LOGOS = [
+	{ name: "Worldwide Vapor", src: "/home/brands/worldwide-vapor.png" },
 	{ name: "Vice Nexa", src: "/home/brands/vice-nexa.png" },
 	{ name: "OXBAR", src: "/home/brands/oxbar.png" },
 	{ name: "Drip'n by Envi", src: "/home/brands/dripn-by-envi.png" },
