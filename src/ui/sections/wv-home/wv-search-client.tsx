@@ -46,7 +46,7 @@ function score(p: HomeProduct, terms: string[]): number {
 function ResultCard({ p, money }: { p: HomeProduct; money: (n: number) => string }) {
 	const href = `/product/${p.slug}`;
 	return (
-		<article className="flex flex-col overflow-hidden rounded-xl border border-[var(--wv-purple)] bg-[var(--wv-surface)]">
+		<article className="wv-lift flex flex-col overflow-hidden rounded-xl border border-[var(--wv-purple)] bg-[var(--wv-surface)]">
 			<Link href={href} className="relative block h-[200px] bg-[var(--wv-deep)] md:h-[220px]">
 				{p.image && (
 					<Image

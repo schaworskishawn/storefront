@@ -312,7 +312,7 @@ export function ProductPurchase({
 						</button>
 						<div role="status" aria-live="polite" className="text-sm">
 							{status?.kind === "added" && (
-								<p className="text-[var(--wv-cyan-soft)]">
+								<p className="wv-pop text-[var(--wv-cyan-soft)]">
 									{status.text}{" "}
 									<Link href="/cart" className="font-bold underline">
 										View cart
