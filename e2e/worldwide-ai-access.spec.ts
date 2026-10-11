@@ -72,8 +72,13 @@ test.describe("Worldwide AI turns away a visitor who isn't signed in", () => {
 
 	test("a visitor following a link lands on the sign-in page, not an error", async ({ page }) => {
 		await page.goto("/worldwide-ai/team");
-		await expect(page).toHaveURL(/\/login\?next=%2Fworldwide-ai%2Fteam$/);
+		// Sign-in sits behind the store's age check, so a first-time visitor is taken there on the way. Either way the
+		// address to come back to is carried along, and nothing of the workspace is shown.
+		const landed = new URL(page.url());
+		expect(["/login", "/age-verification"]).toContain(landed.pathname);
+		expect(decodeURIComponent(decodeURIComponent(landed.search))).toContain("/worldwide-ai/team");
 		await expect(page.locator("body")).not.toContainText("Worldwide AI");
+		await expect(page.locator("body")).not.toContainText("Private workspace");
 	});
 });
 
