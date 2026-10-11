@@ -36,6 +36,7 @@ const PAGES = [
 	"/worldwide-ai/compliance",
 	"/worldwide-ai/integrations",
 	"/worldwide-ai/activity",
+	"/worldwide-ai/actions",
 	"/worldwide-ai/improvement",
 	"/worldwide-ai/skills",
 	"/worldwide-ai/skills/relay-support-drafting",
