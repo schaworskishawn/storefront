@@ -30,6 +30,8 @@ const config = {
 	// See: https://vercel.com/blog/how-we-optimized-package-imports-in-next-js
 	experimental: {
 		optimizePackageImports: ["lucide-react", "lodash-es"],
+		// The Worldwide AI workspace lets staff attach a few screenshots (2 MB each) to a review request.
+		serverActions: { bodySizeLimit: "9mb" },
 		// Note: API rate limiting is handled by RequestQueue in src/lib/graphql.ts
 		// (max 3 concurrent requests + 200ms delay between requests)
 	},
@@ -96,6 +98,15 @@ const config = {
 					},
 				],
 			},
+			// The private Worldwide AI workspace and its API are never cached by anything shared. Listed after the asset rule
+			// above so that these win for any workspace address that happens to end in an image extension.
+			...["/worldwide-ai/:path*", "/api/worldwide-ai/:path*"].map((source) => ({
+				source,
+				headers: [
+					{ key: "Cache-Control", value: "private, no-store" },
+					{ key: "X-Robots-Tag", value: "noindex, nofollow" },
+				],
+			})),
 			{
 				// OG Image API - cache for 1 day
 				source: "/api/og",

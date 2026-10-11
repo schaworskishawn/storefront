@@ -6,6 +6,12 @@
 			"runtimeExecutable": "npx",
 			"runtimeArgs": ["next", "dev", "--webpack"],
 			"port": 3000
+		},
+		{
+			"name": "worldwide-ai-preview",
+			"runtimeExecutable": "node",
+			"runtimeArgs": ["scripts/worldwide-ai-preview.mjs"],
+			"port": 3100
 		}
 	]
 }

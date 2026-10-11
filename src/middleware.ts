@@ -7,6 +7,9 @@ import { AGE_GATE_PATH, AGE_VERIFIED_COOKIE } from "@/lib/age-gate";
 import { SITE_ACCESS_COOKIE, SITE_PASSWORD_PATH, getSitePassword, hasSiteAccess } from "@/lib/site-password";
 import { buildStorefrontPath } from "@/lib/storefront-path";
 
+/** Kept as a literal here: the middleware runs at the edge and must not pull in the workspace's server code. */
+const WORKSPACE_PATH = "/worldwide-ai";
+
 const RESERVED_ROOT_SEGMENTS = new Set([
 	"api",
 	"checkout",
@@ -67,6 +70,32 @@ export async function middleware(request: NextRequest) {
 		url.pathname = "/home";
 		url.search = "";
 		return NextResponse.redirect(url, 307);
+	}
+
+	// The private Worldwide AI workspace. Nobody without a store session gets as far as rendering it: they are sent to sign
+	// in, with a real redirect. (Whether the signed-in account is an owner or staff member is decided on the server by every
+	// page and action; a customer account gets "not found".) It has its own, stronger gate, so the age gate is skipped.
+	if (pathname === WORKSPACE_PATH || pathname.startsWith(`${WORKSPACE_PATH}/`)) {
+		const signedIn = request.cookies
+			.getAll()
+			.some((cookie) => cookie.value && /saleor_auth_(access_token|module_refresh_token)/.test(cookie.name));
+		// Local preview only: `next dev` with the in-memory demonstration store and a named preview role (see docs/worldwide-ai.md).
+		const preview =
+			process.env.NODE_ENV === "development" &&
+			!process.env.VERCEL &&
+			process.env.WORLDWIDE_AI_STORE === "demo" &&
+			(process.env.WORLDWIDE_AI_DEMO_OPERATOR === "owner" ||
+				process.env.WORLDWIDE_AI_DEMO_OPERATOR === "staff");
+		if (!signedIn && !preview) {
+			const url = request.nextUrl.clone();
+			url.pathname = "/login";
+			url.search = `?next=${encodeURIComponent(`${pathname}${request.nextUrl.search}`)}`;
+			return NextResponse.redirect(url, 307);
+		}
+		const response = NextResponse.next();
+		response.headers.set("X-Robots-Tag", "noindex, nofollow");
+		response.headers.set("Cache-Control", "private, no-store");
+		return response;
 	}
 
 	// Site-wide age gate: everything except the gate pages themselves needs the "verified" cookie.
