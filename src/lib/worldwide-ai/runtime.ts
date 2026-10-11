@@ -5,6 +5,7 @@ import { seedDemoData } from "./db/demo-seed";
 import { createMigratedPglite } from "./db/pglite";
 import { createPostgres } from "./db/postgres";
 import { DatabaseNotConfiguredError, type SqlClient } from "./db/sql";
+import { createAdapterConnector, type OpenClawConnector } from "./openclaw/connector";
 import { createFolderStorage, createSupabaseStorage, type FileStorage } from "./storage/files";
 import type { WorkflowDeps } from "./workflows/types";
 
@@ -51,6 +52,14 @@ export function getStorage(config: WorldwideAiConfig = readConfig()): FileStorag
 	return null;
 }
 
+/** The OpenClaw adapter's connector, or null until its address, secret and allowed hosts are all set. */
+export function getOpenClaw(config: WorldwideAiConfig = readConfig()): OpenClawConnector | null {
+	const { adapterUrl, secret, allowedHosts } = config.openclaw;
+	return adapterUrl && secret && allowedHosts.length
+		? createAdapterConnector({ url: adapterUrl, secret })
+		: null;
+}
+
 export type Runtime = WorkflowDeps & { storage: FileStorage | null };
 
 export async function getRuntime(env: Record<string, string | undefined> = process.env): Promise<Runtime> {
@@ -61,5 +70,6 @@ export async function getRuntime(env: Record<string, string | undefined> = proce
 		now: () => new Date(),
 		model: resolveModel(config, env),
 		storage: getStorage(config),
+		openclaw: getOpenClaw(config),
 	};
 }

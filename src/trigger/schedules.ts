@@ -1,5 +1,6 @@
 import { logger, schedules } from "@trigger.dev/sdk";
 import { loadSettings } from "@/lib/worldwide-ai/agents/settings";
+import { runBackup, runRestoreDrill } from "@/lib/worldwide-ai/backup/drill";
 import { OPS_TIME_ZONE } from "@/lib/worldwide-ai/time";
 import { getRuntime } from "@/lib/worldwide-ai/runtime";
 import { sweepStuckTasks } from "@/lib/worldwide-ai/tasks/repo";
@@ -60,5 +61,55 @@ export const sweepStuckTasksSchedule = schedules.task({
 		});
 		logger.info("Swept stuck tasks", { count: swept.length });
 		return { swept: swept.map((t) => t.id) };
+	},
+});
+
+const scheduleActor = { kind: "system", label: "schedule" } as const;
+
+/** A backup of every table and stored file, each night, keeping the last fourteen. A failure raises a finding. */
+export const nightlyBackupSchedule = schedules.task({
+	id: "worldwide-ai-nightly-backup",
+	cron: { pattern: "30 2 * * *", timezone: OPS_TIME_ZONE },
+	run: async () => {
+		const runtime = await getRuntime();
+		if (!runtime.storage) {
+			logger.warn("Backup skipped: file storage is not configured.");
+			return { skipped: "File storage is not configured." };
+		}
+		const { manifest, pruned } = await runBackup({
+			sql: runtime.sql,
+			storage: runtime.storage,
+			actor: scheduleActor,
+			now: runtime.now(),
+		});
+		logger.info("Backup taken", {
+			id: manifest.id,
+			rows: manifest.totals.rows,
+			files: manifest.totals.files,
+			pruned: pruned.length,
+		});
+		return { backupId: manifest.id, rows: manifest.totals.rows, files: manifest.totals.files };
+	},
+});
+
+/** Every Sunday, restore the newest backup into a scratch database and folder and check it came back intact. */
+export const weeklyRestoreCheckSchedule = schedules.task({
+	id: "worldwide-ai-weekly-restore-check",
+	cron: { pattern: "30 3 * * 0", timezone: OPS_TIME_ZONE },
+	run: async () => {
+		const runtime = await getRuntime();
+		if (!runtime.storage) return { skipped: "File storage is not configured." };
+		const result = await runRestoreDrill({
+			backup: runtime.storage,
+			sql: runtime.sql,
+			actor: scheduleActor,
+			now: runtime.now(),
+		});
+		logger.info("Restore check", { ok: result.ok, backupId: result.backupId, ms: result.durationMs });
+		return {
+			ok: result.ok,
+			backupId: result.backupId,
+			failed: result.checks.filter((c) => !c.ok).map((c) => c.name),
+		};
 	},
 });
