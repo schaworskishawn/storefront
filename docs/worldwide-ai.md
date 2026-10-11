@@ -134,11 +134,24 @@ The inventory feeds two other places. **Stock** can plan replenishment from the 
 
 These records are the workspace's own. Saleor stays the only authority for sellable stock, and nothing here is sent to it.
 
+## Recipes and batches
+
+A **recipe** is kept in versions. A version is the formula exactly as it was written: which ingredients, their documented strength and carrier at the time, the percentages, and the version of the calculation it was checked with. It is never changed; a change is a new version. Only a version the owner approved can be made, and an ingredient with no documented carrier can't be used in one.
+
+A **batch** goes through these steps, each recorded with who did it and when:
+
+1. **Plan.** Choose an approved version and a size. The exact calculation works out what the batch needs. Nothing is reserved yet, and the batch page shows what is usable now and what is short.
+2. **Reserve.** Everything the batch needs is reserved through the stock ledger, taking the lots that expire first. A lot kept by weight is converted with its documented density. It is all or nothing: if any ingredient is short, nothing is reserved.
+3. **Record that it was made.** Enter what was actually used from each lot and the yield you measured. Use is taken from the reservation and whatever was reserved but not used goes back to free stock. Recording more than was reserved is refused and changes nothing.
+4. **Or cancel**, with a reason. Everything reserved is given back.
+
+The yield is what a person measured; it is never calculated. A batch that has been made is **awaiting a quality review**. Whether it may be released is a qualified person's decision, and recording that decision is not built: nothing in the workspace releases a batch.
+
 ## Setting it up for real
 
 These are steps for the owner. Nothing here is applied automatically, and none of it has been done yet.
 
-1. **Database.** Create a Supabase project. Run the five files in `supabase/migrations/` in name order, with `supabase db push` or by pasting each into the SQL editor. The code expects the schema the newest file leaves; if the database is behind, the database health check says which version it is at and which the code needs. Row-level security is switched on for every table with no policies, so only the server's own connection can read them. Set `POSTGRES_URL` to the connection string.
+1. **Database.** Create a Supabase project. Run the six files in `supabase/migrations/` in name order, with `supabase db push` or by pasting each into the SQL editor. The code expects the schema the newest file leaves; if the database is behind, the database health check says which version it is at and which the code needs. Row-level security is switched on for every table with no policies, so only the server's own connection can read them. Set `POSTGRES_URL` to the connection string.
 2. **File storage.** Set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`. Create a private bucket named `worldwide-ai` (or name your own in `WORLDWIDE_AI_BUCKET`). It must not be public. The service key stays on the server and is never sent to a browser.
 3. **Who may enter.** Set `WORLDWIDE_AI_OWNER_EMAILS` and, if you want, `WORLDWIDE_AI_STAFF_EMAILS`. Each address must belong to a Saleor staff account.
 4. **Model.** Set `ANTHROPIC_API_KEY`. Without it the 31 code-only functions still work.
@@ -235,6 +248,7 @@ Checked on a developer machine:
 - The unit and workflow tests (`pnpm run test:run`), which run against an in-process Postgres with the real migrations.
 - Every code-only function on its sample and on cases written for its rules, including exact-decimal arithmetic.
 - Every model-written function with a stand-in model: the format, the citation rules, and that a reply breaking the rules stores nothing.
+- Recipes and batches: a version kept as written, an all-or-nothing reservation across lots, use and yield recorded, and a refusal leaving every balance untouched.
 - The ingredient ledger: every kind of movement and its limits, a request sent twice, two people taking the last of a lot, exact decimals, and the database refusing a negative balance or an agent as the actor.
 - Daily reports: one a day, a second attempt kept beside the first, no overlapping runs, a failed attempt saved with its reason, and nothing from a demonstration run or one person's own work in a shared report.
 - All 61 skills evaluated in an isolated database, and the approve, revoke, rollback and mid-run revocation paths, including a worked example of improving Relay's procedure from version 1 to version 2 and back.
@@ -267,7 +281,8 @@ The larger plan describes much more than this. These parts have no working code.
 | Daily Reports                                                                                                  | Built and tested locally: saved morning report and evening recap from the records, action items with owners, steps, links and sources, carry-over by task id, history, one a day, no overlapping runs. The schedule is not deployed. |
 | Daily Report sections with no data behind them                                                                 | Not built. Shipments, inventory, purchasing, accounting, manufacturing, goals and engineering changes are listed in each report as unavailable, with the reason. Assigning, snoozing and manual actions on Today are not built.      |
 | Ingredient inventory                                                                                           | Built and tested locally: ingredients, lots, and an append-only ledger with reservations, quarantine and corrections. Used in the preview only.                                                                                      |
-| Stored recipes, batches and finished-liquid stock                                                              | Not built. The calculator works on what you enter, a batch is quoted as a reference on a movement, and finished and packaged stock is not tracked.                                                                                   |
+| Recipes and batch records                                                                                      | Built and tested locally: versioned recipes the owner approves, batches that reserve and consume lots through the ledger, measured yield. Not used in the preview beyond a walkthrough.                                              |
+| Finished-liquid and packaged stock; recording a release decision                                               | Not built. A batch that has been made stays awaiting review, and what it produced is not tracked as stock.                                                                                                                           |
 | Manufacturing, quality and compliance record models with software gates                                        | Not built. The agents review records you supply and never release, approve or certify.                                                                                                                                               |
 | RFID and NFC tag registry, live scan ingestion, public authenticity page                                       | Not built. Link reconciles scan exports you supply.                                                                                                                                                                                  |
 | Product Content Studio: Saleor product picker, images, per-field approval                                      | Not built beyond text drafts from details you enter. No image is ever produced.                                                                                                                                                      |
