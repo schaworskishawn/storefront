@@ -7,6 +7,7 @@ import { listFindings } from "../findings";
 import { hashOf } from "../functions/products";
 import { INTEGRATIONS, configStatus } from "../integrations/catalog";
 import { latestHealth } from "../integrations/health";
+import { listFinished } from "../lab/finished";
 import { inventoryFindings, listInventory } from "../lab/inventory";
 import { listProposals, listReleases } from "../skills/store";
 import { countStandings, loadSkillRows } from "../skills/standing";
@@ -100,8 +101,8 @@ const UNAVAILABLE: ReadonlyArray<{ area: string; reason: string }> = [
 	{ area: "Purchasing", reason: "No purchasing records are stored. Source works from quotes you supply." },
 	{ area: "Accounting and banking", reason: "No accounting or bank connector exists." },
 	{
-		area: "Manufacturing and quality",
-		reason: "No batch, hold, deviation or calibration records are stored.",
+		area: "Quality records",
+		reason: "No test result, deviation, calibration, cleaning or training records are stored.",
 	},
 	{
 		area: "Business goals",
@@ -153,6 +154,7 @@ export async function buildDailyReport(
 		approvedDocs,
 		usage,
 		inventory,
+		finished,
 	] = await Promise.all([
 		sql.query(
 			`select ${TASK_COLUMNS} from wai_tasks t where ${BUSINESS} and t.state = 'completed'
@@ -198,6 +200,7 @@ export async function buildDailyReport(
 			[start, end],
 		),
 		listInventory(sql, day),
+		listFinished(sql),
 	]);
 
 	// A finding raised by a demonstration run, or by one person's own task, is not business news.
@@ -386,6 +389,48 @@ export async function buildDailyReport(
 			expectedResult: "Nothing is flagged on this ingredient.",
 			dependsOn: [],
 		});
+	}
+
+	// ---- Made batches: a decision that is waiting, and holds that are open ---------------------------------
+	for (const item of finished) {
+		const link = {
+			label: `Batch ${item.batch.code}`,
+			href: `${WORKSPACE_PATH}/lab/batches/${item.batch.id}`,
+		};
+		for (const hold of item.holds)
+			actions.push({
+				title: `On hold: batch ${item.batch.code}`,
+				responsible: "The owner",
+				priority: "high",
+				reason: `${hold.reason} While the hold is open the batch can't be packaged or released.`,
+				nextSteps: [
+					"Open the batch.",
+					"Look into the reason for the hold.",
+					"Lift the hold with a reason, or reject the batch.",
+				],
+				due: null,
+				links: [link],
+				sources: [source("Quality holds")],
+				expectedResult: "The hold is lifted with a reason, or the batch is rejected.",
+				dependsOn: [],
+			});
+		if (item.standing === "awaiting_review")
+			actions.push({
+				title: `Release decision: batch ${item.batch.code}`,
+				responsible: "The owner",
+				priority: "normal",
+				reason: `${item.batch.recipeName}, made with a measured yield of ${item.batch.actualYieldMl} mL, is waiting for a release decision.`,
+				nextSteps: [
+					"Open the batch.",
+					"Read its record and what the workspace checked.",
+					"Release it, or reject it with a reason.",
+				],
+				due: null,
+				links: [link],
+				sources: [source("Batches made and not yet decided")],
+				expectedResult: "The batch is released or rejected, with who decided and on what basis recorded.",
+				dependsOn: [],
+			});
 	}
 
 	// ---- Services ----------------------------------------------------------------------------------------

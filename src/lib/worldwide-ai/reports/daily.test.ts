@@ -8,6 +8,15 @@ import { requestFunction, runFunction } from "../functions/pipeline";
 import { hashOf } from "../functions/products";
 import { FUNCTIONS, lookupFunction } from "../functions/registry";
 import { recordHealth } from "../integrations/health";
+import {
+	addRecipeVersion,
+	approveRecipeVersion,
+	completeBatch,
+	createRecipe,
+	planBatch,
+	reserveBatch,
+} from "../lab/batches";
+import { RELEASE_CONFIRMATIONS, decideRelease, placeHold } from "../lab/finished";
 import { createIngredient, createLot, postMovement } from "../lab/inventory";
 import { personalScopeOf } from "../tasks/repo";
 import { freshDb, owner, staff, system, workflowDeps } from "../testing.test-util";
@@ -125,7 +134,7 @@ describe("a report on an empty workspace", () => {
 			"Inventory",
 			"Purchasing",
 			"Accounting and banking",
-			"Manufacturing and quality",
+			"Quality records",
 			"Business goals",
 			"Engineering changes",
 		]);
@@ -537,5 +546,91 @@ describe("a report on a workspace whose Lab holds stock", () => {
 			due: { date: "2026-11-01", confirmed: true },
 			links: [{ label: "Ingredient", href: `/worldwide-ai/lab/ingredients/${base.id}` }],
 		});
+	});
+});
+
+describe("a report on a workspace with batches that have been made", () => {
+	it("asks the owner for each release decision that is waiting, and puts an open hold first", async () => {
+		const w = await open("2026-10-14T13:00:00Z");
+		const day = "2026-10-14";
+		let n = 0;
+		const stocked = async (input: Parameters<typeof createIngredient>[2], lotCode: string) => {
+			const ingredient = await createIngredient(w.sql, staff, input);
+			const lot = await createLot(w.sql, staff, { ingredientId: ingredient.id, lotCode, unit: "mL" });
+			await postMovement(
+				w.sql,
+				staff,
+				{ lotId: lot.id, kind: "receipt", quantity: "20000", idempotencyKey: `report-made-${++n}` },
+				day,
+			);
+			return ingredient.id;
+		};
+		const base = await stocked(
+			{
+				name: "Nic base 100",
+				category: "nicotine_base",
+				nicotineMgPerMl: "100",
+				pgPercent: "90",
+				vgPercent: "0",
+			},
+			"N-1",
+		);
+		const pg = await stocked({ name: "PG USP", category: "pg" }, "PG-1");
+		const vg = await stocked({ name: "VG USP", category: "vg" }, "VG-1");
+		const mango = await stocked(
+			{ name: "Mango concentrate", category: "flavour", pgPercent: "100", vgPercent: "0" },
+			"M-1",
+		);
+		const recipe = await createRecipe(w.sql, staff, { name: "Mango 12" });
+		const version = await addRecipeVersion(w.sql, staff, {
+			recipeId: recipe.id,
+			batchMl: "1000",
+			targetNicotineMgPerMl: "12",
+			targetPgPercent: "50",
+			baseIngredientId: base,
+			pgIngredientId: pg,
+			vgIngredientId: vg,
+			flavours: [{ ingredientId: mango, percent: "10" }],
+		});
+		await approveRecipeVersion(w.sql, owner, version.id);
+		const make = async (actualYieldMl: string) => {
+			const batch = await planBatch(w.sql, staff, { recipeVersionId: version.id, batchMl: "1000" }, day);
+			await reserveBatch(w.sql, staff, batch.id, day);
+			return completeBatch(w.sql, staff, batch.id, { actualYieldMl }, day);
+		};
+		const waiting = await make("990");
+		const held = await make("985");
+		await placeHold(w.sql, staff, held.id, "Cloudy retained sample.");
+
+		const about = (report: DailyReport) =>
+			report.actions.filter((a) => a.title.startsWith("Release decision") || a.title.startsWith("On hold"));
+		const first = about(reportOf((await w.generate()).report));
+		// A batch on hold is not also asked for a decision: the hold comes first.
+		expect(first.map((a) => a.title).sort()).toEqual([
+			`On hold: batch ${held.code}`,
+			`Release decision: batch ${waiting.code}`,
+		]);
+		expect(first.find((a) => a.title.startsWith("On hold"))).toMatchObject({
+			priority: "high",
+			responsible: "The owner",
+			reason: "Cloudy retained sample. While the hold is open the batch can't be packaged or released.",
+			links: [{ label: `Batch ${held.code}`, href: `/worldwide-ai/lab/batches/${held.id}` }],
+		});
+		expect(first.find((a) => a.title.startsWith("Release decision"))).toMatchObject({
+			priority: "normal",
+			responsible: "The owner",
+			reason: "Mango 12, made with a measured yield of 990 mL, is waiting for a release decision.",
+			links: [{ label: `Batch ${waiting.code}`, href: `/worldwide-ai/lab/batches/${waiting.id}` }],
+		});
+
+		// Once the owner has decided, the report stops asking. The hold is still open, so it is still there.
+		await decideRelease(w.sql, owner, {
+			batchId: waiting.id,
+			decision: "released",
+			note: "Batch record read.",
+			confirmations: RELEASE_CONFIRMATIONS.map((item) => item.id),
+		});
+		const second = about(reportOf((await w.generate({ again: true, actor: staff })).report));
+		expect(second.map((a) => a.title)).toEqual([`On hold: batch ${held.code}`]);
 	});
 });

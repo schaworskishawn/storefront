@@ -159,10 +159,11 @@ export const AREAS: Partial<Record<AppId, AreaDefinition>> = {
 			"The recipe calculator below works out ingredient volumes and weights from documented densities. It never assumes 1 mL is 1 gram.",
 			"Stock can plan replenishment from the stored stock. Daily demand and lead time aren't stored yet, so you add those.",
 			"Recipes in versions the owner approves, and batches planned from them: a batch reserves the lots that expire first, all or nothing, and records what was actually used and the measured yield.",
+			"Finished liquid: a made batch's bulk, packaging runs that draw it down with the bottles and caps they used, quality holds, and the owner's release decision with what was checked.",
 		],
 		notBuilt: [
-			"Finished-liquid and packaged stock: a finished lot, bottling runs, and packaging materials used.",
-			"Recording a release decision. A batch that has been made stays awaiting review.",
+			"Where packaged units go after a run. The store stays the only record of sellable stock, and nothing here is sent to it.",
+			"Test results, deviations and label approvals as records of their own. Today the owner confirms them when releasing a batch.",
 			"Using more than was reserved from within the batch record, moving part of a lot, costs rolled up into batch costs, and documents attached to a lot or a batch.",
 			"Synchronizing sellable stock with Saleor. Saleor stays the only authority for sellable stock.",
 		],

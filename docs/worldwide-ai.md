@@ -147,6 +147,24 @@ A **batch** goes through these steps, each recorded with who did it and when:
 
 The yield is what a person measured; it is never calculated. A batch that has been made is **awaiting a quality review**. Whether it may be released is a qualified person's decision, and recording that decision is not built: nothing in the workspace releases a batch.
 
+## Finished liquid, holds and release
+
+When a batch is recorded as made, what was measured coming out becomes its **bulk**. Bulk has its own ledger: packaging runs, samples and waste draw it down, nothing in it is edited, and it can't go below zero, so the same liquid is never counted twice.
+
+A **packaging run** records what was filled, from which batch, with which label version, and which bottles and caps it used. It needs a recorded line clearance first. One step takes the liquid from the bulk and the packaging from the stock ledger; if any part can't be done, none of it is recorded. What left the bulk is entered as measured, never taken to be units times bottle size.
+
+A **hold** can be placed by anyone, with a reason. While one is open the batch can't be packaged or released. Only the owner lifts a hold, with a reason.
+
+**Release** is the owner's decision, and it is a transaction, not a tick box:
+
+1. The workspace checks everything it can check for itself, again, at the moment of release: the batch was made, its recipe version and plan are unaltered, what was used from every lot is recorded, the stock and bulk ledgers add up, none of its lots is in quarantine, and no hold is open. If anything fails, the release is refused.
+2. The owner confirms, one by one, what the workspace can't check: that the batch record was read, that required test results are on file and in specification, that there is no open deviation, and that the approved labels were used.
+3. What was checked and confirmed is stored with the decision, with who decided, when, and on what basis.
+
+A decision is made once. A later doubt is a hold, which shows on the batch. A rejected batch can't be packaged.
+
+Releasing makes a batch eligible **in this workspace only**. Nothing is published and no sellable stock changes in the store.
+
 ## The Today checklist
 
 The checklist is for things a person has to do. An item is added by hand, on Today or the checklist page, or put there from a line of a daily report with **Put on the checklist**. The same line tracked twice is one item.
@@ -164,7 +182,7 @@ An item can be:
 
 These are steps for the owner. Nothing here is applied automatically, and none of it has been done yet.
 
-1. **Database.** Create a Supabase project. Run the seven files in `supabase/migrations/` in name order, with `supabase db push` or by pasting each into the SQL editor. The code expects the schema the newest file leaves; if the database is behind, the database health check says which version it is at and which the code needs. Row-level security is switched on for every table with no policies, so only the server's own connection can read them. Set `POSTGRES_URL` to the connection string.
+1. **Database.** Create a Supabase project. Run the eight files in `supabase/migrations/` in name order, with `supabase db push` or by pasting each into the SQL editor. The code expects the schema the newest file leaves; if the database is behind, the database health check says which version it is at and which the code needs. Row-level security is switched on for every table with no policies, so only the server's own connection can read them. Set `POSTGRES_URL` to the connection string.
 2. **File storage.** Set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`. Create a private bucket named `worldwide-ai` (or name your own in `WORLDWIDE_AI_BUCKET`). It must not be public. The service key stays on the server and is never sent to a browser.
 3. **Who may enter.** Set `WORLDWIDE_AI_OWNER_EMAILS` and, if you want, `WORLDWIDE_AI_STAFF_EMAILS`. Each address must belong to a Saleor staff account.
 4. **Model.** Set `ANTHROPIC_API_KEY`. Without it the 31 code-only functions still work.
@@ -261,6 +279,7 @@ Checked on a developer machine:
 - The unit and workflow tests (`pnpm run test:run`), which run against an in-process Postgres with the real migrations.
 - Every code-only function on its sample and on cases written for its rules, including exact-decimal arithmetic.
 - Every model-written function with a stand-in model: the format, the citation rules, and that a reply breaking the rules stores nothing.
+- Finished liquid: bulk drawn down without going negative, a packaging run recorded all or nothing, holds, and a release that is rechecked at the moment it is made and refused when a record fails.
 - The checklist: adding, giving, putting off with a reason, closing with a note, one item per report line, and that closing an item leaves its task and result untouched.
 - Recipes and batches: a version kept as written, an all-or-nothing reservation across lots, use and yield recorded, and a refusal leaving every balance untouched.
 - The ingredient ledger: every kind of movement and its limits, a request sent twice, two people taking the last of a lot, exact decimals, and the database refusing a negative balance or an agent as the actor.
@@ -297,7 +316,8 @@ The larger plan describes much more than this. These parts have no working code.
 | Today checklist                                                                                                | Built and tested locally: actions added by hand or tracked from a report, given to a role or yourself, put off with a reason, closed with a note. Reassigning an agent's task to a person is not built.                              |
 | Ingredient inventory                                                                                           | Built and tested locally: ingredients, lots, and an append-only ledger with reservations, quarantine and corrections. Used in the preview only.                                                                                      |
 | Recipes and batch records                                                                                      | Built and tested locally: versioned recipes the owner approves, batches that reserve and consume lots through the ledger, measured yield. Not used in the preview beyond a walkthrough.                                              |
-| Finished-liquid and packaged stock; recording a release decision                                               | Not built. A batch that has been made stays awaiting review, and what it produced is not tracked as stock.                                                                                                                           |
+| Finished liquid, packaging runs, holds and the release decision                                                | Built and tested locally. Release is the owner's, rechecked when it is made, and changes nothing in the store.                                                                                                                       |
+| Test results, deviations, label approvals, calibration, cleaning and training as records                       | Not built. The owner confirms them when releasing a batch; the workspace can't check them for itself.                                                                                                                                |
 | Manufacturing, quality and compliance record models with software gates                                        | Not built. The agents review records you supply and never release, approve or certify.                                                                                                                                               |
 | RFID and NFC tag registry, live scan ingestion, public authenticity page                                       | Not built. Link reconciles scan exports you supply.                                                                                                                                                                                  |
 | Product Content Studio: Saleor product picker, images, per-field approval                                      | Not built beyond text drafts from details you enter. No image is ever produced.                                                                                                                                                      |

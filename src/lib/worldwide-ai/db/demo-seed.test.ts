@@ -73,6 +73,7 @@ describe("the demonstration store's sample data", () => {
 	it("stocks a small fictional Lab, labelled throughout, with a ledger that adds up and a batch ready to reserve", async () => {
 		const items = await listInventory(sql, "2026-10-11");
 		expect(items.map((item) => item.ingredient.name)).toEqual([
+			"[DEMO] 30 mL bottle",
 			"[DEMO] Mango concentrate",
 			"[DEMO] Nicotine base 100",
 			"[DEMO] PG",
@@ -80,7 +81,7 @@ describe("the demonstration store's sample data", () => {
 		]);
 		expect(items.flatMap((item) => item.lots).every((lot) => lot.lotCode.startsWith("DEMO-"))).toBe(true);
 		// The nicotine base is below its minimum and has a lot expiring soon, so the preview has something to flag.
-		expect(items[1].flags).toEqual([
+		expect(items[2].flags).toEqual([
 			"Low stock: 300 mL usable, below the minimum of 500.",
 			"Lot DEMO-N-1 expires on 2026-11-01.",
 			"Lot DEMO-N-1 has no documented density, so its weight is unavailable.",

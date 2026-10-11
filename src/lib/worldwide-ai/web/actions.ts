@@ -24,6 +24,14 @@ import {
 	planBatch,
 	reserveBatch,
 } from "../lab/batches";
+import {
+	RELEASE_CONFIRMATIONS,
+	decideRelease,
+	liftHold,
+	placeHold,
+	recordBulkMovement,
+	recordPackagingRun,
+} from "../lab/finished";
 import { MOVEMENT_LABELS, createIngredient, createLot, postMovement } from "../lab/inventory";
 import { generateDailyReport } from "../reports/daily";
 import { SKILLS, SKILL_BY_ID } from "../skills/catalog";
@@ -1022,6 +1030,106 @@ export async function checklistAction(_previous: ActionState, form: FormData): P
 			}
 			default:
 				throw new WorkflowError("invalid", "That isn't something that can be done to the checklist.");
+		}
+	} catch (error) {
+		return describeFailure(error, values);
+	}
+}
+
+// ---- Finished liquid: packaging, holds and release -------------------------------------------------------
+
+/**
+ * Packaging runs, samples and waste from a batch's bulk, quality holds, and the release decision. Releasing or rejecting a
+ * batch, lifting a hold and correcting the bulk are the owner's, checked in the library and logged either way. A release is
+ * rechecked there, at the moment it is made, whatever this form sent.
+ */
+export async function finishedAction(_previous: ActionState, form: FormData): Promise<ActionState> {
+	const workspace = await getWorkspace();
+	const { sql } = workspace.runtime;
+	const intent = text(form, "intent");
+	const batchId = text(form, "batchId");
+	const values = Object.fromEntries(
+		[...form.entries()].flatMap(([name, value]) =>
+			typeof value === "string" && name !== "intent" ? [[name, value]] : [],
+		),
+	);
+	try {
+		throttle(workspace);
+		switch (intent) {
+			case "package": {
+				const components = [1, 2, 3].map((n) => ({
+					lotId: text(form, `componentLot${n}`),
+					quantity: text(form, `componentQuantity${n}`),
+				}));
+				const run = await recordPackagingRun(
+					sql,
+					workspace.actor,
+					{
+						batchId,
+						sku: text(form, "sku"),
+						bottleMl: text(form, "bottleMl"),
+						unitsFilled: text(form, "unitsFilled"),
+						unitsRejected: text(form, "unitsRejected"),
+						bulkUsedMl: text(form, "bulkUsedMl"),
+						labelVersion: text(form, "labelVersion"),
+						lineClearance: text(form, "lineClearance"),
+						components,
+						notes: text(form, "notes"),
+						idempotencyKey: text(form, "idempotencyKey"),
+					},
+					opsDayKey(workspace.runtime.now()),
+				);
+				refresh();
+				return {
+					ok: true,
+					message: `Run ${run.code} recorded: ${run.unitsFilled} units filled from ${run.bulkUsedMl} mL of bulk.`,
+				};
+			}
+			case "bulk": {
+				const batch = await recordBulkMovement(sql, workspace.actor, {
+					batchId,
+					kind: text(form, "kind"),
+					quantityMl: text(form, "quantityMl"),
+					reason: text(form, "reason"),
+					idempotencyKey: text(form, "idempotencyKey"),
+				});
+				refresh();
+				return { ok: true, message: `Recorded. ${batch.bulkRemainingMl} mL is left in bulk.` };
+			}
+			case "hold": {
+				await placeHold(sql, workspace.actor, batchId, text(form, "note"));
+				refresh();
+				return {
+					ok: true,
+					message: "The batch is on hold. It can't be packaged or released until the owner lifts it.",
+				};
+			}
+			case "lift": {
+				await liftHold(sql, workspace.actor, text(form, "holdId"), text(form, "note"));
+				refresh();
+				return { ok: true, message: "The hold is lifted." };
+			}
+			case "decide": {
+				const decision = text(form, "decision") === "released" ? "released" : "rejected";
+				const batch = await decideRelease(sql, workspace.actor, {
+					batchId,
+					decision,
+					note: text(form, "note"),
+					confirmations: RELEASE_CONFIRMATIONS.filter(
+						(item) => text(form, `confirm.${item.id}`) === "yes",
+					).map((item) => item.id),
+				});
+				refresh();
+				return {
+					ok: true,
+					message:
+						decision === "released"
+							? `Batch ${batch.code} is released. Nothing was published and no stock changed in the store.`
+							: `Batch ${batch.code} is rejected. It can't be packaged.`,
+				};
+			}
+			default:
+				throw new WorkflowError("invalid", "That isn't something that can be done here.");
 		}
 	} catch (error) {
 		return describeFailure(error, values);
