@@ -47,6 +47,14 @@ export const BACKUP_TABLES = [
 	{ name: "wai_bulk_movements", order: "at, id" },
 	{ name: "wai_quality_holds", order: "placed_at, id" },
 	{ name: "wai_packaging_runs", order: "run_at, id" },
+	{ name: "wai_specifications", order: "recipe_id, version" },
+	{ name: "wai_samples", order: "taken_at, id" },
+	{ name: "wai_sample_events", order: "at, id" },
+	// A result before the correction that names it.
+	{ name: "wai_test_results", order: "entered_at, id" },
+	{ name: "wai_deviations", order: "opened_at, id" },
+	{ name: "wai_deviation_entries", order: "at, id" },
+	{ name: "wai_corrective_actions", order: "created_at, id" },
 ] as const;
 
 export type BackupTableName = (typeof BACKUP_TABLES)[number]["name"];
