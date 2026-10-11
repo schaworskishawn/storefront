@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { DailyReport, Priority, TaskLine } from "@/lib/worldwide-ai/reports/daily";
 import { formatDay, formatOpsDateTime } from "@/lib/worldwide-ai/time";
 import { TASK_STATE_LABELS } from "@/lib/worldwide-ai/types";
+import { ButtonForm, type FormAction } from "./forms";
 import { Bullets, Card, DataTable, Empty, Pill, Stat, taskHref, type Tone } from "./ui";
 
 /** A saved daily report, laid out for reading. Everything shown is in the stored record; nothing is worked out here. */
@@ -26,7 +27,14 @@ function TaskTable({ caption, lines, when }: { caption: string; lines: readonly 
 	);
 }
 
-export function ReportView({ report }: { report: DailyReport }) {
+export function ReportView({
+	report,
+	track,
+}: {
+	report: DailyReport;
+	/** When given, each action item gets a button that puts it on the Today checklist. */
+	track?: { reportId: string; action: FormAction };
+}) {
 	return (
 		<div className="wai-stack">
 			<Card title={report.kind === "morning" ? "Summary" : "Evening recap"} accent>
@@ -107,6 +115,18 @@ export function ReportView({ report }: { report: DailyReport }) {
 											.join("; ")}
 									</span>
 								</p>
+								{track && (
+									<div style={{ marginTop: 8 }}>
+										<ButtonForm
+											action={track.action}
+											hidden={{ intent: "track", reportId: track.reportId, index: String(index) }}
+											label="Put on the checklist"
+											tone="quiet"
+											small
+											idPrefix={`track-${index}`}
+										/>
+									</div>
+								)}
 							</li>
 						))}
 					</ol>

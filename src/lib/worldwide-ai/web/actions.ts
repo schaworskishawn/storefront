@@ -40,6 +40,7 @@ import { createCase, setCaseStatus, type CaseStatus } from "../support/cases";
 import { cancelTask, retryTask, settleUnknownTask } from "../tasks/actions";
 import { getTask, scopeVisibleTo, type TaskRecord } from "../tasks/repo";
 import { opsDayKey } from "../time";
+import { addAction, closeAction, snoozeAction, trackReportAction, updateAction } from "../today/checklist";
 import { WORKSPACE_PATH } from "../types";
 import { runTask } from "../workflows";
 import { requestSiteInspection } from "../workflows/inspection";
@@ -941,4 +942,88 @@ export async function batchAction(_previous: ActionState, form: FormData): Promi
 	}
 	refresh();
 	redirect(destination);
+}
+
+// ---- The Today checklist --------------------------------------------------------------------------------
+
+/**
+ * Everything a person does to the checklist. Anyone in the workspace can add, change, put off and close an item. Closing an
+ * item closes the item only: it never completes a task or accepts a result.
+ */
+export async function checklistAction(_previous: ActionState, form: FormData): Promise<ActionState> {
+	const workspace = await getWorkspace();
+	const { sql } = workspace.runtime;
+	const intent = text(form, "intent");
+	const id = text(form, "id");
+	const values = Object.fromEntries(
+		[...form.entries()].flatMap(([name, value]) =>
+			typeof value === "string" && name !== "intent" ? [[name, value]] : [],
+		),
+	);
+	try {
+		throttle(workspace);
+		switch (intent) {
+			case "add": {
+				const item = await addAction(sql, workspace.actor, {
+					title: text(form, "title"),
+					detail: text(form, "detail"),
+					priority: text(form, "priority"),
+					dueOn: text(form, "dueOn"),
+					assignedTo: text(form, "assignedTo"),
+				});
+				refresh();
+				return { ok: true, message: `Added to the checklist: ${item.title}` };
+			}
+			case "track": {
+				const { created } = await trackReportAction(sql, workspace.actor, {
+					reportId: text(form, "reportId"),
+					index: Number(text(form, "index")),
+				});
+				refresh();
+				return {
+					ok: true,
+					message: created ? "On the checklist." : "Already on the checklist. It wasn’t added a second time.",
+				};
+			}
+			case "update": {
+				await updateAction(sql, workspace.actor, id, {
+					assignedTo: text(form, "assignedTo") || "anyone",
+					priority: text(form, "priority") || undefined,
+					dueOn: text(form, "dueOn"),
+				});
+				refresh();
+				return { ok: true, message: "Saved." };
+			}
+			case "snooze": {
+				const item = await snoozeAction(
+					sql,
+					workspace.actor,
+					id,
+					{ until: text(form, "until"), reason: text(form, "reason") },
+					opsDayKey(workspace.runtime.now()),
+				);
+				refresh();
+				return { ok: true, message: `Put off until ${item.snoozedUntil}. It comes back on that day.` };
+			}
+			case "done":
+			case "dismiss": {
+				await closeAction(sql, workspace.actor, id, {
+					outcome: intent === "done" ? "done" : "dismissed",
+					note: text(form, "note"),
+				});
+				refresh();
+				return {
+					ok: true,
+					message:
+						intent === "done"
+							? "Closed. This closes the checklist item only; anything it was about is unchanged."
+							: "Dismissed.",
+				};
+			}
+			default:
+				throw new WorkflowError("invalid", "That isn't something that can be done to the checklist.");
+		}
+	} catch (error) {
+		return describeFailure(error, values);
+	}
 }

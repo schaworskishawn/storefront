@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getReport } from "@/lib/worldwide-ai/reports/daily";
 import { formatOpsDate, formatOpsDateTime } from "@/lib/worldwide-ai/time";
 import { WORKSPACE_PATH } from "@/lib/worldwide-ai/types";
+import { checklistAction } from "@/lib/worldwide-ai/web/actions";
 import { getWorkspace } from "@/lib/worldwide-ai/web/session";
 import { ReportView } from "@/ui/sections/worldwide-ai/report-view";
 import { Notice, PageHeader, Pill } from "@/ui/sections/worldwide-ai/ui";
@@ -61,7 +62,9 @@ export default async function SavedReportPage({ params }: Props) {
 					Don’t rely on it.
 				</Notice>
 			)}
-			{saved.report && <ReportView report={saved.report} />}
+			{saved.report && (
+				<ReportView report={saved.report} track={{ reportId: saved.id, action: checklistAction }} />
+			)}
 		</>
 	);
 }

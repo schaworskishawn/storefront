@@ -3,10 +3,14 @@ import Link from "next/link";
 import { ROLE_BY_ID } from "@/lib/worldwide-ai/agents/registry";
 import { INTEGRATIONS } from "@/lib/worldwide-ai/integrations/catalog";
 import { latestCompletedReport } from "@/lib/worldwide-ai/reports/daily";
-import { formatOpsDate } from "@/lib/worldwide-ai/time";
+import { isFor, listOpenActions } from "@/lib/worldwide-ai/today/checklist";
+import { formatOpsDate, opsDayKey } from "@/lib/worldwide-ai/time";
 import { WORKSPACE_PATH } from "@/lib/worldwide-ai/types";
+import { checklistAction } from "@/lib/worldwide-ai/web/actions";
 import { loadToday } from "@/lib/worldwide-ai/web/queries";
 import { getWorkspace } from "@/lib/worldwide-ai/web/session";
+import { ADD_FIELDS, ChecklistItems } from "@/ui/sections/worldwide-ai/checklist";
+import { FieldsForm } from "@/ui/sections/worldwide-ai/forms";
 import {
 	Card,
 	Empty,
@@ -29,10 +33,16 @@ export const metadata: Metadata = { title: "Today" };
 export default async function TodayPage() {
 	const workspace = await getWorkspace();
 	const now = workspace.runtime.now();
-	const [{ briefing, waiting, active, attention, recent, team }, lastReport] = await Promise.all([
-		loadToday(workspace),
-		latestCompletedReport(workspace.runtime.sql, "morning"),
-	]);
+	const today = opsDayKey(now);
+	const [{ briefing, waiting, active, attention, recent, team }, lastReport, openActions] = await Promise.all(
+		[
+			loadToday(workspace),
+			latestCompletedReport(workspace.runtime.sql, "morning"),
+			listOpenActions(workspace.runtime.sql, { today }),
+		],
+	);
+	// What is this person's to do today: unassigned, for their role, or for them. Snoozed items stay hidden until their day.
+	const checklist = openActions.filter((item) => isFor(item, workspace.actor));
 	const priorities = briefing.items.filter((item) => item.level !== "info").slice(0, 3);
 	const approvals = waiting.drafts.length + waiting.products.length + waiting.versions.length;
 	const blocked = team.team.agents.filter((agent) => agent.primary.status === "awaiting_configuration");
@@ -92,6 +102,40 @@ export default async function TodayPage() {
 								))}
 							</ol>
 						)}
+					</Card>
+
+					<Card
+						title="Checklist"
+						aside={<Link href={`${WORKSPACE_PATH}/actions`}>{`All of it (${openActions.length} open)`}</Link>}
+					>
+						{checklist.length === 0 ? (
+							<Empty>Nothing is on your checklist today.</Empty>
+						) : (
+							<ChecklistItems
+								items={checklist.slice(0, 6)}
+								actor={workspace.actor}
+								action={checklistAction}
+								today={today}
+							/>
+						)}
+						{checklist.length > 6 && (
+							<p className="wai-muted wai-small">And {checklist.length - 6} more on the checklist page.</p>
+						)}
+						<p className="wai-help">
+							Closing an item closes the item only. It never completes a task or accepts a result.
+						</p>
+						<details>
+							<summary className="wai-small">Add an action</summary>
+							<div style={{ marginTop: 8 }}>
+								<FieldsForm
+									action={checklistAction}
+									hidden={{ intent: "add" }}
+									idPrefix="today-add"
+									submit="Add it"
+									fields={ADD_FIELDS}
+								/>
+							</div>
+						</details>
 					</Card>
 
 					<Card title="Work in progress" aside={<Link href={`${WORKSPACE_PATH}/tasks`}>All tasks</Link>}>

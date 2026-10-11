@@ -3,7 +3,7 @@ import Link from "next/link";
 import { latestCompletedReport, listReports, type SavedReport } from "@/lib/worldwide-ai/reports/daily";
 import { OPS_TIME_ZONE, formatOpsDate } from "@/lib/worldwide-ai/time";
 import { WORKSPACE_PATH } from "@/lib/worldwide-ai/types";
-import { reportAction } from "@/lib/worldwide-ai/web/actions";
+import { checklistAction, reportAction } from "@/lib/worldwide-ai/web/actions";
 import { getWorkspace } from "@/lib/worldwide-ai/web/session";
 import { ButtonForm } from "@/ui/sections/worldwide-ai/forms";
 import { ReportView } from "@/ui/sections/worldwide-ai/report-view";
@@ -77,7 +77,7 @@ export default async function ReportsPage() {
 								Don’t rely on it. Generate a new one.
 							</Notice>
 						)}
-						<ReportView report={latest.report} />
+						<ReportView report={latest.report} track={{ reportId: latest.id, action: checklistAction }} />
 					</>
 				) : (
 					<Notice tone="info" title="No morning report has been saved yet.">

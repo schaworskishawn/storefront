@@ -43,6 +43,7 @@ export const BACKUP_TABLES = [
 	{ name: "wai_recipe_versions", order: "recipe_id, version" },
 	{ name: "wai_batches", order: "planned_at, id" },
 	{ name: "wai_batch_allocations", order: "batch_id, line_key, lot_id" },
+	{ name: "wai_action_items", order: "created_at, id" },
 ] as const;
 
 export type BackupTableName = (typeof BACKUP_TABLES)[number]["name"];
