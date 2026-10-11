@@ -14,6 +14,7 @@ import { inventoryFindings, listInventory } from "../lab/inventory";
 import { SEVERITIES, listDeviations, listPendingActions, listUnverifiedResults } from "../lab/quality";
 import { listTraining, trainingStanding } from "../lab/training";
 import { EXCEPTION_LABELS, listExceptions, tagCounts } from "../rfid/registry";
+import { learnFromReviews } from "../skills/learning";
 import { listProposals, listReleases } from "../skills/store";
 import { countStandings, loadSkillRows } from "../skills/standing";
 import { formatOpsDate, opsDayKey } from "../time";
@@ -742,9 +743,28 @@ export async function buildDailyReport(
 			expectedResult: "Every case that can be run passes.",
 			dependsOn: [],
 		});
-	if (proposals.length > 0)
+	// Raised by the workspace from review decisions: one item each, since each names the procedure and its evidence.
+	for (const proposal of proposals.filter((p) => p.origin === "reviews"))
 		actions.push({
-			title: `${plural(proposals.length, "improvement proposal")} waiting for a decision`,
+			title: `Lesson to consider: ${skillRows.find((row) => row.skill.id === proposal.skillId)?.skill.title ?? proposal.skillId}`,
+			responsible: "The owner",
+			priority: "normal",
+			reason: `${proposal.summary} The workspace proposes no wording and has changed nothing.`,
+			nextSteps: [
+				"Open the lesson and read the reviews it rests on.",
+				"Decide whether the procedure should change.",
+				"If it should, a person writes the new version, which is evaluated and approved before it guides any work.",
+			],
+			due: null,
+			links: [{ label: "Lessons from reviews", href: `${WORKSPACE_PATH}/improvement/lessons` }],
+			sources: [source("Review decisions")],
+			expectedResult: "The proposal is marked as wanted or declined. Neither changes a procedure.",
+			dependsOn: [],
+		});
+	const written = proposals.filter((p) => p.origin === "person");
+	if (written.length > 0)
+		actions.push({
+			title: `${plural(written.length, "improvement proposal")} waiting for a decision`,
 			responsible: "The owner",
 			priority: "normal",
 			reason: "Someone reviewing a result wrote down how a procedure should change.",
@@ -1000,6 +1020,17 @@ export async function generateDailyReport(
 		? `Since the last ${input.kind} report, generated ${formatOpsDate(previous.periodEnd)}.`
 		: "The 24 hours before this report. There is no earlier report to start from.";
 	const attempt = (today[0]?.attempt ?? 0) + 1;
+
+	// Bring the lessons up to date with the reviews first, so the report shows what they add up to now. The reviews are the
+	// record; if this fails the report still says what it can and the next run catches up.
+	try {
+		await learnFromReviews(sql);
+	} catch (error) {
+		console.error(
+			"[worldwide-ai] learning from reviews failed:",
+			error instanceof Error ? error.message : error,
+		);
+	}
 
 	let id: string;
 	try {

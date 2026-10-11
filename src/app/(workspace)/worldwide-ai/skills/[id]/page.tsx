@@ -212,7 +212,20 @@ export default async function SkillPage({ params }: Props) {
 														? "Wanted"
 														: "Declined"}
 											</Pill>
+											{proposal.origin === "reviews" && (
+												<>
+													{" "}
+													<Pill>Raised from reviews</Pill>
+												</>
+											)}
 											<p style={{ margin: "4px 0", whiteSpace: "pre-wrap" }}>{proposal.proposedChange}</p>
+											{proposal.origin === "reviews" && (
+												<p className="wai-small" style={{ margin: "4px 0" }}>
+													<Link href={`${WORKSPACE_PATH}/improvement/lessons`}>
+														See the {proposal.evidence.length} reviews it rests on
+													</Link>
+												</p>
+											)}
 											<p className="wai-muted wai-small" style={{ margin: 0 }}>
 												Against version {proposal.baseVersion}, <When at={proposal.createdAt} now={now} />
 												{proposal.sourceId ? `, from task ${proposal.sourceId}` : ""}

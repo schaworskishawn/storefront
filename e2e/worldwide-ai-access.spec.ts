@@ -37,6 +37,7 @@ const PAGES = [
 	"/worldwide-ai/rfid/scans",
 	"/worldwide-ai/engineering/coding",
 	"/worldwide-ai/engineering/coding/00000000-0000-4000-8000-000000000000",
+	"/worldwide-ai/improvement/lessons",
 	"/worldwide-ai/quality/specifications",
 	"/worldwide-ai/quality/results",
 	"/worldwide-ai/quality/deviations",

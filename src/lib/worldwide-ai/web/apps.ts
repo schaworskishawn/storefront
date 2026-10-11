@@ -265,12 +265,15 @@ export const AREAS: Partial<Record<AppId, AreaDefinition>> = {
 		also: [
 			"Skills: twelve shared foundations and a role pack for each agent, each evaluated in isolation and approved by the owner before it guides any work. Open Skills from any agent's page.",
 			"Improvement proposals: a person can record what should change in a procedure. A proposal changes nothing until a new version is evaluated and approved.",
+			"Lessons from reviews: every decision to accept, correct or reject an agent's work is counted, once. When reviewers have corrected or rejected several results that followed the same version of a procedure, one proposal is raised against it with those reviews as evidence. It proposes no wording and changes nothing.",
+			"A count per agent of reviewed work accepted as it was, corrected and rejected, with the number of reviews shown. Work nobody reviewed isn't counted, and an agent with none reviewed has no number.",
 		],
 		notBuilt: [
 			"The business profile, goals with baselines, and metric snapshots.",
-			"Lessons drawn automatically from review decisions, and comparison of a new skill version with the current one on real reviewed cases. Today a proposal is written by a person and a version is evaluated on fixed cases.",
+			"Wording for a lesson. The workspace says which procedure fell short and shows the reviews; a person writes the new version.",
+			"Comparison of a new skill version with the current one on real reviewed cases. A version is evaluated on fixed cases.",
 			"Evaluation of how well a model writes. The current evaluation checks the procedure, its permissions and the function behind it, not prose quality.",
-			"Per-agent quality scorecards.",
+			"The rest of a scorecard: repeat errors, citation and freshness checks, completion time and cost over a comparable group, and a baseline to compare against.",
 		],
 	},
 };
