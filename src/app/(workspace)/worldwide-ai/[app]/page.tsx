@@ -65,14 +65,21 @@ export default async function AreaPage({ params }: Props) {
 			<PageHeader title={definition.label} lead={area.lead} />
 			<div className="wai-stack">
 				{area.id === "lab" && (
-					<Card title="Ingredient inventory">
+					<Card title="Inventory, recipes and batches">
 						<p className="wai-help" style={{ marginTop: 0 }}>
-							Ingredients, the lots they arrived in, and a ledger of every movement of stock. A lot is counted
-							in one unit, stock is reserved before it is used, and nothing in the ledger is ever edited.
+							Ingredients, the lots they arrived in, and a ledger of every movement of stock. A recipe is kept
+							in versions the owner approves; a batch is planned from one, reserves the lots it will use, and
+							records what was used and what was measured coming out.
 						</p>
 						<div className="wai-row" style={{ gap: 12, flexWrap: "wrap" }}>
 							<Link href={`${WORKSPACE_PATH}/lab/ingredients`} className="wai-btn wai-btn--primary">
 								Ingredients and lots
+							</Link>
+							<Link href={`${WORKSPACE_PATH}/lab/recipes`} className="wai-btn">
+								Recipes
+							</Link>
+							<Link href={`${WORKSPACE_PATH}/lab/batches`} className="wai-btn">
+								Batches
 							</Link>
 							<Link href={`${WORKSPACE_PATH}/lab/movements`} className="wai-btn">
 								Stock movements

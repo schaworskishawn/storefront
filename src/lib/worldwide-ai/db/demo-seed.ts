@@ -4,6 +4,8 @@ import { recordFinding } from "../findings";
 import { opsDayKey } from "../time";
 import type { OperatorActor } from "../types";
 import type { Sql } from "./sql";
+import { addRecipeVersion, approveRecipeVersion, createRecipe, planBatch } from "../lab/batches";
+import { createIngredient, createLot, postMovement } from "../lab/inventory";
 
 /**
  * Sample data for the local demonstration store (WORLDWIDE_AI_STORE=demo). Everything here is made up, every title starts
@@ -143,4 +145,114 @@ export async function seedDemoData(sql: Sql, now: Date = new Date()): Promise<vo
 		dedupeKey: "demo:stale-doc",
 		evidence: { demo: true },
 	});
+
+	await seedDemoLab(sql, now);
+}
+
+/**
+ * A small fictional Lab: four ingredients with stock, one of them running low and one lot kept by weight, an approved recipe,
+ * and a batch that has been planned but not reserved. Every name carries the demonstration label. Densities, strengths and
+ * carriers here are made up for the demonstration and describe no real product.
+ */
+async function seedDemoLab(sql: Sql, now: Date): Promise<void> {
+	const today = opsDayKey(now);
+	const inDays = (days: number) => opsDayKey(new Date(now.getTime() + days * 86_400_000));
+	let serial = 0;
+	const stocked = async (
+		ingredient: Parameters<typeof createIngredient>[2],
+		lots: Array<Omit<Parameters<typeof createLot>[2], "ingredientId"> & { quantity: string }>,
+	) => {
+		const made = await createIngredient(sql, DEMO_OWNER, {
+			...ingredient,
+			name: `${DEMO_PREFIX} ${ingredient.name}`,
+		});
+		for (const { quantity, ...lot } of lots) {
+			const created = await createLot(sql, DEMO_OWNER, { ingredientId: made.id, ...lot });
+			await postMovement(
+				sql,
+				DEMO_OWNER,
+				{
+					lotId: created.id,
+					kind: "receipt",
+					quantity,
+					reference: "Demonstration stock",
+					idempotencyKey: `demo:receipt:${++serial}`,
+				},
+				today,
+			);
+		}
+		return made;
+	};
+	const pg = await stocked({ name: "PG", category: "pg", sku: "DEMO-PG" }, [
+		{
+			lotCode: "DEMO-PG-1",
+			unit: "mL",
+			quantity: "5000",
+			densityGPerMl: "1.036",
+			densitySource: "Demonstration figure",
+			location: "Shelf A1",
+		},
+	]);
+	const vg = await stocked({ name: "VG", category: "vg", sku: "DEMO-VG" }, [
+		{
+			lotCode: "DEMO-VG-1",
+			unit: "g",
+			quantity: "6305",
+			densityGPerMl: "1.261",
+			densitySource: "Demonstration figure",
+			location: "Shelf A2",
+		},
+	]);
+	const base = await stocked(
+		{
+			name: "Nicotine base 100",
+			category: "nicotine_base",
+			sku: "DEMO-NIC-100",
+			nicotineMgPerMl: "100",
+			nicotineType: "freebase",
+			pgPercent: "90",
+			vgPercent: "0",
+			carrierSource: "Demonstration figure",
+			minStock: "500",
+			minStockUnit: "mL",
+		},
+		[
+			{ lotCode: "DEMO-N-1", unit: "mL", quantity: "100", expiresOn: inDays(21), location: "Locked cabinet" },
+			{
+				lotCode: "DEMO-N-2",
+				unit: "mL",
+				quantity: "200",
+				expiresOn: inDays(200),
+				location: "Locked cabinet",
+			},
+		],
+	);
+	const mango = await stocked(
+		{
+			name: "Mango concentrate",
+			category: "flavour",
+			sku: "DEMO-FL-MANGO",
+			pgPercent: "100",
+			vgPercent: "0",
+			carrierSource: "Demonstration figure",
+		},
+		[{ lotCode: "DEMO-M-1", unit: "mL", quantity: "300", location: "Shelf B1" }],
+	);
+
+	const recipe = await createRecipe(sql, DEMO_OWNER, {
+		name: `${DEMO_PREFIX} Mango 12`,
+		product: "A fictional 12 mg mango liquid",
+	});
+	const version = await addRecipeVersion(sql, DEMO_OWNER, {
+		recipeId: recipe.id,
+		batchMl: "1000",
+		targetNicotineMgPerMl: "12",
+		targetPgPercent: "50",
+		baseIngredientId: base.id,
+		pgIngredientId: pg.id,
+		vgIngredientId: vg.id,
+		flavours: [{ ingredientId: mango.id, percent: "10" }],
+	});
+	await approveRecipeVersion(sql, DEMO_OWNER, version.id);
+	await planBatch(sql, DEMO_OWNER, { recipeVersionId: version.id, batchMl: "1000" }, today);
 }

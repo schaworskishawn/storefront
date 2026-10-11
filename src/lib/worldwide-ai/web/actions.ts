@@ -15,6 +15,15 @@ import { requestFunction, reviewProduct, type IncomingFile } from "../functions/
 import { getProductByTask } from "../functions/products";
 import { lookupFunction } from "../functions/registry";
 import { dispatchTask } from "../jobs/dispatch";
+import {
+	addRecipeVersion,
+	approveRecipeVersion,
+	cancelBatch,
+	completeBatch,
+	createRecipe,
+	planBatch,
+	reserveBatch,
+} from "../lab/batches";
 import { MOVEMENT_LABELS, createIngredient, createLot, postMovement } from "../lab/inventory";
 import { generateDailyReport } from "../reports/daily";
 import { SKILLS, SKILL_BY_ID } from "../skills/catalog";
@@ -805,6 +814,128 @@ export async function inventoryAction(_previous: ActionState, form: FormData): P
 				}. Lot ${lot.lotCode} now has ${lot.onHand} ${lot.unit} on hand, ${lot.reserved} reserved.`,
 			};
 		} else throw new WorkflowError("invalid", "That isn't something that can be done to the inventory.");
+	} catch (error) {
+		return describeFailure(error, values);
+	}
+	refresh();
+	redirect(destination);
+}
+
+// ---- Recipes and batches ---------------------------------------------------------------------------------
+
+/** How many flavour rows the recipe form offers. A formula with more is written in two versions' worth of work, not one. */
+const FLAVOUR_ROWS = 6;
+
+/**
+ * Everything a person does to a recipe or a batch. Approving a recipe version is the owner's. Reserving and completing a
+ * batch move stock through the ledger, each in one transaction: a shortage reserves nothing, and recording more than was
+ * reserved changes nothing.
+ */
+export async function batchAction(_previous: ActionState, form: FormData): Promise<ActionState> {
+	const workspace = await getWorkspace();
+	const { sql } = workspace.runtime;
+	const intent = text(form, "intent");
+	const today = opsDayKey(workspace.runtime.now());
+	const values = Object.fromEntries(
+		[...form.entries()].flatMap(([name, value]) =>
+			typeof value === "string" && name !== "intent" ? [[name, value]] : [],
+		),
+	);
+	let destination: string | null = null;
+	try {
+		throttle(workspace);
+		switch (intent) {
+			case "recipe": {
+				const recipe = await createRecipe(sql, workspace.actor, {
+					name: text(form, "name"),
+					product: text(form, "product"),
+				});
+				destination = path(`/lab/recipes/${recipe.id}`);
+				break;
+			}
+			case "version": {
+				const flavours = Array.from({ length: FLAVOUR_ROWS }, (_, index) => ({
+					ingredientId: text(form, `flavour${index + 1}`),
+					percent: text(form, `percent${index + 1}`),
+				})).filter((row) => row.ingredientId || row.percent.trim());
+				const version = await addRecipeVersion(sql, workspace.actor, {
+					recipeId: text(form, "recipeId"),
+					batchMl: text(form, "batchMl"),
+					targetNicotineMgPerMl: text(form, "targetNicotineMgPerMl"),
+					targetPgPercent: text(form, "targetPgPercent"),
+					baseIngredientId: text(form, "baseIngredientId") || undefined,
+					pgIngredientId: text(form, "pgIngredientId"),
+					vgIngredientId: text(form, "vgIngredientId"),
+					flavours,
+				});
+				refresh();
+				return {
+					ok: true,
+					message: `Version ${version.version} written as a draft. It can be made into a batch once the owner approves it.`,
+				};
+			}
+			case "approve": {
+				const version = await approveRecipeVersion(sql, workspace.actor, text(form, "versionId"));
+				refresh();
+				return { ok: true, message: `Version ${version.version} is approved and can be made into a batch.` };
+			}
+			case "plan": {
+				const batch = await planBatch(
+					sql,
+					workspace.actor,
+					{ recipeVersionId: text(form, "recipeVersionId"), batchMl: text(form, "batchMl") },
+					today,
+				);
+				destination = path(`/lab/batches/${batch.id}`);
+				break;
+			}
+			case "reserve": {
+				const batch = await reserveBatch(sql, workspace.actor, text(form, "batchId"), today);
+				refresh();
+				return { ok: true, message: `Everything batch ${batch.code} needs is reserved.` };
+			}
+			case "complete": {
+				const used = Object.fromEntries(
+					[...form.entries()].flatMap(([name, value]) =>
+						name.startsWith("used.") && typeof value === "string" ? [[name.slice(5), value]] : [],
+					),
+				);
+				const batch = await completeBatch(
+					sql,
+					workspace.actor,
+					text(form, "batchId"),
+					{
+						actualYieldMl: text(form, "actualYieldMl"),
+						wasteMl: text(form, "wasteMl"),
+						samplesMl: text(form, "samplesMl"),
+						notes: text(form, "notes"),
+						used,
+					},
+					today,
+				);
+				refresh();
+				return {
+					ok: true,
+					message: `Batch ${batch.code} is recorded as made, with a measured yield of ${batch.actualYieldMl} mL. It is awaiting a quality review; nothing here releases it.`,
+				};
+			}
+			case "cancel": {
+				const batch = await cancelBatch(
+					sql,
+					workspace.actor,
+					text(form, "batchId"),
+					text(form, "note"),
+					today,
+				);
+				refresh();
+				return {
+					ok: true,
+					message: `Batch ${batch.code} is cancelled. Anything it had reserved is free again.`,
+				};
+			}
+			default:
+				throw new WorkflowError("invalid", "That isn't something that can be done to a recipe or a batch.");
+		}
 	} catch (error) {
 		return describeFailure(error, values);
 	}
