@@ -204,9 +204,17 @@ export const AREAS: Partial<Record<AppId, AreaDefinition>> = {
 		id: "manufacturing",
 		lead: "Production plans checked against materials and equipment hours, batch reconciliation, equipment eligibility, line-clearance evidence and training eligibility, all from recorded evidence.",
 		agents: ["tempo", "batch", "gauge", "clean", "coach", "stock"],
+		also: [
+			"Batches planned from an approved recipe, with what was used from each lot and the measured yield, and packaging runs that draw down a batch's bulk. They are in the Lab.",
+			"Equipment with its calibrations. Equipment that is out of service, has failed or is overdue, or has no calibration on record when it needs one can't be recorded against a batch.",
+			"A failed calibration takes the equipment out of service and puts every batch measured with it since its last pass on hold. Only the owner returns it to service.",
+			"Cleaning and line-clearance records, verified by a second person.",
+			"Training records the owner verifies, and requirements the owner can set: a person without verified, in-date training is refused recording a batch as made or a packaging run, and the refusal is logged.",
+		],
 		notBuilt: [
-			"Stored manufacturing orders, electronic batch records and packaging runs with their lineage.",
-			"Software gates that block a step when calibration, cleaning or training evidence is missing.",
+			"A production schedule, and bookings of equipment and people that can't clash.",
+			"Step-by-step electronic batch records with process readings checked against approved limits.",
+			"Maintenance and spare-parts records, and a cleaning gate tied to each packaging run. A run records its line clearance as text.",
 			"Read-only instrument and scale connections. Readings are entered by staff and labelled manual.",
 			"Any control of machinery. That stays out of scope.",
 		],
@@ -225,7 +233,7 @@ export const AREAS: Partial<Record<AppId, AreaDefinition>> = {
 			"The laboratory's original report as a stored file, and reading results out of one. Results are typed in by a person and the report is named by its number.",
 			"Agents working from these records. Assay and Assure still work from what you give them with each run, and prepare drafts only.",
 			"Change control, retained-sample and stability schedules, and supplier qualification as records.",
-			"Calibration, cleaning and training records. A release can't check them, so they aren't claimed.",
+			"A release doesn't check equipment, cleaning or training records. Those gate the steps themselves, under Manufacturing.",
 		],
 	},
 	compliance: {

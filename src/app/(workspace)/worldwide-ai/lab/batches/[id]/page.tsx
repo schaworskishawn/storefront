@@ -8,6 +8,7 @@ import {
 	listAllocations,
 	yieldDifference,
 } from "@/lib/worldwide-ai/lab/batches";
+import { listEquipment, listEquipmentUse } from "@/lib/worldwide-ai/lab/equipment";
 import {
 	RELEASE_CONFIRMATIONS,
 	listBulkMovements,
@@ -19,7 +20,7 @@ import { listInventory } from "@/lib/worldwide-ai/lab/inventory";
 import { BLOCKING, batchAssessment, listDeviations, listSamples } from "@/lib/worldwide-ai/lab/quality";
 import { opsDayKey } from "@/lib/worldwide-ai/time";
 import { WORKSPACE_PATH } from "@/lib/worldwide-ai/types";
-import { batchAction, finishedAction } from "@/lib/worldwide-ai/web/actions";
+import { batchAction, finishedAction, manufacturingAction } from "@/lib/worldwide-ai/web/actions";
 import { getWorkspace } from "@/lib/worldwide-ai/web/session";
 import { ButtonForm, FieldsForm, type FormField } from "@/ui/sections/worldwide-ai/forms";
 import { ReleaseForm } from "@/ui/sections/worldwide-ai/release-form";
@@ -73,6 +74,12 @@ export default async function BatchPage({ params }: Props) {
 			made ? listSamples(sql, batch.id) : [],
 			listDeviations(sql, { batchId: batch.id }),
 		]);
+	const inHand = batch.status === "reserved" || made;
+	const [equipmentUsed, equipment] = await Promise.all([
+		listEquipmentUse(sql, { batchId: batch.id }),
+		inHand ? listEquipment(sql, today) : [],
+	]);
+	const usable = equipment.filter((row) => row.standing.eligible);
 	const counted = assessment?.results.filter((r) => !r.replaced && r.ruling !== "set_aside") ?? [];
 	const unverified = counted.filter((r) => r.verifiedAt === null).length;
 	const blocking = assessment?.lines.filter((line) => BLOCKING.includes(line.outcome)).length ?? 0;
@@ -518,7 +525,7 @@ export default async function BatchPage({ params }: Props) {
 						{batch.notes && <p className="wai-help">{batch.notes}</p>}
 					</Card>
 
-					{made && (
+					{(made || holds.length > 0) && (
 						<Card
 							title="Holds"
 							aside={<Pill tone={onHold ? "warn" : "plain"}>{`${openHolds.length} open`}</Pill>}
@@ -554,14 +561,77 @@ export default async function BatchPage({ params }: Props) {
 								Anyone can place a hold. It stops the batch being packaged or released until the owner lifts
 								it.
 							</p>
-							<ButtonForm
-								action={finishedAction}
-								hidden={{ intent: "hold", batchId: batch.id }}
-								label="Put this batch on hold"
-								tone="danger"
-								note={{ label: "Why", required: true }}
-								idPrefix="hold"
-							/>
+							{made && (
+								<ButtonForm
+									action={finishedAction}
+									hidden={{ intent: "hold", batchId: batch.id }}
+									label="Put this batch on hold"
+									tone="danger"
+									note={{ label: "Why", required: true }}
+									idPrefix="hold"
+								/>
+							)}
+						</Card>
+					)}
+
+					{(inHand || equipmentUsed.length > 0) && (
+						<Card title="Equipment used" aside={<Pill>{equipmentUsed.length}</Pill>}>
+							{equipmentUsed.length === 0 ? (
+								<Empty>No equipment is recorded against this batch.</Empty>
+							) : (
+								<ul className="wai-list">
+									{equipmentUsed.map((use) => (
+										<li key={use.id} style={{ display: "block" }}>
+											<Link href={`${WORKSPACE_PATH}/manufacturing/equipment/${use.equipmentId}`}>
+												{use.equipmentCode}
+											</Link>{" "}
+											{use.equipmentName}: {use.purpose}
+										</li>
+									))}
+								</ul>
+							)}
+							{inHand &&
+								(usable.length === 0 ? (
+									<p className="wai-help">
+										{equipment.length === 0
+											? "No equipment has been recorded yet."
+											: "None of the equipment may be used today. Open Equipment to see why."}{" "}
+										<Link href={`${WORKSPACE_PATH}/manufacturing/equipment`}>Equipment</Link>
+									</p>
+								) : (
+									<details style={{ marginTop: 12 }}>
+										<summary className="wai-small">Record equipment used</summary>
+										<div style={{ marginTop: 8 }}>
+											<FieldsForm
+												action={manufacturingAction}
+												hidden={{ intent: "equipment.use", batchId: batch.id }}
+												idPrefix="equipment-use"
+												submit="Record it"
+												fields={[
+													{
+														name: "equipmentId",
+														label: "Equipment",
+														kind: "select",
+														required: true,
+														help: "Only equipment that is in service and in calibration is offered. If it later fails calibration, this batch is put on hold.",
+														options: usable.map((row) => ({
+															value: row.equipment.id,
+															label: `${row.equipment.code}, ${row.equipment.name}`,
+														})),
+													},
+													{
+														name: "purpose",
+														label: "Used for",
+														kind: "text",
+														required: true,
+														maxLength: 160,
+														placeholder: "Weighing the nicotine base",
+													},
+												]}
+											/>
+										</div>
+									</details>
+								))}
 						</Card>
 					)}
 

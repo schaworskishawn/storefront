@@ -7,9 +7,11 @@ import { listFindings } from "../findings";
 import { hashOf } from "../functions/products";
 import { INTEGRATIONS, configStatus } from "../integrations/catalog";
 import { latestHealth } from "../integrations/health";
+import { CALIBRATION_LABELS, listEquipment } from "../lab/equipment";
 import { listFinished } from "../lab/finished";
 import { inventoryFindings, listInventory } from "../lab/inventory";
 import { SEVERITIES, listDeviations, listPendingActions, listUnverifiedResults } from "../lab/quality";
+import { listTraining, trainingStanding } from "../lab/training";
 import { listProposals, listReleases } from "../skills/store";
 import { countStandings, loadSkillRows } from "../skills/standing";
 import { formatOpsDate, opsDayKey } from "../time";
@@ -102,8 +104,8 @@ const UNAVAILABLE: ReadonlyArray<{ area: string; reason: string }> = [
 	{ area: "Purchasing", reason: "No purchasing records are stored. Source works from quotes you supply." },
 	{ area: "Accounting and banking", reason: "No accounting or bank connector exists." },
 	{
-		area: "Calibration, cleaning and training",
-		reason: "No calibration, cleaning or training records are stored.",
+		area: "Equipment and training",
+		reason: "No equipment or training has been recorded yet.",
 	},
 	{
 		area: "Business goals",
@@ -159,6 +161,8 @@ export async function buildDailyReport(
 		unverified,
 		deviations,
 		pendingActions,
+		equipment,
+		training,
 	] = await Promise.all([
 		sql.query(
 			`select ${TASK_COLUMNS} from wai_tasks t where ${BUSINESS} and t.state = 'completed'
@@ -208,6 +212,8 @@ export async function buildDailyReport(
 		listUnverifiedResults(sql),
 		listDeviations(sql, { status: "open" }),
 		listPendingActions(sql),
+		listEquipment(sql, day),
+		listTraining(sql),
 	]);
 
 	// A finding raised by a demonstration run, or by one person's own task, is not business news.
@@ -520,6 +526,80 @@ export async function buildDailyReport(
 			dependsOn: [],
 		});
 
+	// ---- Equipment that can't be used or is about to lapse, and training to verify or renew -------------------
+	for (const row of equipment) {
+		if (row.standing.eligible && row.standing.calibration !== "due_soon") continue;
+		const { equipment: item, standing } = row;
+		actions.push({
+			title: `Equipment: ${item.code} ${item.name}`,
+			responsible: item.status === "out_of_service" ? "The owner" : "A person in the Lab",
+			priority: standing.eligible ? "normal" : "high",
+			reason: standing.eligible
+				? `Its calibration is due on ${standing.dueOn}.`
+				: `It can't be recorded against a batch. ${standing.reasons.join(" ")}`,
+			nextSteps: standing.eligible
+				? ["Arrange the calibration.", "Record it with its certificate when it is done."]
+				: [
+						"Open the equipment.",
+						"Arrange and record a passing calibration if one is needed.",
+						"The owner returns it to service with a reason.",
+					],
+			due: standing.dueOn ? { date: standing.dueOn, confirmed: true } : null,
+			links: [
+				{ label: `Equipment ${item.code}`, href: `${WORKSPACE_PATH}/manufacturing/equipment/${item.id}` },
+			],
+			sources: [source(`Equipment records: ${CALIBRATION_LABELS[standing.calibration].toLowerCase()}`)],
+			expectedResult: "The equipment is in calibration and in service, or stays out of use.",
+			dependsOn: [],
+		});
+	}
+	const unverifiedTraining = training.filter((record) => record.verifiedAt === null);
+	if (unverifiedTraining.length)
+		actions.push({
+			title: `Verify training: ${unverifiedTraining.length} record${unverifiedTraining.length === 1 ? "" : "s"}`,
+			responsible: "The owner",
+			priority: "normal",
+			reason: `Recorded for ${[...new Set(unverifiedTraining.map((record) => record.person))].join(", ")}. A record counts only once the owner has verified its evidence.`,
+			nextSteps: [
+				"Open Training.",
+				"Check each record against its evidence.",
+				"Verify the ones that are in order.",
+			],
+			due: null,
+			links: [{ label: "Training", href: `${WORKSPACE_PATH}/manufacturing/training` }],
+			sources: [source("Training records waiting to be verified")],
+			expectedResult: "Each record is verified, or left unverified because its evidence isn't in order.",
+			dependsOn: [],
+		});
+	for (const record of training) {
+		const standing = trainingStanding(record, day);
+		if (standing !== "expiring" && standing !== "expired") continue;
+		// A newer record for the same person and topic that is still in date makes this one history.
+		const renewed = training.some(
+			(other) =>
+				other.id !== record.id &&
+				other.person === record.person &&
+				other.topic.toLowerCase() === record.topic.toLowerCase() &&
+				trainingStanding(other, day) === "valid",
+		);
+		if (renewed) continue;
+		actions.push({
+			title: `Training: ${record.person}, ${record.topic}`,
+			responsible: record.person,
+			priority: standing === "expired" ? "high" : "normal",
+			reason:
+				standing === "expired"
+					? `It lapsed on ${record.validUntil}. Any step that requires it is refused until it is renewed and verified.`
+					: `It lapses on ${record.validUntil}.`,
+			nextSteps: ["Repeat the training.", "Record it with its evidence.", "The owner verifies it."],
+			due: { date: record.validUntil as string, confirmed: true },
+			links: [{ label: "Training", href: `${WORKSPACE_PATH}/manufacturing/training` }],
+			sources: [source("Training records")],
+			expectedResult: "A new verified record is on file before the old one lapses.",
+			dependsOn: [],
+		});
+	}
+
 	// ---- Services ----------------------------------------------------------------------------------------
 	const statuses = configStatus(config, deps.env ?? process.env);
 	const integrations = statuses
@@ -632,6 +712,12 @@ export async function buildDailyReport(
 	const reviewOverdue = documents.issues.filter((i) => i.kind === "review_overdue").length;
 	const urgent = actions.filter((a) => a.priority === "urgent").length;
 
+	// An area is listed as unavailable only while nothing at all is recorded for it.
+	const unavailable = UNAVAILABLE.filter(
+		(item) =>
+			(item.area !== "Inventory" || inventory.length === 0) &&
+			(item.area !== "Equipment and training" || (equipment.length === 0 && training.length === 0)),
+	);
 	const summary: string[] = [
 		`${plural(completed.length, "task")} completed and verified, ${unresolved.filter((l) => l.state === "failed").length} failed, and ${unresolved.filter((l) => l.state === "outcome_unknown").length} ended with an unknown outcome in this period.`,
 		actions.length
@@ -641,7 +727,7 @@ export async function buildDailyReport(
 		standings.inUse === standings.total
 			? `All ${standings.total} skills are approved and in use.`
 			: `${standings.inUse} of ${standings.total} skills are approved and in use.`,
-		`${UNAVAILABLE.length - (inventory.length ? 1 : 0)} areas the workspace has no records for are listed as unavailable, not as zero.`,
+		`${unavailable.length} areas the workspace has no records for are listed as unavailable, not as zero.`,
 	];
 
 	const report: DailyReport = {
@@ -697,7 +783,7 @@ export async function buildDailyReport(
 		},
 		integrations,
 		// Once the Lab holds stock, inventory is something the report reads, not something it can't see.
-		unavailable: UNAVAILABLE.filter((item) => item.area !== "Inventory" || inventory.length === 0),
+		unavailable,
 		usage: {
 			modelCalls: Number(usage.rows[0]?.calls ?? 0),
 			inputTokens: Number(usage.rows[0]?.input ?? 0),
@@ -722,6 +808,8 @@ export async function buildDailyReport(
 			},
 			{ source: "Results waiting to be verified", records: unverified.length, asOf: end },
 			{ source: "Open deviations", records: deviations.length, asOf: end },
+			{ source: "Equipment", records: equipment.length, asOf: end },
+			{ source: "Training records", records: training.length, asOf: end },
 		],
 	};
 	if (input.kind === "evening") report.tomorrow = actions.slice(0, 3).map((action) => action.title);

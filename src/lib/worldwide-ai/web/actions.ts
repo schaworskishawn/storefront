@@ -25,6 +25,14 @@ import {
 	reserveBatch,
 } from "../lab/batches";
 import {
+	addEquipment,
+	recordCalibration,
+	recordCleaning,
+	recordEquipmentUse,
+	setEquipmentStatus,
+	verifyCleaning,
+} from "../lab/equipment";
+import {
 	RELEASE_CONFIRMATIONS,
 	decideRelease,
 	liftHold,
@@ -48,6 +56,13 @@ import {
 	updateCorrectiveAction,
 	verifyResult,
 } from "../lab/quality";
+import {
+	CONTROLLED_STEPS,
+	recordTraining,
+	removeRequirement,
+	setRequirement,
+	verifyTraining,
+} from "../lab/training";
 import { generateDailyReport } from "../reports/daily";
 import { SKILLS, SKILL_BY_ID } from "../skills/catalog";
 import { evaluateSkills } from "../skills/evaluate";
@@ -1310,6 +1325,151 @@ export async function qualityAction(_previous: ActionState, form: FormData): Pro
 				message = `Deviation ${deviation.code} is closed.`;
 				break;
 			}
+			default:
+				throw new WorkflowError("invalid", "That isn't something that can be done here.");
+		}
+	} catch (error) {
+		return describeFailure(error, values);
+	}
+	refresh();
+	if (destination) redirect(destination);
+	return { ok: true, message };
+}
+
+// ---- Manufacturing records: equipment, calibration, cleaning and training -------------------------------
+
+/**
+ * Equipment and its calibrations, which batch it was used on, cleaning and line-clearance records, and training.
+ * Returning equipment to service, verifying training and setting what training a step requires are the owner's; a
+ * cleaning is verified by someone other than whoever recorded it. Each is checked in the library and logged either way.
+ * Nothing here controls a machine or reads an instrument.
+ */
+export async function manufacturingAction(_previous: ActionState, form: FormData): Promise<ActionState> {
+	const workspace = await getWorkspace();
+	const { sql } = workspace.runtime;
+	const intent = text(form, "intent");
+	const today = opsDayKey(workspace.runtime.now());
+	const values = Object.fromEntries(
+		[...form.entries()].flatMap(([name, value]) =>
+			typeof value === "string" && name !== "intent" ? [[name, value]] : [],
+		),
+	);
+	let destination: string | null = null;
+	let message = "Recorded.";
+	try {
+		throttle(workspace);
+		switch (intent) {
+			case "equipment.add": {
+				const equipment = await addEquipment(sql, workspace.actor, {
+					code: text(form, "code"),
+					name: text(form, "name"),
+					kind: text(form, "kind"),
+					location: text(form, "location"),
+					calibrationIntervalDays: text(form, "calibrationIntervalDays"),
+				});
+				destination = path(`/manufacturing/equipment/${equipment.id}`);
+				break;
+			}
+			case "equipment.status": {
+				const equipment = await setEquipmentStatus(sql, workspace.actor, {
+					equipmentId: text(form, "equipmentId"),
+					status: text(form, "status"),
+					reason: text(form, "note"),
+				});
+				message =
+					equipment.status === "in_service"
+						? `${equipment.code} is back in service.`
+						: `${equipment.code} is out of service. It can't be recorded against a batch until the owner returns it.`;
+				break;
+			}
+			case "equipment.calibrate": {
+				const done = await recordCalibration(
+					sql,
+					workspace.actor,
+					{
+						equipmentId: text(form, "equipmentId"),
+						performedOn: text(form, "performedOn"),
+						result: text(form, "result"),
+						certificate: text(form, "certificate"),
+						performedBy: text(form, "performedBy"),
+						dueOn: text(form, "dueOn"),
+						notes: text(form, "notes"),
+					},
+					today,
+				);
+				message =
+					done.calibration.result === "pass"
+						? `Recorded.${done.calibration.dueOn ? ` The next calibration is due on ${done.calibration.dueOn}.` : ""}${
+								done.equipment.status === "out_of_service"
+									? " It is still out of service: returning it is the owner's decision."
+									: ""
+							}`
+						: `Recorded. ${done.equipment.code} is out of service.${
+								done.held.length
+									? ` Put on hold because they were measured with it: ${done.held.join(", ")}.`
+									: " No batch was recorded against it since its last passing calibration."
+							}`;
+				break;
+			}
+			case "equipment.use": {
+				const use = await recordEquipmentUse(
+					sql,
+					workspace.actor,
+					{
+						batchId: text(form, "batchId"),
+						equipmentId: text(form, "equipmentId"),
+						purpose: text(form, "purpose"),
+					},
+					today,
+				);
+				message = `${use.equipmentCode} recorded against batch ${use.batchCode}.`;
+				break;
+			}
+			case "cleaning.record":
+				await recordCleaning(sql, workspace.actor, {
+					equipmentId: text(form, "equipmentId"),
+					area: text(form, "area"),
+					kind: text(form, "kind"),
+					procedure: text(form, "procedure"),
+					detail: text(form, "detail"),
+				});
+				message = "Recorded. Someone else can verify it.";
+				break;
+			case "cleaning.verify":
+				await verifyCleaning(sql, workspace.actor, text(form, "recordId"));
+				message = "Verified.";
+				break;
+			case "training.record": {
+				const record = await recordTraining(
+					sql,
+					workspace.actor,
+					{
+						forSelf: text(form, "who") !== "other",
+						person: text(form, "person"),
+						topic: text(form, "topic"),
+						completedOn: text(form, "completedOn"),
+						validUntil: text(form, "validUntil"),
+						evidence: text(form, "evidence"),
+					},
+					today,
+				);
+				message = `Recorded for ${record.person}. It counts once the owner has verified it.`;
+				break;
+			}
+			case "training.verify":
+				await verifyTraining(sql, workspace.actor, text(form, "recordId"));
+				message = "Verified.";
+				break;
+			case "training.require": {
+				const step = text(form, "step");
+				await setRequirement(sql, workspace.actor, { step, topic: text(form, "topic") });
+				message = `Required. ${CONTROLLED_STEPS[step as keyof typeof CONTROLLED_STEPS] ?? "That step"} is now refused to anyone without it, you included.`;
+				break;
+			}
+			case "training.unrequire":
+				await removeRequirement(sql, workspace.actor, text(form, "requirementId"));
+				message = "No longer required.";
+				break;
 			default:
 				throw new WorkflowError("invalid", "That isn't something that can be done here.");
 		}

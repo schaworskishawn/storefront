@@ -30,6 +30,7 @@ import {
 	type Lot,
 	type Unit,
 } from "./inventory";
+import { assertQualified } from "./training";
 import { RecipeError, calculateRecipe, type RecipeInput, type RecipeResult } from "./recipe";
 
 /**
@@ -815,6 +816,8 @@ export async function completeBatch(
 	const actualYield = quantity("The measured yield", input.actualYieldMl) as Dec;
 	const waste = quantity("Waste", input.wasteMl, { optional: true });
 	const samples = quantity("Samples", input.samplesMl, { optional: true });
+	// Where the owner requires training for this step, a person without it is refused here, before anything is touched.
+	await assertQualified(sql, actor, "make_batch", today);
 	const batch = await sql.transaction(async (tx) => {
 		const current = await lockBatch(tx, batchId);
 		if (current.status !== "reserved")
