@@ -117,6 +117,7 @@ export default async function SettingsPage() {
 								["Background jobs", config.trigger.secretSet ? "Trigger.dev" : "Inside the web application"],
 								["Raw prompts and outputs", config.recordRaw ? "Recorded (redacted)" : "Not recorded"],
 								["Contact form files cases", config.ingestContactForm ? "Yes" : "No"],
+								["Scheduled evening recap", config.eveningRecap ? "On" : "Off"],
 								["Documents go stale after", `${config.staleAfterDays} days`],
 								["Times are shown in", OPS_TIME_ZONE],
 							]}

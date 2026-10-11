@@ -7,12 +7,14 @@ import { loadRoleSettings } from "@/lib/worldwide-ai/agents/settings";
 import { TOOLS } from "@/lib/worldwide-ai/agents/tools";
 import { collectionLabel } from "@/lib/worldwide-ai/atlas/collections";
 import { listProducts } from "@/lib/worldwide-ai/functions/products";
+import { listInventory, stockSnapshot } from "@/lib/worldwide-ai/lab/inventory";
 import { requiredIntegrations } from "@/lib/worldwide-ai/functions/readiness";
 import { functionsOf } from "@/lib/worldwide-ai/functions/registry";
 import { INTEGRATIONS } from "@/lib/worldwide-ai/integrations/catalog";
 import { skillsOf } from "@/lib/worldwide-ai/skills/catalog";
 import { MAX_FOUNDATIONS_PER_STEP } from "@/lib/worldwide-ai/skills/resolver";
 import { listTasks } from "@/lib/worldwide-ai/tasks/repo";
+import { opsDayKey } from "@/lib/worldwide-ai/time";
 import { WORKSPACE_PATH, isRoleId } from "@/lib/worldwide-ai/types";
 import { roleSettingsAction } from "@/lib/worldwide-ai/web/actions";
 import { loadTeam } from "@/lib/worldwide-ai/web/queries";
@@ -38,7 +40,7 @@ import {
 
 type Props = {
 	params: Promise<{ agent: string }>;
-	searchParams: Promise<{ run?: string; plan?: string; task?: string }>;
+	searchParams: Promise<{ run?: string; plan?: string; task?: string; from?: string }>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -53,7 +55,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function AgentPage({ params, searchParams }: Props) {
 	const workspace = await getWorkspace();
 	const { agent } = await params;
-	const { run, plan, task: carried } = await searchParams;
+	const { run, plan, task: carried, from } = await searchParams;
 	if (!isRoleId(agent)) notFound();
 	const role = ROLE_BY_ID[agent];
 	const { sql, now } = workspace.runtime;
@@ -73,6 +75,12 @@ export default async function AgentPage({ params, searchParams }: Props) {
 		definitions.find((d) => d.id === run) ?? definitions.find((d) => d.id === role.primary) ?? definitions[0];
 	const selectedReadiness = readiness.functions.find((f) => f.kind === selected.id)?.readiness;
 	const personal = selected.scope === "personal";
+	// Stock can start from what the inventory holds instead of a pasted table. Demand and lead time are left to fill in.
+	const today = opsDayKey(now());
+	const stored =
+		selected.id === "stock.replenishment-plan" && from === "inventory"
+			? { snapshot: "Stored stock", asOf: today, stock: stockSnapshot(await listInventory(sql, today)) }
+			: null;
 
 	return (
 		<>
@@ -143,7 +151,7 @@ export default async function AgentPage({ params, searchParams }: Props) {
 								fields={selected.fields}
 								hasSample={selected.sample !== null}
 								plan={plan}
-								initial={carried ? { task: carried } : undefined}
+								initial={carried ? { task: carried } : (stored ?? undefined)}
 							/>
 						) : (
 							<Notice tone="warn" title={`${selected.action} can't run yet.`}>

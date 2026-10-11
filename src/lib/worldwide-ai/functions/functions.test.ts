@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { approveVersion, createDocument } from "../atlas/service";
 import { runBackup, runRestoreDrill } from "../backup/drill";
+import { BACKUP_TABLES } from "../backup/backup";
 import type { SqlClient } from "../db/sql";
 import { recordHealth } from "../integrations/health";
 import { createFolderStorage } from "../storage/files";
@@ -1023,8 +1024,8 @@ describe("Restore: coverage against real backups", () => {
 			const first = await run("restore.coverage-review", { maxAgeHours: "25" }, { deps: { storage } });
 			expect(first.payload.backups).toMatchObject({
 				found: 1,
-				tablesCovered: 21,
-				tablesExpected: 21,
+				tablesCovered: BACKUP_TABLES.length,
+				tablesExpected: BACKUP_TABLES.length,
 				tablesMissing: [],
 			});
 			expect(first.payload.backups.newest).toMatchObject({ ageHours: 3 });

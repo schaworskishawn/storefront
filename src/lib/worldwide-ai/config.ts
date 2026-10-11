@@ -32,6 +32,8 @@ export type WorldwideAiConfig = {
 	ingestContactForm: boolean;
 	/** An approved document counts as stale this long after it was approved, unless it carries its own review date. */
 	staleAfterDays: number;
+	/** Whether the scheduled evening recap is generated as well as the morning report. Off unless asked for. */
+	eveningRecap: boolean;
 };
 
 export const DEFAULT_MODEL_ID = "claude-sonnet-5-5";
@@ -95,6 +97,7 @@ export function readConfig(env: Env = process.env): WorldwideAiConfig {
 		},
 		recordRaw: flag(env.WORLDWIDE_AI_RECORD_RAW),
 		ingestContactForm: flag(env.WORLDWIDE_AI_INGEST_CONTACT_FORM),
+		eveningRecap: flag(env.WORLDWIDE_AI_EVENING_RECAP),
 		staleAfterDays:
 			Number.isFinite(staleDays) && staleDays > 0 ? Math.floor(staleDays) : DEFAULT_STALE_AFTER_DAYS,
 	};

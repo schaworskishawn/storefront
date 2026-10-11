@@ -65,6 +65,25 @@ export default async function AreaPage({ params }: Props) {
 			<PageHeader title={definition.label} lead={area.lead} />
 			<div className="wai-stack">
 				{area.id === "lab" && (
+					<Card title="Ingredient inventory">
+						<p className="wai-help" style={{ marginTop: 0 }}>
+							Ingredients, the lots they arrived in, and a ledger of every movement of stock. A lot is counted
+							in one unit, stock is reserved before it is used, and nothing in the ledger is ever edited.
+						</p>
+						<div className="wai-row" style={{ gap: 12, flexWrap: "wrap" }}>
+							<Link href={`${WORKSPACE_PATH}/lab/ingredients`} className="wai-btn wai-btn--primary">
+								Ingredients and lots
+							</Link>
+							<Link href={`${WORKSPACE_PATH}/lab/movements`} className="wai-btn">
+								Stock movements
+							</Link>
+							<Link href={`${WORKSPACE_PATH}/team/stock?from=inventory`} className="wai-btn">
+								Plan replenishment from stored stock
+							</Link>
+						</div>
+					</Card>
+				)}
+				{area.id === "lab" && (
 					<Card title="Recipe calculator" accent>
 						<LabCalculator />
 					</Card>

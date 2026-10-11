@@ -44,21 +44,21 @@ Every workspace page and API response is sent with `Cache-Control: private, no-s
 
 ## The applications
 
-| Application                                                                                                             | What it does today                                                                                                           |
-| ----------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| Today                                                                                                                   | What is waiting for you: results to review, failed tasks, findings, document reviews due.                                    |
-| Nexus Command Center                                                                                                    | Plan a goal as ordered steps with an owner each, and consolidate what the steps produced. A plan starts nothing by itself.   |
-| Overview                                                                                                                | Counts of tasks by state, readiness across the team, and model usage.                                                        |
-| Team                                                                                                                    | All 49 agents with truthful readiness. Each agent's page runs its function.                                                  |
-| Tasks                                                                                                                   | Every task with its history, input, result, retries and cancel.                                                              |
-| Daily Reports                                                                                                           | A briefing built from the records when you open it. Nothing is saved or scheduled yet.                                       |
-| Support Drafts                                                                                                          | File a case, ask Relay for a reply draft that cites approved documents, then save or reject it. Nothing is ever sent.        |
-| Knowledge                                                                                                               | The approved-document library Atlas searches, with versions, owner approval, review dates and expiry.                        |
-| Review Queue                                                                                                            | Everything waiting for a person, in one list.                                                                                |
-| E-Liquid Lab, RFID & NFC, Product Content Studio, Engineering, Manufacturing, Quality, Canadian Compliance, Improvement | The agents for that area, plus a plain list on each page of what that area does not do yet. The Lab has a recipe calculator. |
-| Integrations                                                                                                            | Each service's configuration status (names of missing settings, never values) and its last health check.                     |
-| Activity                                                                                                                | The audit log.                                                                                                               |
-| Settings                                                                                                                | Agent switches and limits, backups, the restore check, and the current configuration flags.                                  |
+| Application                                                                                                             | What it does today                                                                                                                                           |
+| ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Today                                                                                                                   | What is waiting for you: results to review, failed tasks, findings, document reviews due.                                                                    |
+| Nexus Command Center                                                                                                    | Plan a goal as ordered steps with an owner each, and consolidate what the steps produced. A plan starts nothing by itself.                                   |
+| Overview                                                                                                                | Counts of tasks by state, readiness across the team, and model usage.                                                                                        |
+| Team                                                                                                                    | All 49 agents with truthful readiness. Each agent's page runs its function.                                                                                  |
+| Tasks                                                                                                                   | Every task with its history, input, result, retries and cancel.                                                                                              |
+| Daily Reports                                                                                                           | A saved morning report with action items, each linked to the record it came from; an optional evening recap; every earlier report. Generate one at any time. |
+| Support Drafts                                                                                                          | File a case, ask Relay for a reply draft that cites approved documents, then save or reject it. Nothing is ever sent.                                        |
+| Knowledge                                                                                                               | The approved-document library Atlas searches, with versions, owner approval, review dates and expiry.                                                        |
+| Review Queue                                                                                                            | Everything waiting for a person, in one list.                                                                                                                |
+| E-Liquid Lab, RFID & NFC, Product Content Studio, Engineering, Manufacturing, Quality, Canadian Compliance, Improvement | The agents for that area, plus a plain list on each page of what that area does not do yet. The Lab has a recipe calculator.                                 |
+| Integrations                                                                                                            | Each service's configuration status (names of missing settings, never values) and its last health check.                                                     |
+| Activity                                                                                                                | The audit log.                                                                                                                                               |
+| Settings                                                                                                                | Agent switches and limits, backups, the restore check, and the current configuration flags.                                                                  |
 
 Times are stored in UTC and shown in Winnipeg time.
 
@@ -105,11 +105,40 @@ How a task uses skills:
 
 After changing a skill, bump its version and run `pnpm worldwide-ai:skills` to regenerate the exported files.
 
+## Ingredient inventory
+
+The E-Liquid Lab keeps ingredients, the lots they arrive in, and a ledger of every movement of stock. Open it from **E-Liquid Lab**.
+
+How the balances work:
+
+| Balance       | What it means                                                                                 |
+| ------------- | --------------------------------------------------------------------------------------------- |
+| On hand       | What is physically in the lot, in the lot's own unit.                                         |
+| Reserved      | The part of that promised to a batch.                                                         |
+| In quarantine | All of what is on hand, while the lot is in quarantine.                                       |
+| Usable        | On hand less reserved. Nothing at all while the lot is in quarantine or past its expiry date. |
+
+The rules the ledger enforces:
+
+- **One unit per lot.** A lot is counted in mL, grams or pieces from the start, so volume and weight never become two balances. The other unit is shown only when the lot has a documented density with its source. One millilitre is never assumed to weigh one gram.
+- **Reserve, then use.** Stock is reserved for a batch before it is used, and recording use takes from what was reserved. More than is usable can't be reserved.
+- **Nothing is edited.** A movement is never changed or removed. A mistake is put right with a correction, which is another line and needs a reason.
+- **Only a person moves stock.** Agents prepare proposals. The database itself refuses a ledger line whose actor isn't a person, a negative balance, and a reservation larger than what is on hand.
+- **Once means once.** Each form carries its own key, so a form sent twice moves stock once. Two people taking the last of a lot at the same moment can't both succeed.
+- **The owner's alone:** corrections, and releasing a lot from quarantine. Staff can do everything else.
+- **Carriers are never assumed.** A nicotine base or flavour with no documented carrier is flagged, not treated as all PG.
+
+When a liquid is both measured and weighed on receipt, both are kept, and the receipt is flagged if they disagree with the documented density by more than 2%.
+
+The inventory feeds two other places. **Stock** can plan replenishment from the stored stock (daily demand and lead time aren't stored yet, so you add those). The **Daily Report** lists each ingredient with something to look at: low stock, an expired or expiring lot, a lot in quarantine, a missing density or carrier.
+
+These records are the workspace's own. Saleor stays the only authority for sellable stock, and nothing here is sent to it.
+
 ## Setting it up for real
 
 These are steps for the owner. Nothing here is applied automatically, and none of it has been done yet.
 
-1. **Database.** Create a Supabase project. Run the three files in `supabase/migrations/` in name order, with `supabase db push` or by pasting each into the SQL editor. The code expects the schema the newest file leaves; if the database is behind, the database health check says which version it is at and which the code needs. Row-level security is switched on for every table with no policies, so only the server's own connection can read them. Set `POSTGRES_URL` to the connection string.
+1. **Database.** Create a Supabase project. Run the five files in `supabase/migrations/` in name order, with `supabase db push` or by pasting each into the SQL editor. The code expects the schema the newest file leaves; if the database is behind, the database health check says which version it is at and which the code needs. Row-level security is switched on for every table with no policies, so only the server's own connection can read them. Set `POSTGRES_URL` to the connection string.
 2. **File storage.** Set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`. Create a private bucket named `worldwide-ai` (or name your own in `WORLDWIDE_AI_BUCKET`). It must not be public. The service key stays on the server and is never sent to a browser.
 3. **Who may enter.** Set `WORLDWIDE_AI_OWNER_EMAILS` and, if you want, `WORLDWIDE_AI_STAFF_EMAILS`. Each address must belong to a Saleor staff account.
 4. **Model.** Set `ANTHROPIC_API_KEY`. Without it the 31 code-only functions still work.
@@ -140,6 +169,7 @@ Names only. `.env.example` has the same list with empty values.
 | `WORLDWIDE_AI_RECORD_RAW`                                                   | No                     | `true` keeps redacted prompt and output text in traces and task history. Off by default.                  |
 | `WORLDWIDE_AI_INGEST_CONTACT_FORM`                                          | No                     | `true` also files each contact-form message as a support case. Off by default. See below.                 |
 | `WORLDWIDE_AI_STALE_AFTER_DAYS`                                             | No                     | Days after approval before a document counts as stale. Default 180.                                       |
+| `WORLDWIDE_AI_EVENING_RECAP`                                                | No                     | `true` also saves an evening recap on schedule. Off by default.                                           |
 | `WORLDWIDE_AI_STORE`                                                        | Development only       | `demo` uses the in-memory demonstration store. Ignored in production.                                     |
 | `WORLDWIDE_AI_DEMO_OPERATOR`                                                | Development only       | `owner` or `staff`: the stand-in operator for the local preview. Ignored outside `next dev`.              |
 
@@ -149,17 +179,19 @@ Names only. `.env.example` has the same list with empty values.
 
 These exist only once the jobs are deployed to Trigger.dev. Times are Winnipeg time, and a schedule that fires twice for the same slot does the work once.
 
-| Schedule             | When                    | What it does                                                                               |
-| -------------------- | ----------------------- | ------------------------------------------------------------------------------------------ |
-| Health check         | Every hour, on the hour | Checks each configured service, records the result, raises a finding for anything down.    |
-| Stuck-task sweep     | Every hour, at :15      | Marks tasks that ran past their limit `outcome_unknown` instead of leaving them "running". |
-| Nightly backup       | 2:30 AM                 | Backs up every table and stored file, keeping the newest fourteen.                         |
-| Weekly restore check | Sunday 3:30 AM          | Restores the newest backup into a scratch database and checks it came back intact.         |
-| Document scan        | 7:30 AM                 | Finds documents due for review, expiring, or waiting for approval.                         |
+| Schedule             | When                    | What it does                                                                                                                            |
+| -------------------- | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Health check         | Every hour, on the hour | Checks each configured service, records the result, raises a finding for anything down.                                                 |
+| Stuck-task sweep     | Every hour, at :15      | Marks tasks that ran past their limit `outcome_unknown` instead of leaving them "running".                                              |
+| Nightly backup       | 2:30 AM                 | Backs up every table and stored file, keeping the newest fourteen.                                                                      |
+| Weekly restore check | Sunday 3:30 AM          | Restores the newest backup into a scratch database and checks it came back intact.                                                      |
+| Document scan        | 7:30 AM                 | Finds documents due for review, expiring, or waiting for approval.                                                                      |
+| Morning report       | 8:00 AM                 | Saves the daily report. One a day: a second firing finds the first and does nothing. The time follows Winnipeg through daylight saving. |
+| Evening recap        | 5:30 PM                 | Saves a recap with what to pick up first tomorrow. Does nothing unless `WORLDWIDE_AI_EVENING_RECAP` is set.                             |
 
-The 8:00 AM saved Daily Report is not built: the Daily Reports page builds its briefing when you open it.
+The morning report is code reading the workspace's own records: no model writes it and nothing is sent. Each report covers the time since the last one, so nothing is counted twice. Today's page still shows the live picture; the report is the saved record of a morning.
 
-**One scheduled job is not expected to work yet.** The restore check builds a scratch database from the migration files, using an in-process database package that is loaded by name at run time. The web application is told to deploy both (see `outputFileTracingIncludes` in `next.config.js`), so the restore check and skill evaluations started from the workspace have what they need. The Trigger.dev build has not been told: its image needs `supabase/migrations/` and `@electric-sql/pglite` added through Trigger.dev's own build settings, and that has not been set up or tried on a real project. Until it has, expect the weekly restore check job to fail, and run the restore check from **Settings** instead. The other four jobs don't use the scratch database.
+**One scheduled job is not expected to work yet.** The restore check builds a scratch database from the migration files, using an in-process database package that is loaded by name at run time. The web application is told to deploy both (see `outputFileTracingIncludes` in `next.config.js`), so the restore check and skill evaluations started from the workspace have what they need. The Trigger.dev build has not been told: its image needs `supabase/migrations/` and `@electric-sql/pglite` added through Trigger.dev's own build settings, and that has not been set up or tried on a real project. Until it has, expect the weekly restore check job to fail, and run the restore check from **Settings** instead. The other jobs don't use the scratch database.
 
 ## Backups and recovery
 
@@ -203,6 +235,8 @@ Checked on a developer machine:
 - The unit and workflow tests (`pnpm run test:run`), which run against an in-process Postgres with the real migrations.
 - Every code-only function on its sample and on cases written for its rules, including exact-decimal arithmetic.
 - Every model-written function with a stand-in model: the format, the citation rules, and that a reply breaking the rules stores nothing.
+- The ingredient ledger: every kind of movement and its limits, a request sent twice, two people taking the last of a lot, exact decimals, and the database refusing a negative balance or an agent as the actor.
+- Daily reports: one a day, a second attempt kept beside the first, no overlapping runs, a failed attempt saved with its reason, and nothing from a demonstration run or one person's own work in a shared report.
 - All 61 skills evaluated in an isolated database, and the approve, revoke, rollback and mid-run revocation paths, including a worked example of improving Relay's procedure from version 1 to version 2 and back.
 - The pages, in a browser, in the local preview at desktop and phone widths.
 - That a visitor who isn't signed in is redirected from every page and gets `401` from the API.
@@ -220,26 +254,28 @@ Not checked, because it needs your accounts or a deployment:
 
 The larger plan describes much more than this. These parts have no working code. The workspace says so on the relevant pages rather than showing empty features as if they worked.
 
-| Part of the plan                                                                                               | Status                                                                                                                                     |
-| -------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| 49 agents, each with a real function, typed output and truthful readiness                                      | Built and tested. See the capability matrix.                                                                                               |
-| Private workspace, access control, task pipeline, review, audit log                                            | Built and tested locally. Not yet used with a real sign-in.                                                                                |
-| Atlas knowledge library and the Relay support draft with a verified save                                       | Built and tested with a stand-in model.                                                                                                    |
-| Site inspection through OpenClaw                                                                               | Built and tested against a stand-in worker. No real host connected.                                                                        |
-| Health checks, backups, restore check, schedules, redacted tracing                                             | Built and tested locally. Schedules not deployed.                                                                                          |
-| Skills: twelve shared foundations and a role pack per agent                                                    | Built and tested locally: catalog, isolated evaluation, owner approval, revoke, rollback, and pinning to tasks. Not approved anywhere yet. |
-| Evaluating how well a model writes; exporting skills to other agent runtimes                                   | Not built. The evaluation checks the procedure, its permissions and the function behind it. Only this application loads skills.            |
-| Learning loop                                                                                                  | Partly. A person can record an improvement proposal and the owner decides it. Lessons are not drawn automatically from review decisions.   |
-| Saved Daily Reports at 8:00 AM                                                                                 | Not built. The briefing is made on demand and not stored.                                                                                  |
-| Inventory ledger, stored recipes, batches and finished-liquid records                                          | Not built. The Lab functions and the calculator work on what you enter and keep no inventory.                                              |
-| Manufacturing, quality and compliance record models with software gates                                        | Not built. The agents review records you supply and never release, approve or certify.                                                     |
-| RFID and NFC tag registry, live scan ingestion, public authenticity page                                       | Not built. Link reconciles scan exports you supply.                                                                                        |
-| Product Content Studio: Saleor product picker, images, per-field approval                                      | Not built beyond text drafts from details you enter. No image is ever produced.                                                            |
-| Build's coding worker (Claude Agent SDK) and independent review by Verify                                      | Not built. Build writes an engineering brief, which is not a patch. Verify re-checks stored results, not code changes.                     |
-| OpenHands, Agent Zero, Hermes, Paperclip, Buzz                                                                 | Not installed or connected. They appear on Integrations as having no connector.                                                            |
-| Linux desktop, installer image, VirtualBox machine                                                             | Not started. These need downloads and virtual machines that are the owner's decision to start.                                             |
-| Layout preferences, notifications, per-agent autonomy policies                                                 | Not built.                                                                                                                                 |
-| Connectors for accounting, carriers, bank, payment processor, email, calendar, search data, Figma, instruments | Not built. The functions that would use them work from records you supply.                                                                 |
+| Part of the plan                                                                                               | Status                                                                                                                                                                                                                               |
+| -------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 49 agents, each with a real function, typed output and truthful readiness                                      | Built and tested. See the capability matrix.                                                                                                                                                                                         |
+| Private workspace, access control, task pipeline, review, audit log                                            | Built and tested locally. Not yet used with a real sign-in.                                                                                                                                                                          |
+| Atlas knowledge library and the Relay support draft with a verified save                                       | Built and tested with a stand-in model.                                                                                                                                                                                              |
+| Site inspection through OpenClaw                                                                               | Built and tested against a stand-in worker. No real host connected.                                                                                                                                                                  |
+| Health checks, backups, restore check, schedules, redacted tracing                                             | Built and tested locally. Schedules not deployed.                                                                                                                                                                                    |
+| Skills: twelve shared foundations and a role pack per agent                                                    | Built and tested locally: catalog, isolated evaluation, owner approval, revoke, rollback, and pinning to tasks. Not approved anywhere yet.                                                                                           |
+| Evaluating how well a model writes; exporting skills to other agent runtimes                                   | Not built. The evaluation checks the procedure, its permissions and the function behind it. Only this application loads skills.                                                                                                      |
+| Learning loop                                                                                                  | Partly. A person can record an improvement proposal and the owner decides it. Lessons are not drawn automatically from review decisions.                                                                                             |
+| Daily Reports                                                                                                  | Built and tested locally: saved morning report and evening recap from the records, action items with owners, steps, links and sources, carry-over by task id, history, one a day, no overlapping runs. The schedule is not deployed. |
+| Daily Report sections with no data behind them                                                                 | Not built. Shipments, inventory, purchasing, accounting, manufacturing, goals and engineering changes are listed in each report as unavailable, with the reason. Assigning, snoozing and manual actions on Today are not built.      |
+| Ingredient inventory                                                                                           | Built and tested locally: ingredients, lots, and an append-only ledger with reservations, quarantine and corrections. Used in the preview only.                                                                                      |
+| Stored recipes, batches and finished-liquid stock                                                              | Not built. The calculator works on what you enter, a batch is quoted as a reference on a movement, and finished and packaged stock is not tracked.                                                                                   |
+| Manufacturing, quality and compliance record models with software gates                                        | Not built. The agents review records you supply and never release, approve or certify.                                                                                                                                               |
+| RFID and NFC tag registry, live scan ingestion, public authenticity page                                       | Not built. Link reconciles scan exports you supply.                                                                                                                                                                                  |
+| Product Content Studio: Saleor product picker, images, per-field approval                                      | Not built beyond text drafts from details you enter. No image is ever produced.                                                                                                                                                      |
+| Build's coding worker (Claude Agent SDK) and independent review by Verify                                      | Not built. Build writes an engineering brief, which is not a patch. Verify re-checks stored results, not code changes.                                                                                                               |
+| OpenHands, Agent Zero, Hermes, Paperclip, Buzz                                                                 | Not installed or connected. They appear on Integrations as having no connector.                                                                                                                                                      |
+| Linux desktop, installer image, VirtualBox machine                                                             | Not started. These need downloads and virtual machines that are the owner's decision to start.                                                                                                                                       |
+| Layout preferences, notifications, per-agent autonomy policies                                                 | Not built.                                                                                                                                                                                                                           |
+| Connectors for accounting, carriers, bank, payment processor, email, calendar, search data, Figma, instruments | Not built. The functions that would use them work from records you supply.                                                                                                                                                           |
 
 ## Commands
 

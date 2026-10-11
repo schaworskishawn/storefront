@@ -15,6 +15,8 @@ import { requestFunction, reviewProduct, type IncomingFile } from "../functions/
 import { getProductByTask } from "../functions/products";
 import { lookupFunction } from "../functions/registry";
 import { dispatchTask } from "../jobs/dispatch";
+import { MOVEMENT_LABELS, createIngredient, createLot, postMovement } from "../lab/inventory";
+import { generateDailyReport } from "../reports/daily";
 import { SKILLS, SKILL_BY_ID } from "../skills/catalog";
 import { evaluateSkills } from "../skills/evaluate";
 import {
@@ -28,6 +30,7 @@ import {
 import { createCase, setCaseStatus, type CaseStatus } from "../support/cases";
 import { cancelTask, retryTask, settleUnknownTask } from "../tasks/actions";
 import { getTask, scopeVisibleTo, type TaskRecord } from "../tasks/repo";
+import { opsDayKey } from "../time";
 import { WORKSPACE_PATH } from "../types";
 import { runTask } from "../workflows";
 import { requestSiteInspection } from "../workflows/inspection";
@@ -681,4 +684,130 @@ export async function skillAction(_previous: ActionState, form: FormData): Promi
 	} catch (error) {
 		return describeFailure(error);
 	}
+}
+
+// ---- Daily reports ---------------------------------------------------------------------------------------
+
+/**
+ * "Generate report now". Anyone in the workspace may: a report reads only shared business records, saves a further attempt
+ * for today, and sends nothing anywhere. A run already in progress for today is left to finish.
+ */
+export async function reportAction(_previous: ActionState, form: FormData): Promise<ActionState> {
+	const workspace = await getWorkspace();
+	try {
+		throttle(workspace);
+		const kind = text(form, "kind") === "evening" ? "evening" : "morning";
+		const outcome = await generateDailyReport(workspace.runtime, {
+			kind,
+			actor: workspace.actor,
+			again: true,
+		});
+		refresh();
+		if (outcome.status === "failed")
+			return {
+				ok: false,
+				message: `The report couldn't be generated: ${outcome.error} The attempt is kept in the list below.`,
+			};
+		if (outcome.status === "skipped") return { ok: false, message: outcome.reason };
+		const actions = outcome.report.report?.actions.length ?? 0;
+		return {
+			ok: true,
+			message: `${kind === "morning" ? "Morning report" : "Evening recap"} saved and read back. ${
+				actions === 0
+					? "Nothing needs anyone to act."
+					: `${actions} item${actions === 1 ? " needs" : "s need"} someone to act.`
+			}`,
+		};
+	} catch (error) {
+		return describeFailure(error);
+	}
+}
+
+// ---- E-Liquid Lab inventory ------------------------------------------------------------------------------
+
+/**
+ * Everything a person does to the ingredient inventory: record an ingredient, record a lot, post a movement to the ledger.
+ * Every rule (who may, how much, what is usable) is checked in the library inside one transaction. A form that is sent twice
+ * moves stock once, because each form carries its own key.
+ */
+export async function inventoryAction(_previous: ActionState, form: FormData): Promise<ActionState> {
+	const workspace = await getWorkspace();
+	const { sql } = workspace.runtime;
+	const intent = text(form, "intent");
+	const values = Object.fromEntries(
+		[...form.entries()].flatMap(([name, value]) =>
+			typeof value === "string" && name !== "intent" ? [[name, value]] : [],
+		),
+	);
+	// Where to go once the work is done. A redirect is raised outside the try block, as in the other actions here.
+	let destination: string | null = null;
+	try {
+		throttle(workspace);
+		if (intent === "ingredient") {
+			const made = await createIngredient(sql, workspace.actor, {
+				name: text(form, "name"),
+				category: text(form, "category"),
+				supplier: text(form, "supplier"),
+				sku: text(form, "sku"),
+				nicotineMgPerMl: text(form, "nicotineMgPerMl"),
+				nicotineType: text(form, "nicotineType"),
+				pgPercent: text(form, "pgPercent"),
+				vgPercent: text(form, "vgPercent"),
+				carrierSource: text(form, "carrierSource"),
+				minStock: text(form, "minStock"),
+				minStockUnit: text(form, "minStockUnit"),
+				notes: text(form, "notes"),
+			});
+			destination = path(`/lab/ingredients/${made.id}`);
+		} else if (intent === "lot") {
+			const lot = await createLot(sql, workspace.actor, {
+				ingredientId: text(form, "ingredientId"),
+				lotCode: text(form, "lotCode"),
+				unit: text(form, "unit"),
+				receivedOn: text(form, "receivedOn"),
+				expiresOn: text(form, "expiresOn"),
+				reviewOn: text(form, "reviewOn"),
+				location: text(form, "location"),
+				densityGPerMl: text(form, "densityGPerMl"),
+				densityTempC: text(form, "densityTempC"),
+				densitySource: text(form, "densitySource"),
+				costPerUnit: text(form, "costPerUnit"),
+				currency: text(form, "currency"),
+			});
+			refresh();
+			return {
+				ok: true,
+				message: `Lot ${lot.lotCode} recorded with nothing in it yet. Record a receipt to put stock in it.`,
+			};
+		} else if (intent === "move") {
+			const outcome = await postMovement(
+				sql,
+				workspace.actor,
+				{
+					lotId: text(form, "lotId"),
+					kind: text(form, "kind"),
+					quantity: text(form, "quantity"),
+					reason: text(form, "reason"),
+					reference: text(form, "reference"),
+					toLocation: text(form, "toLocation"),
+					basis: text(form, "basis"),
+					otherQuantity: text(form, "otherQuantity"),
+					idempotencyKey: text(form, "idempotencyKey"),
+				},
+				opsDayKey(workspace.runtime.now()),
+			);
+			refresh();
+			const { lot, movement } = outcome;
+			return {
+				ok: true,
+				message: `${outcome.duplicate ? "Already recorded" : MOVEMENT_LABELS[movement.kind]}${
+					movement.quantity === "0" ? "" : `: ${movement.quantity} ${movement.unit}`
+				}. Lot ${lot.lotCode} now has ${lot.onHand} ${lot.unit} on hand, ${lot.reserved} reserved.`,
+			};
+		} else throw new WorkflowError("invalid", "That isn't something that can be done to the inventory.");
+	} catch (error) {
+		return describeFailure(error, values);
+	}
+	refresh();
+	redirect(destination);
 }

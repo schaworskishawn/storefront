@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ROLE_BY_ID } from "@/lib/worldwide-ai/agents/registry";
 import { INTEGRATIONS } from "@/lib/worldwide-ai/integrations/catalog";
+import { latestCompletedReport } from "@/lib/worldwide-ai/reports/daily";
 import { formatOpsDate } from "@/lib/worldwide-ai/time";
 import { WORKSPACE_PATH } from "@/lib/worldwide-ai/types";
 import { loadToday } from "@/lib/worldwide-ai/web/queries";
@@ -28,7 +29,10 @@ export const metadata: Metadata = { title: "Today" };
 export default async function TodayPage() {
 	const workspace = await getWorkspace();
 	const now = workspace.runtime.now();
-	const { briefing, waiting, active, attention, recent, team } = await loadToday(workspace);
+	const [{ briefing, waiting, active, attention, recent, team }, lastReport] = await Promise.all([
+		loadToday(workspace),
+		latestCompletedReport(workspace.runtime.sql, "morning"),
+	]);
 	const priorities = briefing.items.filter((item) => item.level !== "info").slice(0, 3);
 	const approvals = waiting.drafts.length + waiting.products.length + waiting.versions.length;
 	const blocked = team.team.agents.filter((agent) => agent.primary.status === "awaiting_configuration");
@@ -55,7 +59,17 @@ export default async function TodayPage() {
 
 			<div className="wai-split">
 				<div className="wai-stack">
-					<Card title="Top priorities" accent>
+					<Card
+						title="Top priorities"
+						accent
+						aside={
+							<Link href={`${WORKSPACE_PATH}/reports`}>
+								{lastReport
+									? `Morning report of ${formatOpsDate(lastReport.periodEnd)}`
+									: "No morning report saved yet"}
+							</Link>
+						}
+					>
 						{priorities.length === 0 ? (
 							<Empty>
 								Nothing is waiting on you.{" "}

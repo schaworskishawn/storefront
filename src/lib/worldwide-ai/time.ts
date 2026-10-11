@@ -39,6 +39,23 @@ export function formatOpsDate(value: Date | string | number | null | undefined):
 	return Number.isNaN(date.getTime()) ? "—" : dateOnly.format(date);
 }
 
+/**
+ * "Sep 11, 2026" for a calendar day written "YYYY-MM-DD" (an expiry date, a review date). A day is not a moment: reading it
+ * as midnight UTC and showing it in Winnipeg would put it on the evening before, so no time zone is applied to it.
+ */
+export function formatDay(day: string | null | undefined): string {
+	const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(day ?? "");
+	if (!match) return "—";
+	const date = new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3])));
+	if (date.getUTCMonth() !== Number(match[2]) - 1) return "—";
+	return new Intl.DateTimeFormat("en-CA", {
+		timeZone: "UTC",
+		year: "numeric",
+		month: "short",
+		day: "numeric",
+	}).format(date);
+}
+
 /** The Winnipeg calendar day of a moment, as "YYYY-MM-DD". Deadlines and expiry dates are compared on this. */
 export function opsDayKey(value: Date | string | number): string {
 	const parts = new Intl.DateTimeFormat("en-CA", {
