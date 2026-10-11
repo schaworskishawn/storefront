@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import type { ConfigStatus } from "../integrations/catalog";
-import { ROLE_IDS, TASK_KINDS } from "../types";
+import { COLLECTION_IDS } from "../atlas/collections";
+import { ROLE_COUNT, ROLE_IDS, TASK_KINDS } from "../types";
 import { createToolGateway, type GatewayEvent, type ToolHandlers } from "./gateway";
 import { DEFAULT_LIMITS, HARD_CAPS, LIMIT_KEYS, parseLimitOverrides, resolveLimits } from "./limits";
 import {
@@ -11,39 +11,48 @@ import {
 	instructionsFor,
 	mayReadCollection,
 	mayUseTool,
-	roleReadiness,
+	rosterProblems,
 } from "./registry";
 import { TOOLS, TOOL_IDS } from "./tools";
 
 describe("the role registry", () => {
-	it("defines all fourteen roles once, with the names from the brief", () => {
+	it("is the canonical roster: exactly 49 agents, in order, with one Nexus and one Build", () => {
+		expect(ROLES).toHaveLength(ROLE_COUNT);
+		expect(ROLE_COUNT).toBe(49);
 		expect(ROLES.map((r) => r.id)).toEqual([...ROLE_IDS]);
-		expect(ROLES.map((r) => r.name)).toEqual([
-			"Nexus",
-			"Patch",
-			"Relay",
-			"Ledger",
-			"Atlas",
-			"Check",
-			"Watch",
-			"Review",
-			"Route",
-			"Trace",
-			"Tally",
-			"Vault",
-			"Guard",
-			"Verify",
-		]);
+		expect(ROLES.map((r) => r.number)).toEqual(Array.from({ length: 49 }, (_, i) => i + 1));
+		expect(new Set(ROLES.map((r) => r.name)).size).toBe(49);
+		expect(rosterProblems()).toEqual([]);
+		expect(ROLES[0]).toMatchObject({ id: "nexus", name: "Nexus", title: "Master coordinator" });
+		expect(ROLES.filter((r) => /coordinator/i.test(r.title))).toHaveLength(1);
+		expect(ROLES.filter((r) => r.title === "Engineering").map((r) => r.id)).toEqual(["build"]);
+		expect(ROLES.map((r) => r.name)).toEqual(
+			"Nexus Patch Relay Ledger Atlas Check Watch Review Route Trace Tally Vault Guard Verify Pulse Focus Insight Strategy Post Talent Comet Signal Reach Script Assist Care Stock Source Catalog Comply Batch Return Forecast Build Restore Prism Scout Forge Motion Link Tempo Qualify Assay Assure Gauge Clean Coach Duty Safeguard".split(
+				" ",
+			),
+		);
 	});
 
-	it("gives every role its own instructions, mission, tools and limits", () => {
+	it("keeps the first fourteen ids unchanged, so records written under them keep their owner", () => {
+		expect(ROLE_IDS.slice(0, 14)).toEqual(
+			"nexus patch relay ledger atlas check watch review route trace tally vault guard verify".split(" "),
+		);
+		expect(TASK_OWNER["relay.support_draft"]).toBe("relay");
+		expect(TASK_OWNER["patch.site_inspection"]).toBe("patch");
+	});
+
+	it("gives every role its own instructions, mission, tools, limits and boundaries", () => {
 		const instructions = new Set<string>();
 		for (const role of ROLES) {
 			expect(role.mission.length, role.id).toBeGreaterThan(20);
 			expect(role.instructions.length, role.id).toBeGreaterThan(80);
+			expect(role.boundaries.length, role.id).toBeGreaterThan(20);
+			expect(role.instructionsVersion, role.id).toBeGreaterThanOrEqual(1);
 			expect(role.tools.length, role.id).toBeGreaterThan(0);
 			expect(new Set(role.tools).size, role.id).toBe(role.tools.length);
 			for (const tool of role.tools) expect(TOOL_IDS, `${role.id} -> ${tool}`).toContain(tool);
+			for (const collection of role.knowledge)
+				expect(COLLECTION_IDS, `${role.id} -> ${collection}`).toContain(collection);
 			instructions.add(role.instructions);
 			for (const key of LIMIT_KEYS)
 				expect(role.limits[key], `${role.id}.${key}`).toBeLessThanOrEqual(HARD_CAPS[key]);
@@ -62,7 +71,7 @@ describe("the role registry", () => {
 	});
 
 	it("has no tool that spends money, files anything, messages customers or changes production", () => {
-		const banned = /(send|post|submit|file|pay|transfer|deploy|publish|delete|refund|approve)/i;
+		const banned = /(send|post|submit|file|pay|transfer|deploy|publish|delete|refund|approve|merge|release)/i;
 		for (const id of TOOL_IDS) {
 			const verb = id.split(".").slice(1).join(".");
 			expect(verb, id).not.toMatch(banned);
@@ -81,53 +90,37 @@ describe("the role registry", () => {
 		expect(mayReadCollection("relay", "tax-rules")).toBe(false);
 		expect(mayReadCollection("tally", "tax-rules")).toBe(true);
 		expect(mayReadCollection("nexus", "support-policy")).toBe(false);
+		// Only Nexus plans work for other agents (Watch and Review can raise a follow-up task of their own kind).
+		expect(ROLES.filter((r) => r.tools.includes("task.create")).map((r) => r.id)).toEqual([
+			"nexus",
+			"watch",
+			"review",
+		]);
+		// Focus keeps to itself: it can't even raise a shared finding.
+		expect(ROLE_BY_ID.focus.tools).toEqual(["source.read_supplied", "product.store"]);
+		expect(ROLE_BY_ID.focus.knowledge).toEqual([]);
 	});
 
-	it("gives each task kind exactly one owning role that lists it as a workflow", () => {
+	it("gives each kind of task exactly one owning role, named in the kind itself", () => {
 		for (const kind of TASK_KINDS) {
 			const owner = TASK_OWNER[kind];
+			expect(kind.startsWith(`${owner}.`), kind).toBe(true);
 			expect(ROLE_BY_ID[owner].workflows, kind).toContain(kind);
 			expect(ROLES.filter((r) => r.workflows.includes(kind))).toHaveLength(1);
 		}
-	});
-});
-
-describe("role readiness", () => {
-	const status = (id: ConfigStatus["id"], configured: boolean, missing: string[] = []): ConfigStatus => ({
-		id,
-		configured,
-		missing,
-	});
-	const everythingOn: ConfigStatus[] = (
-		["database", "model", "openclaw", "storage", "trigger", "saleor", "playwright"] as const
-	).map((id) => status(id, true));
-
-	it("is working when the workflow's integrations are configured", () => {
-		expect(roleReadiness(ROLE_BY_ID.relay, everythingOn)).toEqual({ status: "working" });
-		expect(roleReadiness(ROLE_BY_ID.patch, everythingOn)).toEqual({ status: "working" });
+		for (const role of ROLES) expect(role.workflows, role.id).toContain(role.primary);
 	});
 
-	it("says what is missing when it is awaiting configuration", () => {
-		const out = roleReadiness(ROLE_BY_ID.patch, [
-			status("database", true),
-			status("openclaw", false, ["OPENCLAW_ADAPTER_URL"]),
-		]);
-		expect(out).toEqual({ status: "awaiting_configuration", missing: ["openclaw (OPENCLAW_ADAPTER_URL)"] });
-		expect(roleReadiness(ROLE_BY_ID.relay, [status("database", true)])).toMatchObject({
-			status: "awaiting_configuration",
-		});
-	});
-
-	it("marks roles with no Phase 1 workflow as planned, even when their integrations are on", () => {
-		for (const id of ["ledger", "check", "route", "trace", "tally", "vault", "guard", "verify"] as const)
-			expect(roleReadiness(ROLE_BY_ID[id], everythingOn), id).toEqual({ status: "planned" });
-	});
-
-	it("counts the dashboard's built-in roles (Nexus, Atlas) as working once the database is configured", () => {
-		expect(roleReadiness(ROLE_BY_ID.nexus, [status("database", true)])).toEqual({ status: "working" });
-		expect(roleReadiness(ROLE_BY_ID.atlas, [status("database", false, ["POSTGRES_URL"])])).toMatchObject({
-			status: "awaiting_configuration",
-		});
+	it("lists what isn't built yet as planned, with what it needs, instead of as a function", () => {
+		expect(ROLE_BY_ID.build.planned.map((p) => p.id)).toEqual(["build.change-proposal"]);
+		expect(ROLE_BY_ID.build.planned[0].needs).toEqual(["coding_worker"]);
+		expect(ROLE_BY_ID.motion.planned[0].label).toMatch(/Render/);
+		for (const role of ROLES)
+			for (const planned of role.planned)
+				expect(
+					(TASK_KINDS as readonly string[]).some((kind) => kind === planned.id),
+					planned.id,
+				).toBe(false);
 	});
 });
 

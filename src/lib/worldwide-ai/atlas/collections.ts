@@ -12,6 +12,16 @@ export const KNOWLEDGE_COLLECTIONS = [
 	{ id: "chart-of-accounts", label: "Chart of accounts" },
 	{ id: "tax-rules", label: "Tax rules" },
 	{ id: "site-runbook", label: "Website runbook" },
+	{ id: "brand", label: "Brand voice and templates" },
+	{ id: "product-info", label: "Verified product information" },
+	{ id: "commercial", label: "Commercial terms" },
+	{ id: "manufacturing", label: "Manufacturing procedures" },
+	{ id: "quality", label: "Quality specifications" },
+	{ id: "compliance", label: "Compliance requirements" },
+	{ id: "excise", label: "Excise and stamp rules" },
+	{ id: "safety", label: "Workplace and waste procedures" },
+	{ id: "people", label: "Hiring and training" },
+	{ id: "security", label: "Access and security policy" },
 	{ id: "general", label: "General" },
 ] as const;
 

@@ -48,6 +48,8 @@ export type RunStructuredArgs<S extends z.ZodType> = {
 	/** Whether the (redacted) prompt and output may be recorded in traces. */
 	recordRaw: boolean;
 	abortSignal?: AbortSignal;
+	/** Images for the model to look at beside the prompt (a screenshot under review). */
+	images?: ReadonlyArray<{ bytes: Uint8Array; mime: string }>;
 };
 
 function classify(error: unknown): ModelRunError {
@@ -80,7 +82,23 @@ export async function runStructured<S extends z.ZodType>(
 		const result = await generateText({
 			model: args.handle.model,
 			instructions: args.instructions,
-			prompt: args.prompt,
+			...(args.images?.length
+				? {
+						messages: [
+							{
+								role: "user" as const,
+								content: [
+									{ type: "text" as const, text: args.prompt },
+									...args.images.map((image) => ({
+										type: "image" as const,
+										image: image.bytes,
+										mediaType: image.mime,
+									})),
+								],
+							},
+						],
+					}
+				: { prompt: args.prompt }),
 			output: Output.object({ schema: args.schema }),
 			temperature: 0.2,
 			maxRetries: args.limits.maxRetries,

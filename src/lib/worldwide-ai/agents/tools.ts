@@ -23,6 +23,10 @@ export const TOOL_IDS = [
 	"health.read",
 	"openclaw.inspect",
 	"openclaw.get_run",
+	// The shared function pipeline: read what a person supplied for this task, and store the result for review.
+	"source.read_supplied",
+	"product.store",
+	"product.read",
 	// No Phase 1 connector: a role may be allowed these, and they answer "not configured" until a connector exists.
 	"saleor.order.read",
 	"saleor.permissions.read",
@@ -169,6 +173,28 @@ export const TOOLS: Record<ToolId, ToolDefinition> = {
 		effect: "read",
 		integration: "openclaw",
 		inputSchema: z.object({ runId: z.string().min(1).max(120) }),
+	},
+	"source.read_supplied": {
+		id: "source.read_supplied",
+		summary:
+			"Read the records a person supplied for this task (a pasted table, a document, an upload). Nothing else.",
+		effect: "read",
+		integration: "internal",
+		inputSchema: z.object({ taskId: uuid }),
+	},
+	"product.store": {
+		id: "product.store",
+		summary: "Store this task's result privately for a person to review. Nothing leaves the workspace.",
+		effect: "write_internal",
+		integration: "internal",
+		inputSchema: z.object({ taskId: uuid }),
+	},
+	"product.read": {
+		id: "product.read",
+		summary: "Read a stored result and its evidence, for checking or consolidating.",
+		effect: "read",
+		integration: "internal",
+		inputSchema: z.object({ productId: uuid }),
 	},
 	"saleor.order.read": {
 		id: "saleor.order.read",

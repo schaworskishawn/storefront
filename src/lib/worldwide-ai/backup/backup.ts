@@ -17,6 +17,7 @@ export const BACKUP_TABLES = [
 	{ name: "wai_agent_settings", order: "role_id" },
 	{ name: "wai_tasks", order: "delegation_depth, created_at, id" },
 	{ name: "wai_task_events", order: "id" },
+	{ name: "wai_work_products", order: "created_at, id" },
 	{ name: "wai_documents", order: "created_at, id" },
 	{ name: "wai_document_versions", order: "document_id, version" },
 	{ name: "wai_cases", order: "created_at, id" },

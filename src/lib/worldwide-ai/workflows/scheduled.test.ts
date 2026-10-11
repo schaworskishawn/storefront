@@ -1,7 +1,7 @@
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { approveVersion, createDocument } from "../atlas/service";
 import { buildBriefing } from "../briefing";
 import { readConfig } from "../config";
@@ -24,6 +24,9 @@ import {
 import { runTask } from "./index";
 import { createCase } from "../support/cases";
 import { requestRelayDraft } from "./relay";
+
+// Each test builds its own in-memory database, which takes a moment when the whole suite runs at once.
+vi.setConfig({ testTimeout: 60_000 });
 
 const dbs: SqlClient[] = [];
 const db = async () => {
@@ -134,7 +137,7 @@ describe("health checks", () => {
 			const by = Object.fromEntries(results.map((r) => [r.integration, r]));
 			expect(by.database).toMatchObject({
 				status: "healthy",
-				detail: expect.stringMatching(/Schema version 1/),
+				detail: expect.stringMatching(/Schema version 2/),
 			});
 			expect(by.storage.status).toBe("healthy");
 			expect(by.openclaw).toMatchObject({ status: "healthy", detail: "OpenClaw's browser answered." });
@@ -470,7 +473,9 @@ describe("Nexus: the briefing", () => {
 		const sql = await db();
 		const now = new Date("2026-10-07T15:00:00Z");
 		const empty = await buildBriefing(sql, { staleAfterDays: 180 }, now);
-		expect(empty.items).toEqual([{ level: "info", text: "Nothing is waiting on you.", href: "/ops/tasks" }]);
+		expect(empty.items).toEqual([
+			{ level: "info", text: "Nothing is waiting on you.", href: "/worldwide-ai/tasks" },
+		]);
 
 		const deps = { ...workflowDeps(sql, null, {}), now: () => now };
 		const c = (

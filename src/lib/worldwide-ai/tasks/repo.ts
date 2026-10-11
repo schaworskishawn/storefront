@@ -37,6 +37,10 @@ export type TaskRecord = {
 	delegationDepth: number;
 	sourceRefs: SourceRef[];
 	externalRunId: string | null;
+	/** "business", or "personal:operator:<id>" for work only that person may see. */
+	scope: string;
+	/** A "Run sample" task on fictional input: kept out of live lists, counts and briefings. */
+	demo: boolean;
 	createdAt: string;
 	updatedAt: string;
 	startedAt: string | null;
@@ -45,7 +49,7 @@ export type TaskRecord = {
 
 const COLUMNS = `id, kind, title, owner_role, state, idempotency_key, requested_by, requested_by_label, expected_result,
 	completion_evidence, input, result, error, attempts, parent_task_id, delegation_depth, source_refs, external_run_id,
-	created_at, updated_at, started_at, finished_at`;
+	scope, demo, created_at, updated_at, started_at, finished_at`;
 
 export function mapTask(r: Row): TaskRecord {
 	return {
@@ -67,6 +71,8 @@ export function mapTask(r: Row): TaskRecord {
 		delegationDepth: Number(r.delegation_depth ?? 0),
 		sourceRefs: (r.source_refs as SourceRef[]) ?? [],
 		externalRunId: (r.external_run_id as string | null) ?? null,
+		scope: (r.scope as string | null) ?? "business",
+		demo: Boolean(r.demo),
 		createdAt: iso(r.created_at) as string,
 		updatedAt: iso(r.updated_at) as string,
 		startedAt: iso(r.started_at),
@@ -165,6 +171,9 @@ export type CreateTaskInput = {
 	sourceRefs?: SourceRef[];
 	/** How deep delegation may go for whoever is creating this (from their role's limits). */
 	maxDelegationDepth?: number;
+	/** Who may see it: "business" (the default) or one person's personal scope. */
+	scope?: string;
+	demo?: boolean;
 };
 
 export async function getTask(sql: Sql, id: string): Promise<TaskRecord | null> {
@@ -201,8 +210,8 @@ export async function createTask(
 
 	const { rows } = await sql.query(
 		`insert into wai_tasks (kind, title, owner_role, idempotency_key, requested_by, requested_by_label, expected_result,
-			input, parent_task_id, delegation_depth, source_refs)
-		 values ($1,$2,$3,$4,$5,$6,$7,$8::jsonb,$9,$10,$11::jsonb)
+			input, parent_task_id, delegation_depth, source_refs, scope, demo)
+		 values ($1,$2,$3,$4,$5,$6,$7,$8::jsonb,$9,$10,$11::jsonb,$12,$13)
 		 on conflict (idempotency_key) do nothing
 		 returning ${COLUMNS}`,
 		[
@@ -217,6 +226,8 @@ export async function createTask(
 			args.parentTaskId ?? null,
 			depth,
 			json(args.sourceRefs ?? []),
+			args.scope ?? "business",
+			args.demo ?? false,
 		],
 	);
 	if (rows[0]) {
@@ -260,9 +271,24 @@ export type TaskFilter = {
 	state?: TaskState | TaskState[];
 	ownerRole?: RoleId;
 	kind?: TaskKind;
+	parentTaskId?: string;
 	limit?: number;
 	offset?: number;
+	/**
+	 * Whose view this is. An operator's key shows business work plus that person's own personal work; "*" is the system's own
+	 * view (the stuck-task sweep), which sees everything. Left out, only business work is listed.
+	 */
+	viewer?: string;
+	/** Demonstration runs are left out unless asked for ("only" lists nothing else). */
+	demo?: "include" | "only";
 };
+
+/** The personal scope of an operator, by their actor key ("operator:<id>"). */
+export const personalScopeOf = (operatorKey: string): string => `personal:${operatorKey}`;
+
+/** Whether a record in `scope` may be shown to the person with this actor key. */
+export const scopeVisibleTo = (scope: string, operatorKey: string | null): boolean =>
+	scope === "business" || (operatorKey !== null && scope === personalScopeOf(operatorKey));
 
 export async function listTasks(sql: Sql, filter: TaskFilter = {}): Promise<TaskRecord[]> {
 	const where: string[] = [];
@@ -280,6 +306,18 @@ export async function listTasks(sql: Sql, filter: TaskFilter = {}): Promise<Task
 		params.push(filter.kind);
 		where.push(`kind = $${params.length}`);
 	}
+	if (filter.parentTaskId) {
+		params.push(filter.parentTaskId);
+		where.push(`parent_task_id = $${params.length}`);
+	}
+	if (filter.viewer !== "*") {
+		if (filter.viewer) {
+			params.push(personalScopeOf(filter.viewer));
+			where.push(`(scope = 'business' or scope = $${params.length})`);
+		} else where.push(`scope = 'business'`);
+	}
+	if (filter.demo === "only") where.push(`demo`);
+	else if (filter.demo !== "include") where.push(`not demo`);
 	params.push(Math.min(Math.max(filter.limit ?? 50, 1), 200), Math.max(filter.offset ?? 0, 0));
 	const { rows } = await sql.query(
 		`select ${COLUMNS} from wai_tasks ${where.length ? `where ${where.join(" and ")}` : ""}
@@ -291,7 +329,8 @@ export async function listTasks(sql: Sql, filter: TaskFilter = {}): Promise<Task
 
 export async function countTasksByState(sql: Sql): Promise<Record<TaskState, number>> {
 	const { rows } = await sql.query<{ state: TaskState; n: number }>(
-		`select state, count(*)::int as n from wai_tasks group by state`,
+		// Shared numbers: one person's personal work and demonstration runs are never counted.
+		`select state, count(*)::int as n from wai_tasks where scope = 'business' and not demo group by state`,
 	);
 	const counts: Record<TaskState, number> = {
 		queued: 0,
@@ -425,7 +464,7 @@ export async function sweepStuckTasks(
 	options: { secondsFor: (role: RoleId) => number; now?: Date },
 ): Promise<TaskRecord[]> {
 	const now = options.now ?? new Date();
-	const running = await listTasks(sql, { state: "running", limit: 200 });
+	const running = await listTasks(sql, { state: "running", limit: 200, viewer: "*", demo: "include" });
 	const swept: TaskRecord[] = [];
 	for (const task of running) {
 		const started = task.startedAt ? new Date(task.startedAt).getTime() : new Date(task.createdAt).getTime();

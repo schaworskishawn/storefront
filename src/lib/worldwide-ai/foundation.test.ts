@@ -185,9 +185,10 @@ describe("hash and types", () => {
 		expect(keyFrom("x", 1)).toBe(keyFrom("x", 1));
 	});
 
-	it("knows the 14 roles and 7 task states", () => {
-		expect(ROLE_IDS).toHaveLength(14);
-		expect(new Set(ROLE_IDS).size).toBe(14);
+	it("knows the 49 roles and 7 task states", () => {
+		expect(ROLE_IDS).toHaveLength(49);
+		expect(new Set(ROLE_IDS).size).toBe(49);
+		expect(ROLE_IDS[0]).toBe("nexus");
 		expect(TASK_STATES).toEqual([
 			"queued",
 			"running",

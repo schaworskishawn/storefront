@@ -51,6 +51,7 @@ describe("the Worldwide AI schema", () => {
 			"wai_task_events",
 			"wai_tasks",
 			"wai_usage",
+			"wai_work_products",
 		]);
 	});
 
@@ -58,7 +59,7 @@ describe("the Worldwide AI schema", () => {
 		const { rows } = await sql.query<{ relname: string; relrowsecurity: boolean }>(
 			"select relname, relrowsecurity from pg_class where relname like 'wai_%' and relkind = 'r'",
 		);
-		expect(rows.length).toBe(16);
+		expect(rows.length).toBe(17);
 		expect(rows.filter((r) => !r.relrowsecurity).map((r) => r.relname)).toEqual([]);
 		const policies = await sql.query("select 1 from pg_policies where tablename like 'wai_%'");
 		expect(policies.rows).toHaveLength(0);
@@ -68,7 +69,7 @@ describe("the Worldwide AI schema", () => {
 		const { rows } = await sql.query<{ value: string }>(
 			"select value from wai_meta where key = 'schema_version'",
 		);
-		expect(rows[0].value).toBe("1");
+		expect(rows[0].value).toBe("2");
 	});
 
 	it("accepts only the seven task states", async () => {

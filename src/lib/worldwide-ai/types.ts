@@ -3,6 +3,11 @@
  * `server-only`: the Next.js app, the background jobs (Trigger.dev) and the tests all import it.
  */
 
+/**
+ * The canonical roster: exactly 49 agents, Nexus first. The order is the roster position from the brief; the ids are the
+ * stable identifiers stored with tasks, findings and usage. Nexus is the only coordinator and Build the only coding agent.
+ * The first fourteen ids are unchanged from the first build, so records written under them keep their owner.
+ */
 export const ROLE_IDS = [
 	"nexus",
 	"patch",
@@ -18,7 +23,44 @@ export const ROLE_IDS = [
 	"vault",
 	"guard",
 	"verify",
+	"pulse",
+	"focus",
+	"insight",
+	"strategy",
+	"post",
+	"talent",
+	"comet",
+	"signal",
+	"reach",
+	"script",
+	"assist",
+	"care",
+	"stock",
+	"source",
+	"catalog",
+	"comply",
+	"batch",
+	"return",
+	"forecast",
+	"build",
+	"restore",
+	"prism",
+	"scout",
+	"forge",
+	"motion",
+	"link",
+	"tempo",
+	"qualify",
+	"assay",
+	"assure",
+	"gauge",
+	"clean",
+	"coach",
+	"duty",
+	"safeguard",
 ] as const;
+
+export const ROLE_COUNT = 49;
 
 export type RoleId = (typeof ROLE_IDS)[number];
 
@@ -48,18 +90,76 @@ export const TASK_STATE_LABELS: Record<TaskState, string> = {
 	outcome_unknown: "Outcome unknown",
 };
 
-/** What kinds of work the task system knows how to run. Each has an owning role and a workflow in `workflows/`. */
+/**
+ * Every kind of work the task system can run. A kind is "<owning agent>.<workflow>", so the owner of a task is never chosen
+ * separately: it is the part before the dot. The first four were built first and keep their names (the brief's
+ * "relay.case-draft" is `relay.support_draft` here); the rest are the baseline function of each agent.
+ */
 export const TASK_KINDS = [
 	"relay.support_draft",
 	"patch.site_inspection",
 	"review.document_scan",
 	"watch.health_check",
+	"nexus.goal-plan",
+	"patch.issue-diagnosis",
+	"ledger.period-workpaper",
+	"atlas.knowledge-review",
+	"check.record-validation",
+	"watch.health-assessment",
+	"review.deadline-register",
+	"route.exception-package",
+	"trace.shipment-timeline",
+	"tally.tax-workpaper",
+	"vault.settlement-match",
+	"guard.access-review",
+	"verify.workflow-acceptance",
+	"pulse.content-calendar",
+	"focus.personal-plan",
+	"insight.metric-analysis",
+	"strategy.option-brief",
+	"post.email-draft",
+	"talent.hiring-packet",
+	"comet.store-audit",
+	"signal.search-package",
+	"reach.wholesale-proposal",
+	"script.copy-draft",
+	"assist.meeting-pack",
+	"care.service-review",
+	"stock.replenishment-plan",
+	"source.quote-comparison",
+	"catalog.content-package",
+	"comply.evidence-review",
+	"batch.record-reconciliation",
+	"return.case-review",
+	"forecast.cash-scenario",
+	"build.engineering-brief",
+	"restore.coverage-review",
+	"prism.design-review",
+	"scout.research-brief",
+	"forge.feature-spec",
+	"motion.storyboard",
+	"link.scan-reconciliation",
+	"tempo.production-plan",
+	"qualify.supplier-package",
+	"assay.lab-review",
+	"assure.release-package",
+	"gauge.equipment-review",
+	"clean.clearance-review",
+	"coach.training-review",
+	"duty.excise-workpaper",
+	"safeguard.records-review",
 ] as const;
 
 export type TaskKind = (typeof TASK_KINDS)[number];
 
 export const isTaskKind = (value: unknown): value is TaskKind =>
 	typeof value === "string" && (TASK_KINDS as readonly string[]).includes(value);
+
+/** The owning agent of a kind of work: the part of its name before the dot. */
+export const ownerOfKind = (kind: TaskKind): RoleId => kind.slice(0, kind.indexOf(".")) as RoleId;
+
+/** Where the private workspace lives in the application. */
+export const WORKSPACE_PATH = "/worldwide-ai";
 
 export type OperatorRole = "owner" | "staff";
 

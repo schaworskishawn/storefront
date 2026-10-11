@@ -2,7 +2,7 @@ import { type Env, type WorldwideAiConfig, readConfig } from "../config";
 
 /**
  * The outside systems Worldwide AI depends on, and whether each is set up. "Configured" only means the settings are there;
- * `health.ts` finds out whether it answers. A system with no Phase 1 connector is listed too, as awaiting configuration,
+ * `health.ts` finds out whether it answers. A system with no connector yet is listed too, as awaiting configuration,
  * so the dashboard shows what is missing rather than hiding it.
  */
 
@@ -20,6 +20,20 @@ export const INTEGRATION_IDS = [
 	"bank",
 	"processor",
 	"logs",
+	"coding_worker",
+	"openhands",
+	"agent_zero",
+	"hermes",
+	"paperclip",
+	"buzz",
+	"image_generation",
+	"web_research",
+	"search_data",
+	"figma",
+	"email_inbox",
+	"calendar",
+	"rfid_readers",
+	"lab_instruments",
 ] as const;
 
 export type IntegrationId = (typeof INTEGRATION_IDS)[number];
@@ -126,6 +140,109 @@ export const INTEGRATIONS: Record<IntegrationId, IntegrationDefinition> = {
 		envVars: [],
 		hasConnector: false,
 	},
+	coding_worker: {
+		id: "coding_worker",
+		name: "Build's coding worker (Claude Agent SDK)",
+		purpose:
+			"Runs Build's isolated change proposals on a private worker. The worker contract isn't built yet, so Build offers engineering briefs only.",
+		envVars: [],
+		hasConnector: false,
+	},
+	openhands: {
+		id: "openhands",
+		name: "OpenHands",
+		purpose: "A second isolated coding backend for Build. No adapter yet.",
+		envVars: [],
+		hasConnector: false,
+	},
+	agent_zero: {
+		id: "agent_zero",
+		name: "Agent Zero",
+		purpose: "Scoped browser, document and Linux-diagnostic jobs for existing specialists. No adapter yet.",
+		envVars: [],
+		hasConnector: false,
+	},
+	hermes: {
+		id: "hermes",
+		name: "Hermes Agent",
+		purpose: "Recurring specialist work with retained, scoped context. No adapter yet.",
+		envVars: [],
+		hasConnector: false,
+	},
+	paperclip: {
+		id: "paperclip",
+		name: "Paperclip",
+		purpose:
+			"Organization, budget and run tracking mapped onto the existing agents and tasks. No adapter yet.",
+		envVars: [],
+		hasConnector: false,
+	},
+	buzz: {
+		id: "buzz",
+		name: "Buzz team workspace",
+		purpose: "Shared rooms and threads linked to tasks. No bridge yet.",
+		envVars: [],
+		hasConnector: false,
+	},
+	image_generation: {
+		id: "image_generation",
+		name: "Image generation and editing",
+		purpose:
+			"Prism's product-image drafts and Motion's thumbnails. No adapter yet, so no image is ever produced.",
+		envVars: [],
+		hasConnector: false,
+	},
+	web_research: {
+		id: "web_research",
+		name: "Web research retrieval",
+		purpose: "Fresh retrieval for Scout. Without it Scout reviews the documents you supply and says so.",
+		envVars: [],
+		hasConnector: false,
+	},
+	search_data: {
+		id: "search_data",
+		name: "Search and keyword data",
+		purpose: "Search volumes and rankings for Signal. Without it no volume or ranking figure is ever shown.",
+		envVars: [],
+		hasConnector: false,
+	},
+	figma: {
+		id: "figma",
+		name: "Figma",
+		purpose: "Design references for Prism. Without it Prism reviews the screenshots you upload.",
+		envVars: [],
+		hasConnector: false,
+	},
+	email_inbox: {
+		id: "email_inbox",
+		name: "Email inbox",
+		purpose:
+			"Thread retrieval for Post. Without it Post drafts from the thread text you paste; nothing is ever sent.",
+		envVars: [],
+		hasConnector: false,
+	},
+	calendar: {
+		id: "calendar",
+		name: "Calendar",
+		purpose: "Schedules for Assist and Focus. Without it they work from the snapshot you paste.",
+		envVars: [],
+		hasConnector: false,
+	},
+	rfid_readers: {
+		id: "rfid_readers",
+		name: "RFID and NFC readers",
+		purpose: "Live scan events for Link. Without them Link reconciles the scan export you supply.",
+		envVars: [],
+		hasConnector: false,
+	},
+	lab_instruments: {
+		id: "lab_instruments",
+		name: "Scales and instruments",
+		purpose:
+			"Read-only measurements for Gauge and Batch. Without them readings are entered by staff and labelled manual.",
+		envVars: [],
+		hasConnector: false,
+	},
 };
 
 export type ConfigStatus = {
@@ -180,11 +297,8 @@ export function configStatus(config: WorldwideAiConfig, env: Env = process.env):
 		]),
 		make("saleor", missingIf(!env.NEXT_PUBLIC_SALEOR_API_URL, "NEXT_PUBLIC_SALEOR_API_URL")),
 		make("playwright", []),
-		make("accounting", []),
-		make("carrier", []),
-		make("bank", []),
-		make("processor", []),
-		make("logs", []),
+		// Everything without a connector yet is listed too, so the dashboard shows what is missing rather than hiding it.
+		...INTEGRATION_IDS.filter((id) => !INTEGRATIONS[id].hasConnector).map((id) => make(id, [])),
 	];
 }
 
