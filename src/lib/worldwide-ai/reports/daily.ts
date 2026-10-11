@@ -7,6 +7,7 @@ import { listFindings } from "../findings";
 import { hashOf } from "../functions/products";
 import { INTEGRATIONS, configStatus } from "../integrations/catalog";
 import { latestHealth } from "../integrations/health";
+import { inventoryFindings, listInventory } from "../lab/inventory";
 import { listProposals, listReleases } from "../skills/store";
 import { countStandings, loadSkillRows } from "../skills/standing";
 import { formatOpsDate, opsDayKey } from "../time";
@@ -95,7 +96,7 @@ const LIST_LIMIT = 50;
 /** The areas the brief asks a report to cover that this workspace has no records for. Stated, never shown as zero. */
 const UNAVAILABLE: ReadonlyArray<{ area: string; reason: string }> = [
 	{ area: "Shipments", reason: "No carrier connector exists. Route and Trace work from records you supply." },
-	{ area: "Inventory", reason: "No inventory ledger is stored. Stock works from a snapshot you supply." },
+	{ area: "Inventory", reason: "No ingredient has been recorded in the Lab yet." },
 	{ area: "Purchasing", reason: "No purchasing records are stored. Source works from quotes you supply." },
 	{ area: "Accounting and banking", reason: "No accounting or bank connector exists." },
 	{
@@ -151,6 +152,7 @@ export async function buildDailyReport(
 		proposals,
 		approvedDocs,
 		usage,
+		inventory,
 	] = await Promise.all([
 		sql.query(
 			`select ${TASK_COLUMNS} from wai_tasks t where ${BUSINESS} and t.state = 'completed'
@@ -195,6 +197,7 @@ export async function buildDailyReport(
 			 and (t.id is null or (${BUSINESS}))`,
 			[start, end],
 		),
+		listInventory(sql, day),
 	]);
 
 	// A finding raised by a demonstration run, or by one person's own task, is not business news.
@@ -355,6 +358,36 @@ export async function buildDailyReport(
 			dependsOn: [],
 		});
 
+	// ---- Ingredient stock: one item per ingredient that has something to look at -----------------------------
+	const stockFindings = inventoryFindings(inventory);
+	for (const item of inventory.filter((entry) => entry.flags.length > 0)) {
+		const own = stockFindings.filter((finding) => finding.ingredientId === item.ingredient.id);
+		const pressing = own.some((finding) => finding.kind === "expired" || finding.kind === "low");
+		const expiring = item.lots
+			.filter((lot) => lot.expiresOn !== null && lot.onHand !== "0")
+			.map((lot) => lot.expiresOn as string)
+			.sort()[0];
+		actions.push({
+			title: `Stock: ${item.ingredient.name}`,
+			responsible: "A person in the Lab",
+			priority: pressing ? "high" : "normal",
+			reason: own.map((finding) => finding.text).join(" "),
+			nextSteps: [
+				"Open the ingredient.",
+				own.some((finding) => finding.kind === "low")
+					? "Reorder, or ask Stock to plan replenishment from the stored stock."
+					: "Record what the supplier's documents say, or deal with the lot.",
+				"Record any movement in the ledger.",
+			],
+			// A lot's expiry is a recorded date.
+			due: expiring ? { date: expiring, confirmed: true } : null,
+			links: [{ label: "Ingredient", href: `${WORKSPACE_PATH}/lab/ingredients/${item.ingredient.id}` }],
+			sources: [source("Ingredient inventory and its ledger")],
+			expectedResult: "Nothing is flagged on this ingredient.",
+			dependsOn: [],
+		});
+	}
+
 	// ---- Services ----------------------------------------------------------------------------------------
 	const statuses = configStatus(config, deps.env ?? process.env);
 	const integrations = statuses
@@ -476,7 +509,7 @@ export async function buildDailyReport(
 		standings.inUse === standings.total
 			? `All ${standings.total} skills are approved and in use.`
 			: `${standings.inUse} of ${standings.total} skills are approved and in use.`,
-		`${UNAVAILABLE.length} areas the workspace has no records for are listed as unavailable, not as zero.`,
+		`${UNAVAILABLE.length - (inventory.length ? 1 : 0)} areas the workspace has no records for are listed as unavailable, not as zero.`,
 	];
 
 	const report: DailyReport = {
@@ -531,7 +564,8 @@ export async function buildDailyReport(
 				})),
 		},
 		integrations,
-		unavailable: [...UNAVAILABLE],
+		// Once the Lab holds stock, inventory is something the report reads, not something it can't see.
+		unavailable: UNAVAILABLE.filter((item) => item.area !== "Inventory" || inventory.length === 0),
 		usage: {
 			modelCalls: Number(usage.rows[0]?.calls ?? 0),
 			inputTokens: Number(usage.rows[0]?.input ?? 0),
@@ -549,6 +583,11 @@ export async function buildDailyReport(
 			{ source: "Knowledge documents checked", records: documents.scanned, asOf: end },
 			{ source: "Integrations with a recorded health check", records: health.length, asOf: end },
 			{ source: "Skills", records: skillRows.length, asOf: end },
+			{
+				source: "Ingredient lots",
+				records: inventory.reduce((n, item) => n + item.lots.length, 0),
+				asOf: end,
+			},
 		],
 	};
 	if (input.kind === "evening") report.tomorrow = actions.slice(0, 3).map((action) => action.title);

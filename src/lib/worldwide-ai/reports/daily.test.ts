@@ -8,6 +8,7 @@ import { requestFunction, runFunction } from "../functions/pipeline";
 import { hashOf } from "../functions/products";
 import { FUNCTIONS, lookupFunction } from "../functions/registry";
 import { recordHealth } from "../integrations/health";
+import { createIngredient, createLot, postMovement } from "../lab/inventory";
 import { personalScopeOf } from "../tasks/repo";
 import { freshDb, owner, staff, system, workflowDeps } from "../testing.test-util";
 import { formatDay, formatOpsDate, opsDayKey } from "../time";
@@ -477,5 +478,64 @@ describe("when a report can't be generated", () => {
 		).rejects.toThrow();
 		expect(await listReports(w.sql)).toEqual([]);
 		expect((await generateDailyReport(w.deps, { kind: "morning", actor: system })).status).toBe("completed");
+	});
+});
+
+describe("a report on a workspace whose Lab holds stock", () => {
+	it("reads the ingredient inventory instead of calling it unavailable, and turns what is flagged into actions", async () => {
+		const w = await open("2026-10-13T13:00:00Z");
+		const base = await createIngredient(w.sql, staff, {
+			name: "Nic base 100",
+			category: "nicotine_base",
+			nicotineMgPerMl: "100",
+			pgPercent: "90",
+			vgPercent: "0",
+			minStock: "500",
+			minStockUnit: "mL",
+		});
+		const lot = await createLot(w.sql, staff, {
+			ingredientId: base.id,
+			lotCode: "N-1",
+			unit: "mL",
+			expiresOn: "2026-11-01",
+			densityGPerMl: "1.035",
+			densitySource: "CoA N-1",
+		});
+		await postMovement(
+			w.sql,
+			staff,
+			{ lotId: lot.id, kind: "receipt", quantity: "300", idempotencyKey: "report-receipt-1" },
+			"2026-10-13",
+		);
+		const fine = await createIngredient(w.sql, staff, { name: "VG USP", category: "vg" });
+		const vg = await createLot(w.sql, staff, {
+			ingredientId: fine.id,
+			lotCode: "V-1",
+			unit: "g",
+			densityGPerMl: "1.261",
+			densitySource: "CoA V-1",
+		});
+		await postMovement(
+			w.sql,
+			staff,
+			{ lotId: vg.id, kind: "receipt", quantity: "5000", idempotencyKey: "report-receipt-2" },
+			"2026-10-13",
+		);
+
+		const report = reportOf((await w.generate()).report);
+		expect(report.unavailable.map((item) => item.area)).not.toContain("Inventory");
+		expect(report.summary[4]).toBe(
+			"6 areas the workspace has no records for are listed as unavailable, not as zero.",
+		);
+		expect(report.coverage.find((row) => row.source === "Ingredient lots")).toMatchObject({ records: 2 });
+		// Only the ingredient with something flagged becomes an action. The one in good order is not mentioned.
+		expect(report.actions.map((a) => a.title)).toEqual(["Stock: Nic base 100"]);
+		expect(report.actions[0]).toMatchObject({
+			priority: "high",
+			responsible: "A person in the Lab",
+			reason: "Low stock: 300 mL usable, below the minimum of 500. Lot N-1 expires on 2026-11-01.",
+			due: { date: "2026-11-01", confirmed: true },
+			links: [{ label: "Ingredient", href: `/worldwide-ai/lab/ingredients/${base.id}` }],
+		});
 	});
 });

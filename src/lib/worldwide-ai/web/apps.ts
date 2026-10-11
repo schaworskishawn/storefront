@@ -155,11 +155,14 @@ export const AREAS: Partial<Record<AppId, AreaDefinition>> = {
 		lead: "Recipe calculations in exact decimals, replenishment planning from a stock snapshot, and batch reconciliation from what staff recorded.",
 		agents: ["stock", "batch", "catalog", "check", "ledger", "source"],
 		also: [
+			"Ingredient inventory: ingredients, their lots, and an append-only ledger of receipts, reservations, use, returns, waste, moves, corrections and quarantine. Stock can't go negative, can't be reserved twice, and is moved only by a person.",
 			"The recipe calculator below works out ingredient volumes and weights from documented densities. It never assumes 1 mL is 1 gram.",
+			"Stock can plan replenishment from the stored stock. Daily demand and lead time aren't stored yet, so you add those.",
 		],
 		notBuilt: [
-			"Stored ingredient, recipe, batch and finished-liquid records. Today each function works on the records you paste in; nothing is kept as inventory.",
-			"The stock ledger with reservations, consumption and transfers, and its concurrency controls.",
+			"Stored recipes with versions, batches with lot allocations and actual yields, and finished-liquid and packaged stock.",
+			"Reservations made by a batch record. Today a person reserves and records use lot by lot, quoting the batch as the reference.",
+			"Moving part of a lot to another place, ingredient costs rolled up into batch costs, and documents attached to a lot.",
 			"Synchronizing sellable stock with Saleor. Saleor stays the only authority for sellable stock.",
 		],
 	},
