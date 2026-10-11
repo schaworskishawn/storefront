@@ -860,3 +860,21 @@ export async function getCodingJob(
 		verifications: verifications.rows.map(toVerification),
 	};
 }
+
+/** Frozen candidates nobody has decided on yet, oldest first, each with the job it belongs to. */
+export async function listUndecidedPackages(
+	sql: Sql,
+): Promise<Array<{ job: CodingJob; pkg: ChangePackage }>> {
+	const packages = await sql.query(
+		`select ${PACKAGE_COLUMNS} from wai_change_packages where status = 'frozen' and decision is null order by frozen_at limit 100`,
+	);
+	if (packages.rows.length === 0) return [];
+	const jobs = await sql.query(`select ${JOB_COLUMNS} from wai_coding_jobs where id = any($1::uuid[])`, [
+		packages.rows.map((r) => r.job_id),
+	]);
+	const byId = new Map(jobs.rows.map((r) => [r.id as string, toJob(r)]));
+	return packages.rows.flatMap((r) => {
+		const job = byId.get(r.job_id as string);
+		return job ? [{ job, pkg: toPackage(r) }] : [];
+	});
+}

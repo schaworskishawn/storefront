@@ -7,6 +7,7 @@ import { listFindings } from "../findings";
 import { hashOf } from "../functions/products";
 import { INTEGRATIONS, configStatus } from "../integrations/catalog";
 import { latestHealth } from "../integrations/health";
+import { listCodingJobs, listUndecidedPackages } from "../engineering/coding";
 import { CALIBRATION_LABELS, listEquipment } from "../lab/equipment";
 import { listFinished } from "../lab/finished";
 import { inventoryFindings, listInventory } from "../lab/inventory";
@@ -166,6 +167,8 @@ export async function buildDailyReport(
 		training,
 		tagExceptions,
 		tags,
+		codingJobs,
+		undecidedChanges,
 	] = await Promise.all([
 		sql.query(
 			`select ${TASK_COLUMNS} from wai_tasks t where ${BUSINESS} and t.state = 'completed'
@@ -219,6 +222,8 @@ export async function buildDailyReport(
 		listTraining(sql),
 		listExceptions(sql),
 		tagCounts(sql),
+		listCodingJobs(sql),
+		listUndecidedPackages(sql),
 	]);
 
 	// A finding raised by a demonstration run, or by one person's own task, is not business news.
@@ -624,6 +629,42 @@ export async function buildDailyReport(
 			dependsOn: [],
 		});
 
+	// ---- Coding work: what is waiting on a backend, and changes waiting for a decision -------------------------
+	const waitingJobs = codingJobs.filter((job) => job.status === "awaiting_backend");
+	if (waitingJobs.length)
+		actions.push({
+			title: `Coding work is waiting: ${waitingJobs.length} job${waitingJobs.length === 1 ? "" : "s"}`,
+			responsible: "The owner",
+			priority: "normal",
+			reason: `No coding backend is connected, so nothing has run. Waiting on: ${waitingJobs.map((job) => job.repositoryId).join(", ")}. No patch or check result exists for ${waitingJobs.length === 1 ? "it" : "them"}.`,
+			nextSteps: [
+				"Decide whether to connect a coding backend.",
+				"Until then, cancel a job that is no longer wanted so its repository is free.",
+			],
+			due: null,
+			links: [{ label: "Coding work", href: `${WORKSPACE_PATH}/engineering/coding` }],
+			sources: [source("Coding jobs waiting for a backend")],
+			expectedResult: "A backend is connected, or the jobs are cancelled.",
+			dependsOn: [],
+		});
+	for (const { job, pkg } of undecidedChanges)
+		actions.push({
+			title: `Decide on a change: ${job.repositoryId}`,
+			responsible: "The owner",
+			priority: "normal",
+			reason: `${pkg.summary} ${pkg.files.length} file${pkg.files.length === 1 ? "" : "s"} changed. It can be approved only once Verify has passed every check on this exact candidate.`,
+			nextSteps: [
+				"Open the job.",
+				"Read the diff and Verify's results.",
+				"Approve or reject it, with a reason.",
+			],
+			due: null,
+			links: [{ label: "The change", href: `${WORKSPACE_PATH}/engineering/coding/${job.id}` }],
+			sources: [source("Change packages waiting for a decision")],
+			expectedResult: "The candidate is approved or rejected. Neither merges or deploys anything.",
+			dependsOn: [],
+		});
+
 	// ---- Services ----------------------------------------------------------------------------------------
 	const statuses = configStatus(config, deps.env ?? process.env);
 	const integrations = statuses
@@ -835,6 +876,7 @@ export async function buildDailyReport(
 			{ source: "Equipment", records: equipment.length, asOf: end },
 			{ source: "Training records", records: training.length, asOf: end },
 			{ source: "Registered tags", records: tags.total, asOf: end },
+			{ source: "Coding jobs", records: codingJobs.length, asOf: end },
 			{ source: "Tags in use attached to nothing", records: tags.unassigned, asOf: end },
 		],
 	};

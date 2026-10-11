@@ -3,6 +3,7 @@ import { approveVersion, createDocument } from "../atlas/service";
 import { listAudit } from "../audit";
 import { readConfig } from "../config";
 import type { Sql, SqlClient } from "../db/sql";
+import { acceptPackage, registerRepository, requestCodingJob, reviewPackage } from "../engineering/coding";
 import { recordFinding } from "../findings";
 import { requestFunction, runFunction } from "../functions/pipeline";
 import { hashOf } from "../functions/products";
@@ -869,5 +870,74 @@ describe("a report on a workspace with tags on record", () => {
 		});
 		const next = reportOf((await w.generate({ again: true, actor: staff })).report);
 		expect(next.actions.some((a) => a.title.includes("04FFFFFFFFFF01"))).toBe(false);
+	});
+});
+
+describe("a report on a workspace with coding work asked for", () => {
+	it("says plainly that nothing has run, and asks for a decision once a change is frozen", async () => {
+		const w = await open("2026-10-22T13:00:00Z");
+		const base = "a".repeat(40);
+		await registerRepository(w.sql, owner, {
+			id: "storefront",
+			label: "The storefront",
+			defaultBranch: "main",
+			changeScope: "src/ui/**",
+		});
+		const job = await requestCodingJob(
+			w.sql,
+			staff,
+			{
+				jobType: "change_proposal",
+				repositoryId: "storefront",
+				baseCommit: base,
+				goal: "Fix the filter drawer.",
+				expectedResult: "The drawer opens at phone width.",
+				checks: ["typecheck"],
+				idempotencyKey: "report-coding-1",
+			},
+			new Date("2026-10-22T12:00:00Z"),
+		);
+		const first = reportOf((await w.generate()).report);
+		expect(first.actions.find((a) => a.title.startsWith("Coding work is waiting"))).toMatchObject({
+			title: "Coding work is waiting: 1 job",
+			responsible: "The owner",
+			reason:
+				"No coding backend is connected, so nothing has run. Waiting on: storefront. No patch or check result exists for it.",
+			links: [{ label: "Coding work", href: "/worldwide-ai/engineering/coding" }],
+		});
+		expect(first.coverage.find((row) => row.source === "Coding jobs")?.records).toBe(1);
+
+		// A worker (stood in for here) returns a change. The job is no longer waiting; the change needs a decision.
+		const file = "src/ui/filters.tsx";
+		const pkg = await acceptPackage(
+			w.sql,
+			{ kind: "system", label: "coding-worker" },
+			{
+				jobId: job.id,
+				envelopeSha256: job.envelopeSha256,
+				baseCommit: base,
+				diff: `diff --git a/${file} b/${file}\n--- a/${file}\n+++ b/${file}\n@@ -1 +1 @@\n-old\n+new\n`,
+				files: [{ path: file, change: "modified" }],
+				summary: "The drawer's open state was reset on every render.",
+			},
+		);
+		const second = reportOf((await w.generate({ again: true, actor: staff })).report);
+		expect(second.actions.some((a) => a.title.startsWith("Coding work is waiting"))).toBe(false);
+		expect(second.actions.find((a) => a.title.startsWith("Decide on a change"))).toMatchObject({
+			title: "Decide on a change: storefront",
+			responsible: "The owner",
+			reason:
+				"The drawer's open state was reset on every render. 1 file changed. It can be approved only once Verify has passed every check on this exact candidate.",
+			links: [{ label: "The change", href: `/worldwide-ai/engineering/coding/${job.id}` }],
+		});
+
+		await reviewPackage(w.sql, owner, {
+			packageId: pkg.id,
+			candidateSha256: pkg.candidateSha256,
+			decision: "rejected",
+			note: "Not the fix we want.",
+		});
+		const third = reportOf((await w.generate({ again: true, actor: staff })).report);
+		expect(third.actions.some((a) => a.title.startsWith("Decide on a change"))).toBe(false);
 	});
 });
