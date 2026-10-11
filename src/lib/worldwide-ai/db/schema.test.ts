@@ -43,7 +43,9 @@ describe("the Worldwide AI schema", () => {
 			"wai_bulk_movements",
 			"wai_calibrations",
 			"wai_cases",
+			"wai_change_packages",
 			"wai_cleaning_records",
+			"wai_coding_jobs",
 			"wai_corrective_actions",
 			"wai_daily_reports",
 			"wai_deviation_entries",
@@ -61,10 +63,12 @@ describe("the Worldwide AI schema", () => {
 			"wai_integration_health",
 			"wai_meta",
 			"wai_openclaw_runs",
+			"wai_package_verifications",
 			"wai_packaging_runs",
 			"wai_quality_holds",
 			"wai_recipe_versions",
 			"wai_recipes",
+			"wai_repositories",
 			"wai_reviews",
 			"wai_sample_events",
 			"wai_samples",
@@ -92,7 +96,7 @@ describe("the Worldwide AI schema", () => {
 		const { rows } = await sql.query<{ relname: string; relrowsecurity: boolean }>(
 			"select relname, relrowsecurity from pg_class where relname like 'wai_%' and relkind = 'r'",
 		);
-		expect(rows.length).toBe(50);
+		expect(rows.length).toBe(54);
 		expect(rows.filter((r) => !r.relrowsecurity).map((r) => r.relname)).toEqual([]);
 		const policies = await sql.query("select 1 from pg_policies where tablename like 'wai_%'");
 		expect(policies.rows).toHaveLength(0);
@@ -103,7 +107,7 @@ describe("the Worldwide AI schema", () => {
 			"select value from wai_meta where key = 'schema_version'",
 		);
 		expect(rows[0].value).toBe(String(SCHEMA_VERSION));
-		expect(SCHEMA_VERSION).toBe(11);
+		expect(SCHEMA_VERSION).toBe(12);
 	});
 
 	it("accepts only the seven task states", async () => {

@@ -10,6 +10,13 @@ import { addVersion, approveVersion, createDocument, rejectVersion, retireDocume
 import { audit } from "../audit";
 import { listBackups } from "../backup/backup";
 import { runBackup, runRestoreDrill } from "../backup/drill";
+import {
+	CHECK_RUNNERS,
+	cancelCodingJob,
+	registerRepository,
+	requestCodingJob,
+	reviewPackage,
+} from "../engineering/coding";
 import { decideFinding } from "../findings";
 import { requestFunction, reviewProduct, type IncomingFile } from "../functions/pipeline";
 import { getProductByTask } from "../functions/products";
@@ -1598,5 +1605,86 @@ export async function rfidAction(_previous: ActionState, form: FormData): Promis
 		return describeFailure(error, values);
 	}
 	refresh();
+	return { ok: true, message };
+}
+
+// ---- Engineering: coding jobs for Build -----------------------------------------------------------------
+
+/**
+ * Registering a repository, asking for coding work, cancelling a job, and the owner's decision on a returned change. No
+ * coding backend is connected, so a job asked for here is recorded and waits. Nothing here runs code, and approving a
+ * change records a decision: it merges, pushes and deploys nothing.
+ */
+export async function codingAction(_previous: ActionState, form: FormData): Promise<ActionState> {
+	const workspace = await getWorkspace();
+	const { sql } = workspace.runtime;
+	const intent = text(form, "intent");
+	const values = Object.fromEntries(
+		[...form.entries()].flatMap(([name, value]) =>
+			typeof value === "string" && name !== "intent" ? [[name, value]] : [],
+		),
+	);
+	let destination: string | null = null;
+	let message = "Recorded.";
+	try {
+		throttle(workspace);
+		switch (intent) {
+			case "repo.register": {
+				const repository = await registerRepository(sql, workspace.actor, {
+					id: text(form, "id"),
+					label: text(form, "label"),
+					defaultBranch: text(form, "defaultBranch"),
+					changeScope: text(form, "changeScope"),
+					protectedPaths: text(form, "protectedPaths"),
+				});
+				message = `Registered as ${repository.id}. Coding work can be asked for on it, within the paths you listed.`;
+				break;
+			}
+			case "job.request": {
+				const job = await requestCodingJob(
+					sql,
+					workspace.actor,
+					{
+						jobType: text(form, "jobType"),
+						repositoryId: text(form, "repositoryId"),
+						baseCommit: text(form, "baseCommit"),
+						goal: text(form, "goal"),
+						expectedResult: text(form, "expectedResult"),
+						checks: Object.keys(CHECK_RUNNERS).filter((id) => text(form, `check.${id}`) === "yes"),
+						idempotencyKey: text(form, "idempotencyKey"),
+					},
+					workspace.runtime.now(),
+				);
+				destination = path(`/engineering/coding/${job.id}`);
+				break;
+			}
+			case "job.cancel":
+				await cancelCodingJob(sql, workspace.actor, {
+					jobId: text(form, "jobId"),
+					reason: text(form, "note"),
+				});
+				message = "Cancelled.";
+				break;
+			case "package.review": {
+				const pkg = await reviewPackage(sql, workspace.actor, {
+					packageId: text(form, "packageId"),
+					candidateSha256: text(form, "candidateSha256"),
+					decision: text(form, "decision"),
+					note: text(form, "note"),
+				});
+				message =
+					pkg.decision === "approved"
+						? "Approved. That is a recorded decision on this exact candidate: nothing was merged, pushed or deployed."
+						: "Rejected.";
+				break;
+			}
+			default:
+				throw new WorkflowError("invalid", "That isn't something that can be done here.");
+		}
+	} catch (error) {
+		return describeFailure(error, values);
+	}
+	refresh();
+	if (destination) redirect(destination);
 	return { ok: true, message };
 }

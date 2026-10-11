@@ -199,10 +199,16 @@ export const AREAS: Partial<Record<AppId, AreaDefinition>> = {
 		id: "engineering",
 		lead: "Inspect pages on the OpenClaw worker, diagnose issues from logs and evidence, specify features, and prepare engineering briefs. Verify re-checks any finished task independently.",
 		agents: ["build", "verify", "patch", "forge", "prism", "comet"],
+		also: [
+			"Coding work as records and rules: a registered repository with the paths a change may and may not touch, and a job whose envelope the server builds from a full commit id and checks chosen from a fixed list. A request can't carry an address, a command or a path.",
+			"A returned change is accepted only from a worker, only for that exact job and commit, only if its list of files is exactly what its diff touches, and only if every file is in scope. Otherwise it is refused whole and not kept.",
+			"An accepted change is frozen under a checksum of what it contains. Only Verify records a check result on it, the owner can approve only once every check has passed on that exact candidate, and neither a result nor a decision carries over to a different candidate.",
+		],
 		notBuilt: [
-			"Build's isolated coding worker (Claude Agent SDK): repository registration, sandboxed checkouts, real diffs and check runs. Until it exists Build prepares briefs only, and a brief is not a patch.",
-			"OpenHands as a second coding backend, and the choice of backend per attempt.",
-			"Review of a frozen candidate revision, and any push, pull request, merge or deployment.",
+			"A coding backend. Neither the Claude Agent SDK nor OpenHands is installed, and there is no worker host, so nothing runs a job: it is recorded and waits. Build still prepares briefs only, and a brief is not a patch.",
+			"The worker itself: a sandboxed checkout, the gateway a worker reports through, dispatch, cancellation of a running process, and usage counted against a budget.",
+			"Verify running checks for itself. The contract takes its results; nothing produces them yet.",
+			"Any push, pull request, merge or deployment. Approving a change records a decision and does nothing else.",
 		],
 	},
 	manufacturing: {

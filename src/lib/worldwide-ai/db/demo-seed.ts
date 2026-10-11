@@ -6,6 +6,12 @@ import type { OperatorActor } from "../types";
 import type { Sql } from "./sql";
 import { addRecipeVersion, approveRecipeVersion, createRecipe, planBatch } from "../lab/batches";
 import { createIngredient, createLot, postMovement } from "../lab/inventory";
+import {
+	acceptPackage,
+	recordVerification,
+	registerRepository,
+	requestCodingJob,
+} from "../engineering/coding";
 import { addEquipment, recordCalibration } from "../lab/equipment";
 import { addSpecification, approveSpecification } from "../lab/quality";
 import { assignTag, recordScan, registerTags } from "../rfid/registry";
@@ -300,6 +306,54 @@ async function seedDemoLab(sql: Sql, now: Date): Promise<void> {
 		kind: "scale",
 		calibrationIntervalDays: "90",
 	});
+
+	// A made-up repository, so the preview can show a coding request being recorded. Nothing runs it.
+	await registerRepository(sql, DEMO_OWNER, {
+		id: "demo-storefront",
+		label: `${DEMO_PREFIX} A fictional repository`,
+		defaultBranch: "main",
+		changeScope: "src/ui/**",
+	});
+	// And a made-up job with a made-up change, so the review screen has something on it. No worker produced this diff and no
+	// check was run on it: the "worker" and Verify's result below are part of the demonstration data, and say so.
+	const demoJob = await requestCodingJob(
+		sql,
+		DEMO_OWNER,
+		{
+			jobType: "change_proposal",
+			repositoryId: "demo-storefront",
+			baseCommit: "d".repeat(40),
+			goal: `${DEMO_PREFIX} The filter drawer doesn't open at phone width.`,
+			expectedResult: "The drawer opens at phone width.",
+			checks: ["typecheck"],
+			idempotencyKey: "demo-coding-job-1",
+		},
+		new Date(`${today}T12:00:00Z`),
+	);
+	const demoFile = "src/ui/components/filter-drawer.tsx";
+	const demoPackage = await acceptPackage(
+		sql,
+		{ kind: "system", label: "demo-worker" },
+		{
+			jobId: demoJob.id,
+			envelopeSha256: demoJob.envelopeSha256,
+			baseCommit: "d".repeat(40),
+			diff: `diff --git a/${demoFile} b/${demoFile}\n--- a/${demoFile}\n+++ b/${demoFile}\n@@ -12,7 +12,7 @@\n-\tconst [open, setOpen] = useState(props.open);\n+\tconst [open, setOpen] = useState(false);\n`,
+			files: [{ path: demoFile, change: "modified" }],
+			summary: `${DEMO_PREFIX} A made-up change. No worker wrote it.`,
+		},
+	);
+	await recordVerification(
+		sql,
+		{ kind: "agent", roleId: "verify" },
+		{
+			packageId: demoPackage.id,
+			candidateSha256: demoPackage.candidateSha256,
+			runnerId: "typecheck",
+			exitStatus: 0,
+			environment: `${DEMO_PREFIX} No check was run. This result is demonstration data.`,
+		},
+	);
 
 	// Made-up tags. One is on the fictional scale, one is on nothing, and a simulated scan read one nobody registered.
 	const [onScale] = await registerTags(sql, DEMO_OWNER, {
