@@ -40,7 +40,7 @@ import { AGENT_SDK_VERSION, missingForRun, readCodingConfig, type CodingConfig }
 
 let sql: SqlClient;
 const BASE = "a".repeat(40);
-const KEY = "sk-ant-test-key-that-must-never-enter-a-machine";
+const KEY = "not-a-real-key-and-it-must-never-enter-a-machine";
 const FILE = "src/ui/components/filters.tsx";
 const DIFF = `diff --git a/${FILE} b/${FILE}\n--- a/${FILE}\n+++ b/${FILE}\n@@ -1 +1 @@\n-old\n+new\n`;
 const RAW = `:100644 100644 ${"1".repeat(40)} ${"2".repeat(40)} M\t${FILE}\n`;
