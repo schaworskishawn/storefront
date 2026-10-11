@@ -1,6 +1,9 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { isEmailConfigured, sendNotification } from "@/lib/email";
 import { rateLimited } from "@/lib/rate-limit";
+import { readConfig } from "@/lib/worldwide-ai/config";
+import { getSql } from "@/lib/worldwide-ai/runtime";
+import { fileContactMessage } from "@/lib/worldwide-ai/support/contact-intake";
 
 const clean = (v: unknown, max: number) =>
 	typeof v === "string"
@@ -41,6 +44,17 @@ export async function POST(request: Request) {
 		return NextResponse.json(
 			{ message: "Online messaging isn't set up yet.", fallback: true },
 			{ status: 501 },
+		);
+
+	// A copy for the private workspace, only when the owner switched it on. It runs after the response has been sent and
+	// can't fail the request: the email below is still how the message reaches the store.
+	const workspace = readConfig();
+	if (workspace.ingestContactForm)
+		after(() =>
+			fileContactMessage(
+				{ config: workspace, sql: () => getSql(workspace) },
+				{ firstName, lastName, email, order, subject, message },
+			).then(() => undefined),
 		);
 
 	const r = await sendNotification({
