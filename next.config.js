@@ -23,12 +23,22 @@ const config = {
 	// See: https://nextjs.org/docs/app/getting-started/cache-components
 	cacheComponents: true,
 
-	// The Worldwide AI restore check and skill evaluations run the real migrations on a scratch database, so the server
-	// bundle for the workspace has to carry the migration files.
-	outputFileTracingIncludes: {
-		"/worldwide-ai": ["./supabase/migrations/*.sql"],
-		"/worldwide-ai/**": ["./supabase/migrations/*.sql"],
-	},
+	// The Worldwide AI restore check and skill evaluations run the real migrations on a scratch, in-process database. That
+	// database (PGlite) is loaded by name at run time, on purpose, so it stays out of every other bundle; which means the
+	// build can't see it, and it and the migration files have to be named here to be deployed with the workspace.
+	outputFileTracingIncludes: Object.fromEntries(
+		["/worldwide-ai", "/worldwide-ai/**"].map((route) => [
+			route,
+			[
+				"./supabase/migrations/*.sql",
+				"./node_modules/@electric-sql/pglite/package.json",
+				"./node_modules/@electric-sql/pglite/dist/**/*.js",
+				"./node_modules/@electric-sql/pglite/dist/**/*.cjs",
+				"./node_modules/@electric-sql/pglite/dist/*.wasm",
+				"./node_modules/@electric-sql/pglite/dist/*.data",
+			],
+		]),
+	),
 
 	// Named cacheLife tiers for `"use cache"` — see src/lib/cache-life-profiles.ts
 	cacheLife: paperCacheLifeProfiles,

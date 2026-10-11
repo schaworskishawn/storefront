@@ -159,6 +159,8 @@ These exist only once the jobs are deployed to Trigger.dev. Times are Winnipeg t
 
 The 8:00 AM saved Daily Report is not built: the Daily Reports page builds its briefing when you open it.
 
+**One scheduled job is not expected to work yet.** The restore check builds a scratch database from the migration files, using an in-process database package that is loaded by name at run time. The web application is told to deploy both (see `outputFileTracingIncludes` in `next.config.js`), so the restore check and skill evaluations started from the workspace have what they need. The Trigger.dev build has not been told: its image needs `supabase/migrations/` and `@electric-sql/pglite` added through Trigger.dev's own build settings, and that has not been set up or tried on a real project. Until it has, expect the weekly restore check job to fail, and run the restore check from **Settings** instead. The other four jobs don't use the scratch database.
+
 ## Backups and recovery
 
 There are two layers, and you need both.
@@ -210,6 +212,7 @@ Not checked, because it needs your accounts or a deployment:
 
 - A real Saleor staff sign-in, and a real customer being refused.
 - The live database, storage bucket, model, Trigger.dev, Langfuse, and an OpenClaw host.
+- The restore check and skill evaluation on the hosted site. The build is confirmed to carry the files they need, but they have only been run on a developer machine.
 - The quality of real drafts. A stand-in model proves the checks work, not that the writing is good.
 - Any function on real business records.
 
