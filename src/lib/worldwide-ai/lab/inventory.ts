@@ -650,11 +650,8 @@ export async function postMovement(
 	today: string,
 ): Promise<MovementOutcome> {
 	const kind = MOVEMENT_KINDS.find((k) => k === request.kind);
-	if (!kind) throw new InventoryError("invalid", "That isn't a kind of stock movement.");
-	const key = tidy(request.idempotencyKey, 120);
-	if (key.length < 8)
-		throw new InventoryError("invalid", "The request is missing its key. Reload the page and try again.");
-	if (OWNER_ONLY.includes(kind) && actor.role !== "owner") {
+	// A refused attempt is logged here, outside the transaction, so the record of it isn't rolled back with the refusal.
+	if (kind && OWNER_ONLY.includes(kind) && actor.role !== "owner")
 		await audit(sql, {
 			actor,
 			action: `inventory.${kind}`,
@@ -662,6 +659,34 @@ export async function postMovement(
 			outcome: "denied",
 			detail: { reason: "owner only" },
 		});
+	const outcome = await sql.transaction((tx) => applyMovement(tx, actor, request, today));
+	if (!outcome.duplicate)
+		await audit(sql, {
+			actor,
+			action: `inventory.${outcome.movement.kind}`,
+			subject: outcome.lot.id,
+			outcome: "allowed",
+			detail: { lot: outcome.lot.lotCode, quantity: outcome.movement.quantity, unit: outcome.movement.unit },
+		});
+	return outcome;
+}
+
+/**
+ * The work of one movement, inside a transaction the caller already holds. A batch uses this to reserve from several lots
+ * at once, so that either every lot is reserved or none is.
+ */
+export async function applyMovement(
+	tx: Sql,
+	actor: OperatorActor,
+	request: MovementRequest,
+	today: string,
+): Promise<MovementOutcome> {
+	const kind = MOVEMENT_KINDS.find((k) => k === request.kind);
+	if (!kind) throw new InventoryError("invalid", "That isn't a kind of stock movement.");
+	const key = tidy(request.idempotencyKey, 120);
+	if (key.length < 8)
+		throw new InventoryError("invalid", "The request is missing its key. Reload the page and try again.");
+	if (OWNER_ONLY.includes(kind) && actor.role !== "owner") {
 		throw new InventoryError(
 			"forbidden",
 			`Only the owner can ${kind === "correction" ? "correct a balance" : "release a lot from quarantine"}.`,
@@ -675,7 +700,7 @@ export async function postMovement(
 	const basis =
 		(["measured", "calculated", "estimate"] as const).find((b) => b === request.basis) ?? "measured";
 
-	const outcome = await sql.transaction(async (tx) => {
+	{
 		const existing = await tx.query(
 			`select ${MOVEMENT_COLUMNS} from wai_stock_movements where idempotency_key = $1`,
 			[key],
@@ -840,16 +865,7 @@ export async function postMovement(
 			],
 		);
 		return { movement: toMovement(inserted.rows[0]), lot: toLot(updated.rows[0]), duplicate: false };
-	});
-	if (!outcome.duplicate)
-		await audit(sql, {
-			actor,
-			action: `inventory.${kind}`,
-			subject: outcome.lot.id,
-			outcome: "allowed",
-			detail: { lot: outcome.lot.lotCode, quantity: outcome.movement.quantity, unit: outcome.movement.unit },
-		});
-	return outcome;
+	}
 }
 
 export type MovementView = Movement & {
