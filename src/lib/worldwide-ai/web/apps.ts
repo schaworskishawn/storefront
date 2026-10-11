@@ -163,7 +163,7 @@ export const AREAS: Partial<Record<AppId, AreaDefinition>> = {
 		],
 		notBuilt: [
 			"Where packaged units go after a run. The store stays the only record of sellable stock, and nothing here is sent to it.",
-			"Test results, deviations and label approvals as records of their own. Today the owner confirms them when releasing a batch.",
+			"Label and artwork approvals as records of their own. Today the owner confirms the approved labels were used when releasing a batch.",
 			"Using more than was reserved from within the batch record, moving part of a lot, costs rolled up into batch costs, and documents attached to a lot or a batch.",
 			"Synchronizing sellable stock with Saleor. Saleor stays the only authority for sellable stock.",
 		],
@@ -215,10 +215,17 @@ export const AREAS: Partial<Record<AppId, AreaDefinition>> = {
 		id: "quality",
 		lead: "Supplier qualification evidence, laboratory results compared with approved specifications, and release packages that say what stands in the way of a decision.",
 		agents: ["qualify", "assay", "assure", "comply", "gauge", "clean"],
+		also: [
+			"Holds and release: a hold stops a batch being packaged or released, and release is the owner's decision, rechecked against every record at the moment it is made.",
+			"Specifications in versions the owner approves, samples with a custody line for each hand-over, and laboratory results that count only once the owner has verified them against the report.",
+			"Verified results are compared with the approved specification in exact decimals. Units are never converted, and anything the workspace can't judge is left unresolved for a person. A verified result outside its limit puts the batch on hold.",
+			"Deviations with an investigation that keeps suspicion apart from finding, and corrective actions that have to be verified to have worked before the deviation can close.",
+		],
 		notBuilt: [
-			"Holds as enforced records, and release as a backend transaction that rechecks every record.",
-			"Deviation, corrective-action and change-control records with their own review.",
-			"Sample custody tracking and retained-sample and stability schedules.",
+			"The laboratory's original report as a stored file, and reading results out of one. Results are typed in by a person and the report is named by its number.",
+			"Agents working from these records. Assay and Assure still work from what you give them with each run, and prepare drafts only.",
+			"Change control, retained-sample and stability schedules, and supplier qualification as records.",
+			"Calibration, cleaning and training records. A release can't check them, so they aren't claimed.",
 		],
 	},
 	compliance: {

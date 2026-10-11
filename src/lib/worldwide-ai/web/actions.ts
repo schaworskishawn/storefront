@@ -33,6 +33,21 @@ import {
 	recordPackagingRun,
 } from "../lab/finished";
 import { MOVEMENT_LABELS, createIngredient, createLot, postMovement } from "../lab/inventory";
+import {
+	addCorrectiveAction,
+	addDeviationEntry,
+	addSpecification,
+	approveSpecification,
+	closeDeviation,
+	enterResult,
+	openDeviation,
+	parseCriteria,
+	recordSampleEvent,
+	ruleOnResult,
+	takeSample,
+	updateCorrectiveAction,
+	verifyResult,
+} from "../lab/quality";
 import { generateDailyReport } from "../reports/daily";
 import { SKILLS, SKILL_BY_ID } from "../skills/catalog";
 import { evaluateSkills } from "../skills/evaluate";
@@ -1134,4 +1149,174 @@ export async function finishedAction(_previous: ActionState, form: FormData): Pr
 	} catch (error) {
 		return describeFailure(error, values);
 	}
+}
+
+// ---- Quality records: specifications, samples, results and deviations -----------------------------------
+
+/**
+ * Specifications, samples and their custody, laboratory results, and deviations with their corrective actions. Approving a
+ * specification, verifying or ruling on a result, verifying or cancelling an action and closing a deviation are the
+ * owner's, checked in the library and logged either way. Nothing here sends anything to a laboratory or anyone else.
+ */
+export async function qualityAction(_previous: ActionState, form: FormData): Promise<ActionState> {
+	const workspace = await getWorkspace();
+	const { sql } = workspace.runtime;
+	const intent = text(form, "intent");
+	const today = opsDayKey(workspace.runtime.now());
+	const values = Object.fromEntries(
+		[...form.entries()].flatMap(([name, value]) =>
+			typeof value === "string" && name !== "intent" ? [[name, value]] : [],
+		),
+	);
+	let destination: string | null = null;
+	let message = "Recorded.";
+	try {
+		throttle(workspace);
+		switch (intent) {
+			case "spec.add": {
+				const specification = await addSpecification(sql, workspace.actor, {
+					recipeId: text(form, "recipeId"),
+					criteria: parseCriteria(text(form, "criteria")),
+					note: text(form, "note"),
+				});
+				message = `Version ${specification.version} of the specification for ${specification.recipeName} is saved as a draft. It guides nothing until the owner approves it.`;
+				break;
+			}
+			case "spec.approve": {
+				const specification = await approveSpecification(sql, workspace.actor, text(form, "specificationId"));
+				message = `Version ${specification.version} is now the specification in force for ${specification.recipeName}.`;
+				break;
+			}
+			case "sample.take": {
+				const sample = await takeSample(sql, workspace.actor, {
+					batchId: text(form, "batchId"),
+					purpose: text(form, "purpose"),
+					quantityMl: text(form, "quantityMl"),
+					testsRequested: text(form, "testsRequested"),
+					idempotencyKey: text(form, "idempotencyKey"),
+				});
+				message = `Sample ${sample.code} recorded, and ${sample.quantityMl} mL taken from the bulk.`;
+				break;
+			}
+			case "sample.event":
+				await recordSampleEvent(sql, workspace.actor, {
+					sampleId: text(form, "sampleId"),
+					event: text(form, "event"),
+					detail: text(form, "detail"),
+				});
+				message = "Added to the sample's custody record.";
+				break;
+			case "result.enter": {
+				const result = await enterResult(
+					sql,
+					workspace.actor,
+					{
+						batchId: text(form, "batchId"),
+						sampleId: text(form, "sampleId"),
+						analyte: text(form, "analyte"),
+						method: text(form, "method"),
+						reportedAs: text(form, "reportedAs"),
+						uncertainty: text(form, "uncertainty"),
+						unit: text(form, "unit"),
+						lab: text(form, "lab"),
+						reportRef: text(form, "reportRef"),
+						reportedOn: text(form, "reportedOn"),
+						replacesId: text(form, "replacesId"),
+						correctionReason: text(form, "correctionReason"),
+					},
+					today,
+				);
+				message = `${result.analyte} ${result.reportedAs} ${result.unit} is on file. It counts once the owner has verified it against the report.`;
+				break;
+			}
+			case "result.verify": {
+				const done = await verifyResult(sql, workspace.actor, text(form, "resultId"));
+				message = done.hold
+					? `Verified. It is outside its limit, so batch ${done.result.batchCode} has been put on hold.`
+					: done.verdict
+						? `Verified. ${done.verdict.detail}`
+						: "Verified. No approved specification has a criterion to compare it with.";
+				break;
+			}
+			case "result.rule": {
+				const result = await ruleOnResult(sql, workspace.actor, {
+					resultId: text(form, "resultId"),
+					ruling: text(form, "ruling"),
+					reason: text(form, "note"),
+				});
+				message =
+					result.ruling === "accepted"
+						? "Accepted, with your reason kept beside it."
+						: "Set aside. It stays on file and is no longer compared with the specification.";
+				break;
+			}
+			case "deviation.open": {
+				const deviation = await openDeviation(
+					sql,
+					workspace.actor,
+					{
+						batchId: text(form, "batchId"),
+						title: text(form, "title"),
+						description: text(form, "description"),
+						severity: text(form, "severity"),
+						hold: text(form, "hold") === "yes",
+					},
+					today,
+				);
+				destination = path(`/quality/deviations/${deviation.id}`);
+				break;
+			}
+			case "deviation.entry":
+				await addDeviationEntry(sql, workspace.actor, {
+					deviationId: text(form, "deviationId"),
+					kind: text(form, "kind"),
+					body: text(form, "body"),
+				});
+				message = "Added to the investigation.";
+				break;
+			case "deviation.action.add":
+				await addCorrectiveAction(
+					sql,
+					workspace.actor,
+					{
+						deviationId: text(form, "deviationId"),
+						action: text(form, "action"),
+						responsible: text(form, "responsible"),
+						dueOn: text(form, "dueOn"),
+					},
+					today,
+				);
+				message = "The action is added. It stays open until it is done and the owner has verified it worked.";
+				break;
+			case "deviation.action.step": {
+				const action = await updateCorrectiveAction(sql, workspace.actor, {
+					actionId: text(form, "actionId"),
+					step: text(form, "step"),
+					note: text(form, "note"),
+				});
+				message =
+					action.status === "done"
+						? "Marked done. The owner still has to verify that it worked."
+						: action.status === "verified"
+							? "Verified to have worked."
+							: "Cancelled, with the reason kept.";
+				break;
+			}
+			case "deviation.close": {
+				const deviation = await closeDeviation(sql, workspace.actor, {
+					deviationId: text(form, "deviationId"),
+					disposition: text(form, "note"),
+				});
+				message = `Deviation ${deviation.code} is closed.`;
+				break;
+			}
+			default:
+				throw new WorkflowError("invalid", "That isn't something that can be done here.");
+		}
+	} catch (error) {
+		return describeFailure(error, values);
+	}
+	refresh();
+	if (destination) redirect(destination);
+	return { ok: true, message };
 }

@@ -6,6 +6,7 @@ import type { OperatorActor } from "../types";
 import type { Sql } from "./sql";
 import { addRecipeVersion, approveRecipeVersion, createRecipe, planBatch } from "../lab/batches";
 import { createIngredient, createLot, postMovement } from "../lab/inventory";
+import { addSpecification, approveSpecification } from "../lab/quality";
 
 /**
  * Sample data for the local demonstration store (WORLDWIDE_AI_STORE=demo). Everything here is made up, every title starts
@@ -259,5 +260,15 @@ async function seedDemoLab(sql: Sql, now: Date): Promise<void> {
 		flavours: [{ ingredientId: mango.id, percent: "10" }],
 	});
 	await approveRecipeVersion(sql, DEMO_OWNER, version.id);
+	// Made-up limits, so a result entered in the preview has something to be compared with.
+	const specification = await addSpecification(sql, DEMO_OWNER, {
+		recipeId: recipe.id,
+		criteria: [
+			{ analyte: "Nicotine", unit: "mg/mL", min: "11.4", max: "12.6" },
+			{ analyte: "Water", unit: "%", max: "1", required: false },
+		],
+		note: "Fictional limits for the demonstration.",
+	});
+	await approveSpecification(sql, DEMO_OWNER, specification.id);
 	await planBatch(sql, DEMO_OWNER, { recipeVersionId: version.id, batchMl: "1000" }, today);
 }

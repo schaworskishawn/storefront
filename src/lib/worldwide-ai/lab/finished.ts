@@ -1,10 +1,21 @@
 import { audit } from "../audit";
-import { ZERO, add, dec, eq, gt, isNegative, isZero, round, sub, toText, tryDec, type Dec } from "../decimal";
+import { ZERO, dec, eq, gt, isNegative, isZero, round, sub, toText, tryDec, type Dec } from "../decimal";
 import { iso, json, type Row, type Sql } from "../db/sql";
 import { hashOf } from "../functions/products";
 import { actorKey, type OperatorActor } from "../types";
 import { getBatch, listAllocations, type Batch } from "./batches";
-import { InventoryError, applyMovement, getLot, verifyLedger } from "./inventory";
+import {
+	FinishedError,
+	HOLD_COLUMNS,
+	insertHold,
+	lockBatch,
+	moveBulk,
+	toHold,
+	type BulkMovement,
+	type QualityHold,
+} from "./bulk";
+import { applyMovement, getLot, verifyLedger } from "./inventory";
+import { qualityChecks, type ReleaseCheck } from "./quality";
 
 /**
  * Finished liquid: a made batch's bulk, the packaging runs that draw it down, quality holds, and the release decision.
@@ -19,7 +30,7 @@ import { InventoryError, applyMovement, getLot, verifyLedger } from "./inventory
  * nothing is published and no sellable stock changes in Saleor.
  */
 
-export class FinishedError extends InventoryError {}
+export { FinishedError, type BulkMovement, type QualityHold };
 
 const tidy = (value: unknown, max: number): string =>
 	typeof value === "string"
@@ -52,37 +63,7 @@ function wholeNumber(label: string, value: unknown, options: { min: number }): n
 	return amount;
 }
 
-async function lockBatch(tx: Sql, id: string): Promise<Batch> {
-	const locked = await tx.query(`select id from wai_batches where id = $1 for update`, [id]);
-	if (!locked.rows[0]) throw new FinishedError("not_found", "That batch doesn't exist.");
-	return (await getBatch(tx, id)) as Batch;
-}
-
 // ---- Quality holds ------------------------------------------------------------------------------------
-
-export type QualityHold = {
-	id: string;
-	batchId: string;
-	reason: string;
-	placedBy: string;
-	placedAt: string;
-	liftedBy: string | null;
-	liftedAt: string | null;
-	liftReason: string | null;
-};
-
-const toHold = (r: Row): QualityHold => ({
-	id: r.id as string,
-	batchId: r.batch_id as string,
-	reason: r.reason as string,
-	placedBy: r.placed_by as string,
-	placedAt: iso(r.placed_at) as string,
-	liftedBy: (r.lifted_by as string | null) ?? null,
-	liftedAt: iso(r.lifted_at),
-	liftReason: (r.lift_reason as string | null) ?? null,
-});
-
-const HOLD_COLUMNS = `id, batch_id, reason, placed_by, placed_at, lifted_by, lifted_at, lift_reason`;
 
 export async function listHolds(sql: Sql, batchId: string): Promise<QualityHold[]> {
 	const { rows } = await sql.query(
@@ -103,10 +84,7 @@ export async function placeHold(
 	if (!reason) throw new FinishedError("invalid", "Say why the batch is being put on hold.");
 	const batch = await getBatch(sql, batchId);
 	if (!batch) throw new FinishedError("not_found", "That batch doesn't exist.");
-	const { rows } = await sql.query(
-		`insert into wai_quality_holds (batch_id, reason, placed_by) values ($1,$2,$3) returning ${HOLD_COLUMNS}`,
-		[batchId, reason, actorKey(actor)],
-	);
+	const hold = await insertHold(sql, actor, batchId, reason);
 	await audit(sql, {
 		actor,
 		action: "batch.hold.place",
@@ -114,7 +92,7 @@ export async function placeHold(
 		outcome: "allowed",
 		detail: { code: batch.code, reason },
 	});
-	return toHold(rows[0]);
+	return hold;
 }
 
 export async function liftHold(
@@ -155,18 +133,6 @@ const openHolds = (holds: readonly QualityHold[]) => holds.filter((hold) => hold
 
 // ---- The bulk ledger ----------------------------------------------------------------------------------
 
-export type BulkMovement = {
-	id: string;
-	kind: "produced" | "packaged" | "sample" | "waste" | "correction";
-	quantityMl: string;
-	deltaMl: string;
-	remainingAfterMl: string;
-	reason: string | null;
-	reference: string | null;
-	actor: string;
-	at: string;
-};
-
 export async function listBulkMovements(sql: Sql, batchId: string): Promise<BulkMovement[]> {
 	const { rows } = await sql.query(
 		`select id, kind, quantity_ml::text as quantity_ml, delta_ml::text as delta_ml, remaining_after_ml::text as remaining_after_ml,
@@ -184,49 +150,6 @@ export async function listBulkMovements(sql: Sql, batchId: string): Promise<Bulk
 		actor: r.actor as string,
 		at: iso(r.at) as string,
 	}));
-}
-
-/** Draws on (or corrects) a locked batch's bulk and writes the ledger line. The caller holds the transaction. */
-async function moveBulk(
-	tx: Sql,
-	actor: OperatorActor,
-	batch: Batch,
-	input: {
-		kind: BulkMovement["kind"];
-		delta: Dec;
-		reason?: string | null;
-		reference?: string | null;
-		key: string;
-	},
-): Promise<Dec> {
-	if (batch.bulkRemainingMl === null)
-		throw new FinishedError("conflict", `Batch ${batch.code} hasn't been made, so it has no bulk liquid.`);
-	const remaining = add(dec(batch.bulkRemainingMl), input.delta);
-	if (isNegative(remaining))
-		throw new FinishedError(
-			"conflict",
-			`Only ${batch.bulkRemainingMl} mL of batch ${batch.code} is left in bulk. ${toText(sub(ZERO, input.delta))} mL can't be taken from it.`,
-		);
-	await tx.query(`update wai_batches set bulk_remaining_ml = $2::numeric where id = $1`, [
-		batch.id,
-		toText(remaining),
-	]);
-	await tx.query(
-		`insert into wai_bulk_movements (batch_id, kind, quantity_ml, delta_ml, remaining_after_ml, reason, reference, idempotency_key, actor)
-		 values ($1,$2,$3::numeric,$4::numeric,$5::numeric,$6,$7,$8,$9)`,
-		[
-			batch.id,
-			input.kind,
-			toText(isNegative(input.delta) ? sub(ZERO, input.delta) : input.delta),
-			toText(input.delta),
-			toText(remaining),
-			input.reason ?? null,
-			input.reference ?? null,
-			input.key,
-			actorKey(actor),
-		],
-	);
-	return remaining;
 }
 
 /** Records a sample taken from the bulk, a loss, or (the owner only) a correction to what is left. */
@@ -495,7 +418,7 @@ export const RELEASE_CONFIRMATIONS = [
 	{ id: "labels", label: "The labels and packaging used are the approved versions." },
 ] as const;
 
-export type ReleaseCheck = { name: string; ok: boolean; detail: string };
+export type { ReleaseCheck };
 
 /**
  * Everything about a batch the application can check for itself, checked now. Used to show whether a batch could be released
@@ -588,6 +511,8 @@ export async function releaseChecks(sql: Sql, batch: Batch): Promise<ReleaseChec
 		holds.length === 0,
 		holds.length ? `On hold: ${holds.map((hold) => hold.reason).join("; ")}` : "No hold is open.",
 	);
+	// What the quality records say: deviations, results waiting to be verified, and results against the specification.
+	for (const item of await qualityChecks(sql, batch)) checks.push(item);
 	return checks;
 }
 

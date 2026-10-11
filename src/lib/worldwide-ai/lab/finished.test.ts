@@ -350,6 +350,8 @@ describe("the release decision", () => {
 				["No lot it used is in quarantine", true],
 				["Its bulk ledger adds up", true],
 				["It is not on hold", true],
+				["No deviation is open against it", true],
+				["No result is waiting to be verified", true],
 			],
 		);
 		await expect(
@@ -423,7 +425,7 @@ describe("the release decision", () => {
 			checks: Array<{ ok: boolean }>;
 			confirmations: Array<{ id: string }>;
 		};
-		expect(record.checks).toHaveLength(8);
+		expect(record.checks).toHaveLength(10);
 		expect(record.checks.every((c) => c.ok)).toBe(true);
 		expect(record.confirmations.map((c) => c.id)).toEqual(["record", "tests", "deviations", "labels"]);
 		expect((await listFinished(sql)).find((item) => item.batch.id === ids.first)).toMatchObject({

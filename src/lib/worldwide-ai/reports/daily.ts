@@ -9,6 +9,7 @@ import { INTEGRATIONS, configStatus } from "../integrations/catalog";
 import { latestHealth } from "../integrations/health";
 import { listFinished } from "../lab/finished";
 import { inventoryFindings, listInventory } from "../lab/inventory";
+import { SEVERITIES, listDeviations, listPendingActions, listUnverifiedResults } from "../lab/quality";
 import { listProposals, listReleases } from "../skills/store";
 import { countStandings, loadSkillRows } from "../skills/standing";
 import { formatOpsDate, opsDayKey } from "../time";
@@ -101,8 +102,8 @@ const UNAVAILABLE: ReadonlyArray<{ area: string; reason: string }> = [
 	{ area: "Purchasing", reason: "No purchasing records are stored. Source works from quotes you supply." },
 	{ area: "Accounting and banking", reason: "No accounting or bank connector exists." },
 	{
-		area: "Quality records",
-		reason: "No test result, deviation, calibration, cleaning or training records are stored.",
+		area: "Calibration, cleaning and training",
+		reason: "No calibration, cleaning or training records are stored.",
 	},
 	{
 		area: "Business goals",
@@ -155,6 +156,9 @@ export async function buildDailyReport(
 		usage,
 		inventory,
 		finished,
+		unverified,
+		deviations,
+		pendingActions,
 	] = await Promise.all([
 		sql.query(
 			`select ${TASK_COLUMNS} from wai_tasks t where ${BUSINESS} and t.state = 'completed'
@@ -201,6 +205,9 @@ export async function buildDailyReport(
 		),
 		listInventory(sql, day),
 		listFinished(sql),
+		listUnverifiedResults(sql),
+		listDeviations(sql, { status: "open" }),
+		listPendingActions(sql),
 	]);
 
 	// A finding raised by a demonstration run, or by one person's own task, is not business news.
@@ -433,6 +440,86 @@ export async function buildDailyReport(
 			});
 	}
 
+	// ---- Quality records: results to verify, deviations that are open, and actions that need someone -------
+	const byBatch = new Map<string, typeof unverified>();
+	for (const result of unverified)
+		byBatch.set(result.batchId, [...(byBatch.get(result.batchId) ?? []), result]);
+	for (const [batchId, results] of byBatch) {
+		const reports = [...new Set(results.map((result) => result.reportRef))];
+		actions.push({
+			title: `Verify results: batch ${results[0].batchCode}`,
+			responsible: "The owner",
+			priority: "normal",
+			reason: `${results.length} result${results.length === 1 ? "" : "s"} entered from report${reports.length === 1 ? "" : "s"} ${reports.join(", ")} ${results.length === 1 ? "is" : "are"} waiting to be verified. Until then ${results.length === 1 ? "it doesn't" : "they don't"} count, and the batch can't be released.`,
+			nextSteps: [
+				"Open the batch's samples and results.",
+				"Compare each result with the laboratory's report.",
+				"Verify the ones that match; correct the ones that don't.",
+			],
+			due: null,
+			links: [
+				{
+					label: `Batch ${results[0].batchCode}`,
+					href: `${WORKSPACE_PATH}/lab/batches/${batchId}/quality`,
+				},
+			],
+			sources: [source("Results waiting to be verified")],
+			expectedResult: "Every result on file for the batch is verified or corrected.",
+			dependsOn: [],
+		});
+	}
+	for (const deviation of deviations) {
+		const open = deviation.actions.filter((action) => action.status === "open").length;
+		const done = deviation.actions.filter((action) => action.status === "done").length;
+		actions.push({
+			title: `Deviation ${deviation.code}: ${deviation.title}`,
+			responsible: "The owner",
+			priority:
+				deviation.severity === "critical" ? "urgent" : deviation.severity === "major" ? "high" : "normal",
+			reason: `${SEVERITIES[deviation.severity]} deviation${deviation.batchCode ? ` against batch ${deviation.batchCode}, which can't be released while it is open` : ""}. ${
+				open || done
+					? `${open} action${open === 1 ? "" : "s"} open, ${done} done and waiting to be verified.`
+					: "No corrective action is recorded yet."
+			}`,
+			nextSteps: [
+				"Open the deviation.",
+				"Record what was contained, what is suspected and what was established.",
+				"Close it with a disposition once every action is verified or cancelled.",
+			],
+			due: null,
+			links: [
+				{
+					label: `Deviation ${deviation.code}`,
+					href: `${WORKSPACE_PATH}/quality/deviations/${deviation.id}`,
+				},
+			],
+			sources: [source("Open deviations")],
+			expectedResult: "The deviation is closed with its disposition, or its next action is recorded.",
+			dependsOn: [],
+		});
+	}
+	for (const action of pendingActions.filter((item) => item.status === "open" && item.dueOn))
+		actions.push({
+			title: `Corrective action for ${action.deviationCode}: ${action.action}`,
+			responsible: action.responsible,
+			priority: (action.dueOn as string) < day ? "high" : "normal",
+			reason:
+				(action.dueOn as string) < day
+					? `Due on ${action.dueOn} and still open.`
+					: `Open, due on ${action.dueOn}.`,
+			nextSteps: ["Do it.", "Mark it done on the deviation, saying where the evidence is."],
+			due: { date: action.dueOn as string, confirmed: true },
+			links: [
+				{
+					label: `Deviation ${action.deviationCode}`,
+					href: `${WORKSPACE_PATH}/quality/deviations/${action.deviationId}`,
+				},
+			],
+			sources: [source("Corrective actions")],
+			expectedResult: "The action is marked done with its evidence.",
+			dependsOn: [],
+		});
+
 	// ---- Services ----------------------------------------------------------------------------------------
 	const statuses = configStatus(config, deps.env ?? process.env);
 	const integrations = statuses
@@ -633,6 +720,8 @@ export async function buildDailyReport(
 				records: inventory.reduce((n, item) => n + item.lots.length, 0),
 				asOf: end,
 			},
+			{ source: "Results waiting to be verified", records: unverified.length, asOf: end },
+			{ source: "Open deviations", records: deviations.length, asOf: end },
 		],
 	};
 	if (input.kind === "evening") report.tomorrow = actions.slice(0, 3).map((action) => action.title);

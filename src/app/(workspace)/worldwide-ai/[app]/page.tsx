@@ -93,6 +93,29 @@ export default async function AreaPage({ params }: Props) {
 						</div>
 					</Card>
 				)}
+				{area.id === "quality" && (
+					<Card title="Specifications, results and deviations">
+						<p className="wai-help" style={{ marginTop: 0 }}>
+							What each recipe is tested against, the samples taken and what a laboratory reported, and
+							anything that didn’t go as it should have. A batch’s release checks these records for itself.
+							Samples and results are entered on the batch they belong to.
+						</p>
+						<div className="wai-row" style={{ gap: 12, flexWrap: "wrap" }}>
+							<Link href={`${WORKSPACE_PATH}/quality/deviations`} className="wai-btn wai-btn--primary">
+								Deviations
+							</Link>
+							<Link href={`${WORKSPACE_PATH}/quality/results`} className="wai-btn">
+								Samples and results
+							</Link>
+							<Link href={`${WORKSPACE_PATH}/quality/specifications`} className="wai-btn">
+								Specifications
+							</Link>
+							<Link href={`${WORKSPACE_PATH}/lab/finished`} className="wai-btn">
+								Finished liquids and holds
+							</Link>
+						</div>
+					</Card>
+				)}
 				{area.id === "lab" && (
 					<Card title="Recipe calculator" accent>
 						<LabCalculator />
