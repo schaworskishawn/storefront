@@ -1,0 +1,31 @@
+{
+	"id": "care-service-improvement",
+	"kind": "role-pack",
+	"title": "Care service improvement",
+	"version": 1,
+	"agents": [
+		"care"
+	],
+	"functions": [
+		"care.service-review"
+	],
+	"foundations": [
+		"context-and-memory-hygiene",
+		"claim-and-conflict-check",
+		"review-package-preparation",
+		"outcome-and-performance-check"
+	],
+	"tools": [
+		"source.read_supplied",
+		"product.store",
+		"finding.record",
+		"case.list",
+		"atlas.search"
+	],
+	"knowledge": [
+		"support-policy",
+		"faq"
+	],
+	"suiteVersion": 1,
+	"sha256": "353efd4e36da3913fe2529e0839e774475c1263434463681c4d108dbbf570ddb"
+}

@@ -7,6 +7,7 @@ import { searchApproved, type AtlasHit, type AtlasSearchResult } from "../atlas/
 import { audit } from "../audit";
 import { keyFrom } from "../hash";
 import { previewText } from "../redact";
+import { beginSkills, lapsedSkills, markSkills, withProcedures } from "../skills/task";
 import { getCase, type CaseRecord } from "../support/cases";
 import { checkDraftBody } from "../support/draft-checks";
 import { getDraftByTask, insertDraft, type SourceStatus } from "../support/drafts";
@@ -375,6 +376,9 @@ async function draftReply(
 		},
 	});
 
+	// Which approved procedures this draft follows is decided here, on the server, before the model is asked anything.
+	const skills = await beginSkills(sql, task, relayActor, { agent: "relay", functionId: RELAY_KIND });
+
 	// 3. The wording: from the model when there are sources to write from, from code when there are none.
 	let output: RelayDraftOutput;
 	if (keyed.length === 0) {
@@ -397,7 +401,7 @@ async function draftReply(
 				handle: deps.model,
 				roleId: "relay",
 				taskId: task.id,
-				instructions: instructionsFor("relay"),
+				instructions: withProcedures(instructionsFor("relay"), skills),
 				prompt: buildRelayPrompt({
 					subject: supportCase.subject,
 					message: supportCase.message,
@@ -421,6 +425,7 @@ async function draftReply(
 			});
 			output = run.output;
 			model = run.modelId;
+			await markSkills(sql, task.id, "loaded");
 			await recordUsage(sql, {
 				taskId: task.id,
 				roleId: "relay",
@@ -498,6 +503,11 @@ async function draftReply(
 			}),
 		);
 
+	// A procedure revoked or replaced while this ran must not have its draft saved as if nothing had happened.
+	await markSkills(sql, task.id, "invoked");
+	const lapsed = await lapsedSkills(sql, skills);
+	if (lapsed) throw new WorkflowError("conflict", lapsed);
+
 	// 5. Save the draft against this case, through the gateway (which checks the case and task match).
 	const body = output.body.trim();
 	await must("draft.save", {
@@ -545,6 +555,7 @@ async function draftReply(
 			],
 			onlyFrom: ["running"],
 		});
+		await markSkills(sql, task.id, "completed");
 		return { status: "needs_review", task: reviewed, draftId };
 	} catch (error) {
 		if (error instanceof InvalidTransitionError) {

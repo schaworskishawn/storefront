@@ -65,11 +65,134 @@ export default async function AreaPage({ params }: Props) {
 			<PageHeader title={definition.label} lead={area.lead} />
 			<div className="wai-stack">
 				{area.id === "lab" && (
+					<Card title="Inventory, recipes and batches">
+						<p className="wai-help" style={{ marginTop: 0 }}>
+							Ingredients, the lots they arrived in, and a ledger of every movement of stock. A recipe is kept
+							in versions the owner approves; a batch is planned from one, reserves the lots it will use, and
+							records what was used and what was measured coming out.
+						</p>
+						<div className="wai-row" style={{ gap: 12, flexWrap: "wrap" }}>
+							<Link href={`${WORKSPACE_PATH}/lab/ingredients`} className="wai-btn wai-btn--primary">
+								Ingredients and lots
+							</Link>
+							<Link href={`${WORKSPACE_PATH}/lab/recipes`} className="wai-btn">
+								Recipes
+							</Link>
+							<Link href={`${WORKSPACE_PATH}/lab/batches`} className="wai-btn">
+								Batches
+							</Link>
+							<Link href={`${WORKSPACE_PATH}/lab/finished`} className="wai-btn">
+								Finished liquids
+							</Link>
+							<Link href={`${WORKSPACE_PATH}/lab/movements`} className="wai-btn">
+								Stock movements
+							</Link>
+							<Link href={`${WORKSPACE_PATH}/team/stock?from=inventory`} className="wai-btn">
+								Plan replenishment from stored stock
+							</Link>
+						</div>
+					</Card>
+				)}
+				{area.id === "improvement" && (
+					<Card title="Lessons from reviews">
+						<p className="wai-help" style={{ marginTop: 0 }}>
+							How each agent’s reviewed work went, counted from the decisions people made, and the proposals
+							the workspace raised when several reviews said the same procedure fell short. A proposal changes
+							nothing by itself.
+						</p>
+						<div className="wai-row" style={{ gap: 12, flexWrap: "wrap" }}>
+							<Link href={`${WORKSPACE_PATH}/improvement/lessons`} className="wai-btn wai-btn--primary">
+								Lessons from reviews
+							</Link>
+							<Link href={`${WORKSPACE_PATH}/skills`} className="wai-btn">
+								Skills
+							</Link>
+						</div>
+					</Card>
+				)}
+				{area.id === "rfid" && (
+					<Card title="The tag registry">
+						<p className="wai-help" style={{ marginTop: 0 }}>
+							Every tag registered, what each is attached to and was attached to before, and scans kept as
+							observations. No reader is connected: scans are typed in, or reconciled from a reader’s export
+							by Link below.
+						</p>
+						<div className="wai-row" style={{ gap: 12, flexWrap: "wrap" }}>
+							<Link href={`${WORKSPACE_PATH}/rfid/tags`} className="wai-btn wai-btn--primary">
+								Tags
+							</Link>
+							<Link href={`${WORKSPACE_PATH}/rfid/scans`} className="wai-btn">
+								Scans and exceptions
+							</Link>
+						</div>
+					</Card>
+				)}
+				{area.id === "manufacturing" && (
+					<Card title="Equipment, cleaning and training">
+						<p className="wai-help" style={{ marginTop: 0 }}>
+							What there is to make and measure with, whether each piece may be used today, the cleaning and
+							line clearances people recorded, and who holds which training. Batches, packaging runs and their
+							records are in the Lab.
+						</p>
+						<div className="wai-row" style={{ gap: 12, flexWrap: "wrap" }}>
+							<Link href={`${WORKSPACE_PATH}/manufacturing/equipment`} className="wai-btn wai-btn--primary">
+								Equipment and cleaning
+							</Link>
+							<Link href={`${WORKSPACE_PATH}/manufacturing/training`} className="wai-btn">
+								Training
+							</Link>
+							<Link href={`${WORKSPACE_PATH}/lab/batches`} className="wai-btn">
+								Batches
+							</Link>
+							<Link href={`${WORKSPACE_PATH}/lab/finished`} className="wai-btn">
+								Finished liquids
+							</Link>
+						</div>
+					</Card>
+				)}
+				{area.id === "quality" && (
+					<Card title="Specifications, results and deviations">
+						<p className="wai-help" style={{ marginTop: 0 }}>
+							What each recipe is tested against, the samples taken and what a laboratory reported, and
+							anything that didn’t go as it should have. A batch’s release checks these records for itself.
+							Samples and results are entered on the batch they belong to.
+						</p>
+						<div className="wai-row" style={{ gap: 12, flexWrap: "wrap" }}>
+							<Link href={`${WORKSPACE_PATH}/quality/deviations`} className="wai-btn wai-btn--primary">
+								Deviations
+							</Link>
+							<Link href={`${WORKSPACE_PATH}/quality/results`} className="wai-btn">
+								Samples and results
+							</Link>
+							<Link href={`${WORKSPACE_PATH}/quality/specifications`} className="wai-btn">
+								Specifications
+							</Link>
+							<Link href={`${WORKSPACE_PATH}/lab/finished`} className="wai-btn">
+								Finished liquids and holds
+							</Link>
+						</div>
+					</Card>
+				)}
+				{area.id === "lab" && (
 					<Card title="Recipe calculator" accent>
 						<LabCalculator />
 					</Card>
 				)}
 
+				{area.id === "engineering" && (
+					<Card title="Coding work">
+						<p className="wai-help" style={{ marginTop: 0 }}>
+							Ask Build for a change to a registered repository, see the exact change that comes back, and
+							decide on it once Verify has checked that exact change. No coding backend is connected yet, so a
+							job asked for is recorded and waits.
+						</p>
+						<div className="wai-row" style={{ gap: 12, flexWrap: "wrap" }}>
+							<Link href={`${WORKSPACE_PATH}/engineering/coding`} className="wai-btn wai-btn--primary">
+								Coding work
+							</Link>
+						</div>
+					</Card>
+				)}
 				{area.id === "engineering" && (
 					<Card
 						title="Inspect website pages"
@@ -164,6 +287,13 @@ export default async function AreaPage({ params }: Props) {
 						{area.also && area.also.length > 0 && (
 							<Card title="Also here">
 								<Bullets items={area.also} />
+								{area.id === "improvement" && (
+									<p style={{ margin: "12px 0 0" }}>
+										<Link href={`${WORKSPACE_PATH}/skills`} className="wai-btn">
+											Open Skills
+										</Link>
+									</p>
+								)}
 							</Card>
 						)}
 						<Card title="Not built yet">

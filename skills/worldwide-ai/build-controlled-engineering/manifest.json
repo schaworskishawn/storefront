@@ -1,0 +1,30 @@
+{
+	"id": "build-controlled-engineering",
+	"kind": "role-pack",
+	"title": "Build controlled engineering",
+	"version": 1,
+	"agents": [
+		"build"
+	],
+	"functions": [
+		"build.engineering-brief"
+	],
+	"foundations": [
+		"context-and-memory-hygiene",
+		"claim-and-conflict-check",
+		"review-package-preparation",
+		"goal-intake"
+	],
+	"tools": [
+		"source.read_supplied",
+		"product.store",
+		"finding.record",
+		"task.get",
+		"atlas.search"
+	],
+	"knowledge": [
+		"site-runbook"
+	],
+	"suiteVersion": 1,
+	"sha256": "f0b691e9e8e46b887650fe2db5c08aeb475f50ce59d1f9b99a26b5b791842edc"
+}

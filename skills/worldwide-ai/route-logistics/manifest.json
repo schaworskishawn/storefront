@@ -1,0 +1,30 @@
+{
+	"id": "route-logistics",
+	"kind": "role-pack",
+	"title": "Route logistics",
+	"version": 1,
+	"agents": [
+		"route"
+	],
+	"functions": [
+		"route.exception-package"
+	],
+	"foundations": [
+		"structured-extraction",
+		"deterministic-calculation-check",
+		"review-package-preparation",
+		"document-and-table-production"
+	],
+	"tools": [
+		"source.read_supplied",
+		"product.store",
+		"finding.record",
+		"carrier.events.read",
+		"carrier.invoices.read"
+	],
+	"knowledge": [
+		"shipping"
+	],
+	"suiteVersion": 1,
+	"sha256": "d0f0591252c424b9c5f235e631a9852229d119f112a970b2c9678cbd6d3443e4"
+}

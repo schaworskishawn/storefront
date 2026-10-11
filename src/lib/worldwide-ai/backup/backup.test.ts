@@ -12,7 +12,7 @@ import { freshDb, mockModel, owner, staff, system, workflowDeps } from "../testi
 import { recordUsage } from "../usage";
 import { requestRelayDraft, runRelayDraft } from "../workflows/relay";
 import { reviewDraft } from "../workflows/relay-review";
-import type { SqlClient } from "../db/sql";
+import { SCHEMA_VERSION, type SqlClient } from "../db/sql";
 import {
 	BACKUP_TABLES,
 	blobPath,
@@ -135,7 +135,11 @@ describe("taking a backup", () => {
 		const vault = createFolderStorage(await scratch());
 		const manifest = await createBackup(sql, vault, { source: live, now: new Date("2026-10-07T08:30:00Z") });
 
-		expect(manifest).toMatchObject({ version: 1, id: "2026-10-07T08-30-00-000Z", schemaVersion: "2" });
+		expect(manifest).toMatchObject({
+			version: 1,
+			id: "2026-10-07T08-30-00-000Z",
+			schemaVersion: String(SCHEMA_VERSION),
+		});
 		expect(Object.keys(manifest.tables)).toEqual(BACKUP_TABLES.map((t) => t.name));
 		expect(manifest.tables.wai_tasks.rows).toBe(2);
 		expect(manifest.tables.wai_drafts.rows).toBe(1);

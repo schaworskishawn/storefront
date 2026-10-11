@@ -1,0 +1,30 @@
+{
+	"id": "batch-formula-traceability",
+	"kind": "role-pack",
+	"title": "Batch formula traceability",
+	"version": 1,
+	"agents": [
+		"batch"
+	],
+	"functions": [
+		"batch.record-reconciliation"
+	],
+	"foundations": [
+		"structured-extraction",
+		"deterministic-calculation-check",
+		"review-package-preparation",
+		"document-and-table-production"
+	],
+	"tools": [
+		"source.read_supplied",
+		"product.store",
+		"finding.record",
+		"atlas.search"
+	],
+	"knowledge": [
+		"manufacturing",
+		"quality"
+	],
+	"suiteVersion": 1,
+	"sha256": "2cf8c1f2b2fe9641a87b544b76e6c63192897aa349b692edbbda4c92010b35d4"
+}

@@ -1,0 +1,29 @@
+{
+	"id": "stock-inventory-planning",
+	"kind": "role-pack",
+	"title": "Stock inventory planning",
+	"version": 1,
+	"agents": [
+		"stock"
+	],
+	"functions": [
+		"stock.replenishment-plan"
+	],
+	"foundations": [
+		"structured-extraction",
+		"deterministic-calculation-check",
+		"document-and-table-production",
+		"outcome-and-performance-check"
+	],
+	"tools": [
+		"source.read_supplied",
+		"product.store",
+		"finding.record",
+		"atlas.search"
+	],
+	"knowledge": [
+		"product-info"
+	],
+	"suiteVersion": 1,
+	"sha256": "61cbf890ff5a14736f9b128943c8408b9a72b3f64a0a70f55253848737f7bf95"
+}

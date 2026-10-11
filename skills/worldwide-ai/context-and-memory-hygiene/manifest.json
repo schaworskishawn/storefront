@@ -1,0 +1,32 @@
+{
+	"id": "context-and-memory-hygiene",
+	"kind": "foundation",
+	"title": "Context and memory hygiene",
+	"version": 1,
+	"agents": [
+		"relay",
+		"pulse",
+		"focus",
+		"strategy",
+		"post",
+		"talent",
+		"comet",
+		"signal",
+		"reach",
+		"script",
+		"assist",
+		"care",
+		"catalog",
+		"build",
+		"prism",
+		"scout",
+		"forge",
+		"motion"
+	],
+	"functions": [],
+	"foundations": [],
+	"tools": [],
+	"knowledge": [],
+	"suiteVersion": 1,
+	"sha256": "71a6caed8eb5ed8a3313b0d5d42a345a875229cf578a3295c196b60ea178ad76"
+}

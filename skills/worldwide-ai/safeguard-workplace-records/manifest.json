@@ -1,0 +1,29 @@
+{
+	"id": "safeguard-workplace-records",
+	"kind": "role-pack",
+	"title": "Safeguard workplace records",
+	"version": 1,
+	"agents": [
+		"safeguard"
+	],
+	"functions": [
+		"safeguard.records-review"
+	],
+	"foundations": [
+		"structured-extraction",
+		"deterministic-calculation-check",
+		"review-package-preparation",
+		"document-and-table-production"
+	],
+	"tools": [
+		"source.read_supplied",
+		"product.store",
+		"finding.record",
+		"atlas.search"
+	],
+	"knowledge": [
+		"safety"
+	],
+	"suiteVersion": 1,
+	"sha256": "3a8a4829ac00d4a3505d6aa56cdd2a08193b7e96aec25a775d63b5ac05ea1a06"
+}

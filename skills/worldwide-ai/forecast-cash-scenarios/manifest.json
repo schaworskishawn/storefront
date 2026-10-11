@@ -1,0 +1,29 @@
+{
+	"id": "forecast-cash-scenarios",
+	"kind": "role-pack",
+	"title": "Forecast cash scenarios",
+	"version": 1,
+	"agents": [
+		"forecast"
+	],
+	"functions": [
+		"forecast.cash-scenario"
+	],
+	"foundations": [
+		"structured-extraction",
+		"deterministic-calculation-check",
+		"document-and-table-production",
+		"claim-and-conflict-check"
+	],
+	"tools": [
+		"source.read_supplied",
+		"product.store",
+		"finding.record",
+		"atlas.search"
+	],
+	"knowledge": [
+		"accounting-policy"
+	],
+	"suiteVersion": 1,
+	"sha256": "d4af9f4c4a929da7dcdf3044d8182aa28755c0dfdd46a21369657b9fb497b0b8"
+}

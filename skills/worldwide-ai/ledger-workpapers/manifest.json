@@ -1,0 +1,32 @@
+{
+	"id": "ledger-workpapers",
+	"kind": "role-pack",
+	"title": "Ledger workpapers",
+	"version": 1,
+	"agents": [
+		"ledger"
+	],
+	"functions": [
+		"ledger.period-workpaper"
+	],
+	"foundations": [
+		"structured-extraction",
+		"deterministic-calculation-check",
+		"review-package-preparation",
+		"document-and-table-production"
+	],
+	"tools": [
+		"source.read_supplied",
+		"product.store",
+		"finding.record",
+		"accounting.records.read",
+		"accounting.entries.draft",
+		"atlas.search"
+	],
+	"knowledge": [
+		"accounting-policy",
+		"chart-of-accounts"
+	],
+	"suiteVersion": 1,
+	"sha256": "406fa36954bb7b0f6dec37188b59635532b81f3b7a62fc824e21d9ac06a7c76a"
+}

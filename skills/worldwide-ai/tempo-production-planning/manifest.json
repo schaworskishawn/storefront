@@ -1,0 +1,29 @@
+{
+	"id": "tempo-production-planning",
+	"kind": "role-pack",
+	"title": "Tempo production planning",
+	"version": 1,
+	"agents": [
+		"tempo"
+	],
+	"functions": [
+		"tempo.production-plan"
+	],
+	"foundations": [
+		"structured-extraction",
+		"deterministic-calculation-check",
+		"review-package-preparation",
+		"document-and-table-production"
+	],
+	"tools": [
+		"source.read_supplied",
+		"product.store",
+		"finding.record",
+		"atlas.search"
+	],
+	"knowledge": [
+		"manufacturing"
+	],
+	"suiteVersion": 1,
+	"sha256": "d27a8fcd8e09e213d794a5272653d514e23f03ac6b1bbd06c0acac1d34608b7b"
+}

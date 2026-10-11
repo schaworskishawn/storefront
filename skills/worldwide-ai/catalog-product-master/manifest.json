@@ -1,0 +1,30 @@
+{
+	"id": "catalog-product-master",
+	"kind": "role-pack",
+	"title": "Catalog product master",
+	"version": 1,
+	"agents": [
+		"catalog"
+	],
+	"functions": [
+		"catalog.content-package"
+	],
+	"foundations": [
+		"context-and-memory-hygiene",
+		"claim-and-conflict-check",
+		"clear-business-writing",
+		"review-package-preparation"
+	],
+	"tools": [
+		"source.read_supplied",
+		"product.store",
+		"finding.record",
+		"atlas.search"
+	],
+	"knowledge": [
+		"product-info",
+		"brand"
+	],
+	"suiteVersion": 1,
+	"sha256": "761af9cd98c847d209dbe694b62c5046deed205beacace3662cc26a428decbb9"
+}

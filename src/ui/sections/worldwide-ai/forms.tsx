@@ -70,7 +70,8 @@ function Field({ field, value, id }: { field: FormField; value: string | undefin
 				)}
 			</label>
 			{field.kind === "select" ? (
-				<select {...common} className="wai-select" defaultValue={value ?? ""}>
+				// Keyed by its value: after a refusal the form is reset, and a select only takes a new default when it is made anew.
+				<select key={value ?? ""} {...common} className="wai-select" defaultValue={value ?? ""}>
 					<option value="" disabled={field.required}>
 						Choose…
 					</option>

@@ -1,0 +1,30 @@
+{
+	"id": "signal-search-content",
+	"kind": "role-pack",
+	"title": "Signal search content",
+	"version": 1,
+	"agents": [
+		"signal"
+	],
+	"functions": [
+		"signal.search-package"
+	],
+	"foundations": [
+		"context-and-memory-hygiene",
+		"claim-and-conflict-check",
+		"clear-business-writing",
+		"review-package-preparation"
+	],
+	"tools": [
+		"source.read_supplied",
+		"product.store",
+		"finding.record",
+		"atlas.search"
+	],
+	"knowledge": [
+		"product-info",
+		"brand"
+	],
+	"suiteVersion": 1,
+	"sha256": "a1b3aafa9c7dcb74e300f927f5984dce42b59b95707ac397df2dab478430f952"
+}

@@ -1,0 +1,30 @@
+{
+	"id": "duty-excise-reconciliation",
+	"kind": "role-pack",
+	"title": "Duty excise reconciliation",
+	"version": 1,
+	"agents": [
+		"duty"
+	],
+	"functions": [
+		"duty.excise-workpaper"
+	],
+	"foundations": [
+		"deterministic-calculation-check",
+		"structured-extraction",
+		"review-package-preparation",
+		"document-and-table-production"
+	],
+	"tools": [
+		"source.read_supplied",
+		"product.store",
+		"finding.record",
+		"atlas.search"
+	],
+	"knowledge": [
+		"excise",
+		"compliance"
+	],
+	"suiteVersion": 1,
+	"sha256": "ddf30feede05e460f4e66f67054102bf3a6bd8d998cff2c4b9db8565506a2a91"
+}

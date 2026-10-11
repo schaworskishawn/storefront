@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { approveVersion, createDocument } from "../atlas/service";
 import { buildBriefing } from "../briefing";
 import { readConfig } from "../config";
-import type { SqlClient } from "../db/sql";
+import { SCHEMA_VERSION, type SqlClient } from "../db/sql";
 import { listFindings } from "../findings";
 import { configStatus, INTEGRATION_IDS } from "../integrations/catalog";
 import { checkIntegrations, healthHistory, latestHealth, recordHealth } from "../integrations/health";
@@ -148,7 +148,7 @@ describe("health checks", () => {
 			const by = Object.fromEntries(results.map((r) => [r.integration, r]));
 			expect(by.database).toMatchObject({
 				status: "healthy",
-				detail: expect.stringMatching(/Schema version 2/),
+				detail: `Answering. Schema version ${SCHEMA_VERSION}.`,
 			});
 			expect(by.storage.status).toBe("healthy");
 			expect(by.openclaw).toMatchObject({ status: "healthy", detail: "OpenClaw's browser answered." });
@@ -204,6 +204,28 @@ describe("health checks", () => {
 		expect(results.find((r) => r.integration === "database")).toMatchObject({
 			status: "degraded",
 			detail: expect.stringMatching(/Apply the migration/),
+		});
+	});
+
+	it("says so when the database is a migration behind the code, or ahead of it", async () => {
+		const sql = await db();
+		const database = async () =>
+			(
+				await checkIntegrations({ ...workflowDeps(sql, null, fullEnv), env: fullEnv, fetchImpl: okFetch })
+			).find((r) => r.integration === "database");
+		await sql.query("update wai_meta set value = $1 where key = 'schema_version'", [
+			String(SCHEMA_VERSION - 1),
+		]);
+		expect(await database()).toMatchObject({
+			status: "unhealthy",
+			detail: `Answering, but the database is at schema version ${SCHEMA_VERSION - 1} and this version of the application needs ${SCHEMA_VERSION}. Run the newer files in supabase/migrations.`,
+		});
+		await sql.query("update wai_meta set value = $1 where key = 'schema_version'", [
+			String(SCHEMA_VERSION + 1),
+		]);
+		expect(await database()).toMatchObject({
+			status: "degraded",
+			detail: expect.stringContaining(`newer than this version of the application (${SCHEMA_VERSION})`),
 		});
 	});
 

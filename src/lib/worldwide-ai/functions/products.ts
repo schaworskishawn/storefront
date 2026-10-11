@@ -1,5 +1,6 @@
 import { iso, json, type Row, type Sql } from "../db/sql";
 import { sha256Hex } from "../hash";
+import type { PinnedSkill } from "../skills/store";
 import { personalScopeOf } from "../tasks/repo";
 import type { RoleId, SourceRef, TaskKind } from "../types";
 
@@ -29,6 +30,8 @@ export type WorkProduct = {
 	coverage: Record<string, string | number>;
 	warnings: string[];
 	sourceRefs: SourceRef[];
+	/** The approved procedures this result was produced under, pinned by version and checksum. Empty when none applied. */
+	skills: PinnedSkill[];
 	model: string | null;
 	promptVersion: string | null;
 	reviewRequired: boolean;
@@ -54,7 +57,7 @@ export const hashOf = (value: unknown): string => sha256Hex(canonicalJson(value)
 
 const COLUMNS = `id, task_id, function_id, function_version, agent_id, output_type, scope, demo, summary, payload, payload_sha256,
 	input_sha256, missing, assumptions, coverage, warnings, source_refs, model, prompt_version, review_required, review_state,
-	reviewed_by, reviewed_at, review_note, created_at, updated_at`;
+	reviewed_by, reviewed_at, review_note, created_at, updated_at, skills`;
 
 function mapProduct(r: Row): WorkProduct {
 	return {
@@ -75,6 +78,7 @@ function mapProduct(r: Row): WorkProduct {
 		coverage: (r.coverage as Record<string, string | number>) ?? {},
 		warnings: (r.warnings as string[]) ?? [],
 		sourceRefs: (r.source_refs as SourceRef[]) ?? [],
+		skills: (r.skills as PinnedSkill[]) ?? [],
 		model: (r.model as string | null) ?? null,
 		promptVersion: (r.prompt_version as string | null) ?? null,
 		reviewRequired: Boolean(r.review_required),
@@ -107,7 +111,7 @@ export type NewProduct = Pick<
 	| "model"
 	| "promptVersion"
 	| "reviewRequired"
->;
+> & { skills?: PinnedSkill[] };
 
 /** Stores a task's result. A task gets one however often it is retried: a second attempt finds the first and returns it. */
 export async function insertProduct(
@@ -116,8 +120,8 @@ export async function insertProduct(
 ): Promise<{ product: WorkProduct; created: boolean }> {
 	const { rows } = await sql.query(
 		`insert into wai_work_products (task_id, function_id, function_version, agent_id, output_type, scope, demo, summary, payload,
-			payload_sha256, input_sha256, missing, assumptions, coverage, warnings, source_refs, model, prompt_version, review_required, review_state)
-		 values ($1,$2,$3,$4,$5,$6,$7,$8,$9::json,$10,$11,$12::jsonb,$13::jsonb,$14::jsonb,$15::jsonb,$16::jsonb,$17,$18,$19,$20)
+			payload_sha256, input_sha256, missing, assumptions, coverage, warnings, source_refs, model, prompt_version, review_required, review_state, skills)
+		 values ($1,$2,$3,$4,$5,$6,$7,$8,$9::json,$10,$11,$12::jsonb,$13::jsonb,$14::jsonb,$15::jsonb,$16::jsonb,$17,$18,$19,$20,$21::jsonb)
 		 on conflict (task_id) do nothing returning ${COLUMNS}`,
 		[
 			input.taskId,
@@ -140,6 +144,7 @@ export async function insertProduct(
 			input.promptVersion,
 			input.reviewRequired,
 			input.reviewRequired ? "pending" : "not_required",
+			json(input.skills ?? []),
 		],
 	);
 	if (rows[0]) return { product: mapProduct(rows[0]), created: true };

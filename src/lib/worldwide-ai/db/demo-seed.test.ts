@@ -3,6 +3,8 @@ import { listDocuments, listPendingVersions } from "../atlas/service";
 import { buildBriefing } from "../briefing";
 import { readConfig } from "../config";
 import { listFindings } from "../findings";
+import { listBatches, listRecipes } from "../lab/batches";
+import { listInventory, verifyLedger } from "../lab/inventory";
 import { listCases } from "../support/cases";
 import { countTasksByState } from "../tasks/repo";
 import { DEMO_PREFIX, seedDemoData } from "./demo-seed";
@@ -66,5 +68,29 @@ describe("the demonstration store's sample data", () => {
 		expect(cases.some((c) => /Ignore your previous instructions/.test(c.message))).toBe(true);
 		expect(Object.values(await countTasksByState(sql)).reduce((a, b) => a + b, 0)).toBe(0);
 		expect((await sql.query("select count(*)::int as n from wai_work_products")).rows[0].n).toBe(0);
+	});
+
+	it("stocks a small fictional Lab, labelled throughout, with a ledger that adds up and a batch ready to reserve", async () => {
+		const items = await listInventory(sql, "2026-10-11");
+		expect(items.map((item) => item.ingredient.name)).toEqual([
+			"[DEMO] 30 mL bottle",
+			"[DEMO] Mango concentrate",
+			"[DEMO] Nicotine base 100",
+			"[DEMO] PG",
+			"[DEMO] VG",
+		]);
+		expect(items.flatMap((item) => item.lots).every((lot) => lot.lotCode.startsWith("DEMO-"))).toBe(true);
+		// The nicotine base is below its minimum and has a lot expiring soon, so the preview has something to flag.
+		expect(items[2].flags).toEqual([
+			"Low stock: 300 mL usable, below the minimum of 500.",
+			"Lot DEMO-N-1 expires on 2026-11-01.",
+			"Lot DEMO-N-1 has no documented density, so its weight is unavailable.",
+			"Lot DEMO-N-2 has no documented density, so its weight is unavailable.",
+		]);
+		expect(await verifyLedger(sql)).toEqual([]);
+		expect(await listRecipes(sql)).toMatchObject([{ name: "[DEMO] Mango 12", versions: 1, approved: 1 }]);
+		const batches = await listBatches(sql);
+		expect(batches).toMatchObject([{ status: "planned", plannedMl: "1000", recipeName: "[DEMO] Mango 12" }]);
+		expect(batches[0].plan.lines.map((line) => line.requiredMl)).toEqual(["120", "100", "286", "494"]);
 	});
 });

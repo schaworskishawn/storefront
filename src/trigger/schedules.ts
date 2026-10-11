@@ -1,6 +1,7 @@
 import { logger, schedules } from "@trigger.dev/sdk";
 import { loadSettings } from "@/lib/worldwide-ai/agents/settings";
 import { runBackup, runRestoreDrill } from "@/lib/worldwide-ai/backup/drill";
+import { generateDailyReport } from "@/lib/worldwide-ai/reports/daily";
 import { OPS_TIME_ZONE } from "@/lib/worldwide-ai/time";
 import { getRuntime } from "@/lib/worldwide-ai/runtime";
 import { sweepStuckTasks } from "@/lib/worldwide-ai/tasks/repo";
@@ -111,5 +112,38 @@ export const weeklyRestoreCheckSchedule = schedules.task({
 			backupId: result.backupId,
 			failed: result.checks.filter((c) => !c.ok).map((c) => c.name),
 		};
+	},
+});
+
+/**
+ * Nexus: the morning report, saved at 8:00 in Winnipeg whatever the season (the schedule follows the time zone, so it moves
+ * with daylight saving). One a day: a schedule that fires twice finds the first report and does nothing. To change the hour,
+ * change the pattern here and deploy again.
+ */
+export const morningReportSchedule = schedules.task({
+	id: "worldwide-ai-morning-report",
+	cron: { pattern: "0 8 * * *", timezone: OPS_TIME_ZONE },
+	run: async () => {
+		const runtime = await getRuntime();
+		const outcome = await generateDailyReport(runtime, { kind: "morning", actor: scheduleActor });
+		logger.info("Morning report", { status: outcome.status, id: outcome.report.id });
+		return {
+			status: outcome.status,
+			reportId: outcome.report.id,
+			...(outcome.status === "completed" ? { actions: outcome.report.report?.actions.length ?? 0 } : {}),
+		};
+	},
+});
+
+/** The evening recap. Off unless WORLDWIDE_AI_EVENING_RECAP is set: with it off, this runs and does nothing. */
+export const eveningRecapSchedule = schedules.task({
+	id: "worldwide-ai-evening-recap",
+	cron: { pattern: "30 17 * * *", timezone: OPS_TIME_ZONE },
+	run: async () => {
+		const runtime = await getRuntime();
+		if (!runtime.config.eveningRecap) return { skipped: "The evening recap is switched off." };
+		const outcome = await generateDailyReport(runtime, { kind: "evening", actor: scheduleActor });
+		logger.info("Evening recap", { status: outcome.status, id: outcome.report.id });
+		return { status: outcome.status, reportId: outcome.report.id };
 	},
 });

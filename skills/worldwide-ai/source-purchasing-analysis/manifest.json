@@ -1,0 +1,29 @@
+{
+	"id": "source-purchasing-analysis",
+	"kind": "role-pack",
+	"title": "Source purchasing analysis",
+	"version": 1,
+	"agents": [
+		"source"
+	],
+	"functions": [
+		"source.quote-comparison"
+	],
+	"foundations": [
+		"structured-extraction",
+		"deterministic-calculation-check",
+		"review-package-preparation",
+		"document-and-table-production"
+	],
+	"tools": [
+		"source.read_supplied",
+		"product.store",
+		"finding.record",
+		"atlas.search"
+	],
+	"knowledge": [
+		"commercial"
+	],
+	"suiteVersion": 1,
+	"sha256": "a009fbba752978c264f74ef48f0a8b8ec1d81f256876bb7ae72724c474ee6597"
+}

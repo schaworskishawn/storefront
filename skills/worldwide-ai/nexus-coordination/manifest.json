@@ -1,0 +1,31 @@
+{
+	"id": "nexus-coordination",
+	"kind": "role-pack",
+	"title": "Nexus coordination",
+	"version": 1,
+	"agents": [
+		"nexus"
+	],
+	"functions": [
+		"nexus.goal-plan"
+	],
+	"foundations": [
+		"goal-intake",
+		"outcome-and-performance-check",
+		"tool-contract-use",
+		"exception-and-retry-recovery"
+	],
+	"tools": [
+		"source.read_supplied",
+		"product.store",
+		"finding.record",
+		"task.create",
+		"task.get",
+		"task.list",
+		"health.read",
+		"product.read"
+	],
+	"knowledge": [],
+	"suiteVersion": 1,
+	"sha256": "525cbac0d1664bd335371e8951c2eee968654290293c020bd901aa5dec53b124"
+}

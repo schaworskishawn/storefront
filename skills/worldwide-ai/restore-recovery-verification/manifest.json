@@ -1,0 +1,28 @@
+{
+	"id": "restore-recovery-verification",
+	"kind": "role-pack",
+	"title": "Restore recovery verification",
+	"version": 1,
+	"agents": [
+		"restore"
+	],
+	"functions": [
+		"restore.coverage-review"
+	],
+	"foundations": [
+		"outcome-and-performance-check",
+		"exception-and-retry-recovery",
+		"tool-contract-use",
+		"document-and-table-production"
+	],
+	"tools": [
+		"source.read_supplied",
+		"product.store",
+		"finding.record",
+		"task.get",
+		"health.read"
+	],
+	"knowledge": [],
+	"suiteVersion": 1,
+	"sha256": "141096ee65924e26e1c9f17c270a979ba136e5bb378262a80031655d7895b890"
+}

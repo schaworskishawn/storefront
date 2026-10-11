@@ -1,0 +1,29 @@
+{
+	"id": "talent-recruiting-support",
+	"kind": "role-pack",
+	"title": "Talent recruiting support",
+	"version": 1,
+	"agents": [
+		"talent"
+	],
+	"functions": [
+		"talent.hiring-packet"
+	],
+	"foundations": [
+		"context-and-memory-hygiene",
+		"claim-and-conflict-check",
+		"review-package-preparation",
+		"clear-business-writing"
+	],
+	"tools": [
+		"source.read_supplied",
+		"product.store",
+		"finding.record",
+		"atlas.search"
+	],
+	"knowledge": [
+		"people"
+	],
+	"suiteVersion": 1,
+	"sha256": "34f4ebaf4ea7928f5beba3b440cba0fa16d68cab290f5f31849240b8b345c5f0"
+}

@@ -1,0 +1,30 @@
+{
+	"id": "forge-product-definition",
+	"kind": "role-pack",
+	"title": "Forge product definition",
+	"version": 1,
+	"agents": [
+		"forge"
+	],
+	"functions": [
+		"forge.feature-spec"
+	],
+	"foundations": [
+		"context-and-memory-hygiene",
+		"claim-and-conflict-check",
+		"review-package-preparation",
+		"goal-intake"
+	],
+	"tools": [
+		"source.read_supplied",
+		"product.store",
+		"finding.record",
+		"atlas.search"
+	],
+	"knowledge": [
+		"general",
+		"site-runbook"
+	],
+	"suiteVersion": 1,
+	"sha256": "045dc62bd2897568ebb0f4eb6d0be82d9f71860618b2365deffd680160ff8362"
+}

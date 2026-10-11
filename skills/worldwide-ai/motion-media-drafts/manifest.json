@@ -1,0 +1,30 @@
+{
+	"id": "motion-media-drafts",
+	"kind": "role-pack",
+	"title": "Motion media drafts",
+	"version": 1,
+	"agents": [
+		"motion"
+	],
+	"functions": [
+		"motion.storyboard"
+	],
+	"foundations": [
+		"context-and-memory-hygiene",
+		"claim-and-conflict-check",
+		"review-package-preparation",
+		"clear-business-writing"
+	],
+	"tools": [
+		"source.read_supplied",
+		"product.store",
+		"finding.record",
+		"atlas.search"
+	],
+	"knowledge": [
+		"brand",
+		"product-info"
+	],
+	"suiteVersion": 1,
+	"sha256": "169d378c68f57a781cddfcb31901377b29f998777d2ec0f545ef5c109b11e7df"
+}

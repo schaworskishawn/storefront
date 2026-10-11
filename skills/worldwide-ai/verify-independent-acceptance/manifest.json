@@ -1,0 +1,30 @@
+{
+	"id": "verify-independent-acceptance",
+	"kind": "role-pack",
+	"title": "Verify independent acceptance",
+	"version": 1,
+	"agents": [
+		"verify"
+	],
+	"functions": [
+		"verify.workflow-acceptance"
+	],
+	"foundations": [
+		"outcome-and-performance-check",
+		"tool-contract-use",
+		"exception-and-retry-recovery",
+		"document-and-table-production"
+	],
+	"tools": [
+		"source.read_supplied",
+		"product.store",
+		"finding.record",
+		"task.get",
+		"task.list",
+		"health.read",
+		"product.read"
+	],
+	"knowledge": [],
+	"suiteVersion": 1,
+	"sha256": "004fe373cf761e5b236fce013bfad1c39d9dd6a21f5364c82b96aa67143b9cad"
+}

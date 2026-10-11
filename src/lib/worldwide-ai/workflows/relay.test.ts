@@ -193,6 +193,7 @@ describe("Relay preparing a draft", () => {
 			"tool_call",
 			"tool_call",
 			"sources_retrieved",
+			"skills_resolved",
 			"model_call",
 			"tool_call",
 			"draft_created",

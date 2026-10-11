@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createMigratedPglite } from "./pglite";
-import type { SqlClient } from "./sql";
+import { SCHEMA_VERSION, type SqlClient } from "./sql";
 
 let sql: SqlClient;
 
@@ -35,21 +35,59 @@ describe("the Worldwide AI schema", () => {
 			"select table_name from information_schema.tables where table_schema = 'public' and table_name like 'wai_%'",
 		);
 		expect(rows.map((r) => r.table_name).sort()).toEqual([
+			"wai_action_items",
 			"wai_agent_settings",
 			"wai_audit_log",
+			"wai_batch_allocations",
+			"wai_batches",
+			"wai_bulk_movements",
+			"wai_calibrations",
 			"wai_cases",
+			"wai_change_packages",
+			"wai_cleaning_records",
+			"wai_coding_jobs",
+			"wai_corrective_actions",
+			"wai_daily_reports",
+			"wai_deviation_entries",
+			"wai_deviations",
 			"wai_document_versions",
 			"wai_documents",
 			"wai_draft_sources",
 			"wai_drafts",
+			"wai_equipment",
+			"wai_equipment_use",
 			"wai_files",
 			"wai_findings",
+			"wai_ingredient_lots",
+			"wai_ingredients",
 			"wai_integration_health",
+			"wai_learning_events",
 			"wai_meta",
 			"wai_openclaw_runs",
+			"wai_package_verifications",
+			"wai_packaging_runs",
+			"wai_quality_holds",
+			"wai_recipe_versions",
+			"wai_recipes",
+			"wai_repositories",
 			"wai_reviews",
+			"wai_sample_events",
+			"wai_samples",
+			"wai_scan_events",
+			"wai_skill_evaluations",
+			"wai_skill_invocations",
+			"wai_skill_proposals",
+			"wai_skill_releases",
+			"wai_specifications",
+			"wai_stock_movements",
+			"wai_tag_assignments",
+			"wai_tag_exceptions",
+			"wai_tags",
 			"wai_task_events",
 			"wai_tasks",
+			"wai_test_results",
+			"wai_training_records",
+			"wai_training_requirements",
 			"wai_usage",
 			"wai_work_products",
 		]);
@@ -59,7 +97,7 @@ describe("the Worldwide AI schema", () => {
 		const { rows } = await sql.query<{ relname: string; relrowsecurity: boolean }>(
 			"select relname, relrowsecurity from pg_class where relname like 'wai_%' and relkind = 'r'",
 		);
-		expect(rows.length).toBe(17);
+		expect(rows.length).toBe(55);
 		expect(rows.filter((r) => !r.relrowsecurity).map((r) => r.relname)).toEqual([]);
 		const policies = await sql.query("select 1 from pg_policies where tablename like 'wai_%'");
 		expect(policies.rows).toHaveLength(0);
@@ -69,7 +107,8 @@ describe("the Worldwide AI schema", () => {
 		const { rows } = await sql.query<{ value: string }>(
 			"select value from wai_meta where key = 'schema_version'",
 		);
-		expect(rows[0].value).toBe("2");
+		expect(rows[0].value).toBe(String(SCHEMA_VERSION));
+		expect(SCHEMA_VERSION).toBe(13);
 	});
 
 	it("accepts only the seven task states", async () => {

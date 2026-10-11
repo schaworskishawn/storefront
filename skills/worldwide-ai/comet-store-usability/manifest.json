@@ -1,0 +1,29 @@
+{
+	"id": "comet-store-usability",
+	"kind": "role-pack",
+	"title": "Comet store usability",
+	"version": 1,
+	"agents": [
+		"comet"
+	],
+	"functions": [
+		"comet.store-audit"
+	],
+	"foundations": [
+		"context-and-memory-hygiene",
+		"claim-and-conflict-check",
+		"review-package-preparation",
+		"clear-business-writing"
+	],
+	"tools": [
+		"source.read_supplied",
+		"product.store",
+		"finding.record",
+		"atlas.search"
+	],
+	"knowledge": [
+		"product-info"
+	],
+	"suiteVersion": 1,
+	"sha256": "c56d257371c3317a490507f5e7fa64822423eefa25a86b77eb132d0691ceda34"
+}

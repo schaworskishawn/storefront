@@ -1,0 +1,29 @@
+{
+	"id": "watch-monitoring",
+	"kind": "role-pack",
+	"title": "Watch monitoring",
+	"version": 1,
+	"agents": [
+		"watch"
+	],
+	"functions": [
+		"watch.health_check",
+		"watch.health-assessment"
+	],
+	"foundations": [
+		"structured-extraction",
+		"outcome-and-performance-check",
+		"tool-contract-use",
+		"exception-and-retry-recovery"
+	],
+	"tools": [
+		"source.read_supplied",
+		"product.store",
+		"finding.record",
+		"health.read",
+		"task.create"
+	],
+	"knowledge": [],
+	"suiteVersion": 1,
+	"sha256": "928fbb32c9964213e77a9c2b0ea1fb4887dcaf37a0b54b4e02734bf52fb92099"
+}

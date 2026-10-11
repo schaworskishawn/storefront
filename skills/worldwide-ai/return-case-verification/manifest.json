@@ -1,0 +1,32 @@
+{
+	"id": "return-case-verification",
+	"kind": "role-pack",
+	"title": "Return case verification",
+	"version": 1,
+	"agents": [
+		"return"
+	],
+	"functions": [
+		"return.case-review"
+	],
+	"foundations": [
+		"structured-extraction",
+		"deterministic-calculation-check",
+		"review-package-preparation",
+		"approved-source-retrieval"
+	],
+	"tools": [
+		"source.read_supplied",
+		"product.store",
+		"finding.record",
+		"case.get",
+		"atlas.search",
+		"saleor.order.read"
+	],
+	"knowledge": [
+		"returns",
+		"support-policy"
+	],
+	"suiteVersion": 1,
+	"sha256": "95ac9e84f2d6cd8b72c2664edc583e42a78495ad95f5dc8168b04b6a025bcd00"
+}

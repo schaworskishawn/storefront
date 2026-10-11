@@ -44,21 +44,21 @@ Every workspace page and API response is sent with `Cache-Control: private, no-s
 
 ## The applications
 
-| Application                                                                                                             | What it does today                                                                                                           |
-| ----------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| Today                                                                                                                   | What is waiting for you: results to review, failed tasks, findings, document reviews due.                                    |
-| Nexus Command Center                                                                                                    | Plan a goal as ordered steps with an owner each, and consolidate what the steps produced. A plan starts nothing by itself.   |
-| Overview                                                                                                                | Counts of tasks by state, readiness across the team, and model usage.                                                        |
-| Team                                                                                                                    | All 49 agents with truthful readiness. Each agent's page runs its function.                                                  |
-| Tasks                                                                                                                   | Every task with its history, input, result, retries and cancel.                                                              |
-| Daily Reports                                                                                                           | A briefing built from the records when you open it. Nothing is saved or scheduled yet.                                       |
-| Support Drafts                                                                                                          | File a case, ask Relay for a reply draft that cites approved documents, then save or reject it. Nothing is ever sent.        |
-| Knowledge                                                                                                               | The approved-document library Atlas searches, with versions, owner approval, review dates and expiry.                        |
-| Review Queue                                                                                                            | Everything waiting for a person, in one list.                                                                                |
-| E-Liquid Lab, RFID & NFC, Product Content Studio, Engineering, Manufacturing, Quality, Canadian Compliance, Improvement | The agents for that area, plus a plain list on each page of what that area does not do yet. The Lab has a recipe calculator. |
-| Integrations                                                                                                            | Each service's configuration status (names of missing settings, never values) and its last health check.                     |
-| Activity                                                                                                                | The audit log.                                                                                                               |
-| Settings                                                                                                                | Agent switches and limits, backups, the restore check, and the current configuration flags.                                  |
+| Application                                                                                                             | What it does today                                                                                                                                                  |
+| ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Today                                                                                                                   | What is waiting for you: results to review, failed tasks, findings, document reviews due. A checklist of your own actions, which you can add to, put off and close. |
+| Nexus Command Center                                                                                                    | Plan a goal as ordered steps with an owner each, and consolidate what the steps produced. A plan starts nothing by itself.                                          |
+| Overview                                                                                                                | Counts of tasks by state, readiness across the team, and model usage.                                                                                               |
+| Team                                                                                                                    | All 49 agents with truthful readiness. Each agent's page runs its function.                                                                                         |
+| Tasks                                                                                                                   | Every task with its history, input, result, retries and cancel.                                                                                                     |
+| Daily Reports                                                                                                           | A saved morning report with action items, each linked to the record it came from; an optional evening recap; every earlier report. Generate one at any time.        |
+| Support Drafts                                                                                                          | File a case, ask Relay for a reply draft that cites approved documents, then save or reject it. Nothing is ever sent.                                               |
+| Knowledge                                                                                                               | The approved-document library Atlas searches, with versions, owner approval, review dates and expiry.                                                               |
+| Review Queue                                                                                                            | Everything waiting for a person, in one list.                                                                                                                       |
+| E-Liquid Lab, RFID & NFC, Product Content Studio, Engineering, Manufacturing, Quality, Canadian Compliance, Improvement | The agents for that area, plus a plain list on each page of what that area does not do yet. The Lab has a recipe calculator.                                        |
+| Integrations                                                                                                            | Each service's configuration status (names of missing settings, never values) and its last health check.                                                            |
+| Activity                                                                                                                | The audit log.                                                                                                                                                      |
+| Settings                                                                                                                | Agent switches and limits, backups, the restore check, and the current configuration flags.                                                                         |
 
 Times are stored in UTC and shown in Winnipeg time.
 
@@ -78,11 +78,200 @@ Task states are `queued`, `running`, `needs_review`, `completed`, `failed`, `can
 
 Readiness is reported per function as `ready`, `awaiting_configuration`, `blocked`, `disabled`, `unhealthy` or `planned`, worked out from what is actually configured and the last health checks.
 
+## Skills
+
+A skill is a written, tested procedure an agent follows for one of its functions: when to use it, when not to, what it needs, the steps, what it produces, and the checks before it is finished. It is not an agent, a model or a permission. The registered handler still does the work and stores the result; the skill says how the work is meant to be done, and is put in front of the model when a function's wording comes from one.
+
+There are 61: twelve shared foundations (retrieving approved sources, exact calculation, fencing supplied text, and so on) and one role pack for each of the 49 agents. They are written in `src/lib/worldwide-ai/skills/` and exported in the Agent Skills format to `skills/worldwide-ai/`. Open them in the workspace from **Improvement** or from any agent's page.
+
+**Nothing guides work until the owner approves it.** On a new installation no skill is in use and every function runs on its agent's registry instructions, exactly as it did before skills existed. To put them in use:
+
+1. **Evaluate.** Anyone in the workspace can run a skill's evaluation. It runs in a scratch database that shares nothing with live records, and checks that the package is a real procedure in the portable format, that it asks for no tool or knowledge its agents lack, and that the function behind it works: it produces a verified result from its sample, refuses incomplete input, never does the same request twice, and stops when its agent is switched off. Foundations are checked against the mechanism they describe (exact decimals, refused tools, fenced data, intact checksums).
+2. **Read what it found.** Each case is shown as passed, failed or not run. A critical failure blocks approval outright.
+3. **Approve.** Only the owner can. An approval is of the exact content that was evaluated; change one word and it has to be evaluated again. The approved package is stored as approved, so what is in use does not change when the repository does.
+
+What the evaluation does **not** do is judge how well a model writes. Those cases need the live model and a reviewed set of examples; they are listed as not run and are never counted as passes.
+
+How a task uses skills:
+
+- The server chooses, before any model is involved: the agent's own approved role pack, if it covers the function, and at most two of that pack's foundations. Another agent's pack is never a candidate. What was turned away is recorded with the reason.
+- A stored package that was altered, was revoked, or asks for more than its agent has is refused.
+- The task and its stored result are pinned to the exact versions followed, and the task page shows how far each got: selected, loaded, invoked, completed.
+- If a procedure is revoked or replaced while a task is running, the task fails and nothing is stored.
+
+**Revoking and rolling back.** The owner can revoke a version at once. Nothing takes its place by itself: no version of that skill guides work until the owner rolls back to an earlier approved version or approves a new one. Every approve, revoke and rollback, and every refused attempt, is in Activity.
+
+**Improving a skill.** While reviewing a result, anyone can record a proposal: what should improve and the change to the procedure. A proposal changes nothing. The procedure is changed in the repository, which makes a new version; that version is evaluated on the same cases as the current one and guides work only after the owner approves it. Lessons are not drawn automatically from review decisions.
+
+After changing a skill, bump its version and run `pnpm worldwide-ai:skills` to regenerate the exported files.
+
+## Ingredient inventory
+
+The E-Liquid Lab keeps ingredients, the lots they arrive in, and a ledger of every movement of stock. Open it from **E-Liquid Lab**.
+
+How the balances work:
+
+| Balance       | What it means                                                                                 |
+| ------------- | --------------------------------------------------------------------------------------------- |
+| On hand       | What is physically in the lot, in the lot's own unit.                                         |
+| Reserved      | The part of that promised to a batch.                                                         |
+| In quarantine | All of what is on hand, while the lot is in quarantine.                                       |
+| Usable        | On hand less reserved. Nothing at all while the lot is in quarantine or past its expiry date. |
+
+The rules the ledger enforces:
+
+- **One unit per lot.** A lot is counted in mL, grams or pieces from the start, so volume and weight never become two balances. The other unit is shown only when the lot has a documented density with its source. One millilitre is never assumed to weigh one gram.
+- **Reserve, then use.** Stock is reserved for a batch before it is used, and recording use takes from what was reserved. More than is usable can't be reserved.
+- **Nothing is edited.** A movement is never changed or removed. A mistake is put right with a correction, which is another line and needs a reason.
+- **Only a person moves stock.** Agents prepare proposals. The database itself refuses a ledger line whose actor isn't a person, a negative balance, and a reservation larger than what is on hand.
+- **Once means once.** Each form carries its own key, so a form sent twice moves stock once. Two people taking the last of a lot at the same moment can't both succeed.
+- **The owner's alone:** corrections, and releasing a lot from quarantine. Staff can do everything else.
+- **Carriers are never assumed.** A nicotine base or flavour with no documented carrier is flagged, not treated as all PG.
+
+When a liquid is both measured and weighed on receipt, both are kept, and the receipt is flagged if they disagree with the documented density by more than 2%.
+
+The inventory feeds two other places. **Stock** can plan replenishment from the stored stock (daily demand and lead time aren't stored yet, so you add those). The **Daily Report** lists each ingredient with something to look at: low stock, an expired or expiring lot, a lot in quarantine, a missing density or carrier.
+
+These records are the workspace's own. Saleor stays the only authority for sellable stock, and nothing here is sent to it.
+
+## Recipes and batches
+
+A **recipe** is kept in versions. A version is the formula exactly as it was written: which ingredients, their documented strength and carrier at the time, the percentages, and the version of the calculation it was checked with. It is never changed; a change is a new version. Only a version the owner approved can be made, and an ingredient with no documented carrier can't be used in one.
+
+A **batch** goes through these steps, each recorded with who did it and when:
+
+1. **Plan.** Choose an approved version and a size. The exact calculation works out what the batch needs. Nothing is reserved yet, and the batch page shows what is usable now and what is short.
+2. **Reserve.** Everything the batch needs is reserved through the stock ledger, taking the lots that expire first. A lot kept by weight is converted with its documented density. It is all or nothing: if any ingredient is short, nothing is reserved.
+3. **Record that it was made.** Enter what was actually used from each lot and the yield you measured. Use is taken from the reservation and whatever was reserved but not used goes back to free stock. Recording more than was reserved is refused and changes nothing.
+4. **Or cancel**, with a reason. Everything reserved is given back.
+
+The yield is what a person measured; it is never calculated. A batch that has been made is **awaiting a quality review**. Whether it may be released is a qualified person's decision, and recording that decision is not built: nothing in the workspace releases a batch.
+
+## Finished liquid, holds and release
+
+When a batch is recorded as made, what was measured coming out becomes its **bulk**. Bulk has its own ledger: packaging runs, samples and waste draw it down, nothing in it is edited, and it can't go below zero, so the same liquid is never counted twice.
+
+A **packaging run** records what was filled, from which batch, with which label version, and which bottles and caps it used. It needs a recorded line clearance first. One step takes the liquid from the bulk and the packaging from the stock ledger; if any part can't be done, none of it is recorded. What left the bulk is entered as measured, never taken to be units times bottle size.
+
+A **hold** can be placed by anyone, with a reason. While one is open the batch can't be packaged or released. Only the owner lifts a hold, with a reason.
+
+**Release** is the owner's decision, and it is a transaction, not a tick box:
+
+1. The workspace checks everything it can check for itself, again, at the moment of release: the batch was made, its recipe version and plan are unaltered, what was used from every lot is recorded, the stock and bulk ledgers add up, none of its lots is in quarantine, no hold is open, no deviation is open against it, no result is waiting to be verified, and its results meet the approved specification when there is one. If anything fails, the release is refused.
+2. The owner confirms, one by one, what the workspace can't be sure of from its records: that the batch record was read, that required test results are on file and in specification, that there is no deviation or unexplained difference that was never written down, and that the approved labels were used.
+3. What was checked and confirmed is stored with the decision, with who decided, when, and on what basis.
+
+A decision is made once. A later doubt is a hold, which shows on the batch. A rejected batch can't be packaged.
+
+Releasing makes a batch eligible **in this workspace only**. Nothing is published and no sellable stock changes in the store.
+
+## Specifications, samples, results and deviations
+
+These are the quality records a release checks for itself. They are under **Quality**, and on each batch under **Samples and results**.
+
+A **specification** says what a recipe's liquid is tested against: what is measured, in which unit, between which limits, by which method, and whether the test is required. It is kept in versions. A version guides nothing until the owner approves it, and the version it replaces is kept. The limits are yours to set; the workspace never suggests one, and a criterion with no limit is refused.
+
+A **sample** is taken from a batch's bulk. One step records the sample and takes its liquid out of the bulk ledger, so the two can't disagree. Each hand-over after that (stored, sent to the laboratory, received there, report received, disposed of) is a line in the sample's custody record. Recording a hand-over sends nothing to anyone.
+
+A **result** is what a laboratory reported, typed in by a person exactly as the report gives it, with the laboratory, the report number and its date.
+
+- It counts only once the owner has **verified** it against the report.
+- It is never edited. A correction is a new result that names the one it replaces and says why; the earlier one is kept.
+- A verified result is compared with the approved specification by code, in exact decimals. It is a pass or a fail only when the unit is the same, the method is the one the specification names, and the report gives a number. Units are never converted. A different unit or method, words such as "< 0.05", or a reported uncertainty that reaches past a limit leave the result **unresolved**: the owner can accept it with a reason, which is kept beside it.
+- Every result that counts has to be within its limit. A passing retest does not hide a failing result still on file. The owner can set a result aside with a reason; it stays on file.
+- A verified result **outside its limit puts the batch on hold** in the same step. A result outside its limit can't be accepted.
+
+A **deviation** is something that didn't go as it should have. Anyone can open one, against a batch or not, and it can put the batch on hold as it is opened. Its investigation is a list of entries that are never changed, so a suspected cause stays apart from an established finding. A **corrective action** has someone responsible and, if one was agreed, a due date. Marking it done needs the evidence, and that is not the end: the owner verifies that it worked, saying what showed it. A deviation can be closed only by the owner, with a disposition, once every action is verified or cancelled and something has been recorded as established.
+
+With these records in place, a release also checks that no deviation is open against the batch, that no result is waiting to be verified, and, when a specification is approved for the recipe, that every result that counts meets it and no required result is missing. With no approved specification there is nothing to compare results with, and the owner confirms them in person as before.
+
+None of this is a laboratory finding of the workspace's own. Meeting a specification is not a statement that a product is safe or that it meets any regulation.
+
+## Equipment, cleaning and training
+
+These are under **Manufacturing**. They are records people type in, with the evidence they name. Nothing here reads an instrument, controls a machine, or shows that a cleaning was physically done.
+
+**Equipment** has a code, a kind, and how often it has to be calibrated (or that it doesn't). A **calibration** is recorded as it was carried out, with the certificate number or the reference standard used, and is never changed. From those records the workspace works out, each time it is asked, whether a piece of equipment may be used today:
+
+- Out of service, failed its last calibration, overdue, or needing a calibration that isn't on record: it **can't be recorded against a batch**. A calibration is never assumed, and an interval is never suggested.
+- A **failed calibration** takes the equipment out of service and, in the same step, **puts on hold every batch recorded against it since its last passing calibration**. Nothing says when it went wrong, so the workspace doesn't guess a shorter window. The owner looks at each batch and lifts its hold with a reason.
+- Anyone can take equipment out of service. Only the owner returns it, with a reason, and not while its last calibration is a failure. A passing calibration doesn't put it back by itself.
+
+Which equipment a batch was made or measured with is recorded on the batch's page.
+
+A **cleaning** or **line clearance** names what was cleaned, the procedure it was done under, and what was done and checked. It can be verified by a second person; whoever recorded it can't verify their own.
+
+A **training record** says who completed what, when, until when it is valid, and where the evidence is kept. It counts once the owner has verified it, and only while it is in date. It is not a personnel file and not proof of competence.
+
+The owner can **require training for a step**: recording a batch as made, or recording a packaging run. From then on that step is refused to anyone without a verified, in-date record of their own for it, before anything is touched, and the refusal is in the audit log. It applies to the owner too, so verify your own record before requiring it. A record made for someone by name only is kept but can't satisfy a requirement, because nothing ties it to a sign-in. With nothing required, nothing is refused.
+
+## The tag registry
+
+Under **RFID & NFC**. No reader is connected, so nothing here talks to one.
+
+A **tag** is registered once, under the identifier it reports. UHF RFID and NFC are different kinds of tag and are kept apart: the same digits under each are two tags. An identifier that isn't one (not hexadecimal, or the wrong length for its kind) is refused, not guessed at. A roll can be registered in one step, and either all of it is registered or none is. Each tag records what it can do (a readable identifier only, password-protected memory, or support for cryptographic verification), where it came from, and whether a person has read it and confirmed its identifier. Recording that a tag supports cryptographic verification doesn't mean anything here checks it. Nothing does.
+
+What a tag is **attached to** is an assignment: a product unit, carton, case, container, location, equipment or tote, with a SKU, lot and serial where they apply. A tag is attached to one thing at a time; taking it off needs a reason, and what it was on is kept as history. A tagged unit can be recorded as inside a tagged carton, case, container or tote, and a container can't be taken off while things are recorded inside it. How many units a carton holds comes from the manifest or packing list named beside the number, never from the tag.
+
+A tag can be **retired** at the end of its life or **revoked** when it shouldn't be trusted (lost, damaged, possibly copied). Either takes it off what it was attached to. Only the owner puts one back in use.
+
+A **scan** is stored as an observation: this tag was read at this place at this time, by whom, for what, and whether the read was real or simulated. Nothing else follows from it. No stock moves, nothing is placed on a shelf, and it says nothing about whether a product is genuine, who is holding it, or how old they are. The same read arriving twice, from a replayed export or a retried request, is one observation. A tag nobody registered, or one that was revoked or retired, raises an **exception**: one per tag however many times it is read, until a person resolves it, saying what it turned out to be.
+
+## Coding work for Build
+
+Under **Engineering**. **No coding backend is connected.** Neither the Claude Agent SDK nor OpenHands is installed and there is no worker host, so nothing runs a job. What exists is the contract a backend would work under and the records and rules around it, enforced in code and tested without a backend.
+
+The owner **registers a repository** under a short id, with the paths a change may touch and any it may never touch. Its address is not asked for and not stored: a worker's own configuration resolves the id.
+
+Anyone in the workspace can **ask for coding work**: choose the repository, the kind of work, the full commit id to start from, and the checks Verify has to pass, from a fixed list. The server builds the job's **envelope** from those. A request can't carry an address, a branch name that could move, a command or a path on a machine, and what is written as the goal is passed on as a description that grants nothing. One job is in hand per repository at a time, and switching Build off in Settings stops new jobs. With no backend the job says it is waiting and why.
+
+A **returned change package** is accepted only if all of this holds, and is otherwise refused whole and not kept, with every reason recorded on the job:
+
+- It comes from a worker's own identity. A person or an agent can't enter one.
+- It quotes this job's envelope checksum, and starts from the envelope's commit.
+- Its list of files is exactly the files its diff touches.
+- Every file is within the job's scope, none is a symbolic link or a submodule, and none is protected. Some paths are always protected whatever a repository's scope says: secrets, the checks that gate a merge, database migrations, and the code that decides who may do what, including these rules.
+
+An accepted package is **frozen** under a checksum of its base commit, its diff and its files. A different diff is a different candidate, and replaces the earlier one.
+
+**Verify's results** are recorded against one exact candidate, with a real exit status and where the check ran. Only Verify can record one: Build can't, a worker can't, and a person can't. The **owner's decision** is for one exact candidate too, and approving needs Verify's newest result for every check the job asked for to be a pass on that candidate. Neither a result nor a decision carries over to another candidate.
+
+Approving records a decision. Nothing is merged, pushed or deployed by it.
+
+What this has not been: run against a real backend. The package handling has only ever been exercised by tests that stand in for a worker.
+
+## Lessons from reviews
+
+Under **Improvement**.
+
+Every time a person accepts, corrects or rejects an agent's work, that decision becomes a **learning event**: which task, which agent, which version of which procedure the work followed, and how the review went. A draft saved as written is accepted; one a person changed first is corrected. Events are made from the saved reviews themselves, one per review, so a review can't lose its event and reading the reviews again adds nothing. Demonstration runs and one person's own work are left out.
+
+When reviewers have corrected or rejected at least two results that followed the same version of a procedure, the workspace raises **one proposal** against that procedure, with those reviews as its evidence. More such reviews are added to the proposal that is open; a second one is not raised. One review is never enough, reviews of work that followed an older version are left out, and reviews a decided proposal rested on are not put to the owner a second time.
+
+The workspace **writes no new wording and changes nothing**. It says which procedure fell short and shows the reviews, with what each reviewer wrote. The owner marks the proposal as wanted or declines it. Either way the procedure in use stays exactly as approved until a person writes a new version in the repository, it is evaluated, and the owner approves it, the same as any other change to a skill.
+
+The same page shows, for each agent with reviewed work, how many results were accepted as they were, corrected and rejected, and the share accepted as they were with the number of reviews it is out of. It is a count of what happened. Work nobody reviewed isn't in it, an agent with none reviewed has no number rather than a zero, and a better number gives an agent no more permission to do anything.
+
+This is counting done by code. No model reads the reviews, and nothing here is an agent judging its own work.
+
+## The Today checklist
+
+The checklist is for things a person has to do. An item is added by hand, on Today or the checklist page, or put there from a line of a daily report with **Put on the checklist**. The same line tracked twice is one item.
+
+An item can be:
+
+- **Given to** anyone, the owner, staff, or yourself. Nobody can be handed work under another person's name.
+- **Given a priority and a date.** A date you type is shown as suggested; a date that came from a record, such as an expiry, is shown as confirmed.
+- **Put off**, to a later day, with a reason that is kept with it. It is hidden from Today until that day and is always visible on the checklist page.
+- **Closed**, with a note of what was done, or dismissed with a reason.
+
+**Closing an item closes the item and nothing else.** It never completes a task, accepts a result or approves a document: those have their own screens and their own checks. If the thing an item was about is still waiting, the next daily report lists it again.
+
 ## Setting it up for real
 
 These are steps for the owner. Nothing here is applied automatically, and none of it has been done yet.
 
-1. **Database.** Create a Supabase project. Run the two files in `supabase/migrations/` in name order, with `supabase db push` or by pasting each into the SQL editor. Row-level security is switched on for every table with no policies, so only the server's own connection can read them. Set `POSTGRES_URL` to the connection string.
+1. **Database.** Create a Supabase project. Run the thirteen files in `supabase/migrations/` in name order, with `supabase db push` or by pasting each into the SQL editor. The code expects the schema the newest file leaves; if the database is behind, the database health check says which version it is at and which the code needs. Row-level security is switched on for every table with no policies, so only the server's own connection can read them. Set `POSTGRES_URL` to the connection string.
 2. **File storage.** Set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`. Create a private bucket named `worldwide-ai` (or name your own in `WORLDWIDE_AI_BUCKET`). It must not be public. The service key stays on the server and is never sent to a browser.
 3. **Who may enter.** Set `WORLDWIDE_AI_OWNER_EMAILS` and, if you want, `WORLDWIDE_AI_STAFF_EMAILS`. Each address must belong to a Saleor staff account.
 4. **Model.** Set `ANTHROPIC_API_KEY`. Without it the 31 code-only functions still work.
@@ -92,7 +281,7 @@ These are steps for the owner. Nothing here is applied automatically, and none o
 
 Put the values in the hosting provider's environment settings (or `.env.local` on your own machine). Never commit them.
 
-After that, open **Integrations** and run a health check, then **Settings** and take a backup followed by a restore check.
+After that, open **Integrations** and run a health check, then **Settings** and take a backup followed by a restore check. When you are ready for the agents to follow their written procedures, open **Skills**, evaluate them, and approve the ones you are satisfied with.
 
 ## Settings
 
@@ -113,6 +302,7 @@ Names only. `.env.example` has the same list with empty values.
 | `WORLDWIDE_AI_RECORD_RAW`                                                   | No                     | `true` keeps redacted prompt and output text in traces and task history. Off by default.                  |
 | `WORLDWIDE_AI_INGEST_CONTACT_FORM`                                          | No                     | `true` also files each contact-form message as a support case. Off by default. See below.                 |
 | `WORLDWIDE_AI_STALE_AFTER_DAYS`                                             | No                     | Days after approval before a document counts as stale. Default 180.                                       |
+| `WORLDWIDE_AI_EVENING_RECAP`                                                | No                     | `true` also saves an evening recap on schedule. Off by default.                                           |
 | `WORLDWIDE_AI_STORE`                                                        | Development only       | `demo` uses the in-memory demonstration store. Ignored in production.                                     |
 | `WORLDWIDE_AI_DEMO_OPERATOR`                                                | Development only       | `owner` or `staff`: the stand-in operator for the local preview. Ignored outside `next dev`.              |
 
@@ -122,15 +312,19 @@ Names only. `.env.example` has the same list with empty values.
 
 These exist only once the jobs are deployed to Trigger.dev. Times are Winnipeg time, and a schedule that fires twice for the same slot does the work once.
 
-| Schedule             | When                    | What it does                                                                               |
-| -------------------- | ----------------------- | ------------------------------------------------------------------------------------------ |
-| Health check         | Every hour, on the hour | Checks each configured service, records the result, raises a finding for anything down.    |
-| Stuck-task sweep     | Every hour, at :15      | Marks tasks that ran past their limit `outcome_unknown` instead of leaving them "running". |
-| Nightly backup       | 2:30 AM                 | Backs up every table and stored file, keeping the newest fourteen.                         |
-| Weekly restore check | Sunday 3:30 AM          | Restores the newest backup into a scratch database and checks it came back intact.         |
-| Document scan        | 7:30 AM                 | Finds documents due for review, expiring, or waiting for approval.                         |
+| Schedule             | When                    | What it does                                                                                                                            |
+| -------------------- | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Health check         | Every hour, on the hour | Checks each configured service, records the result, raises a finding for anything down.                                                 |
+| Stuck-task sweep     | Every hour, at :15      | Marks tasks that ran past their limit `outcome_unknown` instead of leaving them "running".                                              |
+| Nightly backup       | 2:30 AM                 | Backs up every table and stored file, keeping the newest fourteen.                                                                      |
+| Weekly restore check | Sunday 3:30 AM          | Restores the newest backup into a scratch database and checks it came back intact.                                                      |
+| Document scan        | 7:30 AM                 | Finds documents due for review, expiring, or waiting for approval.                                                                      |
+| Morning report       | 8:00 AM                 | Saves the daily report. One a day: a second firing finds the first and does nothing. The time follows Winnipeg through daylight saving. |
+| Evening recap        | 5:30 PM                 | Saves a recap with what to pick up first tomorrow. Does nothing unless `WORLDWIDE_AI_EVENING_RECAP` is set.                             |
 
-The 8:00 AM saved Daily Report is not built: the Daily Reports page builds its briefing when you open it.
+The morning report is code reading the workspace's own records: no model writes it and nothing is sent. Each report covers the time since the last one, so nothing is counted twice. Today's page still shows the live picture; the report is the saved record of a morning.
+
+**One scheduled job is not expected to work yet.** The restore check builds a scratch database from the migration files, using an in-process database package that is loaded by name at run time. The web application is told to deploy both (see `outputFileTracingIncludes` in `next.config.js`), so the restore check and skill evaluations started from the workspace have what they need. The Trigger.dev build has not been told: its image needs `supabase/migrations/` and `@electric-sql/pglite` added through Trigger.dev's own build settings, and that has not been set up or tried on a real project. Until it has, expect the weekly restore check job to fail, and run the restore check from **Settings** instead. The other jobs don't use the scratch database.
 
 ## Backups and recovery
 
@@ -140,7 +334,7 @@ There are two layers, and you need both.
 
 **The workspace's own backup** covers what Supabase's doesn't prove:
 
-- Every `wai_` table, one JSON line per row, from a single consistent snapshot, with each table's row count and checksum in a manifest.
+- Every `wai_` table, one JSON line per row, from a single consistent snapshot, with each table's row count and checksum in a manifest. That includes approved skill releases, their evaluations, and which procedures each task followed.
 - Every stored file (uploads, inspection screenshots), kept by checksum so a file is copied once.
 - It is written to the same private bucket under `backups/`. The newest fourteen are kept.
 
@@ -174,6 +368,17 @@ Checked on a developer machine:
 - The unit and workflow tests (`pnpm run test:run`), which run against an in-process Postgres with the real migrations.
 - Every code-only function on its sample and on cases written for its rules, including exact-decimal arithmetic.
 - Every model-written function with a stand-in model: the format, the citation rules, and that a reply breaking the rules stores nothing.
+- Lessons from reviews: one event per saved review through the real review path, a draft changed before saving counted as corrected, demonstration runs left out, no proposal from one review, one proposal with its evidence from two, more evidence added to the open one, and nothing raised again for what the owner already decided.
+- The coding contract, with a test standing in for a worker: a request that can't name an address, command or check of its own; a package refused whole for a wrong envelope or commit, a file out of scope or protected, a link, or a list that disagrees with its diff; only Verify recording a result; approval needing every check passed on the exact candidate; and nothing carrying over to a changed candidate.
+- The tag registry: identifiers stored the same however they are printed and refused when they aren't one, a roll registered all or nothing, one assignment at a time with history, a carton's quantity needing its manifest, a replayed read counting once, and one exception for a tag that isn't registered or was revoked.
+- Equipment and training: equipment refused to a batch when it is out of service, failed, overdue or never calibrated; a failed calibration holding the batches measured since the last pass; a cleaning that only a second person can verify; and a required training refusing a step to a person without it, the owner included.
+- Quality records: a specification that guides nothing until approved, a sample that takes its liquid from the bulk once, results that count only when verified and are corrected by a new result, comparison with the specification in exact decimals without converting a unit, a hold placed when a verified result is outside its limit, and a deviation that can't close before its actions are verified to have worked.
+- Finished liquid: bulk drawn down without going negative, a packaging run recorded all or nothing, holds, and a release that is rechecked at the moment it is made and refused when a record fails.
+- The checklist: adding, giving, putting off with a reason, closing with a note, one item per report line, and that closing an item leaves its task and result untouched.
+- Recipes and batches: a version kept as written, an all-or-nothing reservation across lots, use and yield recorded, and a refusal leaving every balance untouched.
+- The ingredient ledger: every kind of movement and its limits, a request sent twice, two people taking the last of a lot, exact decimals, and the database refusing a negative balance or an agent as the actor.
+- Daily reports: one a day, a second attempt kept beside the first, no overlapping runs, a failed attempt saved with its reason, and nothing from a demonstration run or one person's own work in a shared report.
+- All 61 skills evaluated in an isolated database, and the approve, revoke, rollback and mid-run revocation paths, including a worked example of improving Relay's procedure from version 1 to version 2 and back.
 - The pages, in a browser, in the local preview at desktop and phone widths.
 - That a visitor who isn't signed in is redirected from every page and gets `401` from the API.
 - A backup followed by an isolated restore check in the preview.
@@ -182,6 +387,7 @@ Not checked, because it needs your accounts or a deployment:
 
 - A real Saleor staff sign-in, and a real customer being refused.
 - The live database, storage bucket, model, Trigger.dev, Langfuse, and an OpenClaw host.
+- The restore check and skill evaluation on the hosted site. The build is confirmed to carry the files they need, but they have only been run on a developer machine.
 - The quality of real drafts. A stand-in model proves the checks work, not that the writing is good.
 - Any function on real business records.
 
@@ -189,25 +395,35 @@ Not checked, because it needs your accounts or a deployment:
 
 The larger plan describes much more than this. These parts have no working code. The workspace says so on the relevant pages rather than showing empty features as if they worked.
 
-| Part of the plan                                                                                               | Status                                                                                                                 |
-| -------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| 49 agents, each with a real function, typed output and truthful readiness                                      | Built and tested. See the capability matrix.                                                                           |
-| Private workspace, access control, task pipeline, review, audit log                                            | Built and tested locally. Not yet used with a real sign-in.                                                            |
-| Atlas knowledge library and the Relay support draft with a verified save                                       | Built and tested with a stand-in model.                                                                                |
-| Site inspection through OpenClaw                                                                               | Built and tested against a stand-in worker. No real host connected.                                                    |
-| Health checks, backups, restore check, schedules, redacted tracing                                             | Built and tested locally. Schedules not deployed.                                                                      |
-| Skills system: twelve shared foundations and a role pack per agent                                             | Not built. Agents run on the instructions and tool lists in the registry.                                              |
-| Learning loop: lessons from reviews, evaluation, promotion, rollback                                           | Not built.                                                                                                             |
-| Saved Daily Reports at 8:00 AM                                                                                 | Not built. The briefing is made on demand and not stored.                                                              |
-| Inventory ledger, stored recipes, batches and finished-liquid records                                          | Not built. The Lab functions and the calculator work on what you enter and keep no inventory.                          |
-| Manufacturing, quality and compliance record models with software gates                                        | Not built. The agents review records you supply and never release, approve or certify.                                 |
-| RFID and NFC tag registry, live scan ingestion, public authenticity page                                       | Not built. Link reconciles scan exports you supply.                                                                    |
-| Product Content Studio: Saleor product picker, images, per-field approval                                      | Not built beyond text drafts from details you enter. No image is ever produced.                                        |
-| Build's coding worker (Claude Agent SDK) and independent review by Verify                                      | Not built. Build writes an engineering brief, which is not a patch. Verify re-checks stored results, not code changes. |
-| OpenHands, Agent Zero, Hermes, Paperclip, Buzz                                                                 | Not installed or connected. They appear on Integrations as having no connector.                                        |
-| Linux desktop, installer image, VirtualBox machine                                                             | Not started. These need downloads and virtual machines that are the owner's decision to start.                         |
-| Layout preferences, notifications, per-agent autonomy policies                                                 | Not built.                                                                                                             |
-| Connectors for accounting, carriers, bank, payment processor, email, calendar, search data, Figma, instruments | Not built. The functions that would use them work from records you supply.                                             |
+| Part of the plan                                                                                                                                                                             | Status                                                                                                                                                                                                                                                                                                                                                                                                         |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 49 agents, each with a real function, typed output and truthful readiness                                                                                                                    | Built and tested. See the capability matrix.                                                                                                                                                                                                                                                                                                                                                                   |
+| Private workspace, access control, task pipeline, review, audit log                                                                                                                          | Built and tested locally. Not yet used with a real sign-in.                                                                                                                                                                                                                                                                                                                                                    |
+| Atlas knowledge library and the Relay support draft with a verified save                                                                                                                     | Built and tested with a stand-in model.                                                                                                                                                                                                                                                                                                                                                                        |
+| Site inspection through OpenClaw                                                                                                                                                             | Built and tested against a stand-in worker. No real host connected.                                                                                                                                                                                                                                                                                                                                            |
+| Health checks, backups, restore check, schedules, redacted tracing                                                                                                                           | Built and tested locally. Schedules not deployed.                                                                                                                                                                                                                                                                                                                                                              |
+| Skills: twelve shared foundations and a role pack per agent                                                                                                                                  | Built and tested locally: catalog, isolated evaluation, owner approval, revoke, rollback, and pinning to tasks. Not approved anywhere yet.                                                                                                                                                                                                                                                                     |
+| Evaluating how well a model writes; exporting skills to other agent runtimes                                                                                                                 | Not built. The evaluation checks the procedure, its permissions and the function behind it. Only this application loads skills.                                                                                                                                                                                                                                                                                |
+| Learning loop                                                                                                                                                                                | Partly. Review decisions are counted as learning events, and the workspace raises a proposal against a procedure when several reviews say it fell short, with the reviews as evidence. It writes no wording; a person writes the new version, which is evaluated and approved like any other. Comparing a candidate with the current version on real reviewed cases, and the fuller scorecards, are not built. |
+| Daily Reports                                                                                                                                                                                | Built and tested locally: saved morning report and evening recap from the records, action items with owners, steps, links and sources, carry-over by task id, history, one a day, no overlapping runs. The schedule is not deployed.                                                                                                                                                                           |
+| Daily Report sections with no data behind them                                                                                                                                               | Not built. Shipments, purchasing, accounting, manufacturing records, goals and engineering changes are listed in each report as unavailable, with the reason.                                                                                                                                                                                                                                                  |
+| Today checklist                                                                                                                                                                              | Built and tested locally: actions added by hand or tracked from a report, given to a role or yourself, put off with a reason, closed with a note. Reassigning an agent's task to a person is not built.                                                                                                                                                                                                        |
+| Ingredient inventory                                                                                                                                                                         | Built and tested locally: ingredients, lots, and an append-only ledger with reservations, quarantine and corrections. Used in the preview only.                                                                                                                                                                                                                                                                |
+| Recipes and batch records                                                                                                                                                                    | Built and tested locally: versioned recipes the owner approves, batches that reserve and consume lots through the ledger, measured yield. Not used in the preview beyond a walkthrough.                                                                                                                                                                                                                        |
+| Finished liquid, packaging runs, holds and the release decision                                                                                                                              | Built and tested locally. Release is the owner's, rechecked when it is made, and changes nothing in the store.                                                                                                                                                                                                                                                                                                 |
+| Specifications, samples, laboratory results, deviations and corrective actions                                                                                                               | Built and tested locally. A release checks them for itself. Results are typed in by a person from the report; the report file itself isn't stored.                                                                                                                                                                                                                                                             |
+| Equipment and calibration, cleaning and line clearance, training with requirements the owner sets                                                                                            | Built and tested locally. They gate recording equipment against a batch, and making and packaging a batch.                                                                                                                                                                                                                                                                                                     |
+| Label approvals, change control, stability schedules, supplier qualification, production scheduling                                                                                          | Not built. The owner confirms the labels when releasing a batch; the rest isn't claimed.                                                                                                                                                                                                                                                                                                                       |
+| Manufacturing, quality and compliance record models with software gates                                                                                                                      | Not built. The agents review records you supply and never release, approve or certify.                                                                                                                                                                                                                                                                                                                         |
+| The RFID and NFC tag registry: tags, what each is attached to with its history, scans as observations, exceptions                                                                            | Built and tested locally. No reader is connected; scans are typed in.                                                                                                                                                                                                                                                                                                                                          |
+| Live scan ingestion from readers, the public authenticity page, cryptographic tag verification                                                                                               | Not built. No reader or secure-tag service is connected, and none is invented.                                                                                                                                                                                                                                                                                                                                 |
+| Product Content Studio: Saleor product picker, images, per-field approval                                                                                                                    | Not built beyond text drafts from details you enter. No image is ever produced.                                                                                                                                                                                                                                                                                                                                |
+| The coding contract for Build: registered repositories, job envelopes, scope checks on a returned change, frozen candidates, Verify's results and the owner's decision tied to one candidate | Built and tested with a test standing in for a worker. Not run against a real backend.                                                                                                                                                                                                                                                                                                                         |
+| A coding backend (Claude Agent SDK or OpenHands), the sandboxed worker, dispatch, and Verify running checks for itself                                                                       | Not built. Nothing is installed and there is no worker host, so a job is recorded and waits.                                                                                                                                                                                                                                                                                                                   |
+| OpenHands, Agent Zero, Hermes, Paperclip, Buzz                                                                                                                                               | Not installed or connected. They appear on Integrations as having no connector.                                                                                                                                                                                                                                                                                                                                |
+| Linux desktop, installer image, VirtualBox machine                                                                                                                                           | Not started. These need downloads and virtual machines that are the owner's decision to start.                                                                                                                                                                                                                                                                                                                 |
+| Layout preferences, notifications, per-agent autonomy policies                                                                                                                               | Not built.                                                                                                                                                                                                                                                                                                                                                                                                     |
+| Connectors for accounting, carriers, bank, payment processor, email, calendar, search data, Figma, instruments                                                                               | Not built. The functions that would use them work from records you supply.                                                                                                                                                                                                                                                                                                                                     |
 
 ## Commands
 
@@ -215,20 +431,22 @@ The larger plan describes much more than this. These parts have no working code.
 | --------------------------- | ---------------------------------------------------------------------------- |
 | `pnpm worldwide-ai:preview` | Local preview with fictional data, on port 3100.                             |
 | `pnpm worldwide-ai:matrix`  | Regenerates the capability matrix after a registry change.                   |
+| `pnpm worldwide-ai:skills`  | The same command: it also regenerates the exported skill files.              |
 | `pnpm run verify`           | The repository's full check: lint, types and every test.                     |
 | `pnpm run test:e2e`         | Browser tests, including that the workspace turns away a signed-out visitor. |
 | `npx trigger.dev deploy`    | Deploys the background jobs and starts their schedules. The owner's step.    |
 
 ## Where things are
 
-| What                        | Where                                        |
-| --------------------------- | -------------------------------------------- |
-| Agents                      | `src/lib/worldwide-ai/agents/registry.ts`    |
-| Functions                   | `src/lib/worldwide-ai/functions/`            |
-| The pipeline                | `src/lib/worldwide-ai/functions/pipeline.ts` |
-| Support drafts, inspections | `src/lib/worldwide-ai/workflows/`            |
-| Database schema             | `supabase/migrations/`                       |
-| Pages                       | `src/app/(workspace)/worldwide-ai/`          |
-| Page components and styles  | `src/ui/sections/worldwide-ai/`              |
-| Background jobs             | `src/trigger/`, `trigger.config.ts`          |
-| The OpenClaw adapter        | `openclaw-host/`                             |
+| What                           | Where                                                  |
+| ------------------------------ | ------------------------------------------------------ |
+| Agents                         | `src/lib/worldwide-ai/agents/registry.ts`              |
+| Functions                      | `src/lib/worldwide-ai/functions/`                      |
+| Skills (source, exported copy) | `src/lib/worldwide-ai/skills/`, `skills/worldwide-ai/` |
+| The pipeline                   | `src/lib/worldwide-ai/functions/pipeline.ts`           |
+| Support drafts, inspections    | `src/lib/worldwide-ai/workflows/`                      |
+| Database schema                | `supabase/migrations/`                                 |
+| Pages                          | `src/app/(workspace)/worldwide-ai/`                    |
+| Page components and styles     | `src/ui/sections/worldwide-ai/`                        |
+| Background jobs                | `src/trigger/`, `trigger.config.ts`                    |
+| The OpenClaw adapter           | `openclaw-host/`                                       |

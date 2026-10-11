@@ -1,0 +1,33 @@
+{
+	"id": "trace-shipment-timelines",
+	"kind": "role-pack",
+	"title": "Trace shipment timelines",
+	"version": 1,
+	"agents": [
+		"trace"
+	],
+	"functions": [
+		"trace.shipment-timeline"
+	],
+	"foundations": [
+		"structured-extraction",
+		"claim-and-conflict-check",
+		"document-and-table-production",
+		"tool-contract-use"
+	],
+	"tools": [
+		"source.read_supplied",
+		"product.store",
+		"finding.record",
+		"saleor.order.read",
+		"carrier.events.read",
+		"case.get",
+		"atlas.search"
+	],
+	"knowledge": [
+		"shipping",
+		"faq"
+	],
+	"suiteVersion": 1,
+	"sha256": "e549f3ff26de7526be6404f9d6a9ccfb3aee774746af6f992adcf6235ce9ed77"
+}

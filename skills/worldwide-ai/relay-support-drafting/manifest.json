@@ -1,0 +1,37 @@
+{
+	"id": "relay-support-drafting",
+	"kind": "role-pack",
+	"title": "Relay support drafting",
+	"version": 1,
+	"agents": [
+		"relay"
+	],
+	"functions": [
+		"relay.support_draft"
+	],
+	"foundations": [
+		"approved-source-retrieval",
+		"context-and-memory-hygiene",
+		"clear-business-writing",
+		"review-package-preparation"
+	],
+	"tools": [
+		"source.read_supplied",
+		"product.store",
+		"finding.record",
+		"case.get",
+		"case.list",
+		"atlas.search",
+		"atlas.get_document",
+		"draft.save",
+		"saleor.order.read"
+	],
+	"knowledge": [
+		"support-policy",
+		"shipping",
+		"returns",
+		"faq"
+	],
+	"suiteVersion": 1,
+	"sha256": "95dce3d7ed4da3e9c8144fd8da49c56ebf4af6b614543ffe609118fda4023b26"
+}

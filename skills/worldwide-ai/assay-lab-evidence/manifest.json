@@ -1,0 +1,29 @@
+{
+	"id": "assay-lab-evidence",
+	"kind": "role-pack",
+	"title": "Assay lab evidence",
+	"version": 1,
+	"agents": [
+		"assay"
+	],
+	"functions": [
+		"assay.lab-review"
+	],
+	"foundations": [
+		"structured-extraction",
+		"deterministic-calculation-check",
+		"review-package-preparation",
+		"document-and-table-production"
+	],
+	"tools": [
+		"source.read_supplied",
+		"product.store",
+		"finding.record",
+		"atlas.search"
+	],
+	"knowledge": [
+		"quality"
+	],
+	"suiteVersion": 1,
+	"sha256": "37907056524cf75b6e37c4d3ae18506e149103ad9bab423ca2428df5db65361e"
+}

@@ -51,7 +51,8 @@
 		"content:export-seed": "node scripts/export-storefront-content-seed.mjs",
 		"skills:bootstrap": "node scripts/bootstrap-agent-skills.mjs",
 		"worldwide-ai:preview": "node scripts/worldwide-ai-preview.mjs",
-		"worldwide-ai:matrix": "node scripts/worldwide-ai-matrix.mjs"
+		"worldwide-ai:matrix": "node scripts/worldwide-ai-matrix.mjs",
+		"worldwide-ai:skills": "node scripts/worldwide-ai-matrix.mjs"
 	},
 	"dependencies": {
 		"@adyen/adyen-web": "6.46.0",

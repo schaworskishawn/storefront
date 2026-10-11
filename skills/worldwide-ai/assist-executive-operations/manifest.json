@@ -1,0 +1,29 @@
+{
+	"id": "assist-executive-operations",
+	"kind": "role-pack",
+	"title": "Assist executive operations",
+	"version": 1,
+	"agents": [
+		"assist"
+	],
+	"functions": [
+		"assist.meeting-pack"
+	],
+	"foundations": [
+		"context-and-memory-hygiene",
+		"claim-and-conflict-check",
+		"clear-business-writing",
+		"review-package-preparation"
+	],
+	"tools": [
+		"source.read_supplied",
+		"product.store",
+		"finding.record",
+		"atlas.search"
+	],
+	"knowledge": [
+		"general"
+	],
+	"suiteVersion": 1,
+	"sha256": "730f9d863c1c543cff6cb3b11ec1f7b2d0632f056dac35b38647b003ee978e63"
+}

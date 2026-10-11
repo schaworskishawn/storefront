@@ -1,0 +1,29 @@
+{
+	"id": "scout-cited-research",
+	"kind": "role-pack",
+	"title": "Scout cited research",
+	"version": 1,
+	"agents": [
+		"scout"
+	],
+	"functions": [
+		"scout.research-brief"
+	],
+	"foundations": [
+		"context-and-memory-hygiene",
+		"claim-and-conflict-check",
+		"review-package-preparation",
+		"approved-source-retrieval"
+	],
+	"tools": [
+		"source.read_supplied",
+		"product.store",
+		"finding.record",
+		"atlas.search"
+	],
+	"knowledge": [
+		"general"
+	],
+	"suiteVersion": 1,
+	"sha256": "b326369074a5ded1ecdd124f6872d3731d0f01d0a41b33711370c71b5af81976"
+}

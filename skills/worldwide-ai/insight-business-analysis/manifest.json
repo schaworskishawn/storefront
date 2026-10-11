@@ -1,0 +1,29 @@
+{
+	"id": "insight-business-analysis",
+	"kind": "role-pack",
+	"title": "Insight business analysis",
+	"version": 1,
+	"agents": [
+		"insight"
+	],
+	"functions": [
+		"insight.metric-analysis"
+	],
+	"foundations": [
+		"structured-extraction",
+		"deterministic-calculation-check",
+		"document-and-table-production",
+		"claim-and-conflict-check"
+	],
+	"tools": [
+		"source.read_supplied",
+		"product.store",
+		"finding.record",
+		"atlas.search"
+	],
+	"knowledge": [
+		"general"
+	],
+	"suiteVersion": 1,
+	"sha256": "99e2495c393d4d5bca16703ce0724dfee074c5d4a25ac3de8e26d01c67c027fd"
+}

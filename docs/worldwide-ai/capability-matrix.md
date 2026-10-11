@@ -10,7 +10,7 @@ How to read it:
 - **Review**: 37 baselines produce a draft that a person must accept or reject; the other 12 save a result that code has verified and that changes nothing outside the workspace.
 - **Needs** lists the services a function can't run without. **With nothing configured** is its readiness on an installation with no settings at all, with the names of the missing settings (never their values). Live readiness for your installation is on the Team page.
 - **Status** separates implemented from proven. Every function here is tested; none has been run against the live database, the live model or real business records.
-- **Role pack**: the skills system (role packs and foundation skills) is not built, so no agent has one yet. Each agent runs on the instructions and tool list in the registry.
+- **Role pack** is the written procedure the agent follows, with its supporting foundations (see `skills/worldwide-ai/`). A pack guides work only after its exact version has been evaluated and the owner has approved it in the workspace; until then the agent runs on the instructions in the registry. Whether a pack is approved is a fact about an installation, so it is shown on the Skills page, not here.
 - **Planned, not built** lists 5 later capabilities that have no working code. They are shown so that nobody mistakes an agent's name for something it can't do yet.
 
 ## Summary
@@ -80,7 +80,7 @@ How to read it:
 - **Review:** none (verified save)
 - **Needs:** Supabase database
 - **With nothing configured:** Awaiting configuration (missing: POSTGRES_URL)
-- **Role pack:** not built
+- **Role pack:** `nexus-coordination` version 1, supported by `goal-intake`, `outcome-and-performance-check`, `tool-contract-use`, `exception-and-retry-recovery`
 - **Status:** Implemented. Calculated by code; tested on its sample and its rules. Not yet run on real business records.
 - **Evidence:** `src/lib/worldwide-ai/functions/functions.test.ts`
 - **It does not:** Planning starts no work: each step is started by a person from the plan. Consolidating reports what came back, including failures and unknown outcomes, and never fills in for a step that didn't finish.
@@ -96,7 +96,7 @@ How to read it:
 - **Review:** a person must accept
 - **Needs:** Supabase database
 - **With nothing configured:** Awaiting configuration (missing: POSTGRES_URL)
-- **Role pack:** not built
+- **Role pack:** `patch-diagnostics` version 1, supported by `structured-extraction`, `claim-and-conflict-check`, `review-package-preparation`, `exception-and-retry-recovery`
 - **Status:** Implemented. Calculated by code; tested on its sample and its rules. Not yet run on real business records.
 - **Evidence:** `src/lib/worldwide-ai/functions/functions.test.ts`
 - **It does not:** It reports what the evidence shows. It states no cause that the logs don't show, and it changes no code: a fix is Build's work, after review.
@@ -113,7 +113,7 @@ How to read it:
 - **Review:** a person must accept
 - **Needs:** Supabase database, Model provider (Anthropic)
 - **With nothing configured:** Awaiting configuration (missing: POSTGRES_URL, ANTHROPIC_API_KEY)
-- **Role pack:** not built
+- **Role pack:** `relay-support-drafting` version 1, supported by `approved-source-retrieval`, `context-and-memory-hygiene`, `clear-business-writing`, `review-package-preparation`
 - **Status:** Implemented. Tested with a stand-in model and an in-memory database; not yet run against the live model or database.
 - **Evidence:** `src/lib/worldwide-ai/workflows/relay.test.ts`
 - **It does not:** Saving a draft never sends it. The task is completed only after the saved draft has been read back and checked.
@@ -129,7 +129,7 @@ How to read it:
 - **Review:** a person must accept
 - **Needs:** Supabase database
 - **With nothing configured:** Awaiting configuration (missing: POSTGRES_URL)
-- **Role pack:** not built
+- **Role pack:** `ledger-workpapers` version 1, supported by `structured-extraction`, `deterministic-calculation-check`, `review-package-preparation`, `document-and-table-production`
 - **Status:** Implemented. Calculated by code; tested on its sample and its rules. Not yet run on real business records.
 - **Evidence:** `src/lib/worldwide-ai/functions/functions.test.ts`
 - **It does not:** No entry is posted and no money moves. Proposals come only from the keywords you supply; a transaction no rule matches stays unclassified.
@@ -145,7 +145,7 @@ How to read it:
 - **Review:** none (verified save)
 - **Needs:** Supabase database
 - **With nothing configured:** Awaiting configuration (missing: POSTGRES_URL)
-- **Role pack:** not built
+- **Role pack:** `atlas-knowledge-control` version 1, supported by `approved-source-retrieval`, `claim-and-conflict-check`, `document-and-table-production`, `outcome-and-performance-check`
 - **Status:** Implemented. Calculated by code; tested on its sample and its rules. Not yet run on real business records.
 - **Evidence:** `src/lib/worldwide-ai/functions/functions.test.ts`
 - **It does not:** It proposes. Approving, rejecting or retiring a document version stays a separate decision by the owner on the Knowledge page.
@@ -161,7 +161,7 @@ How to read it:
 - **Review:** none (verified save)
 - **Needs:** Supabase database
 - **With nothing configured:** Awaiting configuration (missing: POSTGRES_URL)
-- **Role pack:** not built
+- **Role pack:** `check-data-quality` version 1, supported by `structured-extraction`, `deterministic-calculation-check`, `document-and-table-production`, `outcome-and-performance-check`
 - **Status:** Implemented. Calculated by code; tested on its sample and its rules. Not yet run on real business records.
 - **Evidence:** `src/lib/worldwide-ai/functions/functions.test.ts`
 - **It does not:** It reports and proposes. It does not edit, merge or delete any record, and it checks only the rows you supplied.
@@ -177,7 +177,7 @@ How to read it:
 - **Review:** none (verified save)
 - **Needs:** Supabase database
 - **With nothing configured:** Awaiting configuration (missing: POSTGRES_URL)
-- **Role pack:** not built
+- **Role pack:** `watch-monitoring` version 1, supported by `structured-extraction`, `outcome-and-performance-check`, `tool-contract-use`, `exception-and-retry-recovery`
 - **Status:** Implemented. Calculated by code; tested on its sample and its rules. Not yet run on real business records.
 - **Evidence:** `src/lib/worldwide-ai/functions/functions.test.ts`
 - **It does not:** A pasted snapshot is assessed as a snapshot: it is never described as live monitoring. A service nobody checked is 'not observed', never healthy.
@@ -194,7 +194,7 @@ How to read it:
 - **Review:** none (verified save)
 - **Needs:** Supabase database
 - **With nothing configured:** Awaiting configuration (missing: POSTGRES_URL)
-- **Role pack:** not built
+- **Role pack:** `review-deadlines` version 1, supported by `structured-extraction`, `deterministic-calculation-check`, `document-and-table-production`, `approved-source-retrieval`
 - **Status:** Implemented. Calculated by code; tested on its sample and its rules. Not yet run on real business records.
 - **Evidence:** `src/lib/worldwide-ai/functions/functions.test.ts`
 - **It does not:** It never invents an obligation: an item with no date stays 'no date', and a date with no source is marked as unsourced.
@@ -211,7 +211,7 @@ How to read it:
 - **Review:** a person must accept
 - **Needs:** Supabase database
 - **With nothing configured:** Awaiting configuration (missing: POSTGRES_URL)
-- **Role pack:** not built
+- **Role pack:** `route-logistics` version 1, supported by `structured-extraction`, `deterministic-calculation-check`, `review-package-preparation`, `document-and-table-production`
 - **Status:** Implemented. Calculated by code; tested on its sample and its rules. Not yet run on real business records.
 - **Evidence:** `src/lib/worldwide-ai/functions/functions.test.ts`
 - **It does not:** It prepares internal follow-ups only. It does not contact the carrier, dispute an invoice, or book or change a shipment.
@@ -227,7 +227,7 @@ How to read it:
 - **Review:** none (verified save)
 - **Needs:** Supabase database
 - **With nothing configured:** Awaiting configuration (missing: POSTGRES_URL)
-- **Role pack:** not built
+- **Role pack:** `trace-shipment-timelines` version 1, supported by `structured-extraction`, `claim-and-conflict-check`, `document-and-table-production`, `tool-contract-use`
 - **Status:** Implemented. Calculated by code; tested on its sample and its rules. Not yet run on real business records.
 - **Evidence:** `src/lib/worldwide-ai/functions/functions.test.ts`
 - **It does not:** It never adds an event or a delivery date that isn't in the record. It is a timeline, not a message to the customer.
@@ -243,7 +243,7 @@ How to read it:
 - **Review:** a person must accept
 - **Needs:** Supabase database
 - **With nothing configured:** Awaiting configuration (missing: POSTGRES_URL)
-- **Role pack:** not built
+- **Role pack:** `tally-tax-preparation` version 1, supported by `deterministic-calculation-check`, `structured-extraction`, `review-package-preparation`, `document-and-table-production`
 - **Status:** Implemented. Calculated by code; tested on its sample and its rules. Not yet run on real business records.
 - **Evidence:** `src/lib/worldwide-ai/functions/functions.test.ts`
 - **It does not:** No rate is ever assumed: a line with no rule in effect stays unresolved, not zero. Nothing is filed or paid. Vaping excise belongs to Duty.
@@ -259,7 +259,7 @@ How to read it:
 - **Review:** a person must accept
 - **Needs:** Supabase database
 - **With nothing configured:** Awaiting configuration (missing: POSTGRES_URL)
-- **Role pack:** not built
+- **Role pack:** `vault-bank-reconciliation` version 1, supported by `structured-extraction`, `deterministic-calculation-check`, `review-package-preparation`, `document-and-table-production`
 - **Status:** Implemented. Calculated by code; tested on its sample and its rules. Not yet run on real business records.
 - **Evidence:** `src/lib/worldwide-ai/functions/functions.test.ts`
 - **It does not:** Amounts must match exactly; nothing is matched 'approximately'. No bank access is used or changed and no money moves.
@@ -275,7 +275,7 @@ How to read it:
 - **Review:** a person must accept
 - **Needs:** Supabase database
 - **With nothing configured:** Awaiting configuration (missing: POSTGRES_URL)
-- **Role pack:** not built
+- **Role pack:** `guard-security-review` version 1, supported by `structured-extraction`, `claim-and-conflict-check`, `review-package-preparation`, `tool-contract-use`
 - **Status:** Implemented. Calculated by code; tested on its sample and its rules. Not yet run on real business records.
 - **Evidence:** `src/lib/worldwide-ai/functions/functions.test.ts`
 - **It does not:** It recommends. It cannot grant, revoke or change any permission, here or anywhere else, its own included.
@@ -291,7 +291,7 @@ How to read it:
 - **Review:** none (verified save)
 - **Needs:** Supabase database
 - **With nothing configured:** Awaiting configuration (missing: POSTGRES_URL)
-- **Role pack:** not built
+- **Role pack:** `verify-independent-acceptance` version 1, supported by `outcome-and-performance-check`, `tool-contract-use`, `exception-and-retry-recovery`, `document-and-table-production`
 - **Status:** Implemented. Calculated by code; tested on its sample and its rules. Not yet run on real business records.
 - **Evidence:** `src/lib/worldwide-ai/functions/functions.test.ts`
 - **It does not:** It checks records the application holds. It can't re-run a model's judgement or observe anything physical, it never checks its own reports, and it approves nothing.
@@ -307,7 +307,7 @@ How to read it:
 - **Review:** a person must accept
 - **Needs:** Supabase database, Model provider (Anthropic)
 - **With nothing configured:** Awaiting configuration (missing: POSTGRES_URL, ANTHROPIC_API_KEY)
-- **Role pack:** not built
+- **Role pack:** `pulse-content-planning` version 1, supported by `context-and-memory-hygiene`, `claim-and-conflict-check`, `clear-business-writing`, `review-package-preparation`
 - **Status:** Implemented. The wording comes from the model; tested with a stand-in model only, so the quality of real drafts is unproven.
 - **Evidence:** `src/lib/worldwide-ai/functions/drafting.test.ts`
 - **It does not:** It drafts. No post is scheduled or published, and a caption states only what a supplied fact supports.
@@ -323,7 +323,7 @@ How to read it:
 - **Review:** a person must accept
 - **Needs:** Supabase database, Model provider (Anthropic)
 - **With nothing configured:** Awaiting configuration (missing: POSTGRES_URL, ANTHROPIC_API_KEY)
-- **Role pack:** not built
+- **Role pack:** `focus-private-planning` version 1, supported by `context-and-memory-hygiene`, `goal-intake`, `clear-business-writing`, `review-package-preparation`
 - **Status:** Implemented. The wording comes from the model; tested with a stand-in model only, so the quality of real drafts is unproven.
 - **Evidence:** `src/lib/worldwide-ai/functions/drafting.test.ts`
 - **It does not:** It stays yours: the task and the plan never appear in shared briefings, team views, reports or another person's lists.
@@ -339,7 +339,7 @@ How to read it:
 - **Review:** none (verified save)
 - **Needs:** Supabase database
 - **With nothing configured:** Awaiting configuration (missing: POSTGRES_URL)
-- **Role pack:** not built
+- **Role pack:** `insight-business-analysis` version 1, supported by `structured-extraction`, `deterministic-calculation-check`, `document-and-table-production`, `claim-and-conflict-check`
 - **Status:** Implemented. Calculated by code; tested on its sample and its rules. Not yet run on real business records.
 - **Evidence:** `src/lib/worldwide-ai/functions/functions.test.ts`
 - **It does not:** It describes what changed. It does not say why: no cause is claimed, and a sample below your minimum is reported as inconclusive.
@@ -355,7 +355,7 @@ How to read it:
 - **Review:** a person must accept
 - **Needs:** Supabase database, Model provider (Anthropic)
 - **With nothing configured:** Awaiting configuration (missing: POSTGRES_URL, ANTHROPIC_API_KEY)
-- **Role pack:** not built
+- **Role pack:** `strategy-decision-briefs` version 1, supported by `context-and-memory-hygiene`, `claim-and-conflict-check`, `review-package-preparation`, `clear-business-writing`
 - **Status:** Implemented. The wording comes from the model; tested with a stand-in model only, so the quality of real drafts is unproven.
 - **Evidence:** `src/lib/worldwide-ai/functions/drafting.test.ts`
 - **It does not:** It compares and recommends. It commits the business to nothing, dispatches no other agent, and uses no fact you didn't supply.
@@ -371,7 +371,7 @@ How to read it:
 - **Review:** a person must accept
 - **Needs:** Supabase database, Model provider (Anthropic)
 - **With nothing configured:** Awaiting configuration (missing: POSTGRES_URL, ANTHROPIC_API_KEY)
-- **Role pack:** not built
+- **Role pack:** `post-inbox-drafts` version 1, supported by `context-and-memory-hygiene`, `clear-business-writing`, `claim-and-conflict-check`, `review-package-preparation`
 - **Status:** Implemented. The wording comes from the model; tested with a stand-in model only, so the quality of real drafts is unproven.
 - **Evidence:** `src/lib/worldwide-ai/functions/drafting.test.ts`
 - **It does not:** It saves a private draft. It never sends, schedules or subscribes anyone, and it names only the recipients you gave it.
@@ -387,7 +387,7 @@ How to read it:
 - **Review:** a person must accept
 - **Needs:** Supabase database, Model provider (Anthropic)
 - **With nothing configured:** Awaiting configuration (missing: POSTGRES_URL, ANTHROPIC_API_KEY)
-- **Role pack:** not built
+- **Role pack:** `talent-recruiting-support` version 1, supported by `context-and-memory-hygiene`, `claim-and-conflict-check`, `review-package-preparation`, `clear-business-writing`
 - **Status:** Implemented. The wording comes from the model; tested with a stand-in model only, so the quality of real drafts is unproven.
 - **Evidence:** `src/lib/worldwide-ai/functions/drafting.test.ts`
 - **It does not:** It makes no hiring decision and ranks nobody. It works only from the criteria and evidence supplied, and refuses criteria that refer to a protected characteristic.
@@ -403,7 +403,7 @@ How to read it:
 - **Review:** a person must accept
 - **Needs:** Supabase database, Model provider (Anthropic)
 - **With nothing configured:** Awaiting configuration (missing: POSTGRES_URL, ANTHROPIC_API_KEY)
-- **Role pack:** not built
+- **Role pack:** `comet-store-usability` version 1, supported by `context-and-memory-hygiene`, `claim-and-conflict-check`, `review-package-preparation`, `clear-business-writing`
 - **Status:** Implemented. The wording comes from the model; tested with a stand-in model only, so the quality of real drafts is unproven.
 - **Evidence:** `src/lib/worldwide-ai/functions/drafting.test.ts`
 - **It does not:** It audits from the evidence supplied. It never places an order, and a critique is not a measured conversion result.
@@ -419,7 +419,7 @@ How to read it:
 - **Review:** a person must accept
 - **Needs:** Supabase database, Model provider (Anthropic)
 - **With nothing configured:** Awaiting configuration (missing: POSTGRES_URL, ANTHROPIC_API_KEY)
-- **Role pack:** not built
+- **Role pack:** `signal-search-content` version 1, supported by `context-and-memory-hygiene`, `claim-and-conflict-check`, `clear-business-writing`, `review-package-preparation`
 - **Status:** Implemented. The wording comes from the model; tested with a stand-in model only, so the quality of real drafts is unproven.
 - **Evidence:** `src/lib/worldwide-ai/functions/drafting.test.ts`
 - **It does not:** It proposes. No search volume, ranking or traffic figure appears unless it is in the search data you supplied, and nothing is published.
@@ -435,7 +435,7 @@ How to read it:
 - **Review:** a person must accept
 - **Needs:** Supabase database, Model provider (Anthropic)
 - **With nothing configured:** Awaiting configuration (missing: POSTGRES_URL, ANTHROPIC_API_KEY)
-- **Role pack:** not built
+- **Role pack:** `reach-sales-preparation` version 1, supported by `context-and-memory-hygiene`, `claim-and-conflict-check`, `clear-business-writing`, `review-package-preparation`
 - **Status:** Implemented. The wording comes from the model; tested with a stand-in model only, so the quality of real drafts is unproven.
 - **Evidence:** `src/lib/worldwide-ai/functions/drafting.test.ts`
 - **It does not:** It drafts. It contacts nobody, and it states no price, discount or term that isn't among the approved terms you supplied.
@@ -451,7 +451,7 @@ How to read it:
 - **Review:** a person must accept
 - **Needs:** Supabase database, Model provider (Anthropic)
 - **With nothing configured:** Awaiting configuration (missing: POSTGRES_URL, ANTHROPIC_API_KEY)
-- **Role pack:** not built
+- **Role pack:** `script-brand-copy` version 1, supported by `context-and-memory-hygiene`, `clear-business-writing`, `claim-and-conflict-check`, `review-package-preparation`
 - **Status:** Implemented. The wording comes from the model; tested with a stand-in model only, so the quality of real drafts is unproven.
 - **Evidence:** `src/lib/worldwide-ai/functions/drafting.test.ts`
 - **It does not:** It writes from supplied facts only: no invented specification, health claim or promise. Nothing is published.
@@ -467,7 +467,7 @@ How to read it:
 - **Review:** a person must accept
 - **Needs:** Supabase database, Model provider (Anthropic)
 - **With nothing configured:** Awaiting configuration (missing: POSTGRES_URL, ANTHROPIC_API_KEY)
-- **Role pack:** not built
+- **Role pack:** `assist-executive-operations` version 1, supported by `context-and-memory-hygiene`, `claim-and-conflict-check`, `clear-business-writing`, `review-package-preparation`
 - **Status:** Implemented. The wording comes from the model; tested with a stand-in model only, so the quality of real drafts is unproven.
 - **Evidence:** `src/lib/worldwide-ai/functions/drafting.test.ts`
 - **It does not:** It prepares. It sends no invitation, and a date counts as confirmed only when it is in the commitments you supplied.
@@ -483,7 +483,7 @@ How to read it:
 - **Review:** a person must accept
 - **Needs:** Supabase database, Model provider (Anthropic)
 - **With nothing configured:** Awaiting configuration (missing: POSTGRES_URL, ANTHROPIC_API_KEY)
-- **Role pack:** not built
+- **Role pack:** `care-service-improvement` version 1, supported by `context-and-memory-hygiene`, `claim-and-conflict-check`, `review-package-preparation`, `outcome-and-performance-check`
 - **Status:** Implemented. The wording comes from the model; tested with a stand-in model only, so the quality of real drafts is unproven.
 - **Evidence:** `src/lib/worldwide-ai/functions/drafting.test.ts`
 - **It does not:** It reports themes across cases. It replies to nobody (that is Relay's work), names no customer, and its counts cover only the cases supplied.
@@ -499,7 +499,7 @@ How to read it:
 - **Review:** none (verified save)
 - **Needs:** Supabase database
 - **With nothing configured:** Awaiting configuration (missing: POSTGRES_URL)
-- **Role pack:** not built
+- **Role pack:** `stock-inventory-planning` version 1, supported by `structured-extraction`, `deterministic-calculation-check`, `document-and-table-production`, `outcome-and-performance-check`
 - **Status:** Implemented. Calculated by code; tested on its sample and its rules. Not yet run on real business records.
 - **Evidence:** `src/lib/worldwide-ai/functions/functions.test.ts`
 - **It does not:** It recommends. It does not adjust stock, confirm a reservation or place an order, and a SKU with no demand or lead time is not guessed at.
@@ -515,7 +515,7 @@ How to read it:
 - **Review:** a person must accept
 - **Needs:** Supabase database
 - **With nothing configured:** Awaiting configuration (missing: POSTGRES_URL)
-- **Role pack:** not built
+- **Role pack:** `source-purchasing-analysis` version 1, supported by `structured-extraction`, `deterministic-calculation-check`, `review-package-preparation`, `document-and-table-production`
 - **Status:** Implemented. Calculated by code; tested on its sample and its rules. Not yet run on real business records.
 - **Evidence:** `src/lib/worldwide-ai/functions/functions.test.ts`
 - **It does not:** A quote with a missing cost is shown as incomplete, not ranked on a guess. Supplier quality is Qualify's call. No order is submitted.
@@ -531,7 +531,7 @@ How to read it:
 - **Review:** a person must accept
 - **Needs:** Supabase database, Model provider (Anthropic)
 - **With nothing configured:** Awaiting configuration (missing: POSTGRES_URL, ANTHROPIC_API_KEY)
-- **Role pack:** not built
+- **Role pack:** `catalog-product-master` version 1, supported by `context-and-memory-hygiene`, `claim-and-conflict-check`, `clear-business-writing`, `review-package-preparation`
 - **Status:** Implemented. The wording comes from the model; tested with a stand-in model only, so the quality of real drafts is unproven.
 - **Evidence:** `src/lib/worldwide-ai/functions/drafting.test.ts`
 - **It does not:** It drafts text from supplied specifications. It generates no image (no image tool is connected), invents no specification, and publishes nothing to the store.
@@ -547,7 +547,7 @@ How to read it:
 - **Review:** a person must accept
 - **Needs:** Supabase database
 - **With nothing configured:** Awaiting configuration (missing: POSTGRES_URL)
-- **Role pack:** not built
+- **Role pack:** `comply-requirement-evidence` version 1, supported by `structured-extraction`, `approved-source-retrieval`, `review-package-preparation`, `document-and-table-production`
 - **Status:** Implemented. Calculated by code; tested on its sample and its rules. Not yet run on real business records.
 - **Evidence:** `src/lib/worldwide-ai/functions/functions.test.ts`
 - **It does not:** It maps evidence to the requirements you supply. It does not decide what the law requires, approve a rule, or certify compliance.
@@ -563,7 +563,7 @@ How to read it:
 - **Review:** a person must accept
 - **Needs:** Supabase database
 - **With nothing configured:** Awaiting configuration (missing: POSTGRES_URL)
-- **Role pack:** not built
+- **Role pack:** `batch-formula-traceability` version 1, supported by `structured-extraction`, `deterministic-calculation-check`, `review-package-preparation`, `document-and-table-production`
 - **Status:** Implemented. Calculated by code; tested on its sample and its rules. Not yet run on real business records.
 - **Evidence:** `src/lib/worldwide-ai/functions/functions.test.ts`
 - **It does not:** Nothing is inferred: summed ingredient volume is nominal, 1 mL is never assumed to be 1 gram, and a missing observation stays missing. It does not release the batch.
@@ -579,7 +579,7 @@ How to read it:
 - **Review:** a person must accept
 - **Needs:** Supabase database
 - **With nothing configured:** Awaiting configuration (missing: POSTGRES_URL)
-- **Role pack:** not built
+- **Role pack:** `return-case-verification` version 1, supported by `structured-extraction`, `deterministic-calculation-check`, `review-package-preparation`, `approved-source-retrieval`
 - **Status:** Implemented. Calculated by code; tested on its sample and its rules. Not yet run on real business records.
 - **Evidence:** `src/lib/worldwide-ai/functions/functions.test.ts`
 - **It does not:** It proposes. No refund, replacement or stock adjustment is made, and a missing fact leaves eligibility undetermined rather than assumed.
@@ -595,7 +595,7 @@ How to read it:
 - **Review:** none (verified save)
 - **Needs:** Supabase database
 - **With nothing configured:** Awaiting configuration (missing: POSTGRES_URL)
-- **Role pack:** not built
+- **Role pack:** `forecast-cash-scenarios` version 1, supported by `structured-extraction`, `deterministic-calculation-check`, `document-and-table-production`, `claim-and-conflict-check`
 - **Status:** Implemented. Calculated by code; tested on its sample and its rules. Not yet run on real business records.
 - **Evidence:** `src/lib/worldwide-ai/functions/functions.test.ts`
 - **It does not:** A forecast is an estimate from the items you supplied. It is not a bank balance and nothing in it has happened yet.
@@ -611,7 +611,7 @@ How to read it:
 - **Review:** a person must accept
 - **Needs:** Supabase database, Model provider (Anthropic)
 - **With nothing configured:** Awaiting configuration (missing: POSTGRES_URL, ANTHROPIC_API_KEY)
-- **Role pack:** not built
+- **Role pack:** `build-controlled-engineering` version 1, supported by `context-and-memory-hygiene`, `claim-and-conflict-check`, `review-package-preparation`, `goal-intake`
 - **Status:** Implemented. The wording comes from the model; tested with a stand-in model only, so the quality of real drafts is unproven.
 - **Evidence:** `src/lib/worldwide-ai/functions/drafting.test.ts`
 - **It does not:** It is a brief, not a change. No branch, diff or test run exists. Preparing an isolated code change needs Build's coding worker, which isn't connected.
@@ -628,7 +628,7 @@ How to read it:
 - **Review:** none (verified save)
 - **Needs:** Supabase database
 - **With nothing configured:** Awaiting configuration (missing: POSTGRES_URL)
-- **Role pack:** not built
+- **Role pack:** `restore-recovery-verification` version 1, supported by `outcome-and-performance-check`, `exception-and-retry-recovery`, `tool-contract-use`, `document-and-table-production`
 - **Status:** Implemented. Calculated by code; tested on its sample and its rules. Not yet run on real business records.
 - **Evidence:** `src/lib/worldwide-ai/functions/functions.test.ts`
 - **It does not:** Reading a manifest shows coverage on paper. Only the separate isolated restore check proves a backup restores, and this report says which of the two it found.
@@ -644,7 +644,7 @@ How to read it:
 - **Review:** a person must accept
 - **Needs:** Supabase database, Model provider (Anthropic)
 - **With nothing configured:** Awaiting configuration (missing: POSTGRES_URL, ANTHROPIC_API_KEY)
-- **Role pack:** not built
+- **Role pack:** `prism-design-and-assets` version 1, supported by `context-and-memory-hygiene`, `claim-and-conflict-check`, `review-package-preparation`, `clear-business-writing`
 - **Status:** Implemented. The wording comes from the model; tested with a stand-in model only, so the quality of real drafts is unproven.
 - **Evidence:** `src/lib/worldwide-ai/functions/drafting.test.ts`
 - **It does not:** It critiques. It generates and edits no image and writes to no design tool, and it says plainly when it worked from a description rather than a screenshot.
@@ -661,7 +661,7 @@ How to read it:
 - **Review:** a person must accept
 - **Needs:** Supabase database, Model provider (Anthropic)
 - **With nothing configured:** Awaiting configuration (missing: POSTGRES_URL, ANTHROPIC_API_KEY)
-- **Role pack:** not built
+- **Role pack:** `scout-cited-research` version 1, supported by `context-and-memory-hygiene`, `claim-and-conflict-check`, `review-package-preparation`, `approved-source-retrieval`
 - **Status:** Implemented. The wording comes from the model; tested with a stand-in model only, so the quality of real drafts is unproven.
 - **Evidence:** `src/lib/worldwide-ai/functions/drafting.test.ts`
 - **It does not:** It reviews the documents supplied. It is not a fresh web search and says so, and its brief is evidence for review, never approved knowledge.
@@ -678,7 +678,7 @@ How to read it:
 - **Review:** a person must accept
 - **Needs:** Supabase database, Model provider (Anthropic)
 - **With nothing configured:** Awaiting configuration (missing: POSTGRES_URL, ANTHROPIC_API_KEY)
-- **Role pack:** not built
+- **Role pack:** `forge-product-definition` version 1, supported by `context-and-memory-hygiene`, `claim-and-conflict-check`, `review-package-preparation`, `goal-intake`
 - **Status:** Implemented. The wording comes from the model; tested with a stand-in model only, so the quality of real drafts is unproven.
 - **Evidence:** `src/lib/worldwide-ai/functions/drafting.test.ts`
 - **It does not:** It specifies. It builds nothing, starts no other agent's work, and deploys nothing.
@@ -694,7 +694,7 @@ How to read it:
 - **Review:** a person must accept
 - **Needs:** Supabase database, Model provider (Anthropic)
 - **With nothing configured:** Awaiting configuration (missing: POSTGRES_URL, ANTHROPIC_API_KEY)
-- **Role pack:** not built
+- **Role pack:** `motion-media-drafts` version 1, supported by `context-and-memory-hygiene`, `claim-and-conflict-check`, `review-package-preparation`, `clear-business-writing`
 - **Status:** Implemented. The wording comes from the model; tested with a stand-in model only, so the quality of real drafts is unproven.
 - **Evidence:** `src/lib/worldwide-ai/functions/drafting.test.ts`
 - **It does not:** It is a plan, not a video. Rendering or exporting a clip needs a media tool, which isn't connected, and nothing is published.
@@ -711,7 +711,7 @@ How to read it:
 - **Review:** none (verified save)
 - **Needs:** Supabase database
 - **With nothing configured:** Awaiting configuration (missing: POSTGRES_URL)
-- **Role pack:** not built
+- **Role pack:** `link-scan-traceability` version 1, supported by `structured-extraction`, `deterministic-calculation-check`, `document-and-table-production`, `outcome-and-performance-check`
 - **Status:** Implemented. Calculated by code; tested on its sample and its rules. Not yet run on real business records.
 - **Evidence:** `src/lib/worldwide-ai/functions/functions.test.ts`
 - **It does not:** A read is an observation. No stock is moved, no location is inferred from a nearby read, and reading a tag proves nothing about authenticity, identity or age.
@@ -728,7 +728,7 @@ How to read it:
 - **Review:** a person must accept
 - **Needs:** Supabase database
 - **With nothing configured:** Awaiting configuration (missing: POSTGRES_URL)
-- **Role pack:** not built
+- **Role pack:** `tempo-production-planning` version 1, supported by `structured-extraction`, `deterministic-calculation-check`, `review-package-preparation`, `document-and-table-production`
 - **Status:** Implemented. Calculated by code; tested on its sample and its rules. Not yet run on real business records.
 - **Evidence:** `src/lib/worldwide-ai/functions/functions.test.ts`
 - **It does not:** A plan is a proposal. It checks materials and equipment hours only, says which constraints it didn't check, and never starts a machine, consumes stock or authorizes production.
@@ -744,7 +744,7 @@ How to read it:
 - **Review:** a person must accept
 - **Needs:** Supabase database
 - **With nothing configured:** Awaiting configuration (missing: POSTGRES_URL)
-- **Role pack:** not built
+- **Role pack:** `qualify-supplier-evidence` version 1, supported by `structured-extraction`, `deterministic-calculation-check`, `review-package-preparation`, `approved-source-retrieval`
 - **Status:** Implemented. Calculated by code; tested on its sample and its rules. Not yet run on real business records.
 - **Evidence:** `src/lib/worldwide-ai/functions/functions.test.ts`
 - **It does not:** It assembles evidence. It does not approve the supplier, substitute a material, or release anything from quarantine.
@@ -760,7 +760,7 @@ How to read it:
 - **Review:** a person must accept
 - **Needs:** Supabase database
 - **With nothing configured:** Awaiting configuration (missing: POSTGRES_URL)
-- **Role pack:** not built
+- **Role pack:** `assay-lab-evidence` version 1, supported by `structured-extraction`, `deterministic-calculation-check`, `review-package-preparation`, `document-and-table-production`
 - **Status:** Implemented. Calculated by code; tested on its sample and its rules. Not yet run on real business records.
 - **Evidence:** `src/lib/worldwide-ai/functions/functions.test.ts`
 - **It does not:** It performs no analysis and accepts no test. A result inside its limits is a specification match, not a declaration that anything is safe, and an unverified transcription is not used.
@@ -776,7 +776,7 @@ How to read it:
 - **Review:** a person must accept
 - **Needs:** Supabase database
 - **With nothing configured:** Awaiting configuration (missing: POSTGRES_URL)
-- **Role pack:** not built
+- **Role pack:** `assure-quality-packages` version 1, supported by `structured-extraction`, `claim-and-conflict-check`, `review-package-preparation`, `document-and-table-production`
 - **Status:** Implemented. Calculated by code; tested on its sample and its rules. Not yet run on real business records.
 - **Evidence:** `src/lib/worldwide-ai/functions/functions.test.ts`
 - **It does not:** It never releases a batch, lifts a hold or closes a deviation. 'Ready for a decision' means the evidence is complete, not that the batch is approved.
@@ -792,7 +792,7 @@ How to read it:
 - **Review:** a person must accept
 - **Needs:** Supabase database
 - **With nothing configured:** Awaiting configuration (missing: POSTGRES_URL)
-- **Role pack:** not built
+- **Role pack:** `gauge-equipment-eligibility` version 1, supported by `structured-extraction`, `deterministic-calculation-check`, `review-package-preparation`, `document-and-table-production`
 - **Status:** Implemented. Calculated by code; tested on its sample and its rules. Not yet run on real business records.
 - **Evidence:** `src/lib/worldwide-ai/functions/functions.test.ts`
 - **It does not:** It reads records. It does not calibrate, repair or operate anything, and never treats a missing calibration record as if one existed.
@@ -808,7 +808,7 @@ How to read it:
 - **Review:** a person must accept
 - **Needs:** Supabase database
 - **With nothing configured:** Awaiting configuration (missing: POSTGRES_URL)
-- **Role pack:** not built
+- **Role pack:** `clean-clearance-records` version 1, supported by `structured-extraction`, `claim-and-conflict-check`, `review-package-preparation`, `document-and-table-production`
 - **Status:** Implemented. Calculated by code; tested on its sample and its rules. Not yet run on real business records.
 - **Evidence:** `src/lib/worldwide-ai/functions/functions.test.ts`
 - **It does not:** It compares records to the procedure. It does not attest that any physical cleaning or clearance happened: only a recorded observation by an authorized person does that.
@@ -824,7 +824,7 @@ How to read it:
 - **Review:** a person must accept
 - **Needs:** Supabase database
 - **With nothing configured:** Awaiting configuration (missing: POSTGRES_URL)
-- **Role pack:** not built
+- **Role pack:** `coach-qualification-tracking` version 1, supported by `structured-extraction`, `deterministic-calculation-check`, `review-package-preparation`, `document-and-table-production`
 - **Status:** Implemented. Calculated by code; tested on its sample and its rules. Not yet run on real business records.
 - **Evidence:** `src/lib/worldwide-ai/functions/functions.test.ts`
 - **It does not:** It reports documented eligibility. It grants no qualification, and an acknowledgement that a document was read is never counted as a demonstrated assessment.
@@ -840,7 +840,7 @@ How to read it:
 - **Review:** a person must accept
 - **Needs:** Supabase database
 - **With nothing configured:** Awaiting configuration (missing: POSTGRES_URL)
-- **Role pack:** not built
+- **Role pack:** `duty-excise-reconciliation` version 1, supported by `deterministic-calculation-check`, `structured-extraction`, `review-package-preparation`, `document-and-table-production`
 - **Status:** Implemented. Calculated by code; tested on its sample and its rules. Not yet run on real business records.
 - **Evidence:** `src/lib/worldwide-ai/functions/functions.test.ts`
 - **It does not:** No duty rate is built in: a container no supplied rule covers leaves the liability unresolved, never zero. Nothing is filed or paid, and no stamp is ordered or disposed of.
@@ -856,7 +856,7 @@ How to read it:
 - **Review:** a person must accept
 - **Needs:** Supabase database
 - **With nothing configured:** Awaiting configuration (missing: POSTGRES_URL)
-- **Role pack:** not built
+- **Role pack:** `safeguard-workplace-records` version 1, supported by `structured-extraction`, `deterministic-calculation-check`, `review-package-preparation`, `document-and-table-production`
 - **Status:** Implemented. Calculated by code; tested on its sample and its rules. Not yet run on real business records.
 - **Evidence:** `src/lib/worldwide-ai/functions/functions.test.ts`
 - **It does not:** It reviews records. It writes no emergency or spill response, certifies nothing as safe, and authorizes no disposal.

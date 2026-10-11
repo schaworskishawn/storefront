@@ -1,0 +1,31 @@
+{
+	"id": "comply-requirement-evidence",
+	"kind": "role-pack",
+	"title": "Comply requirement evidence",
+	"version": 1,
+	"agents": [
+		"comply"
+	],
+	"functions": [
+		"comply.evidence-review"
+	],
+	"foundations": [
+		"structured-extraction",
+		"approved-source-retrieval",
+		"review-package-preparation",
+		"document-and-table-production"
+	],
+	"tools": [
+		"source.read_supplied",
+		"product.store",
+		"finding.record",
+		"atlas.search",
+		"atlas.get_document"
+	],
+	"knowledge": [
+		"compliance",
+		"quality"
+	],
+	"suiteVersion": 1,
+	"sha256": "54d367fc6888179a3f567ddd58e01c5a5089918473a3f8cd4826027a929aacaf"
+}

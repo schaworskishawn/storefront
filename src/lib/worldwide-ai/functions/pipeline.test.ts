@@ -243,6 +243,7 @@ describe("running a function", () => {
 		expect((await getTaskEvents(sql, asked.task.id)).map((e) => e.kind)).toEqual([
 			"created",
 			"state_change",
+			"skills_resolved",
 			"result_stored",
 			"state_change",
 		]);
