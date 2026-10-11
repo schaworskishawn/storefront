@@ -16,6 +16,7 @@ import {
 } from "./bulk";
 import { applyMovement, getLot, verifyLedger } from "./inventory";
 import { qualityChecks, type ReleaseCheck } from "./quality";
+import { assertQualified } from "./training";
 
 /**
  * Finished liquid: a made batch's bulk, the packaging runs that draw it down, quality holds, and the release decision.
@@ -300,6 +301,8 @@ export async function recordPackagingRun(
 		? wholeNumber("Units rejected", input.unitsRejected, { min: 0 })
 		: 0;
 	const wanted = (input.components ?? []).filter((c) => tidy(c.lotId, 60) || tidy(c.quantity, 20));
+	// Where the owner requires training for this step, a person without it is refused here, before anything is touched.
+	await assertQualified(sql, actor, "package_batch", today);
 
 	const runId = await sql.transaction(async (tx) => {
 		const done = await tx.query<{ id: string }>(
