@@ -117,7 +117,15 @@ export type Batch = {
 	wasteMl: string | null;
 	samplesMl: string | null;
 	notes: string | null;
-	qualityStatus: "awaiting_review";
+	/** Whether a person has decided the batch may be released. Making a batch never changes this. */
+	qualityStatus: "awaiting_review" | "released" | "rejected";
+	/** What is left of the batch's bulk liquid. Null until the batch has been made. */
+	bulkRemainingMl: string | null;
+	/** Whether the stored plan still matches the checksum recorded when the batch was planned. */
+	planIntact: boolean;
+	decidedAt: string | null;
+	decisionNote: string | null;
+	decisionRecord: unknown;
 	plannedAt: string;
 	reservedAt: string | null;
 	completedAt: string | null;
@@ -468,10 +476,13 @@ export async function approveRecipeVersion(
 const BATCH_COLUMNS = `b.id, b.code, b.recipe_version_id, b.planned_ml::text as planned_ml, b.status, b.plan,
 	b.expected_yield_ml::text as expected_yield_ml, b.actual_yield_ml::text as actual_yield_ml, b.waste_ml::text as waste_ml,
 	b.samples_ml::text as samples_ml, b.notes, b.quality_status, b.planned_at, b.reserved_at, b.completed_at, b.cancelled_at,
-	b.cancel_reason, r.name as recipe_name, v.version as recipe_version`;
+	b.cancel_reason, r.name as recipe_name, v.version as recipe_version, b.plan_sha256,
+	b.bulk_remaining_ml::text as bulk_remaining_ml, b.decided_at, b.decision_note, b.decision_record`;
 const BATCH_FROM = `wai_batches b join wai_recipe_versions v on v.id = b.recipe_version_id join wai_recipes r on r.id = v.recipe_id`;
 
-const toBatch = (r: Row): Batch => ({
+const toBatch = (r: Row): Batch => toBatchWith(r, parsed<BatchPlan>(r.plan));
+
+const toBatchWith = (r: Row, plan: BatchPlan): Batch => ({
 	id: r.id as string,
 	code: r.code as string,
 	recipeVersionId: r.recipe_version_id as string,
@@ -479,13 +490,18 @@ const toBatch = (r: Row): Batch => ({
 	recipeVersion: Number(r.recipe_version),
 	plannedMl: num(r.planned_ml) as string,
 	status: r.status as BatchStatus,
-	plan: parsed<BatchPlan>(r.plan),
+	plan,
 	expectedYieldMl: num(r.expected_yield_ml) as string,
 	actualYieldMl: num(r.actual_yield_ml),
 	wasteMl: num(r.waste_ml),
 	samplesMl: num(r.samples_ml),
 	notes: (r.notes as string | null) ?? null,
-	qualityStatus: "awaiting_review",
+	qualityStatus: r.quality_status as Batch["qualityStatus"],
+	bulkRemainingMl: num(r.bulk_remaining_ml),
+	planIntact: hashOf(plan) === r.plan_sha256,
+	decidedAt: iso(r.decided_at),
+	decisionNote: (r.decision_note as string | null) ?? null,
+	decisionRecord: r.decision_record ?? null,
 	plannedAt: iso(r.planned_at) as string,
 	reservedAt: iso(r.reserved_at),
 	completedAt: iso(r.completed_at),
@@ -866,6 +882,17 @@ export async function completeBatch(
 				actorKey(actor),
 			],
 		);
+		// What was measured coming out is the batch's bulk liquid from here on. It is drawn down only through its own ledger.
+		await tx.query(`update wai_batches set bulk_remaining_ml = $2::numeric where id = $1`, [
+			current.id,
+			toText(actualYield),
+		]);
+		if (gt(actualYield, ZERO))
+			await tx.query(
+				`insert into wai_bulk_movements (batch_id, kind, quantity_ml, delta_ml, remaining_after_ml, reference, idempotency_key, actor)
+				 values ($1, 'produced', $2::numeric, $2::numeric, $2::numeric, $3, $4, $5)`,
+				[current.id, toText(actualYield), current.code, `batch:${current.id}:produced`, actorKey(actor)],
+			);
 		return (await getBatch(tx, current.id)) as Batch;
 	});
 	await audit(sql, {
