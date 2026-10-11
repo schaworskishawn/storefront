@@ -5,8 +5,8 @@ import { readConfig } from "../config";
 import type { Sql, SqlClient } from "../db/sql";
 import { acceptPackage, registerRepository, requestCodingJob, reviewPackage } from "../engineering/coding";
 import { recordFinding } from "../findings";
-import { requestFunction, runFunction } from "../functions/pipeline";
-import { hashOf } from "../functions/products";
+import { requestFunction, reviewProduct, runFunction } from "../functions/pipeline";
+import { getProductByTask, hashOf } from "../functions/products";
 import { FUNCTIONS, lookupFunction } from "../functions/registry";
 import { recordHealth } from "../integrations/health";
 import {
@@ -22,6 +22,10 @@ import { RELEASE_CONFIRMATIONS, decideRelease, placeHold } from "../lab/finished
 import { addCorrectiveAction, enterResult, openDeviation, verifyResult } from "../lab/quality";
 import { recordTraining, verifyTraining } from "../lab/training";
 import { recordScan, registerTags, resolveException } from "../rfid/registry";
+import { SKILL_BY_ID } from "../skills/catalog";
+import { evaluateSkills } from "../skills/evaluate";
+import { approveRelease, listProposals } from "../skills/store";
+import type { SkillDefinition } from "../skills/types";
 import { createIngredient, createLot, postMovement } from "../lab/inventory";
 import { personalScopeOf } from "../tasks/repo";
 import { freshDb, owner, staff, system, workflowDeps } from "../testing.test-util";
@@ -940,4 +944,51 @@ describe("a report on a workspace with coding work asked for", () => {
 		const third = reportOf((await w.generate({ again: true, actor: staff })).report);
 		expect(third.actions.some((a) => a.title.startsWith("Decide on a change"))).toBe(false);
 	});
+});
+
+describe("a report on a workspace where reviewers keep correcting the same procedure", () => {
+	it("reads the reviews as it is generated and asks the owner about the lesson, once", async () => {
+		const w = await open("2026-10-23T13:00:00Z");
+		const vault = SKILL_BY_ID.get("vault-bank-reconciliation") as SkillDefinition;
+		const [evaluation] = await evaluateSkills(w.sql, [vault], { ranBy: "operator:owner-1" });
+		await approveRelease(w.sql, owner, { skill: vault, evaluationId: evaluation.id });
+		const deps = workflowDeps(w.sql, null, env);
+		const reject = async (tolerance: string, note: string) => {
+			const asked = await requestFunction(
+				deps,
+				staff,
+				"vault.settlement-match",
+				{ ...sample("vault.settlement-match"), toleranceDays: tolerance },
+				{ lookup: lookupFunction },
+			);
+			await runFunction(deps, asked.task.id, { lookup: lookupFunction });
+			const product = await getProductByTask(w.sql, asked.task.id);
+			await reviewProduct(deps, owner, product?.id ?? "", { action: "reject", note });
+		};
+		await reject("1", "Two deposits matched to the wrong payouts.");
+		// One correction: nothing is raised.
+		expect(
+			reportOf((await w.generate()).report).actions.some((a) => a.title.startsWith("Lesson to consider")),
+		).toBe(false);
+
+		await reject("2", "A refund reversal was treated as a payout.");
+		// Nobody ran the learning step by hand: generating the report did.
+		const report = reportOf((await w.generate({ again: true, actor: staff })).report);
+		expect(report.actions.filter((a) => a.title.startsWith("Lesson to consider"))).toMatchObject([
+			{
+				title: `Lesson to consider: ${vault.title}`,
+				responsible: "The owner",
+				priority: "normal",
+				reason: `Reviewers corrected or rejected 2 of 2 reviewed results that followed version ${vault.version} of this procedure. The workspace proposes no wording and has changed nothing.`,
+				links: [{ label: "Lessons from reviews", href: "/worldwide-ai/improvement/lessons" }],
+			},
+		]);
+		// It isn't also counted among the proposals people wrote.
+		expect(report.actions.some((a) => a.title.includes("improvement proposal"))).toBe(false);
+		// Generating again raises nothing more.
+		await w.generate({ again: true, actor: staff });
+		expect(
+			(await listProposals(w.sql, { state: "open" })).filter((p) => p.origin === "reviews"),
+		).toHaveLength(1);
+	}, 240_000);
 });

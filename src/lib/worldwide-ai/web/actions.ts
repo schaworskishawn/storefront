@@ -84,6 +84,7 @@ import {
 } from "../rfid/registry";
 import { SKILLS, SKILL_BY_ID } from "../skills/catalog";
 import { evaluateSkills } from "../skills/evaluate";
+import { learnFromReviews } from "../skills/learning";
 import {
 	approveRelease,
 	createProposal,
@@ -126,6 +127,22 @@ const refresh = () => revalidatePath(WORKSPACE_PATH, "layout");
 function throttle(workspace: Workspace): void {
 	if (rateLimited(`worldwide-ai:${workspace.viewer}`, 400))
 		throw new WorkflowError("conflict", "That is a lot of requests in an hour. Wait a little and try again.");
+}
+
+/**
+ * After a review is saved, reads what the reviews now add up to: a learning event for the decision and, when enough of them
+ * say the same procedure fell short, a proposal for the owner. The review is already saved by the time this runs, and a
+ * failure here never undoes or hides it: the events are made from the saved reviews, so the next run picks it up.
+ */
+async function learn(workspace: Workspace): Promise<void> {
+	try {
+		await learnFromReviews(workspace.runtime.sql);
+	} catch (error) {
+		console.error(
+			"[worldwide-ai] learning from reviews failed:",
+			error instanceof Error ? error.message : error,
+		);
+	}
 }
 
 /**
@@ -219,6 +236,7 @@ export async function reviewResultAction(_previous: ActionState, form: FormData)
 			action: intent,
 			note: text(form, "note"),
 		});
+		await learn(workspace);
 		refresh();
 		return {
 			ok: reviewed.task.state !== "outcome_unknown",
@@ -340,6 +358,8 @@ export async function reviewDraftAction(_previous: ActionState, form: FormData):
 							})
 						: null;
 		if (!result) throw new WorkflowError("invalid", "Choose save, edit or reject.");
+		// An edit on the way is not a decision yet. A save or a rejection is.
+		if (intent !== "edit") await learn(workspace);
 		refresh();
 		if (intent === "edit")
 			return { ok: true, message: "Your edit is saved. The draft is still waiting for a decision." };

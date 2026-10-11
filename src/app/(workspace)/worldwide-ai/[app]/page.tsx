@@ -93,6 +93,23 @@ export default async function AreaPage({ params }: Props) {
 						</div>
 					</Card>
 				)}
+				{area.id === "improvement" && (
+					<Card title="Lessons from reviews">
+						<p className="wai-help" style={{ marginTop: 0 }}>
+							How each agent’s reviewed work went, counted from the decisions people made, and the proposals
+							the workspace raised when several reviews said the same procedure fell short. A proposal changes
+							nothing by itself.
+						</p>
+						<div className="wai-row" style={{ gap: 12, flexWrap: "wrap" }}>
+							<Link href={`${WORKSPACE_PATH}/improvement/lessons`} className="wai-btn wai-btn--primary">
+								Lessons from reviews
+							</Link>
+							<Link href={`${WORKSPACE_PATH}/skills`} className="wai-btn">
+								Skills
+							</Link>
+						</div>
+					</Card>
+				)}
 				{area.id === "rfid" && (
 					<Card title="The tag registry">
 						<p className="wai-help" style={{ marginTop: 0 }}>

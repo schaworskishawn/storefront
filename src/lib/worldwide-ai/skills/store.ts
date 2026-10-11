@@ -521,6 +521,10 @@ export type SkillProposal = {
 	sourceType: "none" | "work_product" | "draft" | "task";
 	sourceId: string | null;
 	state: ProposalState;
+	/** Written by a person, or raised by the workspace from review decisions. */
+	origin: "person" | "reviews";
+	/** The reviews a proposal from reviews rests on, by id. Empty for one a person wrote. */
+	evidence: string[];
 	createdBy: string;
 	createdAt: string;
 	decidedBy: string | null;
@@ -529,7 +533,7 @@ export type SkillProposal = {
 };
 
 const PROPOSAL_COLUMNS = `id, skill_id, base_version, base_sha256, summary, proposed_change, source_type, source_id, state,
-	created_by, created_at, decided_by, decided_at, decision_note`;
+	origin, evidence, created_by, created_at, decided_by, decided_at, decision_note`;
 
 const toProposal = (r: Row): SkillProposal => ({
 	id: r.id as string,
@@ -541,6 +545,8 @@ const toProposal = (r: Row): SkillProposal => ({
 	sourceType: r.source_type as SkillProposal["sourceType"],
 	sourceId: (r.source_id as string | null) ?? null,
 	state: r.state as ProposalState,
+	origin: (r.origin as SkillProposal["origin"]) ?? "person",
+	evidence: ((typeof r.evidence === "string" ? JSON.parse(r.evidence) : r.evidence) as string[] | null) ?? [],
 	createdBy: r.created_by as string,
 	createdAt: iso(r.created_at) as string,
 	decidedBy: (r.decided_by as string | null) ?? null,
