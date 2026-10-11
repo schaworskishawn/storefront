@@ -81,6 +81,9 @@ export default async function AreaPage({ params }: Props) {
 							<Link href={`${WORKSPACE_PATH}/lab/batches`} className="wai-btn">
 								Batches
 							</Link>
+							<Link href={`${WORKSPACE_PATH}/lab/finished`} className="wai-btn">
+								Finished liquids
+							</Link>
 							<Link href={`${WORKSPACE_PATH}/lab/movements`} className="wai-btn">
 								Stock movements
 							</Link>

@@ -239,6 +239,11 @@ async function seedDemoLab(sql: Sql, now: Date): Promise<void> {
 		[{ lotCode: "DEMO-M-1", unit: "mL", quantity: "300", location: "Shelf B1" }],
 	);
 
+	// Something to fill, so a packaging run in the preview has bottles to take from stock.
+	await stocked({ name: "30 mL bottle", category: "packaging", sku: "DEMO-BTL-30" }, [
+		{ lotCode: "DEMO-BTL-1", unit: "each", quantity: "200", location: "Shelf C1" },
+	]);
+
 	const recipe = await createRecipe(sql, DEMO_OWNER, {
 		name: `${DEMO_PREFIX} Mango 12`,
 		product: "A fictional 12 mg mango liquid",

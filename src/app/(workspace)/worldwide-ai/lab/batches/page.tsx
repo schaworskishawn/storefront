@@ -17,7 +17,7 @@ const STATUS_TONE: Record<BatchStatus, Tone> = {
 const STATUS_LABEL: Record<BatchStatus, string> = {
 	planned: "Planned",
 	reserved: "Reserved",
-	completed: "Made, awaiting review",
+	completed: "Made",
 	cancelled: "Cancelled",
 };
 
@@ -32,7 +32,7 @@ export default async function BatchesPage() {
 			<PageHeader
 				title="Batches"
 				crumbs={[{ label: "E-Liquid Lab", href: LAB }, { label: "Batches" }]}
-				lead="A batch is planned from an approved recipe version, reserves the lots it will use, and records what was actually used and what was measured coming out. A batch that has been made is awaiting a quality review; nothing here releases it."
+				lead="A batch is planned from an approved recipe version, reserves the lots it will use, and records what was actually used and what was measured coming out. Whether a made batch is released is the owner's decision, recorded on the batch."
 				actions={
 					<Link href={`${LAB}/recipes`} className="wai-btn">
 						Recipes

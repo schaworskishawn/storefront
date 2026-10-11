@@ -27,6 +27,7 @@ const PAGES = [
 	"/worldwide-ai/lab/recipes",
 	"/worldwide-ai/lab/recipes/00000000-0000-4000-8000-000000000000",
 	"/worldwide-ai/lab/batches",
+	"/worldwide-ai/lab/finished",
 	"/worldwide-ai/lab/batches/00000000-0000-4000-8000-000000000000",
 	"/worldwide-ai/rfid",
 	"/worldwide-ai/content",
