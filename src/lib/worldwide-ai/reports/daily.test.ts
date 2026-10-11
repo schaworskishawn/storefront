@@ -17,6 +17,7 @@ import {
 	reserveBatch,
 } from "../lab/batches";
 import { RELEASE_CONFIRMATIONS, decideRelease, placeHold } from "../lab/finished";
+import { addCorrectiveAction, enterResult, openDeviation, verifyResult } from "../lab/quality";
 import { createIngredient, createLot, postMovement } from "../lab/inventory";
 import { personalScopeOf } from "../tasks/repo";
 import { freshDb, owner, staff, system, workflowDeps } from "../testing.test-util";
@@ -134,7 +135,7 @@ describe("a report on an empty workspace", () => {
 			"Inventory",
 			"Purchasing",
 			"Accounting and banking",
-			"Quality records",
+			"Calibration, cleaning and training",
 			"Business goals",
 			"Engineering changes",
 		]);
@@ -550,9 +551,9 @@ describe("a report on a workspace whose Lab holds stock", () => {
 });
 
 describe("a report on a workspace with batches that have been made", () => {
-	it("asks the owner for each release decision that is waiting, and puts an open hold first", async () => {
-		const w = await open("2026-10-14T13:00:00Z");
-		const day = "2026-10-14";
+	/** A workspace with stock, an approved recipe, and a way to make a batch of it. */
+	async function lab(startAt: string, day: string) {
+		const w = await open(startAt);
 		let n = 0;
 		const stocked = async (input: Parameters<typeof createIngredient>[2], lotCode: string) => {
 			const ingredient = await createIngredient(w.sql, staff, input);
@@ -598,6 +599,11 @@ describe("a report on a workspace with batches that have been made", () => {
 			await reserveBatch(w.sql, staff, batch.id, day);
 			return completeBatch(w.sql, staff, batch.id, { actualYieldMl }, day);
 		};
+		return { w, make };
+	}
+
+	it("asks the owner for each release decision that is waiting, and puts an open hold first", async () => {
+		const { w, make } = await lab("2026-10-14T13:00:00Z", "2026-10-14");
 		const waiting = await make("990");
 		const held = await make("985");
 		await placeHold(w.sql, staff, held.id, "Cloudy retained sample.");
@@ -632,5 +638,91 @@ describe("a report on a workspace with batches that have been made", () => {
 		});
 		const second = about(reportOf((await w.generate({ again: true, actor: staff })).report));
 		expect(second.map((a) => a.title)).toEqual([`On hold: batch ${held.code}`]);
+	});
+
+	it("asks for results to be verified, raises open deviations by how serious they are, and gives a dated action to whoever has it", async () => {
+		const { w, make } = await lab("2026-10-15T13:00:00Z", "2026-10-15");
+		const batch = await make("990");
+		const entered = await enterResult(
+			w.sql,
+			staff,
+			{
+				batchId: batch.id,
+				analyte: "Nicotine",
+				reportedAs: "12.1",
+				unit: "mg/mL",
+				lab: "Prairie Analytical",
+				reportRef: "PA-1001",
+				reportedOn: "2026-10-14",
+			},
+			"2026-10-15",
+		);
+		const deviation = await openDeviation(
+			w.sql,
+			staff,
+			{
+				batchId: batch.id,
+				title: "Label roll mix-up",
+				description: "Two label rolls on the bench.",
+				severity: "critical",
+			},
+			"2026-10-15",
+		);
+		await addCorrectiveAction(
+			w.sql,
+			staff,
+			{
+				deviationId: deviation.id,
+				action: "Add the label roll to the clearance checklist",
+				responsible: "Sam",
+				dueOn: "2026-10-12",
+			},
+			"2026-10-15",
+		);
+		// An action with no agreed date is not given one.
+		await addCorrectiveAction(
+			w.sql,
+			staff,
+			{ deviationId: deviation.id, action: "Review label storage", responsible: "Olivia" },
+			"2026-10-15",
+		);
+
+		const report = reportOf((await w.generate()).report);
+		const find = (start: string) => report.actions.find((a) => a.title.startsWith(start));
+		expect(find("Verify results")).toMatchObject({
+			title: `Verify results: batch ${batch.code}`,
+			responsible: "The owner",
+			priority: "normal",
+			reason:
+				"1 result entered from report PA-1001 is waiting to be verified. Until then it doesn't count, and the batch can't be released.",
+			links: [{ label: `Batch ${batch.code}`, href: `/worldwide-ai/lab/batches/${batch.id}/quality` }],
+		});
+		expect(find("Deviation")).toMatchObject({
+			title: `Deviation ${deviation.code}: Label roll mix-up`,
+			priority: "urgent",
+			responsible: "The owner",
+			reason: `Critical deviation against batch ${batch.code}, which can't be released while it is open. 2 actions open, 0 done and waiting to be verified.`,
+			links: [
+				{ label: `Deviation ${deviation.code}`, href: `/worldwide-ai/quality/deviations/${deviation.id}` },
+			],
+		});
+		expect(report.actions.filter((a) => a.title.startsWith("Corrective action"))).toMatchObject([
+			{
+				title: `Corrective action for ${deviation.code}: Add the label roll to the clearance checklist`,
+				responsible: "Sam",
+				priority: "high",
+				reason: "Due on 2026-10-12 and still open.",
+				due: { date: "2026-10-12", confirmed: true },
+			},
+		]);
+		expect(report.unavailable.map((item) => item.area)).toContain("Calibration, cleaning and training");
+		expect(report.coverage.find((row) => row.source === "Results waiting to be verified")?.records).toBe(1);
+		expect(report.coverage.find((row) => row.source === "Open deviations")?.records).toBe(1);
+
+		// Once the result is verified the report stops asking for it.
+		await verifyResult(w.sql, owner, entered.id);
+		const next = reportOf((await w.generate({ again: true, actor: staff })).report);
+		expect(next.actions.some((a) => a.title.startsWith("Verify results"))).toBe(false);
+		expect(next.coverage.find((row) => row.source === "Results waiting to be verified")?.records).toBe(0);
 	});
 });

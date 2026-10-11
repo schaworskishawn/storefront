@@ -157,13 +157,35 @@ A **hold** can be placed by anyone, with a reason. While one is open the batch c
 
 **Release** is the owner's decision, and it is a transaction, not a tick box:
 
-1. The workspace checks everything it can check for itself, again, at the moment of release: the batch was made, its recipe version and plan are unaltered, what was used from every lot is recorded, the stock and bulk ledgers add up, none of its lots is in quarantine, and no hold is open. If anything fails, the release is refused.
-2. The owner confirms, one by one, what the workspace can't check: that the batch record was read, that required test results are on file and in specification, that there is no open deviation, and that the approved labels were used.
+1. The workspace checks everything it can check for itself, again, at the moment of release: the batch was made, its recipe version and plan are unaltered, what was used from every lot is recorded, the stock and bulk ledgers add up, none of its lots is in quarantine, no hold is open, no deviation is open against it, no result is waiting to be verified, and its results meet the approved specification when there is one. If anything fails, the release is refused.
+2. The owner confirms, one by one, what the workspace can't be sure of from its records: that the batch record was read, that required test results are on file and in specification, that there is no deviation or unexplained difference that was never written down, and that the approved labels were used.
 3. What was checked and confirmed is stored with the decision, with who decided, when, and on what basis.
 
 A decision is made once. A later doubt is a hold, which shows on the batch. A rejected batch can't be packaged.
 
 Releasing makes a batch eligible **in this workspace only**. Nothing is published and no sellable stock changes in the store.
+
+## Specifications, samples, results and deviations
+
+These are the quality records a release checks for itself. They are under **Quality**, and on each batch under **Samples and results**.
+
+A **specification** says what a recipe's liquid is tested against: what is measured, in which unit, between which limits, by which method, and whether the test is required. It is kept in versions. A version guides nothing until the owner approves it, and the version it replaces is kept. The limits are yours to set; the workspace never suggests one, and a criterion with no limit is refused.
+
+A **sample** is taken from a batch's bulk. One step records the sample and takes its liquid out of the bulk ledger, so the two can't disagree. Each hand-over after that (stored, sent to the laboratory, received there, report received, disposed of) is a line in the sample's custody record. Recording a hand-over sends nothing to anyone.
+
+A **result** is what a laboratory reported, typed in by a person exactly as the report gives it, with the laboratory, the report number and its date.
+
+- It counts only once the owner has **verified** it against the report.
+- It is never edited. A correction is a new result that names the one it replaces and says why; the earlier one is kept.
+- A verified result is compared with the approved specification by code, in exact decimals. It is a pass or a fail only when the unit is the same, the method is the one the specification names, and the report gives a number. Units are never converted. A different unit or method, words such as "< 0.05", or a reported uncertainty that reaches past a limit leave the result **unresolved**: the owner can accept it with a reason, which is kept beside it.
+- Every result that counts has to be within its limit. A passing retest does not hide a failing result still on file. The owner can set a result aside with a reason; it stays on file.
+- A verified result **outside its limit puts the batch on hold** in the same step. A result outside its limit can't be accepted.
+
+A **deviation** is something that didn't go as it should have. Anyone can open one, against a batch or not, and it can put the batch on hold as it is opened. Its investigation is a list of entries that are never changed, so a suspected cause stays apart from an established finding. A **corrective action** has someone responsible and, if one was agreed, a due date. Marking it done needs the evidence, and that is not the end: the owner verifies that it worked, saying what showed it. A deviation can be closed only by the owner, with a disposition, once every action is verified or cancelled and something has been recorded as established.
+
+With these records in place, a release also checks that no deviation is open against the batch, that no result is waiting to be verified, and, when a specification is approved for the recipe, that every result that counts meets it and no required result is missing. With no approved specification there is nothing to compare results with, and the owner confirms them in person as before.
+
+None of this is a laboratory finding of the workspace's own. Meeting a specification is not a statement that a product is safe or that it meets any regulation.
 
 ## The Today checklist
 
@@ -182,7 +204,7 @@ An item can be:
 
 These are steps for the owner. Nothing here is applied automatically, and none of it has been done yet.
 
-1. **Database.** Create a Supabase project. Run the eight files in `supabase/migrations/` in name order, with `supabase db push` or by pasting each into the SQL editor. The code expects the schema the newest file leaves; if the database is behind, the database health check says which version it is at and which the code needs. Row-level security is switched on for every table with no policies, so only the server's own connection can read them. Set `POSTGRES_URL` to the connection string.
+1. **Database.** Create a Supabase project. Run the nine files in `supabase/migrations/` in name order, with `supabase db push` or by pasting each into the SQL editor. The code expects the schema the newest file leaves; if the database is behind, the database health check says which version it is at and which the code needs. Row-level security is switched on for every table with no policies, so only the server's own connection can read them. Set `POSTGRES_URL` to the connection string.
 2. **File storage.** Set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`. Create a private bucket named `worldwide-ai` (or name your own in `WORLDWIDE_AI_BUCKET`). It must not be public. The service key stays on the server and is never sent to a browser.
 3. **Who may enter.** Set `WORLDWIDE_AI_OWNER_EMAILS` and, if you want, `WORLDWIDE_AI_STAFF_EMAILS`. Each address must belong to a Saleor staff account.
 4. **Model.** Set `ANTHROPIC_API_KEY`. Without it the 31 code-only functions still work.
@@ -279,6 +301,7 @@ Checked on a developer machine:
 - The unit and workflow tests (`pnpm run test:run`), which run against an in-process Postgres with the real migrations.
 - Every code-only function on its sample and on cases written for its rules, including exact-decimal arithmetic.
 - Every model-written function with a stand-in model: the format, the citation rules, and that a reply breaking the rules stores nothing.
+- Quality records: a specification that guides nothing until approved, a sample that takes its liquid from the bulk once, results that count only when verified and are corrected by a new result, comparison with the specification in exact decimals without converting a unit, a hold placed when a verified result is outside its limit, and a deviation that can't close before its actions are verified to have worked.
 - Finished liquid: bulk drawn down without going negative, a packaging run recorded all or nothing, holds, and a release that is rechecked at the moment it is made and refused when a record fails.
 - The checklist: adding, giving, putting off with a reason, closing with a note, one item per report line, and that closing an item leaves its task and result untouched.
 - Recipes and batches: a version kept as written, an all-or-nothing reservation across lots, use and yield recorded, and a refusal leaving every balance untouched.
@@ -317,7 +340,8 @@ The larger plan describes much more than this. These parts have no working code.
 | Ingredient inventory                                                                                           | Built and tested locally: ingredients, lots, and an append-only ledger with reservations, quarantine and corrections. Used in the preview only.                                                                                      |
 | Recipes and batch records                                                                                      | Built and tested locally: versioned recipes the owner approves, batches that reserve and consume lots through the ledger, measured yield. Not used in the preview beyond a walkthrough.                                              |
 | Finished liquid, packaging runs, holds and the release decision                                                | Built and tested locally. Release is the owner's, rechecked when it is made, and changes nothing in the store.                                                                                                                       |
-| Test results, deviations, label approvals, calibration, cleaning and training as records                       | Not built. The owner confirms them when releasing a batch; the workspace can't check them for itself.                                                                                                                                |
+| Specifications, samples, laboratory results, deviations and corrective actions                                 | Built and tested locally. A release checks them for itself. Results are typed in by a person from the report; the report file itself isn't stored.                                                                                   |
+| Label approvals, change control, calibration, cleaning and training as records                                 | Not built. The owner confirms the labels when releasing a batch; the rest isn't claimed.                                                                                                                                             |
 | Manufacturing, quality and compliance record models with software gates                                        | Not built. The agents review records you supply and never release, approve or certify.                                                                                                                                               |
 | RFID and NFC tag registry, live scan ingestion, public authenticity page                                       | Not built. Link reconciles scan exports you supply.                                                                                                                                                                                  |
 | Product Content Studio: Saleor product picker, images, per-field approval                                      | Not built beyond text drafts from details you enter. No image is ever produced.                                                                                                                                                      |

@@ -16,6 +16,7 @@ import {
 	releaseChecks,
 } from "@/lib/worldwide-ai/lab/finished";
 import { listInventory } from "@/lib/worldwide-ai/lab/inventory";
+import { BLOCKING, batchAssessment, listDeviations, listSamples } from "@/lib/worldwide-ai/lab/quality";
 import { opsDayKey } from "@/lib/worldwide-ai/time";
 import { WORKSPACE_PATH } from "@/lib/worldwide-ai/types";
 import { batchAction, finishedAction } from "@/lib/worldwide-ai/web/actions";
@@ -59,15 +60,23 @@ export default async function BatchPage({ params }: Props) {
 	const batch = UUID.test(id) ? await getBatch(sql, id) : null;
 	if (!batch) notFound();
 	const made = batch.status === "completed";
-	const [allocations, availability, holds, runs, bulk, checks, inventory] = await Promise.all([
-		listAllocations(sql, batch.id),
-		batch.status === "planned" ? batchAvailability(sql, batch, today) : null,
-		listHolds(sql, batch.id),
-		made ? listPackagingRuns(sql, batch.id) : [],
-		made ? listBulkMovements(sql, batch.id) : [],
-		made ? releaseChecks(sql, batch) : [],
-		made ? listInventory(sql, today, { category: "packaging" }) : [],
-	]);
+	const [allocations, availability, holds, runs, bulk, checks, inventory, assessment, samples, deviations] =
+		await Promise.all([
+			listAllocations(sql, batch.id),
+			batch.status === "planned" ? batchAvailability(sql, batch, today) : null,
+			listHolds(sql, batch.id),
+			made ? listPackagingRuns(sql, batch.id) : [],
+			made ? listBulkMovements(sql, batch.id) : [],
+			made ? releaseChecks(sql, batch) : [],
+			made ? listInventory(sql, today, { category: "packaging" }) : [],
+			made ? batchAssessment(sql, batch) : null,
+			made ? listSamples(sql, batch.id) : [],
+			listDeviations(sql, { batchId: batch.id }),
+		]);
+	const counted = assessment?.results.filter((r) => !r.replaced && r.ruling !== "set_aside") ?? [];
+	const unverified = counted.filter((r) => r.verifiedAt === null).length;
+	const blocking = assessment?.lines.filter((line) => BLOCKING.includes(line.outcome)).length ?? 0;
+	const openDeviations = deviations.filter((deviation) => deviation.status === "open").length;
 	const short = availability?.filter((entry) => entry.shortMl !== "0") ?? [];
 	const notes = [...batch.plan.notes, ...(availability?.flatMap((entry) => entry.notes) ?? [])];
 	const difference = yieldDifference(batch);
@@ -344,7 +353,7 @@ export default async function BatchPage({ params }: Props) {
 							)}
 							{batch.bulkRemainingMl !== "0" && (
 								<details style={{ marginTop: 12 }}>
-									<summary className="wai-small">Record a sample, waste, or a correction</summary>
+									<summary className="wai-small">Record waste or a correction</summary>
 									<div style={{ marginTop: 8 }}>
 										<FieldsForm
 											action={finishedAction}
@@ -358,7 +367,6 @@ export default async function BatchPage({ params }: Props) {
 													kind: "select",
 													required: true,
 													options: [
-														{ value: "sample", label: "A sample was taken" },
 														{ value: "waste", label: "Liquid was lost" },
 														...(workspace.isOwner
 															? [{ value: "correction", label: "Correction to what is left" }]
@@ -378,6 +386,47 @@ export default async function BatchPage({ params }: Props) {
 									</div>
 								</details>
 							)}
+						</Card>
+					)}
+
+					{made && (
+						<Card
+							title="Samples, results and deviations"
+							aside={
+								<Pill tone={unverified || blocking || openDeviations ? "warn" : "plain"}>
+									{unverified || blocking || openDeviations ? "Needs attention" : "Nothing waiting"}
+								</Pill>
+							}
+						>
+							<KeyValues
+								items={[
+									["Samples taken", String(samples.length)],
+									[
+										"Results on file",
+										counted.length === 0
+											? "None"
+											: `${counted.length}${unverified ? `, ${unverified} not verified` : ", all verified"}`,
+									],
+									[
+										"Specification",
+										assessment?.specification
+											? `Version ${assessment.specification.version}${blocking ? `: ${blocking} in the way of release` : ": nothing in the way"}`
+											: "None approved for this recipe",
+									],
+									[
+										"Deviations",
+										deviations.length === 0 ? "None" : `${deviations.length}, ${openDeviations} open`,
+									],
+								]}
+							/>
+							<div className="wai-row" style={{ gap: 12, flexWrap: "wrap", marginTop: 12 }}>
+								<Link href={`${LAB}/batches/${batch.id}/quality`} className="wai-btn wai-btn--primary">
+									Samples and results
+								</Link>
+								<Link href={`${WORKSPACE_PATH}/quality/deviations?batch=${batch.id}`} className="wai-btn">
+									Open a deviation
+								</Link>
+							</div>
 						</Card>
 					)}
 
