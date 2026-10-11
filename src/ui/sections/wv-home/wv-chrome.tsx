@@ -1,6 +1,7 @@
 import { Search, ShoppingCart, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { WvBadges } from "./wv-badge-row";
 import { WishlistLink } from "./wv-wishlist-client";
 import { NAV } from "./wv-data";
 import { readRewardsConfig } from "@/lib/rewards/tokens";
@@ -186,6 +187,7 @@ export function WvFooter() {
 
 				<FooterSocials className="flex flex-col items-start gap-3 md:hidden xl:flex xl:w-[250px] xl:shrink-0 xl:items-end xl:gap-4" />
 			</div>
+			<WvBadges />
 			<div className="mx-auto mt-6 flex w-full max-w-[1440px] flex-col gap-2 border-t border-[var(--wv-cyan-soft)] pt-4 font-sans text-[10px] text-[var(--wv-footer-link)] md:flex-row md:items-center md:justify-between xl:mt-8 xl:border-0 xl:pt-0">
 				<p>© 2026 Worldwide Vapor. All rights reserved.</p>
 				<nav aria-label="Legal" className="flex flex-wrap items-center gap-x-2">

@@ -95,3 +95,33 @@ export function parseEditorJSToText(content: string | null | undefined): string 
 		return content;
 	}
 }
+
+/** The few HTML entities EditorJS writes into text, turned back into characters (`&amp;` last, so `&amp;lt;` stays `&lt;`). */
+function decodeEntities(text: string): string {
+	return text
+		.replace(/&nbsp;/g, " ")
+		.replace(/&lt;/g, "<")
+		.replace(/&gt;/g, ">")
+		.replace(/&quot;/g, '"')
+		.replace(/&#0?39;/g, "'")
+		.replace(/&amp;/g, "&");
+}
+
+/**
+ * Extract the text of each paragraph from EditorJS JSON, with tags and entities handled as in `parseEditorJSToText`. Content
+ * that is not EditorJS JSON is treated as plain text and split on blank lines. Empty paragraphs are dropped.
+ */
+export function parseEditorJSToParagraphs(content: string | null | undefined): string[] {
+	if (!content) return [];
+	let blocks: EditorJSBlock[] | null = null;
+	try {
+		const parsed = JSON.parse(content) as EditorJSContent;
+		if (Array.isArray(parsed?.blocks)) blocks = parsed.blocks;
+	} catch {
+		// Not JSON: plain text, handled below.
+	}
+	const raw = blocks
+		? blocks.map((block) => (typeof block.data?.text === "string" ? stripHtmlTags(block.data.text) : ""))
+		: content.split(/\n\s*\n/).map((part) => stripHtmlTags(part));
+	return raw.map((text) => decodeEntities(text).replace(/\s+/g, " ").trim()).filter(Boolean);
+}
