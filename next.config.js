@@ -30,6 +30,8 @@ const config = {
 	// See: https://vercel.com/blog/how-we-optimized-package-imports-in-next-js
 	experimental: {
 		optimizePackageImports: ["lucide-react", "lodash-es"],
+		// The Worldwide AI workspace lets staff attach a few screenshots (2 MB each) to a review request.
+		serverActions: { bodySizeLimit: "9mb" },
 		// Note: API rate limiting is handled by RequestQueue in src/lib/graphql.ts
 		// (max 3 concurrent requests + 200ms delay between requests)
 	},

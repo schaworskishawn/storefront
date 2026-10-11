@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { readConfig } from "../config";
-import { operatorFor } from "./roles";
+import { demoOperatorFor, operatorFor } from "./roles";
 
 const config = readConfig({
 	WORLDWIDE_AI_OWNER_EMAILS: "Olivia@Example.com",
@@ -63,5 +63,28 @@ describe("who may use the dashboard", () => {
 			WORLDWIDE_AI_STAFF_EMAILS: "sam@example.com",
 		});
 		expect(operatorFor(staffer, both)?.role).toBe("owner");
+	});
+});
+
+describe("the local preview operator", () => {
+	const demo = { NODE_ENV: "development", WORLDWIDE_AI_STORE: "demo", WORLDWIDE_AI_DEMO_OPERATOR: "owner" };
+	const preview = (env: Record<string, string | undefined>) => demoOperatorFor(env, readConfig(env));
+
+	it("exists only under next dev, with the demonstration store, when a role is named", () => {
+		expect(preview(demo)).toEqual({ kind: "operator", id: "demo-owner", label: "Demo Owner", role: "owner" });
+		expect(preview({ ...demo, WORLDWIDE_AI_DEMO_OPERATOR: "staff" })).toMatchObject({
+			id: "demo-staff",
+			role: "staff",
+		});
+	});
+
+	it("is refused in production, in tests, on Vercel, against a real database, or for any other role", () => {
+		expect(preview({ ...demo, NODE_ENV: "production" })).toBeNull();
+		expect(preview({ ...demo, NODE_ENV: "test" })).toBeNull();
+		expect(preview({ ...demo, NODE_ENV: undefined })).toBeNull();
+		expect(preview({ ...demo, VERCEL: "1" })).toBeNull();
+		expect(preview({ ...demo, WORLDWIDE_AI_STORE: undefined, POSTGRES_URL: "postgres://real" })).toBeNull();
+		expect(preview({ ...demo, WORLDWIDE_AI_DEMO_OPERATOR: "admin" })).toBeNull();
+		expect(preview({ ...demo, WORLDWIDE_AI_DEMO_OPERATOR: undefined })).toBeNull();
 	});
 });

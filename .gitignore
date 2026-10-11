@@ -66,3 +66,6 @@ next-env.d.ts
 
 # Internal/marketing docs — keep local, never commit (strategy lives in the brain)
 docs/marketing/
+
+# Worldwide AI local preview: files of the in-memory demonstration store
+.worldwide-ai-demo-files/

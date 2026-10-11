@@ -69,7 +69,7 @@ export type FunctionOutcome =
 
 export type IncomingFile = { field: string; name: string; mime: string; bytes: Uint8Array };
 
-const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
+const MAX_UPLOAD_BYTES = 2 * 1024 * 1024;
 const IMAGE_SIGNATURES: Array<{ mime: string; ext: string; test: (b: Uint8Array) => boolean }> = [
 	{
 		mime: "image/png",
@@ -108,7 +108,7 @@ async function storeUploads(
 			if (!kind)
 				problems.push(`${field.label}: "${file.name.slice(0, 60)}" isn't a PNG, JPEG or WebP image.`);
 			else if (file.bytes.byteLength > MAX_UPLOAD_BYTES)
-				problems.push(`${field.label}: "${file.name.slice(0, 60)}" is larger than 5 MB.`);
+				problems.push(`${field.label}: "${file.name.slice(0, 60)}" is larger than 2 MB.`);
 			else {
 				const sha256 = sha256Hex(file.bytes);
 				uploads.push({

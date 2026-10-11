@@ -133,7 +133,7 @@ export function parseTable(
 			rows: [],
 			problems: [
 				records.length === 0
-					? `${options.label} is empty. Paste the rows with a header line: ${columns.map((c) => c.key).join(", ")}.`
+					? `${options.label} is empty. Paste the rows with a header line${columns.length ? `: ${columns.map((c) => c.key).join(", ")}` : ""}.`
 					: `${options.label} needs at least ${options.minRows} rows; ${records.length} supplied.`,
 			],
 			format,

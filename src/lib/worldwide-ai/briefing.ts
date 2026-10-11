@@ -99,7 +99,7 @@ export async function buildBriefing(
 	if (overdue)
 		items.push({
 			level: "attention",
-			text: `${plural(overdue, "document")} past their review date.`,
+			text: `${plural(overdue, "document")} past ${overdue === 1 ? "its" : "their"} review date.`,
 			href: `${WORKSPACE_PATH}/knowledge`,
 		});
 	if (tasks.queued)

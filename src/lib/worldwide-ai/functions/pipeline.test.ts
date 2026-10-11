@@ -357,7 +357,7 @@ describe("running a function", () => {
 			[asked.task.id],
 		);
 		await sql.query(
-			`update wai_work_products set payload = jsonb_set(payload, '{rowsChecked}', '999') where task_id = $1`,
+			`update wai_work_products set payload = jsonb_set(payload::jsonb, '{rowsChecked}', '999')::json where task_id = $1`,
 			[asked.task.id],
 		);
 		const outcome = await runFunction(deps(), asked.task.id, { lookup, resume: true });
@@ -530,7 +530,7 @@ describe("reviewing a result", () => {
 	it("ends as outcome unknown when the accepted record was changed underneath the reviewer", async () => {
 		const { taskId, productId } = await ready();
 		await sql.query(
-			`update wai_work_products set payload = jsonb_set(payload, '{currency}', '"USD"') where id = $1`,
+			`update wai_work_products set payload = jsonb_set(payload::jsonb, '{currency}', '"USD"')::json where id = $1`,
 			[productId],
 		);
 		const reviewed = await reviewProduct(deps(), staff, productId, { action: "accept" });

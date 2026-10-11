@@ -49,7 +49,8 @@
 		"content:verify-attribute-slugs": "node scripts/verify-storefront-attribute-slugs.mjs",
 		"content:verify-seed": "vitest run src/lib/content/configurator-seed.sync.test.ts",
 		"content:export-seed": "node scripts/export-storefront-content-seed.mjs",
-		"skills:bootstrap": "node scripts/bootstrap-agent-skills.mjs"
+		"skills:bootstrap": "node scripts/bootstrap-agent-skills.mjs",
+		"worldwide-ai:preview": "node scripts/worldwide-ai-preview.mjs"
 	},
 	"dependencies": {
 		"@adyen/adyen-web": "6.46.0",

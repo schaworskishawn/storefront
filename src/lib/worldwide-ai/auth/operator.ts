@@ -6,7 +6,7 @@ import { fetchAuthenticatedUserIfSession } from "@/lib/auth/fetch-authenticated-
 import { resolveSessionUser } from "@/lib/auth/resolve-session-user";
 import { readConfig, type WorldwideAiConfig } from "../config";
 import type { OperatorActor } from "../types";
-import { operatorFor } from "./roles";
+import { demoOperatorFor, operatorFor } from "./roles";
 
 /**
  * The dashboard's door. The signed-in store account is read on the server from the session cookie (the dashboard never
@@ -25,6 +25,8 @@ export type OperatorState =
 
 export const getOperatorState = cache(async (): Promise<OperatorState> => {
 	const config = readConfig();
+	const preview = demoOperatorFor(process.env, config);
+	if (preview) return { status: "operator", actor: preview, config };
 	const auth = await resolveSessionUser(() =>
 		fetchAuthenticatedUserIfSession(OperatorViewerDocument, { cache: "no-cache" }),
 	);

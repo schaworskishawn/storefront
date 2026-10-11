@@ -1,4 +1,4 @@
-import type { WorldwideAiConfig } from "../config";
+import { isDemoStore, type Env, type WorldwideAiConfig } from "../config";
 import type { OperatorActor } from "../types";
 
 /**
@@ -30,3 +30,21 @@ export function operatorFor(
 }
 
 export const isOwner = (actor: OperatorActor): boolean => actor.role === "owner";
+
+/**
+ * A stand-in operator for previewing the workspace on a developer's own machine, with no store sign-in. It exists only when
+ * all of these hold: the app is running under `next dev`, it is not on Vercel, the in-memory demonstration store is selected
+ * (which holds fictional records only and is itself refused in production), and WORLDWIDE_AI_DEMO_OPERATOR names a role.
+ * Anywhere else this returns null and the real sign-in applies.
+ */
+export function demoOperatorFor(env: Env, config: Pick<WorldwideAiConfig, "database">): OperatorActor | null {
+	if (env.NODE_ENV !== "development" || env.VERCEL || !isDemoStore(config as WorldwideAiConfig)) return null;
+	const role = env.WORLDWIDE_AI_DEMO_OPERATOR;
+	if (role !== "owner" && role !== "staff") return null;
+	return {
+		kind: "operator",
+		id: `demo-${role}`,
+		label: role === "owner" ? "Demo Owner" : "Demo Staff",
+		role,
+	};
+}

@@ -29,7 +29,8 @@ create table if not exists wai_work_products (
 	scope text not null default 'business',
 	demo boolean not null default false,
 	summary text not null,
-	payload jsonb not null,
+	-- json, not jsonb: the record is shown in the order it was written, which jsonb would not keep.
+	payload json not null,
 	payload_sha256 text not null,
 	-- A hash of exactly what was supplied, so a result can always be tied to its input.
 	input_sha256 text not null,

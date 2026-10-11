@@ -117,7 +117,7 @@ export async function insertProduct(
 	const { rows } = await sql.query(
 		`insert into wai_work_products (task_id, function_id, function_version, agent_id, output_type, scope, demo, summary, payload,
 			payload_sha256, input_sha256, missing, assumptions, coverage, warnings, source_refs, model, prompt_version, review_required, review_state)
-		 values ($1,$2,$3,$4,$5,$6,$7,$8,$9::jsonb,$10,$11,$12::jsonb,$13::jsonb,$14::jsonb,$15::jsonb,$16::jsonb,$17,$18,$19,$20)
+		 values ($1,$2,$3,$4,$5,$6,$7,$8,$9::json,$10,$11,$12::jsonb,$13::jsonb,$14::jsonb,$15::jsonb,$16::jsonb,$17,$18,$19,$20)
 		 on conflict (task_id) do nothing returning ${COLUMNS}`,
 		[
 			input.taskId,

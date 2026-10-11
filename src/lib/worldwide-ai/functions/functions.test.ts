@@ -1230,7 +1230,7 @@ describe("Verify: an independent re-check", () => {
 			records: "id\n1\n2",
 		});
 		await sql.query(
-			`update wai_work_products set payload = jsonb_set(payload, '{clean}', 'false') where task_id = $1`,
+			`update wai_work_products set payload = jsonb_set(payload::jsonb, '{clean}', 'false')::json where task_id = $1`,
 			[check.taskId],
 		);
 		const report = await run("verify.workflow-acceptance", { task: check.taskId });
