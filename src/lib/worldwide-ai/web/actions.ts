@@ -15,6 +15,7 @@ import { requestFunction, reviewProduct, type IncomingFile } from "../functions/
 import { getProductByTask } from "../functions/products";
 import { lookupFunction } from "../functions/registry";
 import { dispatchTask } from "../jobs/dispatch";
+import { generateDailyReport } from "../reports/daily";
 import { SKILLS, SKILL_BY_ID } from "../skills/catalog";
 import { evaluateSkills } from "../skills/evaluate";
 import {
@@ -678,6 +679,43 @@ export async function skillAction(_previous: ActionState, form: FormData): Promi
 			default:
 				throw new WorkflowError("invalid", "That isn't something that can be done to a skill.");
 		}
+	} catch (error) {
+		return describeFailure(error);
+	}
+}
+
+// ---- Daily reports ---------------------------------------------------------------------------------------
+
+/**
+ * "Generate report now". Anyone in the workspace may: a report reads only shared business records, saves a further attempt
+ * for today, and sends nothing anywhere. A run already in progress for today is left to finish.
+ */
+export async function reportAction(_previous: ActionState, form: FormData): Promise<ActionState> {
+	const workspace = await getWorkspace();
+	try {
+		throttle(workspace);
+		const kind = text(form, "kind") === "evening" ? "evening" : "morning";
+		const outcome = await generateDailyReport(workspace.runtime, {
+			kind,
+			actor: workspace.actor,
+			again: true,
+		});
+		refresh();
+		if (outcome.status === "failed")
+			return {
+				ok: false,
+				message: `The report couldn't be generated: ${outcome.error} The attempt is kept in the list below.`,
+			};
+		if (outcome.status === "skipped") return { ok: false, message: outcome.reason };
+		const actions = outcome.report.report?.actions.length ?? 0;
+		return {
+			ok: true,
+			message: `${kind === "morning" ? "Morning report" : "Evening recap"} saved and read back. ${
+				actions === 0
+					? "Nothing needs anyone to act."
+					: `${actions} item${actions === 1 ? " needs" : "s need"} someone to act.`
+			}`,
+		};
 	} catch (error) {
 		return describeFailure(error);
 	}

@@ -16,6 +16,7 @@ const PAGES = [
 	"/worldwide-ai/tasks/00000000-0000-4000-8000-000000000000",
 	"/worldwide-ai/results/00000000-0000-4000-8000-000000000000",
 	"/worldwide-ai/reports",
+	"/worldwide-ai/reports/00000000-0000-4000-8000-000000000000",
 	"/worldwide-ai/support",
 	"/worldwide-ai/knowledge",
 	"/worldwide-ai/review",

@@ -60,7 +60,13 @@ export const APPS: readonly AppDefinition[] = [
 	app("team", "Team", "Team", "Work", "All 49 agents: what each does and whether it can run now."),
 	app("tasks", "Tasks", "Tasks", "Work", "Every task, its owner, state, history and evidence."),
 	app("review", "Review Queue", "Reviews", "Work", "Everything waiting for a person's decision."),
-	app("reports", "Daily Reports", "Reports", "Work", "The current briefing, assembled from the records."),
+	app(
+		"reports",
+		"Daily Reports",
+		"Reports",
+		"Work",
+		"The saved morning report with its action items, and every earlier one.",
+	),
 	app(
 		"support",
 		"Support Drafts",
