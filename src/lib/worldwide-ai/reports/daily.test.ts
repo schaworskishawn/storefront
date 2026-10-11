@@ -16,8 +16,10 @@ import {
 	planBatch,
 	reserveBatch,
 } from "../lab/batches";
+import { addEquipment, recordCalibration } from "../lab/equipment";
 import { RELEASE_CONFIRMATIONS, decideRelease, placeHold } from "../lab/finished";
 import { addCorrectiveAction, enterResult, openDeviation, verifyResult } from "../lab/quality";
+import { recordTraining, verifyTraining } from "../lab/training";
 import { createIngredient, createLot, postMovement } from "../lab/inventory";
 import { personalScopeOf } from "../tasks/repo";
 import { freshDb, owner, staff, system, workflowDeps } from "../testing.test-util";
@@ -135,7 +137,7 @@ describe("a report on an empty workspace", () => {
 			"Inventory",
 			"Purchasing",
 			"Accounting and banking",
-			"Calibration, cleaning and training",
+			"Equipment and training",
 			"Business goals",
 			"Engineering changes",
 		]);
@@ -715,7 +717,7 @@ describe("a report on a workspace with batches that have been made", () => {
 				due: { date: "2026-10-12", confirmed: true },
 			},
 		]);
-		expect(report.unavailable.map((item) => item.area)).toContain("Calibration, cleaning and training");
+		expect(report.unavailable.map((item) => item.area)).toContain("Equipment and training");
 		expect(report.coverage.find((row) => row.source === "Results waiting to be verified")?.records).toBe(1);
 		expect(report.coverage.find((row) => row.source === "Open deviations")?.records).toBe(1);
 
@@ -724,5 +726,100 @@ describe("a report on a workspace with batches that have been made", () => {
 		const next = reportOf((await w.generate({ again: true, actor: staff })).report);
 		expect(next.actions.some((a) => a.title.startsWith("Verify results"))).toBe(false);
 		expect(next.coverage.find((row) => row.source === "Results waiting to be verified")?.records).toBe(0);
+	});
+});
+
+describe("a report on a workspace with equipment and training on record", () => {
+	it("raises equipment that can't be used or is about to lapse, and training to verify or renew", async () => {
+		const w = await open("2026-10-20T13:00:00Z");
+		const day = "2026-10-20";
+		// Nothing recorded: the area is listed as unavailable, not as zero.
+		expect(reportOf((await w.generate()).report).unavailable.map((item) => item.area)).toContain(
+			"Equipment and training",
+		);
+
+		const never = await addEquipment(w.sql, staff, {
+			code: "SC-1",
+			name: "Bench scale",
+			kind: "scale",
+			calibrationIntervalDays: "180",
+		});
+		const soon = await addEquipment(w.sql, staff, {
+			code: "SC-2",
+			name: "Floor scale",
+			kind: "scale",
+			calibrationIntervalDays: "180",
+		});
+		await recordCalibration(
+			w.sql,
+			staff,
+			{
+				equipmentId: soon.id,
+				performedOn: "2026-05-01",
+				result: "pass",
+				certificate: "CERT-1",
+				performedBy: "Service",
+				dueOn: "2026-10-28",
+			},
+			day,
+		);
+		// In calibration with months to run: not mentioned.
+		const fine = await addEquipment(w.sql, staff, { code: "MX-1", name: "Mixer", kind: "mixer" });
+		const waiting = await recordTraining(
+			w.sql,
+			staff,
+			{ forSelf: true, topic: "Packaging SOP-PK-01", completedOn: "2026-10-01", evidence: "Signed sheet" },
+			day,
+		);
+		const lapsing = await recordTraining(
+			w.sql,
+			staff,
+			{
+				forSelf: true,
+				topic: "Batch manufacturing SOP-MF-01",
+				completedOn: "2025-11-01",
+				validUntil: "2026-11-01",
+				evidence: "Signed sheet",
+			},
+			day,
+		);
+		await verifyTraining(w.sql, owner, lapsing.id);
+
+		const report = reportOf((await w.generate({ again: true, actor: staff })).report);
+		const about = report.actions.filter(
+			(a) => a.title.startsWith("Equipment") || a.title.includes("raining"),
+		);
+		expect(about.map((a) => [a.title, a.priority, a.responsible])).toEqual(
+			expect.arrayContaining([
+				["Equipment: SC-1 Bench scale", "high", "A person in the Lab"],
+				["Equipment: SC-2 Floor scale", "normal", "A person in the Lab"],
+				["Verify training: 1 record", "normal", "The owner"],
+				["Training: Sam Staff, Batch manufacturing SOP-MF-01", "normal", "Sam Staff"],
+			]),
+		);
+		expect(about).toHaveLength(4);
+		expect(about.find((a) => a.title.startsWith("Equipment: SC-1"))).toMatchObject({
+			reason:
+				"It can't be recorded against a batch. It needs calibrating and no calibration is on record. One is never assumed.",
+			due: null,
+			links: [{ label: "Equipment SC-1", href: `/worldwide-ai/manufacturing/equipment/${never.id}` }],
+		});
+		expect(about.find((a) => a.title.startsWith("Equipment: SC-2"))).toMatchObject({
+			reason: "Its calibration is due on 2026-10-28.",
+			due: { date: "2026-10-28", confirmed: true },
+		});
+		expect(about.find((a) => a.title.startsWith("Training: Sam"))).toMatchObject({
+			reason: "It lapses on 2026-11-01.",
+			due: { date: "2026-11-01", confirmed: true },
+		});
+		expect(report.actions.some((a) => a.title.includes(fine.code))).toBe(false);
+		expect(report.unavailable.map((item) => item.area)).not.toContain("Equipment and training");
+		expect(report.coverage.find((row) => row.source === "Equipment")?.records).toBe(3);
+		expect(report.coverage.find((row) => row.source === "Training records")?.records).toBe(2);
+
+		// Verified, the first record is no longer waiting.
+		await verifyTraining(w.sql, owner, waiting.id);
+		const next = reportOf((await w.generate({ again: true, actor: staff })).report);
+		expect(next.actions.some((a) => a.title.startsWith("Verify training"))).toBe(false);
 	});
 });

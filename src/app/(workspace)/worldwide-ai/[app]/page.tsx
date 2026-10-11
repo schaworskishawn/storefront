@@ -93,6 +93,29 @@ export default async function AreaPage({ params }: Props) {
 						</div>
 					</Card>
 				)}
+				{area.id === "manufacturing" && (
+					<Card title="Equipment, cleaning and training">
+						<p className="wai-help" style={{ marginTop: 0 }}>
+							What there is to make and measure with, whether each piece may be used today, the cleaning and
+							line clearances people recorded, and who holds which training. Batches, packaging runs and their
+							records are in the Lab.
+						</p>
+						<div className="wai-row" style={{ gap: 12, flexWrap: "wrap" }}>
+							<Link href={`${WORKSPACE_PATH}/manufacturing/equipment`} className="wai-btn wai-btn--primary">
+								Equipment and cleaning
+							</Link>
+							<Link href={`${WORKSPACE_PATH}/manufacturing/training`} className="wai-btn">
+								Training
+							</Link>
+							<Link href={`${WORKSPACE_PATH}/lab/batches`} className="wai-btn">
+								Batches
+							</Link>
+							<Link href={`${WORKSPACE_PATH}/lab/finished`} className="wai-btn">
+								Finished liquids
+							</Link>
+						</div>
+					</Card>
+				)}
 				{area.id === "quality" && (
 					<Card title="Specifications, results and deviations">
 						<p className="wai-help" style={{ marginTop: 0 }}>

@@ -6,6 +6,7 @@ import type { OperatorActor } from "../types";
 import type { Sql } from "./sql";
 import { addRecipeVersion, approveRecipeVersion, createRecipe, planBatch } from "../lab/batches";
 import { createIngredient, createLot, postMovement } from "../lab/inventory";
+import { addEquipment, recordCalibration } from "../lab/equipment";
 import { addSpecification, approveSpecification } from "../lab/quality";
 
 /**
@@ -271,4 +272,31 @@ async function seedDemoLab(sql: Sql, now: Date): Promise<void> {
 	});
 	await approveSpecification(sql, DEMO_OWNER, specification.id);
 	await planBatch(sql, DEMO_OWNER, { recipeVersionId: version.id, batchMl: "1000" }, today);
+
+	// One piece of equipment that may be used, and one that may not because nothing says it was ever calibrated.
+	const scale = await addEquipment(sql, DEMO_OWNER, {
+		code: "DEMO-SC-1",
+		name: `${DEMO_PREFIX} Bench scale`,
+		kind: "scale",
+		location: "Mixing bench",
+		calibrationIntervalDays: "180",
+	});
+	await recordCalibration(
+		sql,
+		DEMO_OWNER,
+		{
+			equipmentId: scale.id,
+			performedOn: today,
+			result: "pass",
+			certificate: "DEMO-CERT-1 (fictional)",
+			performedBy: "A fictional service company",
+		},
+		today,
+	);
+	await addEquipment(sql, DEMO_OWNER, {
+		code: "DEMO-SC-2",
+		name: `${DEMO_PREFIX} Pocket scale`,
+		kind: "scale",
+		calibrationIntervalDays: "90",
+	});
 }

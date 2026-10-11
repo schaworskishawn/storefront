@@ -187,6 +187,24 @@ With these records in place, a release also checks that no deviation is open aga
 
 None of this is a laboratory finding of the workspace's own. Meeting a specification is not a statement that a product is safe or that it meets any regulation.
 
+## Equipment, cleaning and training
+
+These are under **Manufacturing**. They are records people type in, with the evidence they name. Nothing here reads an instrument, controls a machine, or shows that a cleaning was physically done.
+
+**Equipment** has a code, a kind, and how often it has to be calibrated (or that it doesn't). A **calibration** is recorded as it was carried out, with the certificate number or the reference standard used, and is never changed. From those records the workspace works out, each time it is asked, whether a piece of equipment may be used today:
+
+- Out of service, failed its last calibration, overdue, or needing a calibration that isn't on record: it **can't be recorded against a batch**. A calibration is never assumed, and an interval is never suggested.
+- A **failed calibration** takes the equipment out of service and, in the same step, **puts on hold every batch recorded against it since its last passing calibration**. Nothing says when it went wrong, so the workspace doesn't guess a shorter window. The owner looks at each batch and lifts its hold with a reason.
+- Anyone can take equipment out of service. Only the owner returns it, with a reason, and not while its last calibration is a failure. A passing calibration doesn't put it back by itself.
+
+Which equipment a batch was made or measured with is recorded on the batch's page.
+
+A **cleaning** or **line clearance** names what was cleaned, the procedure it was done under, and what was done and checked. It can be verified by a second person; whoever recorded it can't verify their own.
+
+A **training record** says who completed what, when, until when it is valid, and where the evidence is kept. It counts once the owner has verified it, and only while it is in date. It is not a personnel file and not proof of competence.
+
+The owner can **require training for a step**: recording a batch as made, or recording a packaging run. From then on that step is refused to anyone without a verified, in-date record of their own for it, before anything is touched, and the refusal is in the audit log. It applies to the owner too, so verify your own record before requiring it. A record made for someone by name only is kept but can't satisfy a requirement, because nothing ties it to a sign-in. With nothing required, nothing is refused.
+
 ## The Today checklist
 
 The checklist is for things a person has to do. An item is added by hand, on Today or the checklist page, or put there from a line of a daily report with **Put on the checklist**. The same line tracked twice is one item.
@@ -204,7 +222,7 @@ An item can be:
 
 These are steps for the owner. Nothing here is applied automatically, and none of it has been done yet.
 
-1. **Database.** Create a Supabase project. Run the nine files in `supabase/migrations/` in name order, with `supabase db push` or by pasting each into the SQL editor. The code expects the schema the newest file leaves; if the database is behind, the database health check says which version it is at and which the code needs. Row-level security is switched on for every table with no policies, so only the server's own connection can read them. Set `POSTGRES_URL` to the connection string.
+1. **Database.** Create a Supabase project. Run the ten files in `supabase/migrations/` in name order, with `supabase db push` or by pasting each into the SQL editor. The code expects the schema the newest file leaves; if the database is behind, the database health check says which version it is at and which the code needs. Row-level security is switched on for every table with no policies, so only the server's own connection can read them. Set `POSTGRES_URL` to the connection string.
 2. **File storage.** Set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`. Create a private bucket named `worldwide-ai` (or name your own in `WORLDWIDE_AI_BUCKET`). It must not be public. The service key stays on the server and is never sent to a browser.
 3. **Who may enter.** Set `WORLDWIDE_AI_OWNER_EMAILS` and, if you want, `WORLDWIDE_AI_STAFF_EMAILS`. Each address must belong to a Saleor staff account.
 4. **Model.** Set `ANTHROPIC_API_KEY`. Without it the 31 code-only functions still work.
@@ -301,6 +319,7 @@ Checked on a developer machine:
 - The unit and workflow tests (`pnpm run test:run`), which run against an in-process Postgres with the real migrations.
 - Every code-only function on its sample and on cases written for its rules, including exact-decimal arithmetic.
 - Every model-written function with a stand-in model: the format, the citation rules, and that a reply breaking the rules stores nothing.
+- Equipment and training: equipment refused to a batch when it is out of service, failed, overdue or never calibrated; a failed calibration holding the batches measured since the last pass; a cleaning that only a second person can verify; and a required training refusing a step to a person without it, the owner included.
 - Quality records: a specification that guides nothing until approved, a sample that takes its liquid from the bulk once, results that count only when verified and are corrected by a new result, comparison with the specification in exact decimals without converting a unit, a hold placed when a verified result is outside its limit, and a deviation that can't close before its actions are verified to have worked.
 - Finished liquid: bulk drawn down without going negative, a packaging run recorded all or nothing, holds, and a release that is rechecked at the moment it is made and refused when a record fails.
 - The checklist: adding, giving, putting off with a reason, closing with a note, one item per report line, and that closing an item leaves its task and result untouched.
@@ -341,7 +360,8 @@ The larger plan describes much more than this. These parts have no working code.
 | Recipes and batch records                                                                                      | Built and tested locally: versioned recipes the owner approves, batches that reserve and consume lots through the ledger, measured yield. Not used in the preview beyond a walkthrough.                                              |
 | Finished liquid, packaging runs, holds and the release decision                                                | Built and tested locally. Release is the owner's, rechecked when it is made, and changes nothing in the store.                                                                                                                       |
 | Specifications, samples, laboratory results, deviations and corrective actions                                 | Built and tested locally. A release checks them for itself. Results are typed in by a person from the report; the report file itself isn't stored.                                                                                   |
-| Label approvals, change control, calibration, cleaning and training as records                                 | Not built. The owner confirms the labels when releasing a batch; the rest isn't claimed.                                                                                                                                             |
+| Equipment and calibration, cleaning and line clearance, training with requirements the owner sets              | Built and tested locally. They gate recording equipment against a batch, and making and packaging a batch.                                                                                                                           |
+| Label approvals, change control, stability schedules, supplier qualification, production scheduling            | Not built. The owner confirms the labels when releasing a batch; the rest isn't claimed.                                                                                                                                             |
 | Manufacturing, quality and compliance record models with software gates                                        | Not built. The agents review records you supply and never release, approve or certify.                                                                                                                                               |
 | RFID and NFC tag registry, live scan ingestion, public authenticity page                                       | Not built. Link reconciles scan exports you supply.                                                                                                                                                                                  |
 | Product Content Studio: Saleor product picker, images, per-field approval                                      | Not built beyond text drafts from details you enter. No image is ever produced.                                                                                                                                                      |
