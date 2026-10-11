@@ -20,6 +20,7 @@ import { addEquipment, recordCalibration } from "../lab/equipment";
 import { RELEASE_CONFIRMATIONS, decideRelease, placeHold } from "../lab/finished";
 import { addCorrectiveAction, enterResult, openDeviation, verifyResult } from "../lab/quality";
 import { recordTraining, verifyTraining } from "../lab/training";
+import { recordScan, registerTags, resolveException } from "../rfid/registry";
 import { createIngredient, createLot, postMovement } from "../lab/inventory";
 import { personalScopeOf } from "../tasks/repo";
 import { freshDb, owner, staff, system, workflowDeps } from "../testing.test-util";
@@ -821,5 +822,52 @@ describe("a report on a workspace with equipment and training on record", () => 
 		await verifyTraining(w.sql, owner, waiting.id);
 		const next = reportOf((await w.generate({ again: true, actor: staff })).report);
 		expect(next.actions.some((a) => a.title.startsWith("Verify training"))).toBe(false);
+	});
+});
+
+describe("a report on a workspace with tags on record", () => {
+	it("raises a scan the registry can't account for, once, until a person resolves it", async () => {
+		const w = await open("2026-10-21T13:00:00Z");
+		const [known] = await registerTags(w.sql, staff, {
+			technology: "nfc",
+			security: "plain",
+			uids: "04A22BC19D3F80\n04A22BC19D3F81",
+		});
+		const at = new Date("2026-10-21T12:00:00Z");
+		const scan = (uid: string, eventId: string) =>
+			recordScan(
+				w.sql,
+				staff,
+				{ eventId, technology: "nfc", uid, station: "Bench reader", workflow: "lookup", source: "simulated" },
+				at,
+			);
+		// A registered tag read twice and a stranger read twice: one exception, for the stranger.
+		await scan(known.uid, "r:1");
+		await scan(known.uid, "r:2");
+		const first = await scan("04FFFFFFFFFF01", "r:3");
+		await scan("04FFFFFFFFFF01", "r:4");
+
+		const report = reportOf((await w.generate()).report);
+		const about = report.actions.filter((a) => a.title.includes("04FFFFFFFFFF01"));
+		expect(about).toMatchObject([
+			{
+				title: "Tag not in the registry: 04FFFFFFFFFF01",
+				responsible: "A person in the warehouse",
+				priority: "normal",
+				reason:
+					"Read at Bench reader. No tag with this identifier is registered. Seen 2 times. A scan is an observation: it doesn't show whose the tag is or that anything is genuine.",
+				links: [{ label: "Scans and exceptions", href: "/worldwide-ai/rfid/scans" }],
+			},
+		]);
+		expect(report.actions.some((a) => a.title.includes(known.uid))).toBe(false);
+		expect(report.coverage.find((row) => row.source === "Registered tags")?.records).toBe(2);
+		expect(report.coverage.find((row) => row.source === "Tags in use attached to nothing")?.records).toBe(2);
+
+		await resolveException(w.sql, staff, {
+			exceptionId: first.exception?.id ?? "",
+			resolution: "A visitor's transit card.",
+		});
+		const next = reportOf((await w.generate({ again: true, actor: staff })).report);
+		expect(next.actions.some((a) => a.title.includes("04FFFFFFFFFF01"))).toBe(false);
 	});
 });

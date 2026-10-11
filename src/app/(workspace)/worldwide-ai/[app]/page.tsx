@@ -93,6 +93,23 @@ export default async function AreaPage({ params }: Props) {
 						</div>
 					</Card>
 				)}
+				{area.id === "rfid" && (
+					<Card title="The tag registry">
+						<p className="wai-help" style={{ marginTop: 0 }}>
+							Every tag registered, what each is attached to and was attached to before, and scans kept as
+							observations. No reader is connected: scans are typed in, or reconciled from a reader’s export
+							by Link below.
+						</p>
+						<div className="wai-row" style={{ gap: 12, flexWrap: "wrap" }}>
+							<Link href={`${WORKSPACE_PATH}/rfid/tags`} className="wai-btn wai-btn--primary">
+								Tags
+							</Link>
+							<Link href={`${WORKSPACE_PATH}/rfid/scans`} className="wai-btn">
+								Scans and exceptions
+							</Link>
+						</div>
+					</Card>
+				)}
 				{area.id === "manufacturing" && (
 					<Card title="Equipment, cleaning and training">
 						<p className="wai-help" style={{ marginTop: 0 }}>

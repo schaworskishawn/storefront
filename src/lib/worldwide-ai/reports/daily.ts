@@ -12,6 +12,7 @@ import { listFinished } from "../lab/finished";
 import { inventoryFindings, listInventory } from "../lab/inventory";
 import { SEVERITIES, listDeviations, listPendingActions, listUnverifiedResults } from "../lab/quality";
 import { listTraining, trainingStanding } from "../lab/training";
+import { EXCEPTION_LABELS, listExceptions, tagCounts } from "../rfid/registry";
 import { listProposals, listReleases } from "../skills/store";
 import { countStandings, loadSkillRows } from "../skills/standing";
 import { formatOpsDate, opsDayKey } from "../time";
@@ -163,6 +164,8 @@ export async function buildDailyReport(
 		pendingActions,
 		equipment,
 		training,
+		tagExceptions,
+		tags,
 	] = await Promise.all([
 		sql.query(
 			`select ${TASK_COLUMNS} from wai_tasks t where ${BUSINESS} and t.state = 'completed'
@@ -214,6 +217,8 @@ export async function buildDailyReport(
 		listPendingActions(sql),
 		listEquipment(sql, day),
 		listTraining(sql),
+		listExceptions(sql),
+		tagCounts(sql),
 	]);
 
 	// A finding raised by a demonstration run, or by one person's own task, is not business news.
@@ -600,6 +605,25 @@ export async function buildDailyReport(
 		});
 	}
 
+	// ---- Tag scans the registry can't account for ---------------------------------------------------------------
+	for (const exception of tagExceptions)
+		actions.push({
+			title: `${EXCEPTION_LABELS[exception.kind]}: ${exception.uid}`,
+			responsible: "A person in the warehouse",
+			priority: exception.kind === "revoked_seen" ? "high" : "normal",
+			reason: `${exception.detail} Seen ${exception.seen} time${exception.seen === 1 ? "" : "s"}. A scan is an observation: it doesn't show whose the tag is or that anything is genuine.`,
+			nextSteps: [
+				"Find what was read.",
+				"Register the tag, or leave it out if it isn't yours.",
+				"Resolve the exception, saying what it turned out to be.",
+			],
+			due: null,
+			links: [{ label: "Scans and exceptions", href: `${WORKSPACE_PATH}/rfid/scans` }],
+			sources: [source("Open tag exceptions")],
+			expectedResult: "The exception is resolved with what it turned out to be.",
+			dependsOn: [],
+		});
+
 	// ---- Services ----------------------------------------------------------------------------------------
 	const statuses = configStatus(config, deps.env ?? process.env);
 	const integrations = statuses
@@ -810,6 +834,8 @@ export async function buildDailyReport(
 			{ source: "Open deviations", records: deviations.length, asOf: end },
 			{ source: "Equipment", records: equipment.length, asOf: end },
 			{ source: "Training records", records: training.length, asOf: end },
+			{ source: "Registered tags", records: tags.total, asOf: end },
+			{ source: "Tags in use attached to nothing", records: tags.unassigned, asOf: end },
 		],
 	};
 	if (input.kind === "evening") report.tomorrow = actions.slice(0, 3).map((action) => action.title);

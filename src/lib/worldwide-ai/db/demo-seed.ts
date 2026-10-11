@@ -8,6 +8,7 @@ import { addRecipeVersion, approveRecipeVersion, createRecipe, planBatch } from 
 import { createIngredient, createLot, postMovement } from "../lab/inventory";
 import { addEquipment, recordCalibration } from "../lab/equipment";
 import { addSpecification, approveSpecification } from "../lab/quality";
+import { assignTag, recordScan, registerTags } from "../rfid/registry";
 
 /**
  * Sample data for the local demonstration store (WORLDWIDE_AI_STORE=demo). Everything here is made up, every title starts
@@ -299,4 +300,32 @@ async function seedDemoLab(sql: Sql, now: Date): Promise<void> {
 		kind: "scale",
 		calibrationIntervalDays: "90",
 	});
+
+	// Made-up tags. One is on the fictional scale, one is on nothing, and a simulated scan read one nobody registered.
+	const [onScale] = await registerTags(sql, DEMO_OWNER, {
+		technology: "nfc",
+		security: "plain",
+		uids: "04DE3000000001\n04DE3000000002",
+		sourceRef: "A fictional roll of tags",
+		note: `${DEMO_PREFIX} Not a real tag.`,
+	});
+	await assignTag(sql, DEMO_OWNER, {
+		tagId: onScale.id,
+		subjectKind: "equipment",
+		subjectRef: `${DEMO_PREFIX} Bench scale`,
+		equipmentId: scale.id,
+	});
+	await recordScan(
+		sql,
+		DEMO_OWNER,
+		{
+			eventId: "demo-scan-1",
+			technology: "nfc",
+			uid: "04DE3000000099",
+			station: `${DEMO_PREFIX} Bench reader`,
+			workflow: "lookup",
+			source: "simulated",
+		},
+		new Date(`${today}T12:00:00Z`),
+	);
 }

@@ -64,6 +64,17 @@ import {
 	verifyTraining,
 } from "../lab/training";
 import { generateDailyReport } from "../reports/daily";
+import {
+	EXCEPTION_LABELS,
+	SUBJECT_KINDS,
+	assignTag,
+	endAssignment,
+	recordScan,
+	registerTags,
+	resolveException,
+	setTagStatus,
+	verifyTag,
+} from "../rfid/registry";
 import { SKILLS, SKILL_BY_ID } from "../skills/catalog";
 import { evaluateSkills } from "../skills/evaluate";
 import {
@@ -1478,5 +1489,114 @@ export async function manufacturingAction(_previous: ActionState, form: FormData
 	}
 	refresh();
 	if (destination) redirect(destination);
+	return { ok: true, message };
+}
+
+// ---- RFID and NFC: the tag registry, scans and exceptions -----------------------------------------------
+
+/**
+ * Registering tags, saying what each is attached to, retiring or revoking one, recording a scan, and resolving an
+ * exception. Putting a retired or revoked tag back in use is the owner's. A scan recorded here is an observation only: it
+ * moves no stock and nothing is sent to a reader or to the store.
+ */
+export async function rfidAction(_previous: ActionState, form: FormData): Promise<ActionState> {
+	const workspace = await getWorkspace();
+	const { sql } = workspace.runtime;
+	const intent = text(form, "intent");
+	const values = Object.fromEntries(
+		[...form.entries()].flatMap(([name, value]) =>
+			typeof value === "string" && name !== "intent" ? [[name, value]] : [],
+		),
+	);
+	let message = "Recorded.";
+	try {
+		throttle(workspace);
+		switch (intent) {
+			case "tag.register": {
+				const tags = await registerTags(sql, workspace.actor, {
+					technology: text(form, "technology"),
+					security: text(form, "security"),
+					uids: text(form, "uids"),
+					sourceRef: text(form, "sourceRef"),
+					note: text(form, "note"),
+				});
+				message = `${tags.length} tag${tags.length === 1 ? "" : "s"} registered. ${tags.length === 1 ? "It is" : "They are"} attached to nothing yet.`;
+				break;
+			}
+			case "tag.verify":
+				await verifyTag(sql, workspace.actor, text(form, "tagId"));
+				message = "Confirmed: the identifier on record is the one the tag reports.";
+				break;
+			case "tag.assign": {
+				const assignment = await assignTag(sql, workspace.actor, {
+					tagId: text(form, "tagId"),
+					subjectKind: text(form, "subjectKind"),
+					subjectRef: text(form, "subjectRef"),
+					sku: text(form, "sku"),
+					lot: text(form, "lot"),
+					serial: text(form, "serial"),
+					parentUid: text(form, "parentUid"),
+					equipmentId: text(form, "equipmentId"),
+					packagingRunId: text(form, "packagingRunId"),
+					unitsDeclared: text(form, "unitsDeclared"),
+					unitsSource: text(form, "unitsSource"),
+				});
+				message = `Attached to ${SUBJECT_KINDS[assignment.subjectKind].toLowerCase()} "${assignment.subjectRef}".`;
+				break;
+			}
+			case "tag.unassign":
+				await endAssignment(sql, workspace.actor, { tagId: text(form, "tagId"), reason: text(form, "note") });
+				message = "Taken off. What it was attached to is kept in its history.";
+				break;
+			case "tag.status": {
+				const tag = await setTagStatus(sql, workspace.actor, {
+					tagId: text(form, "tagId"),
+					status: text(form, "status"),
+					reason: text(form, "note"),
+				});
+				message =
+					tag.status === "active"
+						? "Back in use."
+						: `The tag is ${tag.status}. A scan of it from now on raises an exception.`;
+				break;
+			}
+			case "scan.record": {
+				const outcome = await recordScan(
+					sql,
+					workspace.actor,
+					{
+						eventId: text(form, "eventId"),
+						technology: text(form, "technology"),
+						uid: text(form, "uid"),
+						station: text(form, "station"),
+						workflow: text(form, "workflow"),
+						source: text(form, "source"),
+						evidence: text(form, "evidence"),
+					},
+					workspace.runtime.now(),
+				);
+				message = !outcome.recorded
+					? "That read was already recorded. Nothing was added."
+					: outcome.exception
+						? `Recorded as an observation. ${EXCEPTION_LABELS[outcome.exception.kind]}: an exception is open for a person to resolve.`
+						: outcome.assignment
+							? `Recorded as an observation. The tag is attached to ${SUBJECT_KINDS[outcome.assignment.subjectKind].toLowerCase()} "${outcome.assignment.subjectRef}". No stock was moved.`
+							: "Recorded as an observation. The tag is registered and attached to nothing. No stock was moved.";
+				break;
+			}
+			case "exception.resolve":
+				await resolveException(sql, workspace.actor, {
+					exceptionId: text(form, "exceptionId"),
+					resolution: text(form, "note"),
+				});
+				message = "Resolved, with what it turned out to be kept beside it.";
+				break;
+			default:
+				throw new WorkflowError("invalid", "That isn't something that can be done here.");
+		}
+	} catch (error) {
+		return describeFailure(error, values);
+	}
+	refresh();
 	return { ok: true, message };
 }

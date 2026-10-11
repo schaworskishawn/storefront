@@ -172,11 +172,16 @@ export const AREAS: Partial<Record<AppId, AreaDefinition>> = {
 		id: "rfid",
 		lead: "Reconcile a scan session against its manifest: repeated reads count once, cartons and their units are never both counted, and unknown tags become exceptions.",
 		agents: ["link", "stock", "return", "check"],
+		also: [
+			"The tag registry: UHF RFID and NFC tags registered under the identifier they report, with what each can do, where it came from, and whether a person has confirmed its identifier.",
+			"What a tag is attached to, one thing at a time, with its history: a product unit, carton, case, container, location, equipment or tote, with SKU, lot and serial, and the tagged container it is inside. A carton's quantity comes from a named manifest, never from the tag.",
+			"Scans kept as observations: the same read arriving twice counts once, and a tag that isn't registered, or was revoked or retired, raises one exception for a person to resolve.",
+		],
 		notBuilt: [
-			"The tag registry and tag-to-product associations.",
-			"An authenticated scan-ingestion endpoint for live readers. No reader is connected, so Link works from exports you supply.",
-			"The public NFC authenticity page and cryptographic tag verification.",
-			"Receiving transactions, staff badges, equipment and tote tracking.",
+			"An authenticated scan-ingestion endpoint for live readers. No reader is connected: scans are typed in one at a time, and Link reconciles a reader's export against the manifest you supply, not yet against the registry.",
+			"The public NFC authenticity page and cryptographic tag verification. A tag is recorded as supporting it; nothing here checks it.",
+			"Receiving transactions that move stock from a confirmed scan session, and any change to stock in Saleor.",
+			"Staff badges, tote custody and expected-return dates, and recall tracing from a tag.",
 		],
 	},
 	content: {
