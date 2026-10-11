@@ -7,12 +7,17 @@ import { PRIVATE_HEADERS, apiJson, authorizeApi } from "@/lib/worldwide-ai/web/a
  * Serves one private file (an inspection screenshot, an image attached to a task) to a signed-in owner or staff member.
  * Only files this application registered are served, only for a task the person may see, and only if the stored bytes still
  * match the checksum recorded when they were stored. Storage itself is never exposed to the browser.
+ *
+ * The file is named in the query string, not the path, on purpose: the site gives every address ending in ".png" a long
+ * public cache lifetime (see next.config.js), which must never apply to a private file.
  */
-export async function GET(_request: Request, { params }: { params: Promise<{ path: string[] }> }) {
+export async function GET(request: Request) {
 	const authorized = await authorizeApi();
 	if (!authorized.ok) return authorized.response;
 	const { runtime, viewer } = authorized.operator;
-	const path = (await params).path.join("/");
+	const path = new URL(request.url).searchParams.get("path") ?? "";
+	if (!/^[A-Za-z0-9._\-/]{1,300}$/.test(path) || path.includes(".."))
+		return apiJson({ error: "Not found." }, 404);
 
 	const { rows } = await runtime.sql.query<{ sha256: string; mime: string | null; task_id: string | null }>(
 		`select sha256, mime, task_id from wai_files where path = $1 and kind in ('evidence_screenshot', 'task_upload')`,

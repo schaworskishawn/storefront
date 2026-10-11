@@ -58,28 +58,31 @@ export function readConfig(env: Env = process.env): WorldwideAiConfig {
 			: databaseUrl
 				? { mode: "postgres", url: databaseUrl }
 				: { mode: "none", url: null },
-		storage:
-			supabaseUrl && serviceKey
+		// The demonstration store keeps its files in a local folder even when real Supabase settings are present, so that
+		// fictional records can never be written into the real bucket.
+		storage: demo
+			? { mode: "demo", url: null, serviceKey: null, bucket: DEFAULT_BUCKET }
+			: supabaseUrl && serviceKey
 				? {
 						mode: "supabase",
 						url: supabaseUrl,
 						serviceKey,
 						bucket: clean(env.WORLDWIDE_AI_BUCKET) ?? DEFAULT_BUCKET,
 					}
-				: demo
-					? { mode: "demo", url: null, serviceKey: null, bucket: DEFAULT_BUCKET }
-					: {
-							mode: "none",
-							url: null,
-							serviceKey: null,
-							bucket: clean(env.WORLDWIDE_AI_BUCKET) ?? DEFAULT_BUCKET,
-						},
+				: {
+						mode: "none",
+						url: null,
+						serviceKey: null,
+						bucket: clean(env.WORLDWIDE_AI_BUCKET) ?? DEFAULT_BUCKET,
+					},
 		model: {
 			provider: "anthropic",
 			modelId: clean(env.WORLDWIDE_AI_MODEL) ?? DEFAULT_MODEL_ID,
 			apiKeySet: Boolean(clean(env.ANTHROPIC_API_KEY)),
 		},
-		trigger: { secretSet: Boolean(clean(env.TRIGGER_SECRET_KEY)) },
+		// A background job runs in another process, which could not see the in-memory demonstration store: so in the
+		// demonstration store work always runs inside the web application.
+		trigger: { secretSet: !demo && Boolean(clean(env.TRIGGER_SECRET_KEY)) },
 		openclaw: {
 			adapterUrl: clean(env.OPENCLAW_ADAPTER_URL) ?? null,
 			secret: clean(env.OPENCLAW_ADAPTER_SECRET) ?? null,

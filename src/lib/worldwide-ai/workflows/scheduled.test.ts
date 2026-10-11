@@ -110,6 +110,17 @@ describe("integration status", () => {
 			note: expect.stringMatching(/demonstration/),
 		});
 		expect(readConfig({ WORLDWIDE_AI_STORE: "demo", NODE_ENV: "production" }).database.mode).toBe("none");
+		// Real credentials in the environment never pull the demonstration store's files or jobs out of the local machine.
+		const withRealKeys = readConfig({ ...fullEnv, WORLDWIDE_AI_STORE: "demo", NODE_ENV: "development" });
+		expect(withRealKeys.database).toEqual({ mode: "demo", url: null });
+		expect(withRealKeys.storage).toEqual({
+			mode: "demo",
+			url: null,
+			serviceKey: null,
+			bucket: "worldwide-ai",
+		});
+		expect(withRealKeys.trigger.secretSet).toBe(false);
+		expect(readConfig({ ...fullEnv, NODE_ENV: "development" }).storage.mode).toBe("supabase");
 	});
 });
 

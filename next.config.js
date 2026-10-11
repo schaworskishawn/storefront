@@ -98,6 +98,15 @@ const config = {
 					},
 				],
 			},
+			// The private Worldwide AI workspace and its API are never cached by anything shared. Listed after the asset rule
+			// above so that these win for any workspace address that happens to end in an image extension.
+			...["/worldwide-ai/:path*", "/api/worldwide-ai/:path*"].map((source) => ({
+				source,
+				headers: [
+					{ key: "Cache-Control", value: "private, no-store" },
+					{ key: "X-Robots-Tag", value: "noindex, nofollow" },
+				],
+			})),
 			{
 				// OG Image API - cache for 1 day
 				source: "/api/og",

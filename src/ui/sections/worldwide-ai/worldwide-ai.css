@@ -221,7 +221,7 @@
 		background: color-mix(in srgb, var(--wv-deep) 94%, transparent);
 		backdrop-filter: blur(12px);
 	}
-	.wai-mobile-nav a {
+	.wai-mobile-nav > a {
 		display: flex;
 		flex-direction: column;
 		align-items: center;
@@ -233,11 +233,11 @@
 		color: var(--wai-dim);
 		text-decoration: none;
 	}
-	.wai-mobile-nav a[aria-current="page"] {
+	.wai-mobile-nav > a[aria-current="page"] {
 		color: white;
 		background: color-mix(in srgb, var(--wv-cyan) 14%, transparent);
 	}
-	.wai-mobile-nav svg {
+	.wai-mobile-nav > a svg {
 		width: 20px;
 		height: 20px;
 		color: var(--wv-cyan-soft);

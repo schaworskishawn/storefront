@@ -211,7 +211,7 @@ export default async function TaskPage({ params }: Props) {
 											{/* eslint-disable-next-line @next/next/no-img-element */}
 											<img
 												className="wai-shot"
-												src={`/api/worldwide-ai/files/${file.path}`}
+												src={`/api/worldwide-ai/file?path=${encodeURIComponent(file.path)}`}
 												alt={`${file.viewport} screenshot of ${file.url}`}
 												loading="lazy"
 											/>

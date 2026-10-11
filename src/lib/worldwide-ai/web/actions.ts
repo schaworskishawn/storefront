@@ -8,6 +8,7 @@ import { parseLimitOverrides } from "../agents/limits";
 import { updateRoleSettings } from "../agents/settings";
 import { addVersion, approveVersion, createDocument, rejectVersion, retireDocument } from "../atlas/service";
 import { audit } from "../audit";
+import { listBackups } from "../backup/backup";
 import { runBackup, runRestoreDrill } from "../backup/drill";
 import { decideFinding } from "../findings";
 import { requestFunction, reviewProduct, type IncomingFile } from "../functions/pipeline";
@@ -496,6 +497,8 @@ export async function backupAction(_previous: ActionState, form: FormData): Prom
 			};
 		}
 		if (intent === "restore_check") {
+			if ((await listBackups(storage)).length === 0)
+				throw new WorkflowError("conflict", "There is no backup to check yet. Take one first.");
 			const result = await runRestoreDrill({
 				backup: storage,
 				sql,
