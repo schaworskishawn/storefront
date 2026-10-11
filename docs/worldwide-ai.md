@@ -105,11 +105,40 @@ How a task uses skills:
 
 After changing a skill, bump its version and run `pnpm worldwide-ai:skills` to regenerate the exported files.
 
+## Ingredient inventory
+
+The E-Liquid Lab keeps ingredients, the lots they arrive in, and a ledger of every movement of stock. Open it from **E-Liquid Lab**.
+
+How the balances work:
+
+| Balance       | What it means                                                                                 |
+| ------------- | --------------------------------------------------------------------------------------------- |
+| On hand       | What is physically in the lot, in the lot's own unit.                                         |
+| Reserved      | The part of that promised to a batch.                                                         |
+| In quarantine | All of what is on hand, while the lot is in quarantine.                                       |
+| Usable        | On hand less reserved. Nothing at all while the lot is in quarantine or past its expiry date. |
+
+The rules the ledger enforces:
+
+- **One unit per lot.** A lot is counted in mL, grams or pieces from the start, so volume and weight never become two balances. The other unit is shown only when the lot has a documented density with its source. One millilitre is never assumed to weigh one gram.
+- **Reserve, then use.** Stock is reserved for a batch before it is used, and recording use takes from what was reserved. More than is usable can't be reserved.
+- **Nothing is edited.** A movement is never changed or removed. A mistake is put right with a correction, which is another line and needs a reason.
+- **Only a person moves stock.** Agents prepare proposals. The database itself refuses a ledger line whose actor isn't a person, a negative balance, and a reservation larger than what is on hand.
+- **Once means once.** Each form carries its own key, so a form sent twice moves stock once. Two people taking the last of a lot at the same moment can't both succeed.
+- **The owner's alone:** corrections, and releasing a lot from quarantine. Staff can do everything else.
+- **Carriers are never assumed.** A nicotine base or flavour with no documented carrier is flagged, not treated as all PG.
+
+When a liquid is both measured and weighed on receipt, both are kept, and the receipt is flagged if they disagree with the documented density by more than 2%.
+
+The inventory feeds two other places. **Stock** can plan replenishment from the stored stock (daily demand and lead time aren't stored yet, so you add those). The **Daily Report** lists each ingredient with something to look at: low stock, an expired or expiring lot, a lot in quarantine, a missing density or carrier.
+
+These records are the workspace's own. Saleor stays the only authority for sellable stock, and nothing here is sent to it.
+
 ## Setting it up for real
 
 These are steps for the owner. Nothing here is applied automatically, and none of it has been done yet.
 
-1. **Database.** Create a Supabase project. Run the four files in `supabase/migrations/` in name order, with `supabase db push` or by pasting each into the SQL editor. The code expects the schema the newest file leaves; if the database is behind, the database health check says which version it is at and which the code needs. Row-level security is switched on for every table with no policies, so only the server's own connection can read them. Set `POSTGRES_URL` to the connection string.
+1. **Database.** Create a Supabase project. Run the five files in `supabase/migrations/` in name order, with `supabase db push` or by pasting each into the SQL editor. The code expects the schema the newest file leaves; if the database is behind, the database health check says which version it is at and which the code needs. Row-level security is switched on for every table with no policies, so only the server's own connection can read them. Set `POSTGRES_URL` to the connection string.
 2. **File storage.** Set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`. Create a private bucket named `worldwide-ai` (or name your own in `WORLDWIDE_AI_BUCKET`). It must not be public. The service key stays on the server and is never sent to a browser.
 3. **Who may enter.** Set `WORLDWIDE_AI_OWNER_EMAILS` and, if you want, `WORLDWIDE_AI_STAFF_EMAILS`. Each address must belong to a Saleor staff account.
 4. **Model.** Set `ANTHROPIC_API_KEY`. Without it the 31 code-only functions still work.
@@ -206,6 +235,7 @@ Checked on a developer machine:
 - The unit and workflow tests (`pnpm run test:run`), which run against an in-process Postgres with the real migrations.
 - Every code-only function on its sample and on cases written for its rules, including exact-decimal arithmetic.
 - Every model-written function with a stand-in model: the format, the citation rules, and that a reply breaking the rules stores nothing.
+- The ingredient ledger: every kind of movement and its limits, a request sent twice, two people taking the last of a lot, exact decimals, and the database refusing a negative balance or an agent as the actor.
 - Daily reports: one a day, a second attempt kept beside the first, no overlapping runs, a failed attempt saved with its reason, and nothing from a demonstration run or one person's own work in a shared report.
 - All 61 skills evaluated in an isolated database, and the approve, revoke, rollback and mid-run revocation paths, including a worked example of improving Relay's procedure from version 1 to version 2 and back.
 - The pages, in a browser, in the local preview at desktop and phone widths.
@@ -236,7 +266,8 @@ The larger plan describes much more than this. These parts have no working code.
 | Learning loop                                                                                                  | Partly. A person can record an improvement proposal and the owner decides it. Lessons are not drawn automatically from review decisions.                                                                                             |
 | Daily Reports                                                                                                  | Built and tested locally: saved morning report and evening recap from the records, action items with owners, steps, links and sources, carry-over by task id, history, one a day, no overlapping runs. The schedule is not deployed. |
 | Daily Report sections with no data behind them                                                                 | Not built. Shipments, inventory, purchasing, accounting, manufacturing, goals and engineering changes are listed in each report as unavailable, with the reason. Assigning, snoozing and manual actions on Today are not built.      |
-| Inventory ledger, stored recipes, batches and finished-liquid records                                          | Not built. The Lab functions and the calculator work on what you enter and keep no inventory.                                                                                                                                        |
+| Ingredient inventory                                                                                           | Built and tested locally: ingredients, lots, and an append-only ledger with reservations, quarantine and corrections. Used in the preview only.                                                                                      |
+| Stored recipes, batches and finished-liquid stock                                                              | Not built. The calculator works on what you enter, a batch is quoted as a reference on a movement, and finished and packaged stock is not tracked.                                                                                   |
 | Manufacturing, quality and compliance record models with software gates                                        | Not built. The agents review records you supply and never release, approve or certify.                                                                                                                                               |
 | RFID and NFC tag registry, live scan ingestion, public authenticity page                                       | Not built. Link reconciles scan exports you supply.                                                                                                                                                                                  |
 | Product Content Studio: Saleor product picker, images, per-field approval                                      | Not built beyond text drafts from details you enter. No image is ever produced.                                                                                                                                                      |
