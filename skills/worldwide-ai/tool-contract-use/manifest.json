@@ -1,0 +1,20 @@
+{
+	"id": "tool-contract-use",
+	"kind": "foundation",
+	"title": "Tool contract use",
+	"version": 1,
+	"agents": [
+		"nexus",
+		"watch",
+		"trace",
+		"guard",
+		"verify",
+		"restore"
+	],
+	"functions": [],
+	"foundations": [],
+	"tools": [],
+	"knowledge": [],
+	"suiteVersion": 1,
+	"sha256": "424e3dd2868c92fe1adca7340e69cfaab032979e65885b587bc186dbb6bf6e8e"
+}

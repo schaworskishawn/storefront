@@ -1,0 +1,30 @@
+{
+	"id": "reach-sales-preparation",
+	"kind": "role-pack",
+	"title": "Reach sales preparation",
+	"version": 1,
+	"agents": [
+		"reach"
+	],
+	"functions": [
+		"reach.wholesale-proposal"
+	],
+	"foundations": [
+		"context-and-memory-hygiene",
+		"claim-and-conflict-check",
+		"clear-business-writing",
+		"review-package-preparation"
+	],
+	"tools": [
+		"source.read_supplied",
+		"product.store",
+		"finding.record",
+		"atlas.search"
+	],
+	"knowledge": [
+		"commercial",
+		"product-info"
+	],
+	"suiteVersion": 1,
+	"sha256": "cb91ce9d933e2b2e935ba6f7af505534338daf27047025607d87cef6e88885a5"
+}

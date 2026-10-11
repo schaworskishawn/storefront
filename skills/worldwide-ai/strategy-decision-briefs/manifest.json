@@ -1,0 +1,30 @@
+{
+	"id": "strategy-decision-briefs",
+	"kind": "role-pack",
+	"title": "Strategy decision briefs",
+	"version": 1,
+	"agents": [
+		"strategy"
+	],
+	"functions": [
+		"strategy.option-brief"
+	],
+	"foundations": [
+		"context-and-memory-hygiene",
+		"claim-and-conflict-check",
+		"review-package-preparation",
+		"clear-business-writing"
+	],
+	"tools": [
+		"source.read_supplied",
+		"product.store",
+		"finding.record",
+		"atlas.search"
+	],
+	"knowledge": [
+		"general",
+		"commercial"
+	],
+	"suiteVersion": 1,
+	"sha256": "9c95a80ccc8473624bc4ed8b678c4a284bd14f86132435fdcd5eb0bb9cc75b4a"
+}

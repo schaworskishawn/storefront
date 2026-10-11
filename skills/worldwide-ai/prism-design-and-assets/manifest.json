@@ -1,0 +1,29 @@
+{
+	"id": "prism-design-and-assets",
+	"kind": "role-pack",
+	"title": "Prism design and assets",
+	"version": 1,
+	"agents": [
+		"prism"
+	],
+	"functions": [
+		"prism.design-review"
+	],
+	"foundations": [
+		"context-and-memory-hygiene",
+		"claim-and-conflict-check",
+		"review-package-preparation",
+		"clear-business-writing"
+	],
+	"tools": [
+		"source.read_supplied",
+		"product.store",
+		"finding.record",
+		"atlas.search"
+	],
+	"knowledge": [
+		"brand"
+	],
+	"suiteVersion": 1,
+	"sha256": "d11fd34b7109b9819991d0fa06fe69aae7e011a845cc374d42b5ddc58baaa896"
+}

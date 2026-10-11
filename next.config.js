@@ -23,6 +23,13 @@ const config = {
 	// See: https://nextjs.org/docs/app/getting-started/cache-components
 	cacheComponents: true,
 
+	// The Worldwide AI restore check and skill evaluations run the real migrations on a scratch database, so the server
+	// bundle for the workspace has to carry the migration files.
+	outputFileTracingIncludes: {
+		"/worldwide-ai": ["./supabase/migrations/*.sql"],
+		"/worldwide-ai/**": ["./supabase/migrations/*.sql"],
+	},
+
 	// Named cacheLife tiers for `"use cache"` — see src/lib/cache-life-profiles.ts
 	cacheLife: paperCacheLifeProfiles,
 

@@ -1,0 +1,29 @@
+{
+	"id": "link-scan-traceability",
+	"kind": "role-pack",
+	"title": "Link scan traceability",
+	"version": 1,
+	"agents": [
+		"link"
+	],
+	"functions": [
+		"link.scan-reconciliation"
+	],
+	"foundations": [
+		"structured-extraction",
+		"deterministic-calculation-check",
+		"document-and-table-production",
+		"outcome-and-performance-check"
+	],
+	"tools": [
+		"source.read_supplied",
+		"product.store",
+		"finding.record",
+		"atlas.search"
+	],
+	"knowledge": [
+		"product-info"
+	],
+	"suiteVersion": 1,
+	"sha256": "ad4e8345e339a29aaa4711e2d7b354aee95147a7a02e612a835b2b0676c0ba49"
+}

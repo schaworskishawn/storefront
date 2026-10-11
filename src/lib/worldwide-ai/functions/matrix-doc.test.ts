@@ -34,10 +34,13 @@ describe("the capability matrix document", () => {
 		}
 	});
 
-	it("never calls anything proven against live services, and says the role packs aren't built", () => {
+	it("never calls anything proven against live services, and names every agent's role pack", () => {
 		const text = renderCapabilityMatrix();
 		expect(text).not.toMatch(/production-ready|fully operational|all green/i);
-		expect(text.match(/\*\*Role pack:\*\* not built/g)).toHaveLength(49);
+		expect(text.match(/\*\*Role pack:\*\* `[a-z0-9-]+` version \d+, supported by /g)).toHaveLength(49);
+		expect(text).toContain(
+			"A pack guides work only after its exact version has been evaluated and the owner has approved it",
+		);
 		expect(text).toContain(
 			"none has been run against the live database, the live model or real business records",
 		);

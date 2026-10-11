@@ -7,6 +7,13 @@
  * `$n::jsonb` cast, dates are selected as text, counts are cast to int.
  */
 
+/**
+ * The schema version this code is written against: the number the newest file in supabase/migrations leaves in wai_meta.
+ * Bump it with every migration. The database health check compares the two, so code deployed ahead of its migration says
+ * exactly that instead of failing with a missing table.
+ */
+export const SCHEMA_VERSION = 3;
+
 export type Row = Record<string, unknown>;
 
 export type QueryResult<T extends Row = Row> = { rows: T[]; rowCount: number };

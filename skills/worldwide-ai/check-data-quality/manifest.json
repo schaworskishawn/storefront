@@ -1,0 +1,30 @@
+{
+	"id": "check-data-quality",
+	"kind": "role-pack",
+	"title": "Check data quality",
+	"version": 1,
+	"agents": [
+		"check"
+	],
+	"functions": [
+		"check.record-validation"
+	],
+	"foundations": [
+		"structured-extraction",
+		"deterministic-calculation-check",
+		"document-and-table-production",
+		"outcome-and-performance-check"
+	],
+	"tools": [
+		"source.read_supplied",
+		"product.store",
+		"finding.record",
+		"saleor.order.read",
+		"atlas.search"
+	],
+	"knowledge": [
+		"general"
+	],
+	"suiteVersion": 1,
+	"sha256": "d66311a8a1bded648dd2d5a7d68df88ef164cece1ce09d4e0e547222507f3579"
+}

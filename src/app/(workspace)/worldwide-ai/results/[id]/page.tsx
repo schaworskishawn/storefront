@@ -163,6 +163,22 @@ export default async function ResultPage({ params }: Props) {
 									>{`${product.functionId} v${product.functionVersion}`}</span>,
 								],
 								[
+									"Procedures followed",
+									product.skills.length ? (
+										<span key="s">
+											{product.skills.map((skill, index) => (
+												<span key={skill.skillId}>
+													{index > 0 && ", "}
+													<Link href={`${WORKSPACE_PATH}/skills/${skill.skillId}`}>{skill.title}</Link> v
+													{skill.version}
+												</span>
+											))}
+										</span>
+									) : (
+										"None approved for this function"
+									),
+								],
+								[
 									"Task",
 									<Link key="t" href={taskHref(task.id)}>
 										{task.id.slice(0, 8)}

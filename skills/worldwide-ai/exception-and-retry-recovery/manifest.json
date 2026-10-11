@@ -1,0 +1,19 @@
+{
+	"id": "exception-and-retry-recovery",
+	"kind": "foundation",
+	"title": "Exception and retry recovery",
+	"version": 1,
+	"agents": [
+		"nexus",
+		"patch",
+		"watch",
+		"verify",
+		"restore"
+	],
+	"functions": [],
+	"foundations": [],
+	"tools": [],
+	"knowledge": [],
+	"suiteVersion": 1,
+	"sha256": "8a641d15fa2b7e2cc76e7ec724f9db93890ff56b2b3131f00c05e28dfc871f4c"
+}

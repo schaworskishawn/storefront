@@ -1,0 +1,29 @@
+{
+	"id": "qualify-supplier-evidence",
+	"kind": "role-pack",
+	"title": "Qualify supplier evidence",
+	"version": 1,
+	"agents": [
+		"qualify"
+	],
+	"functions": [
+		"qualify.supplier-package"
+	],
+	"foundations": [
+		"structured-extraction",
+		"deterministic-calculation-check",
+		"review-package-preparation",
+		"approved-source-retrieval"
+	],
+	"tools": [
+		"source.read_supplied",
+		"product.store",
+		"finding.record",
+		"atlas.search"
+	],
+	"knowledge": [
+		"quality"
+	],
+	"suiteVersion": 1,
+	"sha256": "5104009b2893a1d232ffb95d7e3a6c5f2858ba77bab9234a9c47439d362de4b8"
+}

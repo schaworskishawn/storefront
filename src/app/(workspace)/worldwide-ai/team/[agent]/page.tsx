@@ -10,11 +10,14 @@ import { listProducts } from "@/lib/worldwide-ai/functions/products";
 import { requiredIntegrations } from "@/lib/worldwide-ai/functions/readiness";
 import { functionsOf } from "@/lib/worldwide-ai/functions/registry";
 import { INTEGRATIONS } from "@/lib/worldwide-ai/integrations/catalog";
+import { skillsOf } from "@/lib/worldwide-ai/skills/catalog";
+import { MAX_FOUNDATIONS_PER_STEP } from "@/lib/worldwide-ai/skills/resolver";
 import { listTasks } from "@/lib/worldwide-ai/tasks/repo";
 import { WORKSPACE_PATH, isRoleId } from "@/lib/worldwide-ai/types";
 import { roleSettingsAction } from "@/lib/worldwide-ai/web/actions";
 import { loadTeam } from "@/lib/worldwide-ai/web/queries";
 import { getWorkspace } from "@/lib/worldwide-ai/web/session";
+import { STANDING_LABELS, loadSkillRows } from "@/lib/worldwide-ai/web/skills";
 import { ButtonForm, FieldsForm } from "@/ui/sections/worldwide-ai/forms";
 import { FunctionForm } from "@/ui/sections/worldwide-ai/function-form";
 import { humanize } from "@/ui/sections/worldwide-ai/result-view";
@@ -54,12 +57,15 @@ export default async function AgentPage({ params, searchParams }: Props) {
 	if (!isRoleId(agent)) notFound();
 	const role = ROLE_BY_ID[agent];
 	const { sql, now } = workspace.runtime;
-	const [{ team }, settings, tasks, products] = await Promise.all([
+	const [{ team }, settings, tasks, products, skillRows] = await Promise.all([
 		loadTeam(workspace),
 		loadRoleSettings(sql, agent),
 		listTasks(sql, { ownerRole: agent, viewer: workspace.viewer, limit: 8 }),
 		listProducts(sql, { agentId: agent, viewer: workspace.viewer, limit: 8 }),
+		loadSkillRows(sql),
 	]);
+	// This agent's own role pack first, then the foundations that pack names, in the pack's order.
+	const skills = skillsOf(agent).flatMap((skill) => skillRows.filter((row) => row.skill.id === skill.id));
 	const readiness = team.agents.find((entry) => entry.role.id === agent);
 	if (!readiness) notFound();
 	const definitions = functionsOf(agent);
@@ -299,11 +305,33 @@ export default async function AgentPage({ params, searchParams }: Props) {
 						</details>
 					</Card>
 
-					<Card title="Skills and learning">
-						<Empty>
-							Not built yet. This agent has no approved skill package, no recorded lessons and no quality
-							scorecard. What it does is the function above, as written in code and covered by tests.
-						</Empty>
+					<Card title="Skills" aside={<Link href={`${WORKSPACE_PATH}/skills`}>All skills</Link>}>
+						<p className="wai-help" style={{ marginTop: 0 }}>
+							The written procedure this agent follows, and the shared foundations behind it. Being assigned a
+							skill is not the same as following it: a skill guides work only once its exact version is
+							approved, and at most {MAX_FOUNDATIONS_PER_STEP} foundations are loaded for a step.
+						</p>
+						<ul className="wai-list">
+							{skills.map((row) => (
+								<li key={row.skill.id}>
+									<span>
+										<Link href={`${WORKSPACE_PATH}/skills/${row.skill.id}`}>{row.skill.title}</Link>
+										<span className="wai-muted wai-small">
+											{" "}
+											· {row.skill.kind === "role-pack" ? "role pack" : "foundation"} · version{" "}
+											{row.active ? row.active.version : row.skill.version}
+											{row.usage.completed > 0 ? ` · followed ${row.usage.completed} times` : ""}
+										</span>
+									</span>
+									<Pill tone={row.active ? "good" : row.standing === "evaluated" ? "pink" : "plain"}>
+										{STANDING_LABELS[row.standing]}
+									</Pill>
+								</li>
+							))}
+						</ul>
+						<p className="wai-muted wai-small" style={{ marginBottom: 0 }}>
+							Not built yet: recorded lessons and a quality scorecard for each agent.
+						</p>
 					</Card>
 				</div>
 			</div>

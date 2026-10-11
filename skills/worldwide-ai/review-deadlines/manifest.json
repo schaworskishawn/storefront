@@ -1,0 +1,41 @@
+{
+	"id": "review-deadlines",
+	"kind": "role-pack",
+	"title": "Review deadlines",
+	"version": 1,
+	"agents": [
+		"review"
+	],
+	"functions": [
+		"review.document_scan",
+		"review.deadline-register"
+	],
+	"foundations": [
+		"structured-extraction",
+		"deterministic-calculation-check",
+		"document-and-table-production",
+		"approved-source-retrieval"
+	],
+	"tools": [
+		"source.read_supplied",
+		"product.store",
+		"finding.record",
+		"atlas.search",
+		"atlas.get_document",
+		"task.create"
+	],
+	"knowledge": [
+		"support-policy",
+		"shipping",
+		"returns",
+		"faq",
+		"accounting-policy",
+		"tax-rules",
+		"site-runbook",
+		"compliance",
+		"quality",
+		"general"
+	],
+	"suiteVersion": 1,
+	"sha256": "468f082aa5e45523a318f119beffb7a4e33a7444b01544cb576d786598eb44e7"
+}

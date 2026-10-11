@@ -1,0 +1,28 @@
+{
+	"id": "clear-business-writing",
+	"kind": "foundation",
+	"title": "Clear business writing",
+	"version": 1,
+	"agents": [
+		"relay",
+		"pulse",
+		"focus",
+		"strategy",
+		"post",
+		"talent",
+		"comet",
+		"signal",
+		"reach",
+		"script",
+		"assist",
+		"catalog",
+		"prism",
+		"motion"
+	],
+	"functions": [],
+	"foundations": [],
+	"tools": [],
+	"knowledge": [],
+	"suiteVersion": 1,
+	"sha256": "34cfb0145789127e6a796bbabb8464645bea688f02f031706423e17b8f9481b9"
+}

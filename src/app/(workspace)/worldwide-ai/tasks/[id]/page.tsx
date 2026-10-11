@@ -7,6 +7,8 @@ import { listFindings } from "@/lib/worldwide-ai/findings";
 import { getProductByTask } from "@/lib/worldwide-ai/functions/products";
 import { lookupFunction } from "@/lib/worldwide-ai/functions/registry";
 import { getRunForTask } from "@/lib/worldwide-ai/openclaw/runs";
+import { SKILL_BY_ID } from "@/lib/worldwide-ai/skills/catalog";
+import { listInvocations } from "@/lib/worldwide-ai/skills/store";
 import { getDraftByTask } from "@/lib/worldwide-ai/support/drafts";
 import { getTask, getTaskEvents, listTasks, scopeVisibleTo } from "@/lib/worldwide-ai/tasks/repo";
 import { isActive } from "@/lib/worldwide-ai/tasks/state-machine";
@@ -47,7 +49,7 @@ export default async function TaskPage({ params }: Props) {
 	const task = await getTask(sql, id);
 	// A task in someone else's personal scope doesn't exist as far as this person is concerned.
 	if (!task || !scopeVisibleTo(task.scope, workspace.viewer)) notFound();
-	const [events, usage, product, draft, run, findings, children] = await Promise.all([
+	const [events, usage, product, draft, run, findings, children, procedures] = await Promise.all([
 		getTaskEvents(sql, id),
 		usageForTask(sql, id),
 		getProductByTask(sql, id),
@@ -55,7 +57,12 @@ export default async function TaskPage({ params }: Props) {
 		task.kind === "patch.site_inspection" ? getRunForTask(sql, id) : null,
 		listFindings(sql, { taskId: id, limit: 50 }),
 		task.kind === "nexus.goal-plan" ? listTasks(sql, { parentTaskId: id, limit: 50, demo: "include" }) : [],
+		listInvocations(sql, id),
 	]);
+	const resolved = [...events].reverse().find((event) => event.kind === "skills_resolved");
+	const turnedAway = Array.isArray(resolved?.detail.rejected)
+		? (resolved.detail.rejected as Array<{ skillId: string; reason: string }>)
+		: [];
 	const role = ROLE_BY_ID[task.ownerRole];
 	const definition = lookupFunction(task.kind);
 	const planSteps = (
@@ -360,6 +367,57 @@ export default async function TaskPage({ params }: Props) {
 							))}
 							empty="No source is recorded yet."
 						/>
+					</Card>
+
+					<Card title="Procedures followed">
+						{procedures.length === 0 ? (
+							<Empty>
+								{resolved
+									? "None. No approved procedure applied, so this ran on the agent’s registry instructions."
+									: "None recorded for this task."}
+							</Empty>
+						) : (
+							<ul className="wai-list">
+								{procedures.map((item) => (
+									<li key={item.skillId}>
+										<span>
+											<Link href={`${WORKSPACE_PATH}/skills/${item.skillId}`}>
+												{SKILL_BY_ID.get(item.skillId)?.title ?? item.skillId}
+											</Link>
+											<span className="wai-muted wai-small">
+												{" "}
+												· version {item.version} · {item.role === "primary" ? "role pack" : "foundation"} ·{" "}
+												<span className="wai-mono">{item.contentSha256.slice(0, 12)}</span>
+											</span>
+										</span>
+										<Pill tone={item.stage === "completed" ? "good" : "plain"}>
+											{item.stage === "completed"
+												? "Completed"
+												: item.stage === "invoked"
+													? "Invoked, not completed"
+													: item.stage === "loaded"
+														? "Loaded, not completed"
+														: "Selected only"}
+										</Pill>
+									</li>
+								))}
+							</ul>
+						)}
+						{turnedAway.length > 0 && (
+							<details style={{ marginTop: 8 }}>
+								<summary className="wai-small">
+									{turnedAway.length} other{turnedAway.length === 1 ? " skill was" : " skills were"}{" "}
+									considered and not used
+								</summary>
+								<ul className="wai-bullets wai-small">
+									{turnedAway.map((item) => (
+										<li key={item.skillId}>
+											{SKILL_BY_ID.get(item.skillId)?.title ?? item.skillId}: {item.reason}
+										</li>
+									))}
+								</ul>
+							</details>
+						)}
 					</Card>
 
 					<Card title="Usage">

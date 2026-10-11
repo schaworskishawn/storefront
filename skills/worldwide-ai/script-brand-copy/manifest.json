@@ -1,0 +1,30 @@
+{
+	"id": "script-brand-copy",
+	"kind": "role-pack",
+	"title": "Script brand copy",
+	"version": 1,
+	"agents": [
+		"script"
+	],
+	"functions": [
+		"script.copy-draft"
+	],
+	"foundations": [
+		"context-and-memory-hygiene",
+		"clear-business-writing",
+		"claim-and-conflict-check",
+		"review-package-preparation"
+	],
+	"tools": [
+		"source.read_supplied",
+		"product.store",
+		"finding.record",
+		"atlas.search"
+	],
+	"knowledge": [
+		"brand",
+		"product-info"
+	],
+	"suiteVersion": 1,
+	"sha256": "fca82d6ab786b3c69a6f57fece7648472dedd624ea7d9f3368b0f6666173f8b2"
+}

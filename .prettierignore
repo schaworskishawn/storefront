@@ -2,3 +2,5 @@ pnpm-lock.yaml
 .next
 # Generated from the Worldwide AI registry (pnpm worldwide-ai:matrix); a test compares it byte for byte.
 docs/worldwide-ai/capability-matrix.md
+# Exported from the Worldwide AI skill catalog (pnpm worldwide-ai:skills); a test compares them byte for byte.
+skills/worldwide-ai/

@@ -1023,8 +1023,8 @@ describe("Restore: coverage against real backups", () => {
 			const first = await run("restore.coverage-review", { maxAgeHours: "25" }, { deps: { storage } });
 			expect(first.payload.backups).toMatchObject({
 				found: 1,
-				tablesCovered: 17,
-				tablesExpected: 17,
+				tablesCovered: 21,
+				tablesExpected: 21,
 				tablesMissing: [],
 			});
 			expect(first.payload.backups.newest).toMatchObject({ ageHours: 3 });

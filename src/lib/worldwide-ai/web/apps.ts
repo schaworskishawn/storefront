@@ -225,11 +225,15 @@ export const AREAS: Partial<Record<AppId, AreaDefinition>> = {
 		id: "improvement",
 		lead: "What the agents are measured on today: usage, verified outcomes and review decisions from the records. Insight analyzes a metric you define; Verify re-checks a finished task.",
 		agents: ["insight", "verify", "forge", "prism", "atlas", "care"],
+		also: [
+			"Skills: twelve shared foundations and a role pack for each agent, each evaluated in isolation and approved by the owner before it guides any work. Open Skills from any agent's page.",
+			"Improvement proposals: a person can record what should change in a procedure. A proposal changes nothing until a new version is evaluated and approved.",
+		],
 		notBuilt: [
 			"The business profile, goals with baselines, and metric snapshots.",
-			"The learning loop: review events, proposed lessons, evaluation against the current version, promotion and rollback.",
-			"The skills catalog: twelve shared foundations and a role pack per agent, with versions and evaluations.",
-			"Per-agent quality scorecards and the Learning and Skills tabs.",
+			"Lessons drawn automatically from review decisions, and comparison of a new skill version with the current one on real reviewed cases. Today a proposal is written by a person and a version is evaluated on fixed cases.",
+			"Evaluation of how well a model writes. The current evaluation checks the procedure, its permissions and the function behind it, not prose quality.",
+			"Per-agent quality scorecards.",
 		],
 	},
 };

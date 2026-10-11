@@ -1,0 +1,23 @@
+{
+	"id": "outcome-and-performance-check",
+	"kind": "foundation",
+	"title": "Outcome and performance check",
+	"version": 1,
+	"agents": [
+		"nexus",
+		"atlas",
+		"check",
+		"watch",
+		"verify",
+		"care",
+		"stock",
+		"restore",
+		"link"
+	],
+	"functions": [],
+	"foundations": [],
+	"tools": [],
+	"knowledge": [],
+	"suiteVersion": 1,
+	"sha256": "afe37cdc2e4c905b8ea03be2085d48e6317a10bf22942f2d288110e13f3329dc"
+}

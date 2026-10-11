@@ -1,0 +1,31 @@
+{
+	"id": "tally-tax-preparation",
+	"kind": "role-pack",
+	"title": "Tally tax preparation",
+	"version": 1,
+	"agents": [
+		"tally"
+	],
+	"functions": [
+		"tally.tax-workpaper"
+	],
+	"foundations": [
+		"deterministic-calculation-check",
+		"structured-extraction",
+		"review-package-preparation",
+		"document-and-table-production"
+	],
+	"tools": [
+		"source.read_supplied",
+		"product.store",
+		"finding.record",
+		"accounting.records.read",
+		"atlas.search"
+	],
+	"knowledge": [
+		"tax-rules",
+		"accounting-policy"
+	],
+	"suiteVersion": 1,
+	"sha256": "f6b39891bc7f1fd0a05a00ba1ce8661d69b43d94e9a0d8c9a61ae8585aed23e4"
+}

@@ -1,0 +1,34 @@
+{
+	"id": "patch-diagnostics",
+	"kind": "role-pack",
+	"title": "Patch diagnostics",
+	"version": 1,
+	"agents": [
+		"patch"
+	],
+	"functions": [
+		"patch.site_inspection",
+		"patch.issue-diagnosis"
+	],
+	"foundations": [
+		"structured-extraction",
+		"claim-and-conflict-check",
+		"review-package-preparation",
+		"exception-and-retry-recovery"
+	],
+	"tools": [
+		"source.read_supplied",
+		"product.store",
+		"finding.record",
+		"openclaw.inspect",
+		"openclaw.get_run",
+		"task.get",
+		"health.read",
+		"logs.read"
+	],
+	"knowledge": [
+		"site-runbook"
+	],
+	"suiteVersion": 1,
+	"sha256": "e18f5e2b01cce3f00482e742a82ddbc9f326922cea72563dc1362a642d4019b1"
+}

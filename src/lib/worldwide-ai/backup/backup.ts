@@ -30,6 +30,11 @@ export const BACKUP_TABLES = [
 	{ name: "wai_openclaw_runs", order: "created_at, id" },
 	{ name: "wai_files", order: "created_at, id" },
 	{ name: "wai_audit_log", order: "id" },
+	{ name: "wai_skill_evaluations", order: "ran_at, id" },
+	// An earlier release before the one that names it as its predecessor.
+	{ name: "wai_skill_releases", order: "approved_at, id" },
+	{ name: "wai_skill_invocations", order: "id" },
+	{ name: "wai_skill_proposals", order: "created_at, id" },
 ] as const;
 
 export type BackupTableName = (typeof BACKUP_TABLES)[number]["name"];

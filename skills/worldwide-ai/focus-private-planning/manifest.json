@@ -1,0 +1,25 @@
+{
+	"id": "focus-private-planning",
+	"kind": "role-pack",
+	"title": "Focus private planning",
+	"version": 1,
+	"agents": [
+		"focus"
+	],
+	"functions": [
+		"focus.personal-plan"
+	],
+	"foundations": [
+		"context-and-memory-hygiene",
+		"goal-intake",
+		"clear-business-writing",
+		"review-package-preparation"
+	],
+	"tools": [
+		"source.read_supplied",
+		"product.store"
+	],
+	"knowledge": [],
+	"suiteVersion": 1,
+	"sha256": "5698d60f5e5742e6a38144e74d25e05992c23d05f333e2b4f30f8cebe96ebbe0"
+}

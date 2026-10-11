@@ -1,0 +1,30 @@
+{
+	"id": "guard-security-review",
+	"kind": "role-pack",
+	"title": "Guard security review",
+	"version": 1,
+	"agents": [
+		"guard"
+	],
+	"functions": [
+		"guard.access-review"
+	],
+	"foundations": [
+		"structured-extraction",
+		"claim-and-conflict-check",
+		"review-package-preparation",
+		"tool-contract-use"
+	],
+	"tools": [
+		"source.read_supplied",
+		"product.store",
+		"finding.record",
+		"saleor.permissions.read",
+		"health.read"
+	],
+	"knowledge": [
+		"security"
+	],
+	"suiteVersion": 1,
+	"sha256": "e3198c797554cf5a69fb6ac612e982fd61d373aee528effd64671acce270de5a"
+}

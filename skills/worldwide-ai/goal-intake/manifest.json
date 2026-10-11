@@ -1,0 +1,18 @@
+{
+	"id": "goal-intake",
+	"kind": "foundation",
+	"title": "Goal intake",
+	"version": 1,
+	"agents": [
+		"nexus",
+		"focus",
+		"build",
+		"forge"
+	],
+	"functions": [],
+	"foundations": [],
+	"tools": [],
+	"knowledge": [],
+	"suiteVersion": 1,
+	"sha256": "0f71635b412b2eb8fc8d32c89931cfe1eac93a145e0befdab5868d2916b0b664"
+}

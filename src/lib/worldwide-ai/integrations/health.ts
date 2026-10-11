@@ -1,5 +1,5 @@
 import { saleorGraphqlUrl } from "@/lib/saleor-endpoint";
-import { iso, type Row, type Sql } from "../db/sql";
+import { SCHEMA_VERSION, iso, type Row, type Sql } from "../db/sql";
 import type { WorkflowDeps } from "../workflows/types";
 import { INTEGRATION_IDS, INTEGRATIONS, configStatus, type IntegrationId } from "./catalog";
 
@@ -139,6 +139,17 @@ export async function checkIntegrations(deps: HealthDeps): Promise<HealthResult[
 					id,
 					await time(async () => {
 						const { rows } = await sql.query(`select value from wai_meta where key = 'schema_version'`);
+						const found = rows[0] ? Number(rows[0].value) : null;
+						if (found !== null && found < SCHEMA_VERSION)
+							return {
+								status: "unhealthy",
+								detail: `Answering, but the database is at schema version ${found} and this version of the application needs ${SCHEMA_VERSION}. Run the newer files in supabase/migrations.`,
+							};
+						if (found !== null && found > SCHEMA_VERSION)
+							return {
+								status: "degraded",
+								detail: `Answering, but the database is at schema version ${found}, newer than this version of the application (${SCHEMA_VERSION}). Deploy the matching code.`,
+							};
 						return rows[0]
 							? { status: "healthy", detail: `Answering. Schema version ${rows[0].value as string}.` }
 							: {

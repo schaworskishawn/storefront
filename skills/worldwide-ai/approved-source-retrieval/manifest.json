@@ -1,0 +1,21 @@
+{
+	"id": "approved-source-retrieval",
+	"kind": "foundation",
+	"title": "Approved source retrieval",
+	"version": 1,
+	"agents": [
+		"relay",
+		"atlas",
+		"review",
+		"comply",
+		"return",
+		"scout",
+		"qualify"
+	],
+	"functions": [],
+	"foundations": [],
+	"tools": [],
+	"knowledge": [],
+	"suiteVersion": 1,
+	"sha256": "851fce0473b0b5a68b4a86c3737b5accc0b7c9dcbe875cb92c9a5cef9d2466df"
+}

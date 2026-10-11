@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createMigratedPglite } from "./pglite";
-import type { SqlClient } from "./sql";
+import { SCHEMA_VERSION, type SqlClient } from "./sql";
 
 let sql: SqlClient;
 
@@ -48,6 +48,10 @@ describe("the Worldwide AI schema", () => {
 			"wai_meta",
 			"wai_openclaw_runs",
 			"wai_reviews",
+			"wai_skill_evaluations",
+			"wai_skill_invocations",
+			"wai_skill_proposals",
+			"wai_skill_releases",
 			"wai_task_events",
 			"wai_tasks",
 			"wai_usage",
@@ -59,7 +63,7 @@ describe("the Worldwide AI schema", () => {
 		const { rows } = await sql.query<{ relname: string; relrowsecurity: boolean }>(
 			"select relname, relrowsecurity from pg_class where relname like 'wai_%' and relkind = 'r'",
 		);
-		expect(rows.length).toBe(17);
+		expect(rows.length).toBe(21);
 		expect(rows.filter((r) => !r.relrowsecurity).map((r) => r.relname)).toEqual([]);
 		const policies = await sql.query("select 1 from pg_policies where tablename like 'wai_%'");
 		expect(policies.rows).toHaveLength(0);
@@ -69,7 +73,8 @@ describe("the Worldwide AI schema", () => {
 		const { rows } = await sql.query<{ value: string }>(
 			"select value from wai_meta where key = 'schema_version'",
 		);
-		expect(rows[0].value).toBe("2");
+		expect(rows[0].value).toBe(String(SCHEMA_VERSION));
+		expect(SCHEMA_VERSION).toBe(3);
 	});
 
 	it("accepts only the seven task states", async () => {

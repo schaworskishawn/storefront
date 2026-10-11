@@ -15,6 +15,16 @@ import { requestFunction, reviewProduct, type IncomingFile } from "../functions/
 import { getProductByTask } from "../functions/products";
 import { lookupFunction } from "../functions/registry";
 import { dispatchTask } from "../jobs/dispatch";
+import { SKILLS, SKILL_BY_ID } from "../skills/catalog";
+import { evaluateSkills } from "../skills/evaluate";
+import {
+	approveRelease,
+	createProposal,
+	decideProposal,
+	listEvaluations,
+	revokeRelease,
+	rollbackSkill,
+} from "../skills/store";
 import { createCase, setCaseStatus, type CaseStatus } from "../support/cases";
 import { cancelTask, retryTask, settleUnknownTask } from "../tasks/actions";
 import { getTask, scopeVisibleTo, type TaskRecord } from "../tasks/repo";
@@ -28,6 +38,7 @@ import { WorkflowError } from "../workflows/types";
 import type { ActionState } from "./action-state";
 import { describeFailure } from "./failures";
 import { getWorkspace, type Workspace } from "./session";
+import { loadSkillRows } from "./skills";
 
 /**
  * Every change a person makes in the workspace goes through one of these server actions. Each one checks who is asking
@@ -519,6 +530,154 @@ export async function backupAction(_previous: ActionState, form: FormData): Prom
 					};
 		}
 		throw new WorkflowError("invalid", "Choose backup or restore check.");
+	} catch (error) {
+		return describeFailure(error);
+	}
+}
+
+// ---- Skills ---------------------------------------------------------------------------------------------
+
+/**
+ * Everything a person does to a skill. Anyone in the workspace can run an evaluation or write an improvement proposal;
+ * approving, revoking, rolling back and deciding a proposal are the owner's, checked in the library and logged either way.
+ * An evaluation runs in a scratch database and touches no live record.
+ */
+export async function skillAction(_previous: ActionState, form: FormData): Promise<ActionState> {
+	const workspace = await getWorkspace();
+	const { sql } = workspace.runtime;
+	const intent = text(form, "intent");
+	try {
+		throttle(workspace);
+		const skill = SKILL_BY_ID.get(text(form, "skillId"));
+		const needSkill = () => {
+			if (!skill) throw new WorkflowError("not_found", "That skill doesn't exist.");
+			return skill;
+		};
+		const ownerOnly = async (action: string) => {
+			if (workspace.isOwner) return;
+			await audit(sql, {
+				actor: workspace.actor,
+				action,
+				outcome: "denied",
+				detail: { reason: "owner only" },
+			});
+			throw new WorkflowError("forbidden", "Only the owner can approve, revoke or roll back a skill.");
+		};
+		switch (intent) {
+			case "evaluate_all": {
+				const results = await evaluateSkills(sql, SKILLS, { ranBy: workspace.viewer });
+				const passed = results.filter((result) => result.passed).length;
+				await audit(sql, {
+					actor: workspace.actor,
+					action: "skill.evaluate",
+					subject: "all",
+					outcome: "allowed",
+					detail: { evaluated: results.length, passed },
+				});
+				refresh();
+				return {
+					ok: passed === results.length,
+					message: `Evaluated ${results.length} skills in an isolated database: ${passed} passed${
+						passed === results.length ? "" : `, ${results.length - passed} did not`
+					}. Nothing is in use until the owner approves it.`,
+				};
+			}
+			case "evaluate": {
+				const [result] = await evaluateSkills(sql, [needSkill()], { ranBy: workspace.viewer });
+				await audit(sql, {
+					actor: workspace.actor,
+					action: "skill.evaluate",
+					subject: result.skillId,
+					outcome: "allowed",
+					detail: { version: result.version, ok: result.passed, ...result.totals },
+				});
+				refresh();
+				return {
+					ok: result.passed,
+					message: `${result.totals.passed} of ${result.totals.total} cases passed, ${result.totals.failed} failed and ${result.totals.notRun} could not be run here. ${
+						result.passed
+							? "This version can be approved by the owner."
+							: "This version can't be approved until every case that ran passes."
+					}`,
+				};
+			}
+			case "approve": {
+				const candidate = needSkill();
+				const [latest] = await listEvaluations(sql, candidate.id, 1);
+				if (!latest) throw new WorkflowError("conflict", "Evaluate this version before approving it.");
+				const release = await approveRelease(sql, workspace.actor, {
+					skill: candidate,
+					evaluationId: latest.id,
+				});
+				refresh();
+				return { ok: true, message: `Version ${release.version} is approved and in use from now on.` };
+			}
+			case "approve_passed": {
+				await ownerOnly("skill.approve");
+				const rows = (await loadSkillRows(sql)).filter((row) => row.approvable && row.evaluation);
+				for (const row of rows)
+					await approveRelease(sql, workspace.actor, {
+						skill: row.skill,
+						evaluationId: (row.evaluation as { id: string }).id,
+					});
+				refresh();
+				return {
+					ok: true,
+					message: rows.length
+						? `Approved ${rows.length} skill${rows.length === 1 ? "" : "s"} that passed evaluation. They are in use from now on.`
+						: "There is nothing waiting for approval. Evaluate the skills first.",
+				};
+			}
+			case "revoke": {
+				const release = await revokeRelease(sql, workspace.actor, {
+					releaseId: text(form, "releaseId"),
+					reason: text(form, "note"),
+				});
+				refresh();
+				return {
+					ok: true,
+					message: `Version ${release.version} is revoked. No version of this skill guides work until you roll back or approve another.`,
+				};
+			}
+			case "rollback": {
+				const release = await rollbackSkill(sql, workspace.actor, { skillId: needSkill().id });
+				refresh();
+				return { ok: true, message: `Version ${release.version} is back in use.` };
+			}
+			case "propose": {
+				const sourceId = text(form, "sourceId").trim();
+				await createProposal(sql, workspace.actor, {
+					skill: needSkill(),
+					summary: text(form, "summary"),
+					proposedChange: text(form, "proposedChange"),
+					sourceType: sourceId ? "task" : "none",
+					sourceId: sourceId || null,
+				});
+				refresh();
+				return {
+					ok: true,
+					message: "Proposal recorded. It changes nothing by itself: the procedure in use stays as approved.",
+				};
+			}
+			case "decide": {
+				const decision = text(form, "decision") === "accepted" ? "accepted" : "declined";
+				await decideProposal(sql, workspace.actor, {
+					proposalId: text(form, "proposalId"),
+					decision,
+					note: text(form, "note"),
+				});
+				refresh();
+				return {
+					ok: true,
+					message:
+						decision === "accepted"
+							? "Marked as wanted. The procedure still has to be changed in the repository, evaluated and approved."
+							: "Declined.",
+				};
+			}
+			default:
+				throw new WorkflowError("invalid", "That isn't something that can be done to a skill.");
+		}
 	} catch (error) {
 		return describeFailure(error);
 	}

@@ -1,0 +1,30 @@
+{
+	"id": "coach-qualification-tracking",
+	"kind": "role-pack",
+	"title": "Coach qualification tracking",
+	"version": 1,
+	"agents": [
+		"coach"
+	],
+	"functions": [
+		"coach.training-review"
+	],
+	"foundations": [
+		"structured-extraction",
+		"deterministic-calculation-check",
+		"review-package-preparation",
+		"document-and-table-production"
+	],
+	"tools": [
+		"source.read_supplied",
+		"product.store",
+		"finding.record",
+		"atlas.search"
+	],
+	"knowledge": [
+		"people",
+		"manufacturing"
+	],
+	"suiteVersion": 1,
+	"sha256": "a04a1199592d7e0691f7c2700832658bc577a5d0b877287c3ff537c9d4bc77b4"
+}

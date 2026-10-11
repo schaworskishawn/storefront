@@ -1,6 +1,7 @@
 import { ROLES, ROLE_BY_ID } from "../agents/registry";
 import { readConfig } from "../config";
 import { INTEGRATIONS, configStatus } from "../integrations/catalog";
+import { packOf } from "../skills/catalog";
 import { ROLE_COUNT, ownerOfKind } from "../types";
 import { functionReadiness, READINESS_LABELS, requiredIntegrations } from "./readiness";
 import { ALL_FUNCTIONS, FUNCTIONS, capabilityMatrix } from "./registry";
@@ -80,7 +81,7 @@ export function renderCapabilityMatrix(): string {
 		"- **Status** separates implemented from proven. Every function here is tested; none has been run against the live database, the live model or real business records.",
 	);
 	line(
-		`- **Role pack**: the skills system (role packs and foundation skills) is not built, so no agent has one yet. Each agent runs on the instructions and tool list in the registry.`,
+		"- **Role pack** is the written procedure the agent follows, with its supporting foundations (see `skills/worldwide-ai/`). A pack guides work only after its exact version has been evaluated and the owner has approved it in the workspace; until then the agent runs on the instructions in the registry. Whether a pack is approved is a fact about an installation, so it is shown on the Skills page, not here.",
 	);
 	line(
 		`- **Planned, not built** lists ${planned} later capabilities that have no working code. They are shown so that nobody mistakes an agent's name for something it can't do yet.`,
@@ -123,7 +124,12 @@ export function renderCapabilityMatrix(): string {
 				readiness.missing.length ? ` (missing: ${readiness.missing.join(", ")})` : ""
 			}`,
 		);
-		line(`- **Role pack:** not built`);
+		const pack = packOf(row.agentId);
+		line(
+			pack
+				? `- **Role pack:** \`${pack.id}\` version ${pack.version}, supported by ${pack.foundations.map((id) => `\`${id}\``).join(", ")}`
+				: "- **Role pack:** none",
+		);
 		line(`- **Status:** ${statusOf(definition)}`);
 		line(`- **Evidence:** \`${evidenceFor(definition)}\``);
 		line(`- **It does not:** ${definition.notThis}`);

@@ -29,6 +29,8 @@ const PAGES = [
 	"/worldwide-ai/integrations",
 	"/worldwide-ai/activity",
 	"/worldwide-ai/improvement",
+	"/worldwide-ai/skills",
+	"/worldwide-ai/skills/relay-support-drafting",
 	"/worldwide-ai/settings",
 ];
 

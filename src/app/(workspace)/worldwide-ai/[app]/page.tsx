@@ -164,6 +164,13 @@ export default async function AreaPage({ params }: Props) {
 						{area.also && area.also.length > 0 && (
 							<Card title="Also here">
 								<Bullets items={area.also} />
+								{area.id === "improvement" && (
+									<p style={{ margin: "12px 0 0" }}>
+										<Link href={`${WORKSPACE_PATH}/skills`} className="wai-btn">
+											Open Skills
+										</Link>
+									</p>
+								)}
 							</Card>
 						)}
 						<Card title="Not built yet">

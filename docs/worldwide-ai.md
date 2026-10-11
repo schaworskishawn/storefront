@@ -78,11 +78,38 @@ Task states are `queued`, `running`, `needs_review`, `completed`, `failed`, `can
 
 Readiness is reported per function as `ready`, `awaiting_configuration`, `blocked`, `disabled`, `unhealthy` or `planned`, worked out from what is actually configured and the last health checks.
 
+## Skills
+
+A skill is a written, tested procedure an agent follows for one of its functions: when to use it, when not to, what it needs, the steps, what it produces, and the checks before it is finished. It is not an agent, a model or a permission. The registered handler still does the work and stores the result; the skill says how the work is meant to be done, and is put in front of the model when a function's wording comes from one.
+
+There are 61: twelve shared foundations (retrieving approved sources, exact calculation, fencing supplied text, and so on) and one role pack for each of the 49 agents. They are written in `src/lib/worldwide-ai/skills/` and exported in the Agent Skills format to `skills/worldwide-ai/`. Open them in the workspace from **Improvement** or from any agent's page.
+
+**Nothing guides work until the owner approves it.** On a new installation no skill is in use and every function runs on its agent's registry instructions, exactly as it did before skills existed. To put them in use:
+
+1. **Evaluate.** Anyone in the workspace can run a skill's evaluation. It runs in a scratch database that shares nothing with live records, and checks that the package is a real procedure in the portable format, that it asks for no tool or knowledge its agents lack, and that the function behind it works: it produces a verified result from its sample, refuses incomplete input, never does the same request twice, and stops when its agent is switched off. Foundations are checked against the mechanism they describe (exact decimals, refused tools, fenced data, intact checksums).
+2. **Read what it found.** Each case is shown as passed, failed or not run. A critical failure blocks approval outright.
+3. **Approve.** Only the owner can. An approval is of the exact content that was evaluated; change one word and it has to be evaluated again. The approved package is stored as approved, so what is in use does not change when the repository does.
+
+What the evaluation does **not** do is judge how well a model writes. Those cases need the live model and a reviewed set of examples; they are listed as not run and are never counted as passes.
+
+How a task uses skills:
+
+- The server chooses, before any model is involved: the agent's own approved role pack, if it covers the function, and at most two of that pack's foundations. Another agent's pack is never a candidate. What was turned away is recorded with the reason.
+- A stored package that was altered, was revoked, or asks for more than its agent has is refused.
+- The task and its stored result are pinned to the exact versions followed, and the task page shows how far each got: selected, loaded, invoked, completed.
+- If a procedure is revoked or replaced while a task is running, the task fails and nothing is stored.
+
+**Revoking and rolling back.** The owner can revoke a version at once. Nothing takes its place by itself: no version of that skill guides work until the owner rolls back to an earlier approved version or approves a new one. Every approve, revoke and rollback, and every refused attempt, is in Activity.
+
+**Improving a skill.** While reviewing a result, anyone can record a proposal: what should improve and the change to the procedure. A proposal changes nothing. The procedure is changed in the repository, which makes a new version; that version is evaluated on the same cases as the current one and guides work only after the owner approves it. Lessons are not drawn automatically from review decisions.
+
+After changing a skill, bump its version and run `pnpm worldwide-ai:skills` to regenerate the exported files.
+
 ## Setting it up for real
 
 These are steps for the owner. Nothing here is applied automatically, and none of it has been done yet.
 
-1. **Database.** Create a Supabase project. Run the two files in `supabase/migrations/` in name order, with `supabase db push` or by pasting each into the SQL editor. Row-level security is switched on for every table with no policies, so only the server's own connection can read them. Set `POSTGRES_URL` to the connection string.
+1. **Database.** Create a Supabase project. Run the three files in `supabase/migrations/` in name order, with `supabase db push` or by pasting each into the SQL editor. The code expects the schema the newest file leaves; if the database is behind, the database health check says which version it is at and which the code needs. Row-level security is switched on for every table with no policies, so only the server's own connection can read them. Set `POSTGRES_URL` to the connection string.
 2. **File storage.** Set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`. Create a private bucket named `worldwide-ai` (or name your own in `WORLDWIDE_AI_BUCKET`). It must not be public. The service key stays on the server and is never sent to a browser.
 3. **Who may enter.** Set `WORLDWIDE_AI_OWNER_EMAILS` and, if you want, `WORLDWIDE_AI_STAFF_EMAILS`. Each address must belong to a Saleor staff account.
 4. **Model.** Set `ANTHROPIC_API_KEY`. Without it the 31 code-only functions still work.
@@ -92,7 +119,7 @@ These are steps for the owner. Nothing here is applied automatically, and none o
 
 Put the values in the hosting provider's environment settings (or `.env.local` on your own machine). Never commit them.
 
-After that, open **Integrations** and run a health check, then **Settings** and take a backup followed by a restore check.
+After that, open **Integrations** and run a health check, then **Settings** and take a backup followed by a restore check. When you are ready for the agents to follow their written procedures, open **Skills**, evaluate them, and approve the ones you are satisfied with.
 
 ## Settings
 
@@ -140,7 +167,7 @@ There are two layers, and you need both.
 
 **The workspace's own backup** covers what Supabase's doesn't prove:
 
-- Every `wai_` table, one JSON line per row, from a single consistent snapshot, with each table's row count and checksum in a manifest.
+- Every `wai_` table, one JSON line per row, from a single consistent snapshot, with each table's row count and checksum in a manifest. That includes approved skill releases, their evaluations, and which procedures each task followed.
 - Every stored file (uploads, inspection screenshots), kept by checksum so a file is copied once.
 - It is written to the same private bucket under `backups/`. The newest fourteen are kept.
 
@@ -174,6 +201,7 @@ Checked on a developer machine:
 - The unit and workflow tests (`pnpm run test:run`), which run against an in-process Postgres with the real migrations.
 - Every code-only function on its sample and on cases written for its rules, including exact-decimal arithmetic.
 - Every model-written function with a stand-in model: the format, the citation rules, and that a reply breaking the rules stores nothing.
+- All 61 skills evaluated in an isolated database, and the approve, revoke, rollback and mid-run revocation paths, including a worked example of improving Relay's procedure from version 1 to version 2 and back.
 - The pages, in a browser, in the local preview at desktop and phone widths.
 - That a visitor who isn't signed in is redirected from every page and gets `401` from the API.
 - A backup followed by an isolated restore check in the preview.
@@ -189,25 +217,26 @@ Not checked, because it needs your accounts or a deployment:
 
 The larger plan describes much more than this. These parts have no working code. The workspace says so on the relevant pages rather than showing empty features as if they worked.
 
-| Part of the plan                                                                                               | Status                                                                                                                 |
-| -------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| 49 agents, each with a real function, typed output and truthful readiness                                      | Built and tested. See the capability matrix.                                                                           |
-| Private workspace, access control, task pipeline, review, audit log                                            | Built and tested locally. Not yet used with a real sign-in.                                                            |
-| Atlas knowledge library and the Relay support draft with a verified save                                       | Built and tested with a stand-in model.                                                                                |
-| Site inspection through OpenClaw                                                                               | Built and tested against a stand-in worker. No real host connected.                                                    |
-| Health checks, backups, restore check, schedules, redacted tracing                                             | Built and tested locally. Schedules not deployed.                                                                      |
-| Skills system: twelve shared foundations and a role pack per agent                                             | Not built. Agents run on the instructions and tool lists in the registry.                                              |
-| Learning loop: lessons from reviews, evaluation, promotion, rollback                                           | Not built.                                                                                                             |
-| Saved Daily Reports at 8:00 AM                                                                                 | Not built. The briefing is made on demand and not stored.                                                              |
-| Inventory ledger, stored recipes, batches and finished-liquid records                                          | Not built. The Lab functions and the calculator work on what you enter and keep no inventory.                          |
-| Manufacturing, quality and compliance record models with software gates                                        | Not built. The agents review records you supply and never release, approve or certify.                                 |
-| RFID and NFC tag registry, live scan ingestion, public authenticity page                                       | Not built. Link reconciles scan exports you supply.                                                                    |
-| Product Content Studio: Saleor product picker, images, per-field approval                                      | Not built beyond text drafts from details you enter. No image is ever produced.                                        |
-| Build's coding worker (Claude Agent SDK) and independent review by Verify                                      | Not built. Build writes an engineering brief, which is not a patch. Verify re-checks stored results, not code changes. |
-| OpenHands, Agent Zero, Hermes, Paperclip, Buzz                                                                 | Not installed or connected. They appear on Integrations as having no connector.                                        |
-| Linux desktop, installer image, VirtualBox machine                                                             | Not started. These need downloads and virtual machines that are the owner's decision to start.                         |
-| Layout preferences, notifications, per-agent autonomy policies                                                 | Not built.                                                                                                             |
-| Connectors for accounting, carriers, bank, payment processor, email, calendar, search data, Figma, instruments | Not built. The functions that would use them work from records you supply.                                             |
+| Part of the plan                                                                                               | Status                                                                                                                                     |
+| -------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| 49 agents, each with a real function, typed output and truthful readiness                                      | Built and tested. See the capability matrix.                                                                                               |
+| Private workspace, access control, task pipeline, review, audit log                                            | Built and tested locally. Not yet used with a real sign-in.                                                                                |
+| Atlas knowledge library and the Relay support draft with a verified save                                       | Built and tested with a stand-in model.                                                                                                    |
+| Site inspection through OpenClaw                                                                               | Built and tested against a stand-in worker. No real host connected.                                                                        |
+| Health checks, backups, restore check, schedules, redacted tracing                                             | Built and tested locally. Schedules not deployed.                                                                                          |
+| Skills: twelve shared foundations and a role pack per agent                                                    | Built and tested locally: catalog, isolated evaluation, owner approval, revoke, rollback, and pinning to tasks. Not approved anywhere yet. |
+| Evaluating how well a model writes; exporting skills to other agent runtimes                                   | Not built. The evaluation checks the procedure, its permissions and the function behind it. Only this application loads skills.            |
+| Learning loop                                                                                                  | Partly. A person can record an improvement proposal and the owner decides it. Lessons are not drawn automatically from review decisions.   |
+| Saved Daily Reports at 8:00 AM                                                                                 | Not built. The briefing is made on demand and not stored.                                                                                  |
+| Inventory ledger, stored recipes, batches and finished-liquid records                                          | Not built. The Lab functions and the calculator work on what you enter and keep no inventory.                                              |
+| Manufacturing, quality and compliance record models with software gates                                        | Not built. The agents review records you supply and never release, approve or certify.                                                     |
+| RFID and NFC tag registry, live scan ingestion, public authenticity page                                       | Not built. Link reconciles scan exports you supply.                                                                                        |
+| Product Content Studio: Saleor product picker, images, per-field approval                                      | Not built beyond text drafts from details you enter. No image is ever produced.                                                            |
+| Build's coding worker (Claude Agent SDK) and independent review by Verify                                      | Not built. Build writes an engineering brief, which is not a patch. Verify re-checks stored results, not code changes.                     |
+| OpenHands, Agent Zero, Hermes, Paperclip, Buzz                                                                 | Not installed or connected. They appear on Integrations as having no connector.                                                            |
+| Linux desktop, installer image, VirtualBox machine                                                             | Not started. These need downloads and virtual machines that are the owner's decision to start.                                             |
+| Layout preferences, notifications, per-agent autonomy policies                                                 | Not built.                                                                                                                                 |
+| Connectors for accounting, carriers, bank, payment processor, email, calendar, search data, Figma, instruments | Not built. The functions that would use them work from records you supply.                                                                 |
 
 ## Commands
 
@@ -215,20 +244,22 @@ The larger plan describes much more than this. These parts have no working code.
 | --------------------------- | ---------------------------------------------------------------------------- |
 | `pnpm worldwide-ai:preview` | Local preview with fictional data, on port 3100.                             |
 | `pnpm worldwide-ai:matrix`  | Regenerates the capability matrix after a registry change.                   |
+| `pnpm worldwide-ai:skills`  | The same command: it also regenerates the exported skill files.              |
 | `pnpm run verify`           | The repository's full check: lint, types and every test.                     |
 | `pnpm run test:e2e`         | Browser tests, including that the workspace turns away a signed-out visitor. |
 | `npx trigger.dev deploy`    | Deploys the background jobs and starts their schedules. The owner's step.    |
 
 ## Where things are
 
-| What                        | Where                                        |
-| --------------------------- | -------------------------------------------- |
-| Agents                      | `src/lib/worldwide-ai/agents/registry.ts`    |
-| Functions                   | `src/lib/worldwide-ai/functions/`            |
-| The pipeline                | `src/lib/worldwide-ai/functions/pipeline.ts` |
-| Support drafts, inspections | `src/lib/worldwide-ai/workflows/`            |
-| Database schema             | `supabase/migrations/`                       |
-| Pages                       | `src/app/(workspace)/worldwide-ai/`          |
-| Page components and styles  | `src/ui/sections/worldwide-ai/`              |
-| Background jobs             | `src/trigger/`, `trigger.config.ts`          |
-| The OpenClaw adapter        | `openclaw-host/`                             |
+| What                           | Where                                                  |
+| ------------------------------ | ------------------------------------------------------ |
+| Agents                         | `src/lib/worldwide-ai/agents/registry.ts`              |
+| Functions                      | `src/lib/worldwide-ai/functions/`                      |
+| Skills (source, exported copy) | `src/lib/worldwide-ai/skills/`, `skills/worldwide-ai/` |
+| The pipeline                   | `src/lib/worldwide-ai/functions/pipeline.ts`           |
+| Support drafts, inspections    | `src/lib/worldwide-ai/workflows/`                      |
+| Database schema                | `supabase/migrations/`                                 |
+| Pages                          | `src/app/(workspace)/worldwide-ai/`                    |
+| Page components and styles     | `src/ui/sections/worldwide-ai/`                        |
+| Background jobs                | `src/trigger/`, `trigger.config.ts`                    |
+| The OpenClaw adapter           | `openclaw-host/`                                       |

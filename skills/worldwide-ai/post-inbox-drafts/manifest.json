@@ -1,0 +1,29 @@
+{
+	"id": "post-inbox-drafts",
+	"kind": "role-pack",
+	"title": "Post inbox drafts",
+	"version": 1,
+	"agents": [
+		"post"
+	],
+	"functions": [
+		"post.email-draft"
+	],
+	"foundations": [
+		"context-and-memory-hygiene",
+		"clear-business-writing",
+		"claim-and-conflict-check",
+		"review-package-preparation"
+	],
+	"tools": [
+		"source.read_supplied",
+		"product.store",
+		"finding.record",
+		"atlas.search"
+	],
+	"knowledge": [
+		"brand"
+	],
+	"suiteVersion": 1,
+	"sha256": "704fb4e1616f17ae79e77e9be4115344885dcaa5f336d97d6d21dff2c7760d78"
+}

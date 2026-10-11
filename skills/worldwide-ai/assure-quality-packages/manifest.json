@@ -1,0 +1,30 @@
+{
+	"id": "assure-quality-packages",
+	"kind": "role-pack",
+	"title": "Assure quality packages",
+	"version": 1,
+	"agents": [
+		"assure"
+	],
+	"functions": [
+		"assure.release-package"
+	],
+	"foundations": [
+		"structured-extraction",
+		"claim-and-conflict-check",
+		"review-package-preparation",
+		"document-and-table-production"
+	],
+	"tools": [
+		"source.read_supplied",
+		"product.store",
+		"finding.record",
+		"atlas.search"
+	],
+	"knowledge": [
+		"quality",
+		"manufacturing"
+	],
+	"suiteVersion": 1,
+	"sha256": "74453c5b61a41ec503fc7fc66fe8fbf602e3c21424fc9d88f50a37d58337fde9"
+}

@@ -1,0 +1,28 @@
+{
+	"id": "vault-bank-reconciliation",
+	"kind": "role-pack",
+	"title": "Vault bank reconciliation",
+	"version": 1,
+	"agents": [
+		"vault"
+	],
+	"functions": [
+		"vault.settlement-match"
+	],
+	"foundations": [
+		"structured-extraction",
+		"deterministic-calculation-check",
+		"review-package-preparation",
+		"document-and-table-production"
+	],
+	"tools": [
+		"source.read_supplied",
+		"product.store",
+		"finding.record",
+		"bank.transactions.read",
+		"processor.settlements.read"
+	],
+	"knowledge": [],
+	"suiteVersion": 1,
+	"sha256": "d778561bd5134cc4bd44c0dd49b165b69cad7016526c5948857f43e97669b08b"
+}

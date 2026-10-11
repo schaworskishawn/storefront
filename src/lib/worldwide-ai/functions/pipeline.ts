@@ -6,6 +6,7 @@ import { iso } from "../db/sql";
 import { keyFrom, sha256Hex } from "../hash";
 import { configStatus } from "../integrations/catalog";
 import { previewText } from "../redact";
+import { beginSkills, lapsedSkills, markSkills, withProcedures } from "../skills/task";
 import { InvalidTransitionError, isActive, isFinished } from "../tasks/state-machine";
 import {
 	TaskNotFoundError,
@@ -432,6 +433,7 @@ export async function runFunction(
 					note: "The result was stored and read back. It is waiting for a person to accept it.",
 					onlyFrom: ["running"],
 				});
+				await markSkills(sql, current.id, "completed");
 				return { status: "needs_review", task: moved, productId: product.id };
 			}
 			const done = await transitionTask(sql, current.id, "completed", actor, {
@@ -448,6 +450,7 @@ export async function runFunction(
 				note: "The stored result was read back and every check passed.",
 				onlyFrom: ["running"],
 			});
+			await markSkills(sql, current.id, "completed");
 			return { status: "completed", task: done, productId: product.id };
 		} catch (error) {
 			if (!(error instanceof InvalidTransitionError)) throw error;
@@ -481,6 +484,11 @@ export async function runFunction(
 		if (definition.uses === "model" && !deps.model)
 			return await fail("No model provider is configured (ANTHROPIC_API_KEY), so nothing was written.");
 		requireTool(definition.agent, "source.read_supplied");
+		// Which approved procedures this run follows is decided here, on the server, before any model is asked anything.
+		const skills = await beginSkills(sql, current, actor, {
+			agent: definition.agent,
+			functionId: definition.id,
+		});
 
 		let modelId: string | null = null;
 		let modelCalls = 0;
@@ -499,7 +507,7 @@ export async function runFunction(
 					handle: deps.model,
 					roleId: definition.agent,
 					taskId: current.id,
-					instructions: instructionsFor(definition.agent),
+					instructions: withProcedures(instructionsFor(definition.agent), skills),
 					prompt: args.prompt,
 					schema: args.schema,
 					limits: settings.limits,
@@ -509,6 +517,7 @@ export async function runFunction(
 					images: args.images,
 				});
 				modelId = result.modelId;
+				await markSkills(sql, current.id, "loaded");
 				await recordUsage(sql, {
 					taskId: current.id,
 					roleId: definition.agent,
@@ -530,6 +539,7 @@ export async function runFunction(
 						latencyMs: result.latencyMs,
 						finishReason: result.finishReason,
 						images: args.images?.length ?? 0,
+						procedures: skills.followed.map((skill) => `${skill.skillId} v${skill.version}`),
 					},
 				});
 				return result.output;
@@ -591,6 +601,11 @@ export async function runFunction(
 			latencyMs: Date.now() - started,
 		});
 
+		await markSkills(sql, current.id, "invoked");
+		// A procedure revoked or replaced while this ran must not have its work stored as if nothing had happened.
+		const lapsed = await lapsedSkills(sql, skills);
+		if (lapsed) return await fail(lapsed);
+
 		requireTool(definition.agent, "product.store");
 		const { product } = await insertProduct(sql, {
 			taskId: current.id,
@@ -620,6 +635,7 @@ export async function runFunction(
 			model: modelId,
 			promptVersion: modelId ? (definition.promptVersion ?? null) : null,
 			reviewRequired: definition.review === "required",
+			skills: skills.followed,
 		});
 		await recordUsage(sql, {
 			taskId: current.id,

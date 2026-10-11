@@ -1,0 +1,29 @@
+{
+	"id": "clean-clearance-records",
+	"kind": "role-pack",
+	"title": "Clean clearance records",
+	"version": 1,
+	"agents": [
+		"clean"
+	],
+	"functions": [
+		"clean.clearance-review"
+	],
+	"foundations": [
+		"structured-extraction",
+		"claim-and-conflict-check",
+		"review-package-preparation",
+		"document-and-table-production"
+	],
+	"tools": [
+		"source.read_supplied",
+		"product.store",
+		"finding.record",
+		"atlas.search"
+	],
+	"knowledge": [
+		"manufacturing"
+	],
+	"suiteVersion": 1,
+	"sha256": "d0c9d94ed242fb95265a24b7092da9795c345287e56c0562e3ac57a26ad2fe23"
+}

@@ -1,0 +1,48 @@
+{
+	"id": "atlas-knowledge-control",
+	"kind": "role-pack",
+	"title": "Atlas knowledge control",
+	"version": 1,
+	"agents": [
+		"atlas"
+	],
+	"functions": [
+		"atlas.knowledge-review"
+	],
+	"foundations": [
+		"approved-source-retrieval",
+		"claim-and-conflict-check",
+		"document-and-table-production",
+		"outcome-and-performance-check"
+	],
+	"tools": [
+		"source.read_supplied",
+		"product.store",
+		"finding.record",
+		"atlas.search",
+		"atlas.get_document"
+	],
+	"knowledge": [
+		"support-policy",
+		"shipping",
+		"returns",
+		"faq",
+		"accounting-policy",
+		"chart-of-accounts",
+		"tax-rules",
+		"site-runbook",
+		"brand",
+		"product-info",
+		"commercial",
+		"manufacturing",
+		"quality",
+		"compliance",
+		"excise",
+		"safety",
+		"people",
+		"security",
+		"general"
+	],
+	"suiteVersion": 1,
+	"sha256": "3824110493728f94f952a887382e28e62248ae318550947c4df3723a63c29378"
+}

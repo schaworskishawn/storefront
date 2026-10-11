@@ -1,0 +1,30 @@
+{
+	"id": "pulse-content-planning",
+	"kind": "role-pack",
+	"title": "Pulse content planning",
+	"version": 1,
+	"agents": [
+		"pulse"
+	],
+	"functions": [
+		"pulse.content-calendar"
+	],
+	"foundations": [
+		"context-and-memory-hygiene",
+		"claim-and-conflict-check",
+		"clear-business-writing",
+		"review-package-preparation"
+	],
+	"tools": [
+		"source.read_supplied",
+		"product.store",
+		"finding.record",
+		"atlas.search"
+	],
+	"knowledge": [
+		"brand",
+		"product-info"
+	],
+	"suiteVersion": 1,
+	"sha256": "a7bfa1503dd894557ad18ed5dd4d0ddbf4de459cd554c32dfec31c86735f664a"
+}

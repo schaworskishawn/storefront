@@ -1,0 +1,30 @@
+{
+	"id": "gauge-equipment-eligibility",
+	"kind": "role-pack",
+	"title": "Gauge equipment eligibility",
+	"version": 1,
+	"agents": [
+		"gauge"
+	],
+	"functions": [
+		"gauge.equipment-review"
+	],
+	"foundations": [
+		"structured-extraction",
+		"deterministic-calculation-check",
+		"review-package-preparation",
+		"document-and-table-production"
+	],
+	"tools": [
+		"source.read_supplied",
+		"product.store",
+		"finding.record",
+		"atlas.search"
+	],
+	"knowledge": [
+		"manufacturing",
+		"quality"
+	],
+	"suiteVersion": 1,
+	"sha256": "047d165d58a580ce31d9bd3bb41f6424861ab637a96dfca88f6c96b5b50d6d00"
+}
