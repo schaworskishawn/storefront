@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { Suspense } from "react";
 import { type WvCategoryTile } from "@/lib/catalog/get-home-products";
 import { WvFooter, WvHeader } from "./wv-chrome";
 import { CATEGORY_ART } from "./wv-category-art";
@@ -7,6 +8,7 @@ import { BrandCarousel } from "./wv-home-client";
 import { type HomeMembership } from "@/lib/catalog/home-collections";
 import { HomeCollections } from "./wv-home-collections";
 import { OutlineButton, SectionHeading, type CardProduct, type CatalogContext } from "./wv-product-section";
+import { WvBulletin } from "./wv-bulletin";
 import { NewsletterForm } from "./wv-newsletter-client";
 import "./wv-home.css";
 
@@ -85,7 +87,7 @@ export function WvHome({
 				))}
 				<div className="relative flex flex-col gap-4 p-4 md:flex-row md:items-center md:gap-6 md:px-8 md:py-6 xl:min-h-[231px] xl:gap-10 xl:py-0 xl:pl-14 xl:pr-10">
 					<div className="flex items-center gap-3 md:contents">
-						<div className="wv-float relative h-[125px] w-[130px] shrink-0 overflow-hidden md:h-[173px] md:w-[180px] xl:h-[219px] xl:w-[227px]">
+						<div className="wv-float wv-glitch relative h-[125px] w-[130px] shrink-0 overflow-hidden md:h-[173px] md:w-[180px] xl:h-[219px] xl:w-[227px]">
 							{/* eslint-disable-next-line @next/next/no-img-element -- cropped artwork positioned by percentage */}
 							<img
 								src="/home/imgHeroLogo.png"
@@ -197,6 +199,11 @@ export function WvHome({
 					</div>
 				))}
 			</section>
+
+			{/* The owner's note: only there once a bulletin page exists in Saleor */}
+			<Suspense fallback={null}>
+				<WvBulletin />
+			</Suspense>
 
 			{/* Brands */}
 			<section className="flex flex-col items-center gap-6 border-b border-[var(--wv-purple)] bg-[var(--wv-deep)] px-4 pb-8 pt-7 md:px-8 xl:px-20">

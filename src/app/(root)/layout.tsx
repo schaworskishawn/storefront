@@ -6,6 +6,7 @@ import { getRootHtmlFontProps } from "@/lib/fonts";
 import { NativeTabBar } from "@/ui/components/native-tab-bar";
 import { HoloPanels } from "@/ui/components/holo-panels";
 import { PageMotion } from "@/ui/components/page-motion";
+import { PointerFx } from "@/ui/components/pointer-fx";
 
 export const metadata = rootMetadata;
 
@@ -29,6 +30,8 @@ export default function RootGroupLayout({ children }: { children: ReactNode }) {
 				</Suspense>
 				{/* Holographic hover panels (a mouse over a card). Renders nothing. */}
 				<HoloPanels />
+				{/* Cursor halo and trail, spotlight, magnetic buttons, click pulses. Renders only its fixed layer. */}
+				<PointerFx />
 				{/* Android app only: renders nothing on the server or in a browser. */}
 				<Suspense fallback={null}>
 					<NativeTabBar />
