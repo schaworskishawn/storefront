@@ -250,8 +250,9 @@ export type WorkerDeps = { sql: Sql; now: () => Date; config: CodingConfig; sand
 // ---- Starting, cancelling -----------------------------------------------------------------------------
 
 /**
- * A person starts a job's run. Refused, with the name of each thing missing, unless every setting the worker needs is in
- * place; refused while Build is switched off; and a job is run once. Starting records the run and takes its first step.
+ * The owner starts a job's run: it creates a machine on the owner's Vercel account and spends model usage, so nobody else
+ * can. Refused, with the name of each thing missing, unless every setting the worker needs is in place; refused while
+ * Build is switched off; and a job is run once. Starting records the run and takes its first step.
  */
 export async function startCodingRun(
 	deps: WorkerDeps,
@@ -259,6 +260,19 @@ export async function startCodingRun(
 	jobId: string,
 ): Promise<CodingRun> {
 	const { sql } = deps;
+	if (actor.role !== "owner") {
+		await audit(sql, {
+			actor,
+			action: "coding.run.start",
+			subject: jobId.trim().slice(0, 60),
+			outcome: "denied",
+			detail: { reason: "owner only" },
+		});
+		throw new CodingError(
+			"forbidden",
+			"Only the owner can start a run: it creates a machine on the owner's Vercel account and spends model usage.",
+		);
+	}
 	const found = await getCodingJob(sql, jobId);
 	if (!found) throw new CodingError("not_found", "That coding job doesn't exist.");
 	const { job } = found;

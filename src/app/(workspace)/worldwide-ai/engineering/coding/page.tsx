@@ -2,7 +2,6 @@ import { randomUUID } from "node:crypto";
 import type { Metadata } from "next";
 import Link from "next/link";
 import {
-	BACKENDS,
 	CHECK_RUNNERS,
 	JOB_TYPES,
 	listCodingJobs,
@@ -10,6 +9,7 @@ import {
 	type CodingJob,
 } from "@/lib/worldwide-ai/engineering/coding";
 import { ALWAYS_PROTECTED } from "@/lib/worldwide-ai/engineering/scope";
+import { missingForRun, readCodingConfig } from "@/lib/worldwide-ai/engineering/worker-config";
 import { WORKSPACE_PATH } from "@/lib/worldwide-ai/types";
 import { codingAction } from "@/lib/worldwide-ai/web/actions";
 import { getWorkspace } from "@/lib/worldwide-ai/web/session";
@@ -31,11 +31,12 @@ export const metadata: Metadata = { title: "Coding work" };
 
 const ENGINEERING = `${WORKSPACE_PATH}/engineering`;
 const STATUS: Record<CodingJob["status"], { label: string; tone: Tone }> = {
-	awaiting_backend: { label: "Waiting for a backend", tone: "warn" },
+	awaiting_backend: { label: "Not started", tone: "warn" },
 	queued: { label: "Queued", tone: "info" },
 	running: { label: "Running", tone: "info" },
 	returned: { label: "Change returned", tone: "good" },
-	rejected: { label: "Package refused", tone: "bad" },
+	rejected: { label: "Change refused", tone: "bad" },
+	failed: { label: "Stopped, no change", tone: "bad" },
 	cancelled: { label: "Cancelled", tone: "plain" },
 	outcome_unknown: { label: "Outcome unknown", tone: "warn" },
 };
@@ -47,6 +48,10 @@ export default async function CodingPage() {
 	const now = workspace.runtime.now();
 	const [repositories, jobs] = await Promise.all([listRepositories(sql), listCodingJobs(sql)]);
 	const active = repositories.filter((repository) => repository.status === "active");
+	// Names of settings only. A value is never read out here.
+	const config = readCodingConfig(process.env);
+	const ready = active.filter((repository) => missingForRun(config, repository.id).length === 0);
+	const missing = [...new Set(active.flatMap((repository) => missingForRun(config, repository.id)))];
 
 	return (
 		<>
@@ -55,15 +60,24 @@ export default async function CodingPage() {
 				crumbs={[{ label: "Engineering", href: ENGINEERING }, { label: "Coding work" }]}
 				lead="Ask Build for a change to a registered repository, see the exact change that comes back, and decide on it once Verify has checked that exact change. The rules are enforced here in code: what a job may touch, which checks it may run, and that a decision is for one candidate only."
 			/>
-			<Notice tone="warn" title="No coding backend is connected.">
-				A job asked for here is recorded with everything a worker would be given, and waits. Nothing runs it,
-				so no patch and no check result exists until a backend is connected. None is ever made up.
-				<Bullets
-					items={Object.values(BACKENDS).map(
-						(backend) => `${backend.label} needs: ${backend.needs.join("; ")}.`,
-					)}
-				/>
-			</Notice>
+			{active.length > 0 && missing.length === 0 ? (
+				<Notice tone="info" title="The worker’s settings are in place.">
+					A job can be started from its page. It runs in a throwaway machine on Vercel Sandbox, with the
+					Claude Agent SDK, reaching only Anthropic’s API. Settings being in place doesn’t show that a run
+					works: only a run does. Starting one spends Anthropic usage and a little Vercel Sandbox time.
+				</Notice>
+			) : (
+				<Notice tone="warn" title="Coding jobs can be recorded, but not run yet.">
+					{active.length === 0
+						? "No repository is registered. "
+						: ready.length > 0
+							? `Ready for: ${ready.map((repository) => repository.id).join(", ")}. `
+							: ""}
+					A job runs in a throwaway machine on Vercel Sandbox once these are set on the server. No patch and
+					no check result exists for a job until it has run, and none is ever made up.
+					{missing.length > 0 && <Bullets items={missing} />}
+				</Notice>
+			)}
 			<div className="wai-split" style={{ marginTop: 16 }}>
 				<div className="wai-stack">
 					<Card title="Jobs" aside={<Pill>{jobs.length}</Pill>}>

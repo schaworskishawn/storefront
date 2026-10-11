@@ -10,13 +10,15 @@ import { addVersion, approveVersion, createDocument, rejectVersion, retireDocume
 import { audit } from "../audit";
 import { listBackups } from "../backup/backup";
 import { runBackup, runRestoreDrill } from "../backup/drill";
+import { CHECK_RUNNERS, registerRepository, requestCodingJob, reviewPackage } from "../engineering/coding";
 import {
-	CHECK_RUNNERS,
-	cancelCodingJob,
-	registerRepository,
-	requestCodingJob,
-	reviewPackage,
-} from "../engineering/coding";
+	PHASE_LABELS,
+	advanceCodingRun,
+	cancelCodingRun,
+	startCodingRun,
+	type WorkerDeps,
+} from "../engineering/worker";
+import { readCodingConfig } from "../engineering/worker-config";
 import { decideFinding } from "../findings";
 import { requestFunction, reviewProduct, type IncomingFile } from "../functions/pipeline";
 import { getProductByTask } from "../functions/products";
@@ -1631,9 +1633,24 @@ export async function rfidAction(_previous: ActionState, form: FormData): Promis
 // ---- Engineering: coding jobs for Build -----------------------------------------------------------------
 
 /**
- * Registering a repository, asking for coding work, cancelling a job, and the owner's decision on a returned change. No
- * coding backend is connected, so a job asked for here is recorded and waits. Nothing here runs code, and approving a
- * change records a decision: it merges, pushes and deploys nothing.
+ * What the coding worker is given: the database, the clock, the server's own settings read fresh, and the machines. The
+ * machine provider is loaded only here, so nothing else in the workspace carries it.
+ */
+async function workerDeps(workspace: Workspace): Promise<WorkerDeps> {
+	const { vercelSandboxes } = await import("../engineering/vercel-sandbox");
+	return {
+		sql: workspace.runtime.sql,
+		now: workspace.runtime.now,
+		config: readCodingConfig(process.env),
+		sandboxes: vercelSandboxes,
+	};
+}
+
+/**
+ * Registering a repository, asking for coding work, starting and checking on a run, cancelling a job, and the owner's
+ * decision on a returned change. Starting a run creates a throwaway machine and spends model usage, so it is the owner's
+ * click, refused until the worker's settings are in place. Approving a change records a decision: it merges, pushes and
+ * deploys nothing.
  */
 export async function codingAction(_previous: ActionState, form: FormData): Promise<ActionState> {
 	const workspace = await getWorkspace();
@@ -1678,12 +1695,23 @@ export async function codingAction(_previous: ActionState, form: FormData): Prom
 				destination = path(`/engineering/coding/${job.id}`);
 				break;
 			}
+			case "run.start": {
+				const run = await startCodingRun(await workerDeps(workspace), workspace.actor, text(form, "jobId"));
+				message = `Started. ${PHASE_LABELS[run.phase]}. Keep the job's page open until the run ends: its steps are taken from there.`;
+				break;
+			}
+			case "run.advance": {
+				const run = await advanceCodingRun(await workerDeps(workspace), text(form, "jobId"));
+				message = `${PHASE_LABELS[run.phase]}.${run.detail ? ` ${run.detail}` : ""}`;
+				break;
+			}
 			case "job.cancel":
-				await cancelCodingJob(sql, workspace.actor, {
+				// Through the worker, so a machine that is running is stopped too.
+				await cancelCodingRun(await workerDeps(workspace), workspace.actor, {
 					jobId: text(form, "jobId"),
 					reason: text(form, "note"),
 				});
-				message = "Cancelled.";
+				message = "Cancelled. Any machine it was using has been stopped.";
 				break;
 			case "package.review": {
 				const pkg = await reviewPackage(sql, workspace.actor, {

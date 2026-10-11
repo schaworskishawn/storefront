@@ -24,7 +24,8 @@ import {
  * under a checksum of what it contains. Verify's results and the owner's decision are each tied to that checksum, so
  * neither carries over to anything else.
  *
- * No coding backend is connected in this build. A job is recorded and waits. Nothing here writes a patch, runs a check,
+ * This module runs nothing. A job is recorded and waits until a person starts it; the worker beside it does the running,
+ * and is held to these rules like any other source of a change. Nothing here writes a patch, runs a check,
  * pushes a branch, merges or deploys, and an approval is a recorded decision, not a merge.
  */
 
@@ -44,20 +45,13 @@ export const JOB_TYPES = {
 } as const;
 export type JobType = keyof typeof JOB_TYPES;
 
-/** The coding backends this contract is written for. Neither is installed or connected in this build. */
+/**
+ * The coding backends this contract is written for. The Claude Agent SDK has a worker (it runs in throwaway machines on
+ * Vercel Sandbox, once the server's settings are in place). OpenHands has none.
+ */
 export const BACKENDS = {
-	"claude-agent-sdk": {
-		label: "Claude Agent SDK",
-		needs: [
-			"The @anthropic-ai/claude-agent-sdk package, which is not installed",
-			"A private worker host with a sandbox, which doesn't exist yet",
-			"A server-side Anthropic API key on that host",
-		],
-	},
-	openhands: {
-		label: "OpenHands",
-		needs: ["OpenHands itself, which is not installed", "A private worker host with a sandbox"],
-	},
+	"claude-agent-sdk": { label: "Claude Agent SDK", worker: "Vercel Sandbox" },
+	openhands: { label: "OpenHands", worker: null },
 } as const;
 export type Backend = keyof typeof BACKENDS;
 
@@ -214,6 +208,7 @@ export type CodingJob = {
 		| "running"
 		| "returned"
 		| "rejected"
+		| "failed"
 		| "cancelled"
 		| "outcome_unknown";
 	statusDetail: string | null;
@@ -371,7 +366,9 @@ export async function requestCodingJob(
 				backend,
 				json(envelope),
 				hashOf(envelope),
-				`No coding backend is connected. ${BACKENDS[backend].label} needs: ${BACKENDS[backend].needs.join("; ")}.`,
+				BACKENDS[backend].worker
+					? "Recorded. Nothing has run: a person starts the run once the worker's settings are in place."
+					: `Recorded. Nothing can run it: no worker exists for ${BACKENDS[backend].label}.`,
 				key,
 				actorKey(actor),
 			],

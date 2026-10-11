@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import type { ReactNode } from "react";
 import {
 	BACKENDS,
 	CHECK_RUNNERS,
@@ -7,10 +8,13 @@ import {
 	checkStanding,
 	getCodingJob,
 } from "@/lib/worldwide-ai/engineering/coding";
+import { PHASE_LABELS, getCodingRun, runIsOver } from "@/lib/worldwide-ai/engineering/worker";
+import { missingForRun, readCodingConfig } from "@/lib/worldwide-ai/engineering/worker-config";
 import { WORKSPACE_PATH } from "@/lib/worldwide-ai/types";
 import { codingAction } from "@/lib/worldwide-ai/web/actions";
 import { getWorkspace } from "@/lib/worldwide-ai/web/session";
 import { ButtonForm } from "@/ui/sections/worldwide-ai/forms";
+import { RunPoller } from "@/ui/sections/worldwide-ai/run-poller";
 import {
 	Card,
 	DataTable,
@@ -44,6 +48,11 @@ export default async function CodingJobPage({ params }: Props) {
 	const earlier = packages.filter((pkg) => pkg.status !== "frozen");
 	const standing = current ? checkStanding(job, current, verifications) : [];
 	const allPassed = standing.length > 0 && standing.every((check) => check.state === "passed");
+	const run = await getCodingRun(workspace.runtime.sql, job.id);
+	const running = run !== null && !runIsOver(run);
+	// Names of settings only. A value is never read out here.
+	const missing = missingForRun(readCodingConfig(process.env), job.repositoryId);
+	const canStart = job.status === "awaiting_backend" && job.jobType === "change_proposal";
 
 	return (
 		<>
@@ -60,13 +69,126 @@ export default async function CodingJobPage({ params }: Props) {
 			<div className="wai-split">
 				<div className="wai-stack">
 					{job.status === "awaiting_backend" && (
-						<Notice tone="warn" title="Nothing has run.">
-							{job.statusDetail} This job is recorded and waiting. No patch and no check result exists for it.
-						</Notice>
+						<Card title="Run this job" accent={canStart && workspace.isOwner && missing.length === 0}>
+							<p style={{ marginTop: 0 }}>
+								Nothing has run. This job is recorded and waiting: no patch and no check result exists for it.
+							</p>
+							{!canStart ? (
+								<Notice tone="info">
+									The worker runs change proposals only. An inspection job is recorded and isn’t run yet.
+								</Notice>
+							) : !workspace.isOwner ? (
+								<Notice tone="info">
+									Only the owner can start a run: it creates a machine on the owner’s Vercel account and
+									spends model usage.
+								</Notice>
+							) : missing.length > 0 ? (
+								<Notice tone="warn" title="It can’t be run yet.">
+									These have to be set on the server first:
+									<ul>
+										{missing.map((item) => (
+											<li key={item}>{item}</li>
+										))}
+									</ul>
+								</Notice>
+							) : (
+								<>
+									<p className="wai-help">
+										Starting creates a throwaway machine on Vercel Sandbox and lets the agent work in it for
+										up to {envelope.limits.maxMinutes} minutes. It spends Anthropic usage, which this page
+										reports afterwards if the agent reports it. The agent can read and edit files in the
+										checkout and reach Anthropic’s API, and nothing else. Nothing is pushed, merged or
+										deployed.
+									</p>
+									<ButtonForm
+										action={codingAction}
+										hidden={{ intent: "run.start", jobId: job.id }}
+										label="Start the run"
+										tone="primary"
+										idPrefix="start"
+									/>
+								</>
+							)}
+						</Card>
+					)}
+					{run && (
+						<Card
+							title="The run"
+							aside={
+								<Pill
+									tone={
+										run.phase === "done"
+											? "good"
+											: run.phase === "failed"
+												? "bad"
+												: running
+													? "info"
+													: "plain"
+									}
+								>
+									{PHASE_LABELS[run.phase]}
+								</Pill>
+							}
+							accent={running}
+						>
+							{run.detail && <p style={{ marginTop: 0 }}>{run.detail}</p>}
+							<KeyValues
+								items={[
+									["Started", <When key="s" at={run.startedAt} now={now} />],
+									["Last moved", <When key="u" at={run.updatedAt} now={now} />],
+									...(run.finishedAt
+										? ([["Ended", <When key="f" at={run.finishedAt} now={now} />]] as Array<
+												[string, ReactNode]
+											>)
+										: []),
+									...(run.agentResult
+										? ([
+												["How the agent ended", run.agentResult.subtype],
+												[
+													"Turns",
+													run.agentResult.turns === null ? "Not reported" : String(run.agentResult.turns),
+												],
+												[
+													"What it cost, as the agent reported it",
+													run.agentResult.costUsd === null
+														? "Not reported. That is not the same as nothing."
+														: `US$${run.agentResult.costUsd.toFixed(4)}`,
+												],
+											] as Array<[string, ReactNode]>)
+										: []),
+								]}
+							/>
+							{run.logTail && (
+								<details style={{ marginTop: 12 }}>
+									<summary className="wai-small">The end of the last command’s output</summary>
+									<pre className="wai-pre" tabIndex={0} aria-label="The end of the last command's output">
+										{run.logTail}
+									</pre>
+								</details>
+							)}
+							{running && (
+								<div style={{ marginTop: 12 }}>
+									<RunPoller action={codingAction} jobId={job.id} />
+									<ButtonForm
+										action={codingAction}
+										hidden={{ intent: "run.advance", jobId: job.id }}
+										label="Check progress now"
+										small
+										idPrefix="advance"
+									/>
+								</div>
+							)}
+						</Card>
 					)}
 					{job.status === "rejected" && (
-						<Notice tone="bad" title="The returned package was refused and not kept.">
+						<Notice tone="bad" title="The returned change was refused and not kept.">
 							{job.statusDetail}
+						</Notice>
+					)}
+					{job.status === "failed" && (
+						<Notice tone="bad" title="The run stopped and no change was collected.">
+							{run ? "Why is above. " : `${job.statusDetail ?? ""} `}
+							The repository is free for another job. Ask again with a new job if the work is still wanted.
 						</Notice>
 					)}
 					{job.status === "cancelled" && <Notice tone="info">{job.statusDetail}</Notice>}

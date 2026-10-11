@@ -224,7 +224,7 @@ describe("a registered repository", () => {
 });
 
 describe("a coding job", () => {
-	it("is described by an envelope the server builds, and waits because no backend is connected", async () => {
+	it("is described by an envelope the server builds, and waits until a person starts it", async () => {
 		const repositoryId = await repository();
 		const job = await request(repositoryId);
 		expect(job).toMatchObject({
@@ -234,8 +234,9 @@ describe("a coding job", () => {
 			status: "awaiting_backend",
 			requestedBy: "operator:staff-1",
 		});
-		expect(job.statusDetail).toContain("No coding backend is connected.");
-		expect(job.statusDetail).toContain("@anthropic-ai/claude-agent-sdk package, which is not installed");
+		expect(job.statusDetail).toBe(
+			"Recorded. Nothing has run: a person starts the run once the worker's settings are in place.",
+		);
 		expect(job.envelope).toMatchObject({
 			contract: 1,
 			repositoryId,

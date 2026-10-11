@@ -637,15 +637,48 @@ export async function buildDailyReport(
 			title: `Coding work is waiting: ${waitingJobs.length} job${waitingJobs.length === 1 ? "" : "s"}`,
 			responsible: "The owner",
 			priority: "normal",
-			reason: `No coding backend is connected, so nothing has run. Waiting on: ${waitingJobs.map((job) => job.repositoryId).join(", ")}. No patch or check result exists for ${waitingJobs.length === 1 ? "it" : "them"}.`,
+			reason: `Recorded and not started, so nothing has run. Waiting on: ${waitingJobs.map((job) => job.repositoryId).join(", ")}. No patch or check result exists for ${waitingJobs.length === 1 ? "it" : "them"}.`,
 			nextSteps: [
-				"Decide whether to connect a coding backend.",
-				"Until then, cancel a job that is no longer wanted so its repository is free.",
+				"Open the job. Its page says whether the worker's settings are in place.",
+				"Start the run, or cancel a job that is no longer wanted so its repository is free.",
 			],
 			due: null,
 			links: [{ label: "Coding work", href: `${WORKSPACE_PATH}/engineering/coding` }],
-			sources: [source("Coding jobs waiting for a backend")],
-			expectedResult: "A backend is connected, or the jobs are cancelled.",
+			sources: [source("Coding jobs not yet started")],
+			expectedResult: "Each job is started or cancelled.",
+			dependsOn: [],
+		});
+	// A run's steps are taken from its page. One left alone ends with nothing, so it is said here while it can be saved.
+	for (const job of codingJobs.filter((item) => item.status === "running"))
+		actions.push({
+			title: `A coding run is in progress: ${job.repositoryId}`,
+			responsible: "The person who started it",
+			priority: "high",
+			reason:
+				"A machine is working on this job. Its change is collected and checked only while the job's page is open, and the machine is thrown away shortly after the agent's time limit. Left alone past that, the run ends with no change.",
+			nextSteps: ["Open the job and leave its page open until the run ends, or cancel it."],
+			due: null,
+			links: [{ label: "The job", href: `${WORKSPACE_PATH}/engineering/coding/${job.id}` }],
+			sources: [source("Coding jobs running")],
+			expectedResult: "The run ends with a change to decide on, or with a reason it stopped.",
+			dependsOn: [],
+		});
+	for (const job of codingJobs.filter(
+		(item) => item.status === "failed" && item.updatedAt > start && item.updatedAt <= end,
+	))
+		actions.push({
+			title: `A coding run stopped with no change: ${job.repositoryId}`,
+			responsible: "The owner",
+			priority: "normal",
+			reason: `${job.statusDetail ?? "No reason was recorded."} No patch exists for this job, and its repository is free again.`,
+			nextSteps: [
+				"Open the job and read why it stopped.",
+				"Ask again with a new job if the work is still wanted.",
+			],
+			due: null,
+			links: [{ label: "The job", href: `${WORKSPACE_PATH}/engineering/coding/${job.id}` }],
+			sources: [source("Coding runs that stopped in this period")],
+			expectedResult: "The reason is read, and the work is asked for again or dropped.",
 			dependsOn: [],
 		});
 	for (const { job, pkg } of undecidedChanges)

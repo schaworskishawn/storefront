@@ -906,7 +906,7 @@ describe("a report on a workspace with coding work asked for", () => {
 			title: "Coding work is waiting: 1 job",
 			responsible: "The owner",
 			reason:
-				"No coding backend is connected, so nothing has run. Waiting on: storefront. No patch or check result exists for it.",
+				"Recorded and not started, so nothing has run. Waiting on: storefront. No patch or check result exists for it.",
 			links: [{ label: "Coding work", href: "/worldwide-ai/engineering/coding" }],
 		});
 		expect(first.coverage.find((row) => row.source === "Coding jobs")?.records).toBe(1);
@@ -943,6 +943,68 @@ describe("a report on a workspace with coding work asked for", () => {
 		});
 		const third = reportOf((await w.generate({ again: true, actor: staff })).report);
 		expect(third.actions.some((a) => a.title.startsWith("Decide on a change"))).toBe(false);
+	});
+
+	it("says a run is in progress while it can still be saved, and why one stopped with nothing", async () => {
+		// One workspace per state: a report covers the time since the one before it, so a second report on the same clock
+		// covers no time at all.
+		const taken = async (key: string) => {
+			const w = await open("2026-10-22T13:00:00Z");
+			await registerRepository(w.sql, owner, {
+				id: "storefront",
+				label: "The storefront",
+				defaultBranch: "main",
+				changeScope: "src/ui/**",
+			});
+			const job = await requestCodingJob(
+				w.sql,
+				staff,
+				{
+					jobType: "change_proposal",
+					repositoryId: "storefront",
+					baseCommit: "b".repeat(40),
+					goal: "Fix the filter drawer.",
+					expectedResult: "The drawer opens at phone width.",
+					checks: ["typecheck"],
+					idempotencyKey: key,
+				},
+				new Date("2026-10-22T12:00:00Z"),
+			);
+			return { w, job };
+		};
+
+		// A worker (stood in for here) has taken the job.
+		const running = await taken("report-coding-2");
+		await running.w.sql.query(
+			`update wai_coding_jobs set status = 'running', updated_at = $2 where id = $1`,
+			[running.job.id, "2026-10-22T12:30:00Z"],
+		);
+		const first = reportOf((await running.w.generate()).report);
+		expect(first.actions.some((a) => a.title.startsWith("Coding work is waiting"))).toBe(false);
+		expect(first.actions.some((a) => a.title.startsWith("A coding run stopped"))).toBe(false);
+		expect(first.actions.find((a) => a.title.startsWith("A coding run is in progress"))).toMatchObject({
+			title: "A coding run is in progress: storefront",
+			responsible: "The person who started it",
+			priority: "high",
+			links: [{ label: "The job", href: `/worldwide-ai/engineering/coding/${running.job.id}` }],
+		});
+
+		const stopped = await taken("report-coding-3");
+		await stopped.w.sql.query(
+			`update wai_coding_jobs set status = 'failed', status_detail = $2, updated_at = $3 where id = $1`,
+			[stopped.job.id, "The agent ran past its limit of 20 minutes and was stopped.", "2026-10-22T12:55:00Z"],
+		);
+		const second = reportOf((await stopped.w.generate()).report);
+		expect(second.actions.some((a) => a.title.startsWith("A coding run is in progress"))).toBe(false);
+		expect(second.actions.find((a) => a.title.startsWith("A coding run stopped"))).toMatchObject({
+			title: "A coding run stopped with no change: storefront",
+			responsible: "The owner",
+			reason:
+				"The agent ran past its limit of 20 minutes and was stopped. No patch exists for this job, and its repository is free again.",
+		});
+		// The next report starts where this one ended, so the same stop isn't raised twice.
+		const third = reportOf((await stopped.w.generate({ again: true, actor: staff })).report);
+		expect(third.actions.some((a) => a.title.startsWith("A coding run stopped"))).toBe(false);
 	});
 });
 

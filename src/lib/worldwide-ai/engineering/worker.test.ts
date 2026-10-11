@@ -274,7 +274,7 @@ async function setup(
 
 /** Keeps checking on a run until it is over, as its page would. */
 async function runToEnd(deps: WorkerDeps, job: CodingJob) {
-	let run = await startCodingRun(deps, staff, job.id);
+	let run = await startCodingRun(deps, owner, job.id);
 	for (let i = 0; i < 40 && run.finishedAt === null; i++) run = await advanceCodingRun(deps, job.id);
 	return run;
 }
@@ -344,7 +344,7 @@ describe("starting a run", () => {
 			{},
 			{ env: { ANTHROPIC_API_KEY: "", WORLDWIDE_AI_CODING: "" } },
 		);
-		await expect(startCodingRun(deps, staff, job.id)).rejects.toThrow(
+		await expect(startCodingRun(deps, owner, job.id)).rejects.toThrow(
 			"It can't be run yet: WORLDWIDE_AI_CODING is not set to vercel-sandbox, so the worker is switched off; ANTHROPIC_API_KEY is not set.",
 		);
 		expect(machines.created).toEqual([]);
@@ -352,17 +352,28 @@ describe("starting a run", () => {
 		expect(await getCodingRun(sql, job.id)).toBeNull();
 	});
 
+	it("is the owner's to do, since it spends on the owner's accounts", async () => {
+		const { job, machines, deps } = await setup();
+		await expect(startCodingRun(deps, staff, job.id)).rejects.toThrow(
+			"Only the owner can start a run: it creates a machine on the owner's Vercel account and spends model usage.",
+		);
+		expect(machines.created).toEqual([]);
+		expect(await getCodingRun(sql, job.id)).toBeNull();
+		expect((await getCodingJob(sql, job.id))?.job.status).toBe("awaiting_backend");
+		expect((await listAudit(sql, 1))[0]).toMatchObject({ action: "coding.run.start", outcome: "denied" });
+	});
+
 	it("is refused while Build is switched off, and a job is run once", async () => {
 		const { job, machines, deps } = await setup();
 		await updateRoleSettings(sql, owner, "build", { enabled: false });
-		await expect(startCodingRun(deps, staff, job.id)).rejects.toThrow("Build is switched off in Settings");
+		await expect(startCodingRun(deps, owner, job.id)).rejects.toThrow("Build is switched off in Settings");
 		await updateRoleSettings(sql, owner, "build", { enabled: true });
 		expect(machines.created).toEqual([]);
 
-		const run = await startCodingRun(deps, staff, job.id);
-		expect(run).toMatchObject({ phase: "installing_agent", startedBy: "operator:staff-1" });
+		const run = await startCodingRun(deps, owner, job.id);
+		expect(run).toMatchObject({ phase: "installing_agent", startedBy: "operator:owner-1" });
 		expect((await listAudit(sql, 1))[0]).toMatchObject({ action: "coding.run.start", outcome: "allowed" });
-		await expect(startCodingRun(deps, staff, job.id)).rejects.toThrow(
+		await expect(startCodingRun(deps, owner, job.id)).rejects.toThrow(
 			"That job is running. A job is run once.",
 		);
 		// One machine, however many times it was asked for.
@@ -546,7 +557,7 @@ describe("a run that doesn't go well", () => {
 
 	it("stops an agent that runs past its limit, and collects nothing from it", async () => {
 		const { job, machines, deps, clock } = await setup({ agentPolls: Number.POSITIVE_INFINITY });
-		let run = await startCodingRun(deps, staff, job.id);
+		let run = await startCodingRun(deps, owner, job.id);
 		run = await advanceCodingRun(deps, job.id);
 		expect(run.phase).toBe("agent");
 		// Still inside its thirty minutes: left alone.
@@ -665,7 +676,7 @@ describe("a run that is interrupted", () => {
 	it("stays where it was when the provider fails, says so, and picks up without a second machine", async () => {
 		const { job, machines, deps } = await setup();
 		machines.failNextCreate = `Vercel answered 503 while using ${KEY}`;
-		await expect(startCodingRun(deps, staff, job.id)).rejects.toThrow(
+		await expect(startCodingRun(deps, owner, job.id)).rejects.toThrow(
 			"The machine provider didn't complete a step: Vercel answered 503 while using [the key].",
 		);
 		const stuck = await getCodingRun(sql, job.id);
@@ -683,7 +694,7 @@ describe("a run that is interrupted", () => {
 
 	it("is moved by one request at a time", async () => {
 		const { job, machines, deps } = await setup();
-		await startCodingRun(deps, staff, job.id);
+		await startCodingRun(deps, owner, job.id);
 		// Someone else holds the run: this request is told where it stands and does nothing.
 		await sql.query(
 			`update wai_coding_runs set lease_token = 'someone-else', lease_until = now() + interval '1 minute' where job_id = $1`,
@@ -702,7 +713,7 @@ describe("a run that is interrupted", () => {
 
 	it("ends when its machine is gone, without inventing a result", async () => {
 		const { job, machines, deps } = await setup({ agentPolls: Number.POSITIVE_INFINITY });
-		await startCodingRun(deps, staff, job.id);
+		await startCodingRun(deps, owner, job.id);
 		await advanceCodingRun(deps, job.id);
 		// The machine ran out of time before anyone checked on it.
 		[...machines.live.values()][0].stopped = true;
@@ -716,7 +727,7 @@ describe("a run that is interrupted", () => {
 
 	it("stops its machines when the job is cancelled, and does nothing more", async () => {
 		const { job, machines, deps } = await setup({ agentPolls: Number.POSITIVE_INFINITY });
-		await startCodingRun(deps, staff, job.id);
+		await startCodingRun(deps, owner, job.id);
 		await advanceCodingRun(deps, job.id);
 		await expect(cancelCodingRun(deps, staff, { jobId: job.id, reason: "" })).rejects.toThrow("Say why");
 		expect((await cancelCodingRun(deps, staff, { jobId: job.id, reason: "Wrong commit" })).status).toBe(
@@ -732,7 +743,7 @@ describe("a run that is interrupted", () => {
 
 	it("stops when a setting it needs is taken away mid-run", async () => {
 		const { job, machines, deps, repositoryId } = await setup({ agentPolls: Number.POSITIVE_INFINITY });
-		await startCodingRun(deps, staff, job.id);
+		await startCodingRun(deps, owner, job.id);
 		await advanceCodingRun(deps, job.id);
 		const without: WorkerDeps = { ...deps, config: configFor(repositoryId, { ANTHROPIC_API_KEY: "" }) };
 		expect(await advanceCodingRun(without, job.id)).toMatchObject({

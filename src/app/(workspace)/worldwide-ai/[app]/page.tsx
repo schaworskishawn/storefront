@@ -183,8 +183,8 @@ export default async function AreaPage({ params }: Props) {
 					<Card title="Coding work">
 						<p className="wai-help" style={{ marginTop: 0 }}>
 							Ask Build for a change to a registered repository, see the exact change that comes back, and
-							decide on it once Verify has checked that exact change. No coding backend is connected yet, so a
-							job asked for is recorded and waits.
+							decide on it once Verify has checked that exact change. A job is recorded and waits until a
+							person starts its run, which needs the worker’s settings to be in place.
 						</p>
 						<div className="wai-row" style={{ gap: 12, flexWrap: "wrap" }}>
 							<Link href={`${WORKSPACE_PATH}/engineering/coding`} className="wai-btn wai-btn--primary">
