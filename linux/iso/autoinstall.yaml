@@ -20,5 +20,10 @@ autoinstall:
     # The image is mounted at /cdrom while the installer runs, and the installed system at /target.
     - mkdir -p /target/var/cache/worldwide-ai/install
     - cp /cdrom/worldwide-ai/*.deb /target/var/cache/worldwide-ai/install/
-    - curtin in-target -- sh -c 'apt-get install -y --no-download /var/cache/worldwide-ai/install/*.deb'
+    # dpkg installs exactly these files and fetches nothing; if one needs something the system lacks, it fails and the
+    # installer stops and says so. (apt-get --no-download refuses local files too: tried in 0.0.1, it failed.)
+    - curtin in-target -- sh -c 'dpkg -i /var/cache/worldwide-ai/install/*.deb'
+    - curtin in-target -- sh -c 'dpkg-query -W -f "\${Package} \${Version} \${Status}\n" "worldwide-ai-*" > /var/log/worldwide-ai-install.log'
+    # Stops the installer unless at least one package was installed and every one of them is fully installed.
+    - curtin in-target -- sh -c 'test -s /var/log/worldwide-ai-install.log && ! grep -v " install ok installed$" /var/log/worldwide-ai-install.log'
     - rm -rf /target/var/cache/worldwide-ai/install
