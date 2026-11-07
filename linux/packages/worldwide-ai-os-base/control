@@ -1,0 +1,10 @@
+Package: worldwide-ai-os-base
+Version: @VERSION@
+Architecture: all
+Section: misc
+Priority: optional
+Maintainer: Worldwide Vapor
+Description: Worldwide AI OS: what this installation is
+ Records which Worldwide AI OS image a computer was installed from, and
+ the settings the workspace will ask for at first boot, as an example
+ with no values. It contains no account, password, key or token.

@@ -6,3 +6,5 @@
 *.desktop text eol=lf
 # These run on Windows.
 *.ps1 text eol=crlf
+# Everything a package installs is a Linux file.
+packages/** text eol=lf

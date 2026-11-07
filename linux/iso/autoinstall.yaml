@@ -1,0 +1,24 @@
+# The installer file put at the root of the Worldwide AI OS image. Ubuntu's desktop installer reads it from there.
+#
+# It automates nothing a person should decide. Every section listed under interactive-sections is shown to the person
+# installing, with the values below only as suggestions: they choose the disk and review the storage plan before anything
+# is written, and they create their own Linux account. What it adds is the last step: installing the Worldwide AI packages
+# from the image itself, so no internet is needed for them.
+autoinstall:
+  version: 1
+  interactive-sections:
+    - locale
+    - keyboard
+    - network
+    - storage
+    - identity
+    - timezone
+  source:
+    id: ubuntu-desktop-minimal
+  timezone: America/Winnipeg
+  late-commands:
+    # The image is mounted at /cdrom while the installer runs, and the installed system at /target.
+    - mkdir -p /target/var/cache/worldwide-ai/install
+    - cp /cdrom/worldwide-ai/*.deb /target/var/cache/worldwide-ai/install/
+    - curtin in-target -- sh -c 'apt-get install -y --no-download /var/cache/worldwide-ai/install/*.deb'
+    - rm -rf /target/var/cache/worldwide-ai/install

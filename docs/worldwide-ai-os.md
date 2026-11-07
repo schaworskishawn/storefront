@@ -6,17 +6,17 @@ The Linux desktop and installer image for the Worldwide AI workspace: an Ubuntu 
 
 ## Where it stands
 
-| Part                                            | State                                                                                                               |
-| ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| Base image pinned and verified                  | Done. Downloaded on 2026-11-07 and checked by `linux/iso/fetch-base.sh`: signature, signed checksum, size, SHA-256. |
-| Base image inspected                            | Done, read only. Findings below.                                                                                    |
-| VirtualBox scripts                              | Written. Not run: no machine has been created.                                                                      |
-| Application package (standalone server, `.deb`) | Not started. Needs a Linux Node.js 24 runtime and the Linux builds of the app's native packages.                    |
-| Desktop window (Electron)                       | Not started. Needs Electron.                                                                                        |
-| Desktop session, services, first-boot setup     | Not started.                                                                                                        |
-| Installer image build                           | Not started. Needs `xorriso`.                                                                                       |
-| Boot, install, reboot in VirtualBox             | Not tested.                                                                                                         |
-| Secure Boot, a mini PC, any other architecture  | Not tested. Only amd64 is in scope.                                                                                 |
+| Part                                            | State                                                                                                                                                                                              |
+| ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Base image pinned and verified                  | Done. Downloaded on 2026-11-07 and checked by `linux/iso/fetch-base.sh`: signature, signed checksum, size, SHA-256.                                                                                |
+| Base image inspected                            | Done, read only. Findings below.                                                                                                                                                                   |
+| VirtualBox scripts                              | Written. Not run: no machine has been created.                                                                                                                                                     |
+| Application package (standalone server, `.deb`) | Not started. Needs a Linux Node.js 24 runtime and the Linux builds of the app's native packages.                                                                                                   |
+| Desktop window (Electron)                       | Not started. Needs Electron.                                                                                                                                                                       |
+| Desktop session, services, first-boot setup     | Not started. A first package, `worldwide-ai-os-base`, records which image a computer came from and carries the settings as an example with no values. Built and inspected; not installed anywhere. |
+| Installer image build                           | Script written (`linux/iso/build-iso.sh`), with the installer file `linux/iso/autoinstall.yaml`. Not run: `xorriso` isn't installed yet.                                                           |
+| Boot, install, reboot in VirtualBox             | Not tested.                                                                                                                                                                                        |
+| Secure Boot, a mini PC, any other architecture  | Not tested. Only amd64 is in scope.                                                                                                                                                                |
 
 ## The base image
 
@@ -46,6 +46,19 @@ Proposed, and to be proved by installing it:
 4. **The image is reassembled with `xorriso`, replaying the original boot setup.** It is named `worldwide-ai-os-<version>-amd64.iso`, with its own `SHA256SUMS` and a manifest of what went into it.
 
 No password, account, key, token, customer record or formula goes into the image. The workspace's own settings are entered on the installed machine at first boot.
+
+## Building it
+
+Run in WSL Ubuntu as an ordinary user, never as root. Neither script mounts anything.
+
+```bash
+SOURCE_REVISION=$(git rev-parse HEAD) linux/packages/build-debs.sh <packages directory> <version>
+linux/iso/build-iso.sh <Ubuntu image> <packages directory> <output directory> <version>
+```
+
+`build-debs.sh` builds each package under `linux/packages/` with fixed permissions, owned by root inside the package, so a checkout made on Windows builds the same package. `build-iso.sh` checks the Ubuntu image against the pin, refuses a package for the wrong architecture or one that carries real settings, writes `worldwide-ai-os-<version>-amd64.iso` with xorriso replaying Ubuntu's boot setup, and writes `SHA256SUMS`, a manifest of every package with its checksum, and a build log. Pass `SOURCE_REVISION`: WSL's git can't always read a checkout made on Windows.
+
+The installer file keeps the language, keyboard, network, disk and storage plan, Linux account and time zone as questions for the person installing, and only adds the last step: installing the packages from the disc. Whether Ubuntu's desktop installer reads it from the disc and runs that step as written is unproven until an image is installed.
 
 ## This computer, as found on 2026-11-07
 
