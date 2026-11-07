@@ -7,6 +7,9 @@ import { listFindings } from "../findings";
 import { hashOf } from "../functions/products";
 import { INTEGRATIONS, configStatus } from "../integrations/catalog";
 import { latestHealth } from "../integrations/health";
+import { LICENCE_STANDING_LABELS, listLicences } from "../compliance/licences";
+import { listRules } from "../compliance/rules";
+import { stampReconciliation } from "../compliance/stamps";
 import { listCodingJobs, listUndecidedPackages } from "../engineering/coding";
 import { CALIBRATION_LABELS, listEquipment } from "../lab/equipment";
 import { listFinished } from "../lab/finished";
@@ -170,6 +173,9 @@ export async function buildDailyReport(
 		tags,
 		codingJobs,
 		undecidedChanges,
+		rules,
+		licences,
+		stamps,
 	] = await Promise.all([
 		sql.query(
 			`select ${TASK_COLUMNS} from wai_tasks t where ${BUSINESS} and t.state = 'completed'
@@ -225,6 +231,9 @@ export async function buildDailyReport(
 		tagCounts(sql),
 		listCodingJobs(sql),
 		listUndecidedPackages(sql),
+		listRules(sql, day),
+		listLicences(sql, day),
+		stampReconciliation(sql),
 	]);
 
 	// A finding raised by a demonstration run, or by one person's own task, is not business news.
@@ -699,6 +708,107 @@ export async function buildDailyReport(
 			dependsOn: [],
 		});
 
+	// ---- Compliance: rules waiting or due, licences coming up, stamps that need a person ------------------------
+	const ruleDrafts = rules.filter((rule) => rule.standing === "awaiting_review");
+	if (ruleDrafts.length)
+		actions.push({
+			title: `Rule drafts waiting for the owner: ${ruleDrafts.length}`,
+			responsible: "The owner",
+			priority: "normal",
+			reason: `${ruleDrafts.map((rule) => rule.code).join(", ")}. A draft guides nothing until the owner approves it with a decision on whether it applies here.`,
+			nextSteps: ["Open each rule.", "Approve or reject the draft, saying on what basis."],
+			due: null,
+			links: [{ label: "Rule register", href: `${WORKSPACE_PATH}/compliance/rules` }],
+			sources: [source("Rule drafts waiting for a decision")],
+			expectedResult: "Each draft is approved or rejected.",
+			dependsOn: [],
+		});
+	const rulesDue = rules.filter((rule) => rule.standing === "review_due");
+	if (rulesDue.length)
+		actions.push({
+			title: `Rules due to be looked at again: ${rulesDue.length}`,
+			responsible: "The owner",
+			priority: "normal",
+			reason: `${rulesDue.map((rule) => rule.code).join(", ")}. The approved reading still guides work; its review date has come.`,
+			nextSteps: [
+				"Read the current version of each source.",
+				"Record a new reading if it changed, or approve one with a new review date if it didn't.",
+			],
+			due: null,
+			links: [{ label: "Rule register", href: `${WORKSPACE_PATH}/compliance/rules` }],
+			sources: [source("Approved rules with a review date today or earlier")],
+			expectedResult: "Each rule has a reading approved with a review date after today.",
+			dependsOn: [],
+		});
+	for (const licence of licences.filter((l) =>
+		["renewal_due", "renewal_overdue", "expired"].includes(l.standing),
+	))
+		actions.push({
+			title: `${LICENCE_STANDING_LABELS[licence.standing]}: ${licence.name}`,
+			responsible: licence.responsible,
+			priority: licence.standing === "renewal_due" ? "high" : "urgent",
+			reason:
+				licence.standing === "expired"
+					? `It expired ${licence.daysLeft === null ? "" : `${-licence.daysLeft} days ago `}and is still recorded as held.`
+					: licence.standing === "renewal_overdue"
+						? `The renewal date recorded for it passed ${licence.daysLeft === null ? "" : `${-licence.daysLeft} days ago`}.`
+						: `${licence.daysLeft} days to ${licence.renewBy ? "the renewal date" : "its expiry"} recorded for it.`,
+			nextSteps: [
+				"Check the licence and what the authority asks for.",
+				"Record the renewal, or its new status, on its page.",
+			],
+			// A date entered from the licence, so it is a confirmed one.
+			due: { date: (licence.renewBy ?? licence.expiresOn) as string, confirmed: true },
+			links: [{ label: licence.name, href: `${WORKSPACE_PATH}/compliance/licences/${licence.id}` }],
+			sources: [source("Licences, as recorded")],
+			expectedResult: "The renewal or the licence's new status is recorded.",
+			dependsOn: [],
+		});
+	const licenceQuestions = licences.reduce((sum, l) => sum + l.openQuestions, 0);
+	if (licenceQuestions)
+		actions.push({
+			title: `Open questions about what licences cover: ${licenceQuestions}`,
+			responsible: "The owner",
+			priority: "normal",
+			reason: `On ${licences
+				.filter((l) => l.openQuestions)
+				.map((l) => l.name)
+				.join(", ")}.`,
+			nextSteps: ["Answer each one on the licence's page, saying where the answer came from."],
+			due: null,
+			links: [{ label: "Licences", href: `${WORKSPACE_PATH}/compliance/licences` }],
+			sources: [source("Open licence questions")],
+			expectedResult: "Each question has an answer.",
+			dependsOn: [],
+		});
+	for (const exception of stamps.exceptions)
+		actions.push({
+			title: `${exception.kind === "lost" ? "Stamps lost" : exception.kind === "damaged" ? "Damaged stamps" : "Stamp ledger doesn't add up"}: ${exception.code}`,
+			responsible: "The owner",
+			priority: exception.kind === "damaged" ? "normal" : exception.kind === "lost" ? "high" : "urgent",
+			reason: exception.detail,
+			nextSteps:
+				exception.kind === "damaged"
+					? [
+							"Return or dispose of them under the authority's process.",
+							"Record the return or the disposal, with its evidence.",
+						]
+					: exception.kind === "lost"
+						? ["Look for them.", "Record them found, or follow the authority's process for lost stamps."]
+						: [
+								"Compare the receipt's ledger with its counts.",
+								"Find out what was recorded wrongly before recording anything else.",
+							],
+			due: null,
+			links: [{ label: exception.code, href: `${WORKSPACE_PATH}/compliance/stamps/${exception.stockId}` }],
+			sources: [source("Excise stamp ledger")],
+			expectedResult:
+				exception.kind === "ledger"
+					? "The ledger and the counts agree."
+					: "No stamps are left in this state without a record of what happened.",
+			dependsOn: [],
+		});
+
 	// ---- Services ----------------------------------------------------------------------------------------
 	const statuses = configStatus(config, deps.env ?? process.env);
 	const integrations = statuses
@@ -930,6 +1040,13 @@ export async function buildDailyReport(
 			{ source: "Training records", records: training.length, asOf: end },
 			{ source: "Registered tags", records: tags.total, asOf: end },
 			{ source: "Coding jobs", records: codingJobs.length, asOf: end },
+			{ source: "Compliance rules", records: rules.length, asOf: end },
+			{ source: "Licences", records: licences.length, asOf: end },
+			{
+				source: "Excise stamps received",
+				records: stamps.byJurisdiction.reduce((n, j) => n + j.received, 0),
+				asOf: end,
+			},
 			{ source: "Tags in use attached to nothing", records: tags.unassigned, asOf: end },
 		],
 	};

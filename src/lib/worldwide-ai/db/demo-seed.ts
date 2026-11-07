@@ -15,6 +15,9 @@ import {
 import { addEquipment, recordCalibration } from "../lab/equipment";
 import { addSpecification, approveSpecification } from "../lab/quality";
 import { assignTag, recordScan, registerTags } from "../rfid/registry";
+import { raiseLicenceQuestion, recordLicence } from "../compliance/licences";
+import { createRule, reviewRuleVersion } from "../compliance/rules";
+import { receiveStamps, recordStampEvent } from "../compliance/stamps";
 
 /**
  * Sample data for the local demonstration store (WORLDWIDE_AI_STORE=demo). Everything here is made up, every title starts
@@ -382,4 +385,69 @@ async function seedDemoLab(sql: Sql, now: Date): Promise<void> {
 		},
 		new Date(`${today}T12:00:00Z`),
 	);
+
+	// Made-up compliance records. The rule is the business's own policy, not a reading of any law; the licence, its
+	// authority and the stamps are fictional, and the stamps' jurisdiction says so.
+	const policy = await createRule(sql, DEMO_OWNER, {
+		code: "DEMO-STAMP-CUSTODY",
+		title: `${DEMO_PREFIX} Stamps are kept locked when nobody is packaging`,
+		jurisdiction: "Our own",
+		ownerLabel: "Duty",
+		kind: "internal_policy",
+		sourceTitle: `${DEMO_PREFIX} A fictional internal procedure`,
+		effectiveFrom: today,
+		summary: `${DEMO_PREFIX} Unused stamps go back in the safe at the end of each packaging run.`,
+		applicability: "applies",
+		applicabilityReason: `${DEMO_PREFIX} It is our own policy.`,
+		reviewEveryDays: "365",
+	});
+	await reviewRuleVersion(
+		sql,
+		DEMO_OWNER,
+		{ versionId: policy.version.id, decision: "approve", note: `${DEMO_PREFIX} Demonstration only.` },
+		today,
+	);
+	await createRule(sql, DEMO_OWNER, {
+		code: "DEMO-UNREAD-GUIDANCE",
+		title: `${DEMO_PREFIX} A guidance page nobody has read yet`,
+		jurisdiction: `${DEMO_PREFIX} A fictional authority`,
+		ownerLabel: "Comply",
+		kind: "guidance",
+		sourceTitle: `${DEMO_PREFIX} A fictional guidance page`,
+		summary: `${DEMO_PREFIX} Not read yet. This draft guides nothing.`,
+	});
+	const demoLicence = await recordLicence(sql, DEMO_OWNER, {
+		name: `${DEMO_PREFIX} Vaping product licence`,
+		authority: `${DEMO_PREFIX} A fictional authority`,
+		reference: "DEMO-0001",
+		scope: `${DEMO_PREFIX} Make and package vaping liquid at the fictional premises.`,
+		premises: `${DEMO_PREFIX} Unit 1`,
+		responsible: "Demo Owner",
+		evidence: `${DEMO_PREFIX} No document: this licence is made up.`,
+		issuedOn: today,
+		renewBy: new Date(Date.parse(`${today}T00:00:00Z`) + 40 * 86_400_000).toISOString().slice(0, 10),
+		remindDays: "60",
+	});
+	await raiseLicenceQuestion(sql, DEMO_OWNER, {
+		licenceId: demoLicence.id,
+		question: `${DEMO_PREFIX} Does it cover packaging at a second unit?`,
+	});
+	const demoStamps = await receiveStamps(sql, DEMO_OWNER, {
+		jurisdiction: `${DEMO_PREFIX} Fictional jurisdiction`,
+		authorizedEntity: `${DEMO_PREFIX} Demo licensee`,
+		sourceDocument: `${DEMO_PREFIX} A fictional packing slip`,
+		serialPrefix: "DX",
+		serialFrom: "1",
+		serialTo: "200",
+		receivedOn: today,
+		location: `${DEMO_PREFIX} Office safe`,
+		idempotencyKey: "demo-stamps-1",
+	});
+	await recordStampEvent(sql, DEMO_OWNER, {
+		stockId: demoStamps.id,
+		kind: "damaged",
+		quantity: "2",
+		reason: `${DEMO_PREFIX} Torn in the demonstration.`,
+		idempotencyKey: "demo-stamps-2",
+	});
 }

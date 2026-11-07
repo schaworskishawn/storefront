@@ -71,6 +71,14 @@ export const BACKUP_TABLES = [
 	{ name: "wai_package_verifications", order: "recorded_at, id" },
 	{ name: "wai_learning_events", order: "reviewed_at, id" },
 	{ name: "wai_coding_runs", order: "started_at, id" },
+	{ name: "wai_compliance_rules", order: "created_at, id" },
+	{ name: "wai_compliance_rule_versions", order: "drafted_at, id" },
+	{ name: "wai_licences", order: "created_at, id" },
+	{ name: "wai_licence_events", order: "at, id" },
+	{ name: "wai_licence_questions", order: "raised_at, id" },
+	{ name: "wai_stamp_stocks", order: "received_at, id" },
+	{ name: "wai_stamp_events", order: "at, id" },
+	{ name: "wai_recall_checks", order: "run_at, id" },
 ] as const;
 
 export type BackupTableName = (typeof BACKUP_TABLES)[number]["name"];
