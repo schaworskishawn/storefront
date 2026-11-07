@@ -1,0 +1,9 @@
+{
+	"name": "worldwide-ai-shell",
+	"productName": "Worldwide AI",
+	"version": "@VERSION@",
+	"description": "The window the Worldwide AI workspace opens in on Worldwide AI OS.",
+	"private": true,
+	"main": "main.js",
+	"desktopName": "worldwide-ai.desktop"
+}

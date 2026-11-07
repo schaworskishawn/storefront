@@ -8,3 +8,5 @@
 *.ps1 text eol=crlf
 # Everything a package installs is a Linux file.
 packages/** text eol=lf
+# The window program and its pins run on Linux.
+shell/** text eol=lf

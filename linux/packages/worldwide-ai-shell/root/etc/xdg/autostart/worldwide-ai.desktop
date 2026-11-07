@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Worldwide AI
+Comment=Opens the Worldwide AI workspace at sign-in
+Exec=/usr/bin/worldwide-ai
+Icon=worldwide-ai
+Terminal=false
+X-GNOME-Autostart-enabled=true

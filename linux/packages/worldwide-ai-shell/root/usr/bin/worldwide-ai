@@ -1,0 +1,3 @@
+#!/bin/sh
+# Opens the Worldwide AI window. Arguments are not passed on, so nothing can switch its sandbox off from here.
+exec /opt/worldwide-ai/shell/electron/electron /opt/worldwide-ai/shell/app

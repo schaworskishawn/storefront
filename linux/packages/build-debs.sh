@@ -36,6 +36,18 @@ for dir in "$here"/*/; do
 	for bin in "$tree/usr/bin" "$tree/usr/lib/worldwide-ai/bin"; do
 		[ -d "$bin" ] && find "$bin" -type f -exec chmod 0755 {} +
 	done
+	# Scripts dpkg runs when the package is installed or removed.
+	for script in preinst postinst prerm postrm; do
+		if [ -f "$dir/$script" ]; then
+			tr -d '\r' <"$dir/$script" >"$tree/DEBIAN/$script"
+			chmod 0755 "$tree/DEBIAN/$script"
+		fi
+	done
+	# What a package needs that isn't source, such as a runtime it ships, added after the permissions above so that
+	# prepare.sh sets its own.
+	if [ -f "$dir/prepare.sh" ]; then
+		bash "$dir/prepare.sh" "$tree" "$version"
+	fi
 	arch="$(sed -n 's/^Architecture: //p' "$tree/DEBIAN/control")"
 	dpkg-deb --root-owner-group --build "$tree" "$out/${package}_${version}_${arch}.deb" >/dev/null
 	echo "Built $out/${package}_${version}_${arch}.deb"
