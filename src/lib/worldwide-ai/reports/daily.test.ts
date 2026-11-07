@@ -3,6 +3,9 @@ import { approveVersion, createDocument } from "../atlas/service";
 import { listAudit } from "../audit";
 import { readConfig } from "../config";
 import type { Sql, SqlClient } from "../db/sql";
+import { raiseLicenceQuestion, recordLicence } from "../compliance/licences";
+import { createRule } from "../compliance/rules";
+import { receiveStamps, recordStampEvent } from "../compliance/stamps";
 import { acceptPackage, registerRepository, requestCodingJob, reviewPackage } from "../engineering/coding";
 import { recordFinding } from "../findings";
 import { requestFunction, reviewProduct, runFunction } from "../functions/pipeline";
@@ -1053,4 +1056,65 @@ describe("a report on a workspace where reviewers keep correcting the same proce
 			(await listProposals(w.sql, { state: "open" })).filter((p) => p.origin === "reviews"),
 		).toHaveLength(1);
 	}, 240_000);
+});
+
+describe("a report on a workspace with compliance records", () => {
+	it("names rule drafts, a renewal coming up, an open licence question, and damaged stamps", async () => {
+		const w = await open("2026-10-24T13:00:00Z");
+		await createRule(w.sql, staff, {
+			code: "CRA-RETURNS",
+			title: "Monthly excise return",
+			jurisdiction: "Canada (federal)",
+			ownerLabel: "Duty",
+			kind: "guidance",
+			sourceTitle: "CRA page",
+			summary: "A return each period.",
+		});
+		const licence = await recordLicence(w.sql, owner, {
+			name: "Vaping product licence",
+			authority: "Canada Revenue Agency",
+			scope: "Manufacture and stamp.",
+			responsible: "The owner",
+			renewBy: "2026-11-20",
+			remindDays: "30",
+		});
+		await raiseLicenceQuestion(w.sql, staff, {
+			licenceId: licence.id,
+			question: "Does it cover the second unit?",
+		});
+		const stock = await receiveStamps(w.sql, staff, {
+			jurisdiction: "Canada (federal)",
+			authorizedEntity: "Worldwide Vapor",
+			sourceDocument: "CRA shipment 1",
+			quantity: "50",
+			receivedOn: "2026-10-20",
+			location: "Safe",
+			idempotencyKey: "report-stamps-1",
+		});
+		await recordStampEvent(w.sql, staff, {
+			stockId: stock.id,
+			kind: "damaged",
+			quantity: "2",
+			reason: "Torn.",
+			idempotencyKey: "report-stamps-2",
+		});
+		const report = reportOf((await w.generate()).report);
+		expect(report.actions.find((a) => a.title === "Rule drafts waiting for the owner: 1")?.reason).toBe(
+			"CRA-RETURNS. A draft guides nothing until the owner approves it with a decision on whether it applies here.",
+		);
+		expect(report.actions.find((a) => a.title === "Renewal coming up: Vaping product licence")).toMatchObject(
+			{
+				responsible: "The owner",
+				priority: "high",
+				reason: "27 days to the renewal date recorded for it.",
+				due: { date: "2026-11-20", confirmed: true },
+				links: [{ label: "Vaping product licence", href: `/worldwide-ai/compliance/licences/${licence.id}` }],
+			},
+		);
+		expect(report.actions.some((a) => a.title === "Open questions about what licences cover: 1")).toBe(true);
+		expect(report.actions.find((a) => a.title === `Damaged stamps: ${stock.code}`)?.reason).toBe(
+			"2 damaged, with no return or disposal recorded.",
+		);
+		expect(report.coverage.find((row) => row.source === "Excise stamps received")?.records).toBe(50);
+	});
 });

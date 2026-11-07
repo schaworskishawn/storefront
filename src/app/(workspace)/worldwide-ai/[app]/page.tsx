@@ -110,6 +110,30 @@ export default async function AreaPage({ params }: Props) {
 						</div>
 					</Card>
 				)}
+				{area.id === "compliance" && (
+					<Card title="Compliance records">
+						<p className="wai-help" style={{ marginTop: 0 }}>
+							The rules the business tracks, in versions the owner approves; its licences and their renewal
+							dates; the excise stamps it holds and what was done with each; and recall traces across lots,
+							batches and packaging runs. These are records people keep. None of them is legal advice, a
+							filing, or a certification.
+						</p>
+						<div className="wai-row" style={{ gap: 12, flexWrap: "wrap" }}>
+							<Link href={`${WORKSPACE_PATH}/compliance/rules`} className="wai-btn wai-btn--primary">
+								Rule register
+							</Link>
+							<Link href={`${WORKSPACE_PATH}/compliance/licences`} className="wai-btn">
+								Licences
+							</Link>
+							<Link href={`${WORKSPACE_PATH}/compliance/stamps`} className="wai-btn">
+								Excise stamps
+							</Link>
+							<Link href={`${WORKSPACE_PATH}/compliance/recall`} className="wai-btn">
+								Recall trace
+							</Link>
+						</div>
+					</Card>
+				)}
 				{area.id === "rfid" && (
 					<Card title="The tag registry">
 						<p className="wai-help" style={{ marginTop: 0 }}>

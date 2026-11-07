@@ -12,6 +12,29 @@ import { listBackups } from "../backup/backup";
 import { runBackup, runRestoreDrill } from "../backup/drill";
 import { CHECK_RUNNERS, registerRepository, requestCodingJob, reviewPackage } from "../engineering/coding";
 import {
+	answerLicenceQuestion,
+	changeLicence,
+	raiseLicenceQuestion,
+	recordLicence,
+	type LicenceInput,
+} from "../compliance/licences";
+import { saveRecallCheck } from "../compliance/recall";
+import {
+	createRule,
+	draftRuleVersion,
+	queueStartingSources,
+	reviewRuleVersion,
+	withdrawRule,
+	type VersionInput,
+} from "../compliance/rules";
+import {
+	STAMP_ACTIONS,
+	STAMP_STATES,
+	moveStamps,
+	receiveStamps,
+	recordStampEvent,
+} from "../compliance/stamps";
+import {
 	PHASE_LABELS,
 	advanceCodingRun,
 	cancelCodingRun,
@@ -1724,6 +1747,202 @@ export async function codingAction(_previous: ActionState, form: FormData): Prom
 					pkg.decision === "approved"
 						? "Approved. That is a recorded decision on this exact candidate: nothing was merged, pushed or deployed."
 						: "Rejected.";
+				break;
+			}
+			default:
+				throw new WorkflowError("invalid", "That isn't something that can be done here.");
+		}
+	} catch (error) {
+		return describeFailure(error, values);
+	}
+	refresh();
+	if (destination) redirect(destination);
+	return { ok: true, message };
+}
+
+// ---- Compliance: the rule register, licences, the stamp ledger and recall checks ---------------------------
+
+const versionInput = (form: FormData): VersionInput => ({
+	kind: text(form, "kind"),
+	sourceTitle: text(form, "sourceTitle"),
+	sourceUrl: text(form, "sourceUrl"),
+	retrievedOn: text(form, "retrievedOn"),
+	publishedOn: text(form, "publishedOn"),
+	effectiveFrom: text(form, "effectiveFrom"),
+	effectiveTo: text(form, "effectiveTo"),
+	summary: text(form, "summary"),
+	applicability: text(form, "applicability"),
+	applicabilityReason: text(form, "applicabilityReason"),
+	reviewEveryDays: text(form, "reviewEveryDays"),
+});
+
+const licenceInput = (form: FormData): LicenceInput => ({
+	name: text(form, "name"),
+	authority: text(form, "authority"),
+	reference: text(form, "reference"),
+	scope: text(form, "scope"),
+	premises: text(form, "premises"),
+	responsible: text(form, "responsible"),
+	securityObligations: text(form, "securityObligations"),
+	evidence: text(form, "evidence"),
+	status: text(form, "status") || undefined,
+	issuedOn: text(form, "issuedOn"),
+	expiresOn: text(form, "expiresOn"),
+	renewBy: text(form, "renewBy"),
+	remindDays: text(form, "remindDays"),
+});
+
+/**
+ * Rules, licences, stamps and recall checks. Each records what a person did or decided: nothing here files a return, orders
+ * or disposes of a stamp, sends a notice, or decides what the law requires.
+ */
+export async function complianceAction(_previous: ActionState, form: FormData): Promise<ActionState> {
+	const workspace = await getWorkspace();
+	const { sql } = workspace.runtime;
+	const today = opsDayKey(workspace.runtime.now());
+	const intent = text(form, "intent");
+	const values = Object.fromEntries(
+		[...form.entries()].flatMap(([name, value]) =>
+			typeof value === "string" && name !== "intent" ? [[name, value]] : [],
+		),
+	);
+	let destination: string | null = null;
+	let message = "Recorded.";
+	try {
+		throttle(workspace);
+		switch (intent) {
+			case "rule.create": {
+				const made = await createRule(sql, workspace.actor, {
+					...versionInput(form),
+					code: text(form, "code"),
+					title: text(form, "title"),
+					jurisdiction: text(form, "jurisdiction"),
+					ownerLabel: text(form, "ownerLabel"),
+				});
+				destination = path(`/compliance/rules/${made.rule.id}`);
+				break;
+			}
+			case "rule.draft":
+				await draftRuleVersion(sql, workspace.actor, { ...versionInput(form), ruleId: text(form, "ruleId") });
+				message =
+					"Recorded as a draft. The approved version, if there is one, goes on guiding until the owner decides.";
+				break;
+			case "rule.review": {
+				const version = await reviewRuleVersion(
+					sql,
+					workspace.actor,
+					{
+						versionId: text(form, "versionId"),
+						decision: text(form, "decision") === "approve" ? "approve" : "reject",
+						note: text(form, "note"),
+						applicability: text(form, "applicability"),
+						applicabilityReason: text(form, "applicabilityReason"),
+						nextReviewOn: text(form, "nextReviewOn"),
+					},
+					today,
+				);
+				message =
+					version.status === "approved"
+						? `Version ${version.version} is approved. It is next looked at on ${version.nextReviewOn}.`
+						: `Version ${version.version} was rejected. It guides nothing.`;
+				break;
+			}
+			case "rule.withdraw":
+				await withdrawRule(sql, workspace.actor, {
+					ruleId: text(form, "ruleId"),
+					reason: text(form, "note"),
+				});
+				message = "Withdrawn. Its versions are kept, and none of them guides anything now.";
+				break;
+			case "rule.queue": {
+				const added = await queueStartingSources(sql, workspace.actor);
+				message = added
+					? `${added} source${added === 1 ? "" : "s"} added as unread drafts. Each has to be read, written up and decided before it guides anything.`
+					: "Every starting source is already in the register. Nothing was added.";
+				break;
+			}
+			case "licence.record": {
+				const licence = await recordLicence(sql, workspace.actor, licenceInput(form));
+				destination = path(`/compliance/licences/${licence.id}`);
+				break;
+			}
+			case "licence.change": {
+				await changeLicence(sql, workspace.actor, {
+					...licenceInput(form),
+					licenceId: text(form, "licenceId"),
+					kind: text(form, "kind"),
+					note: text(form, "note"),
+				});
+				message = "Recorded. What it said before is kept in its history.";
+				break;
+			}
+			case "licence.question":
+				await raiseLicenceQuestion(sql, workspace.actor, {
+					licenceId: text(form, "licenceId"),
+					question: text(form, "question"),
+				});
+				message = "Asked. It stays open until the owner answers it.";
+				break;
+			case "licence.answer":
+				await answerLicenceQuestion(sql, workspace.actor, {
+					questionId: text(form, "questionId"),
+					answer: text(form, "note"),
+				});
+				message = "Answered.";
+				break;
+			case "stamps.receive": {
+				const stock = await receiveStamps(sql, workspace.actor, {
+					jurisdiction: text(form, "jurisdiction"),
+					authorizedEntity: text(form, "authorizedEntity"),
+					sourceDocument: text(form, "sourceDocument"),
+					serialPrefix: text(form, "serialPrefix"),
+					serialFrom: text(form, "serialFrom"),
+					serialTo: text(form, "serialTo"),
+					quantity: text(form, "quantity"),
+					receivedOn: text(form, "receivedOn"),
+					location: text(form, "location"),
+					idempotencyKey: text(form, "idempotencyKey"),
+				});
+				destination = path(`/compliance/stamps/${stock.id}`);
+				break;
+			}
+			case "stamps.event": {
+				const event = await recordStampEvent(sql, workspace.actor, {
+					stockId: text(form, "stockId"),
+					kind: text(form, "kind"),
+					from: text(form, "from"),
+					quantity: text(form, "quantity"),
+					serialFrom: text(form, "serialFrom"),
+					serialTo: text(form, "serialTo"),
+					packagingRunId: text(form, "packagingRunId"),
+					authorization: text(form, "authorization"),
+					evidence: text(form, "evidence"),
+					reason: text(form, "reason"),
+					idempotencyKey: text(form, "idempotencyKey"),
+				});
+				const action = STAMP_ACTIONS[event.kind as keyof typeof STAMP_ACTIONS];
+				message = `${action?.label ?? "Recorded"}: ${event.quantity} stamp${event.quantity === 1 ? "" : "s"}${
+					event.toState ? ` now ${STAMP_STATES[event.toState].toLowerCase()}` : ""
+				}.`;
+				break;
+			}
+			case "stamps.move":
+				await moveStamps(sql, workspace.actor, {
+					stockId: text(form, "stockId"),
+					location: text(form, "location"),
+					reason: text(form, "reason"),
+					idempotencyKey: text(form, "idempotencyKey"),
+				});
+				message = "Moved. No count changed.";
+				break;
+			case "recall.save": {
+				const check = await saveRecallCheck(sql, workspace.actor, {
+					startKind: text(form, "startKind"),
+					startId: text(form, "startId"),
+					reason: text(form, "reason"),
+					hold: text(form, "hold") === "yes",
+				});
+				destination = path(`/compliance/recall/${check.id}`);
 				break;
 			}
 			default:

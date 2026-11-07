@@ -47,6 +47,8 @@ describe("the Worldwide AI schema", () => {
 			"wai_cleaning_records",
 			"wai_coding_jobs",
 			"wai_coding_runs",
+			"wai_compliance_rule_versions",
+			"wai_compliance_rules",
 			"wai_corrective_actions",
 			"wai_daily_reports",
 			"wai_deviation_entries",
@@ -63,11 +65,15 @@ describe("the Worldwide AI schema", () => {
 			"wai_ingredients",
 			"wai_integration_health",
 			"wai_learning_events",
+			"wai_licence_events",
+			"wai_licence_questions",
+			"wai_licences",
 			"wai_meta",
 			"wai_openclaw_runs",
 			"wai_package_verifications",
 			"wai_packaging_runs",
 			"wai_quality_holds",
+			"wai_recall_checks",
 			"wai_recipe_versions",
 			"wai_recipes",
 			"wai_repositories",
@@ -80,6 +86,8 @@ describe("the Worldwide AI schema", () => {
 			"wai_skill_proposals",
 			"wai_skill_releases",
 			"wai_specifications",
+			"wai_stamp_events",
+			"wai_stamp_stocks",
 			"wai_stock_movements",
 			"wai_tag_assignments",
 			"wai_tag_exceptions",
@@ -98,7 +106,7 @@ describe("the Worldwide AI schema", () => {
 		const { rows } = await sql.query<{ relname: string; relrowsecurity: boolean }>(
 			"select relname, relrowsecurity from pg_class where relname like 'wai_%' and relkind = 'r'",
 		);
-		expect(rows.length).toBe(56);
+		expect(rows.length).toBe(64);
 		expect(rows.filter((r) => !r.relrowsecurity).map((r) => r.relname)).toEqual([]);
 		const policies = await sql.query("select 1 from pg_policies where tablename like 'wai_%'");
 		expect(policies.rows).toHaveLength(0);
@@ -109,7 +117,7 @@ describe("the Worldwide AI schema", () => {
 			"select value from wai_meta where key = 'schema_version'",
 		);
 		expect(rows[0].value).toBe(String(SCHEMA_VERSION));
-		expect(SCHEMA_VERSION).toBe(14);
+		expect(SCHEMA_VERSION).toBe(15);
 	});
 
 	it("accepts only the seven task states", async () => {

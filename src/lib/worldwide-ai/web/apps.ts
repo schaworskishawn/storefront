@@ -252,11 +252,18 @@ export const AREAS: Partial<Record<AppId, AreaDefinition>> = {
 		id: "compliance",
 		lead: "Map reviewed requirements to the evidence on file, prepare excise and stamp workpapers from approved rules, and review workplace and waste records. Nothing here is legal advice or a certification.",
 		agents: ["comply", "duty", "tally", "safeguard", "review"],
+		also: [
+			"A rule register: each rule read from a named source, in versions. A draft guides nothing; the owner approves a version with a decision on whether it applies here, why, from when, and when it is next looked at.",
+			"A licence calendar: each licence as it reads, with the renewal dates entered from it, its history, and open questions about its scope. No deadline is guessed.",
+			"An excise stamp ledger: every stamp counted in one state, identifiers that can't be received or applied twice, no more stamps on a run than it filled, and a disposal that needs the owner and its authorization.",
+			"Recall traces from a lot, a batch or a packaging run, saved as they stood, with the owner able to hold every batch a trace reaches.",
+		],
 		notBuilt: [
-			"The reviewed rule register with source, effective dates and an applicability decision per rule. Today you supply the rules with each run.",
-			"A licence calendar, a stored stamp ledger, and reporting packages with submission evidence.",
-			"Recall-readiness tracing across lots, batches, packaging runs and shipments.",
-			"The Health Canada and CRA sources named in the brief have not been reviewed into approved rules: that review is a person's decision.",
+			"Agents working from these records. Comply and Duty still work from what you give them with each run, and prepare drafts only.",
+			"Excise duty calculations and monthly return drafts. Approved rates aren't recorded yet, and a missing rate will never be taken as zero.",
+			"Health Canada reports, packaging and label reviews, market eligibility rules, complaints and incidents, and workplace and waste records.",
+			"Where packaged units went. Orders and shipments in the store aren't linked to packaging runs, so a trace can't list customers or retailers.",
+			"The official sources named in the brief can be added as unread drafts. Reading them and deciding whether they apply is a person's work, and hasn't been done.",
 		],
 	},
 	improvement: {
