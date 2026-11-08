@@ -10,7 +10,7 @@
 #      copied as they are: nothing of Ubuntu's is changed or rebuilt;
 #   4. writes SHA256SUMS and a manifest of exactly what went in.
 #
-# It needs xorriso, sha256sum and dpkg-deb, and runs as an ordinary user: nothing is mounted and nothing needs root.
+# It needs xorriso, sha256sum, dpkg-deb, unsquashfs and apt-get, and runs as an ordinary user: nothing is mounted and nothing needs root.
 # Nothing secret goes into the image, and the script refuses a package that carries anything under /etc/worldwide-ai
 # other than the example settings.
 set -euo pipefail
@@ -61,6 +61,8 @@ for deb in "${packages[@]}"; do
 	cp "$deb" "$stage/worldwide-ai/"
 done
 cp "$here/autoinstall.yaml" "$stage/autoinstall.yaml"
+# Fail now, not halfway through someone's installation, if the packages wouldn't install offline.
+sh "$here/check-installable.sh" "$base" "$stage/worldwide-ai"
 
 # 3. The new image, with Ubuntu's boot setup replayed exactly.
 # SOURCE_REVISION wins: git inside WSL can't always read a checkout made on Windows.
