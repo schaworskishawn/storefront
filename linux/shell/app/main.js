@@ -140,10 +140,18 @@ Menu.setApplicationMenu(
 	]),
 );
 
-// Every page in every mainWindow runs sandboxed, whatever a page or a setting elsewhere asks for.
+// Every page in every window runs sandboxed, whatever a page or a setting elsewhere asks for.
 app.enableSandbox();
 
+// Worldwide AI OS also runs where there is no 3D acceleration (VirtualBox's starting profile among them). There the GPU
+// process fails and the window never appears, so the window draws in software unless this computer has been tested with
+// acceleration and /etc/worldwide-ai/shell-gpu says so.
+const GPU_SETTING = "/etc/worldwide-ai/shell-gpu";
+if (!fs.existsSync(GPU_SETTING)) app.disableHardwareAcceleration();
+
 if (!app.requestSingleInstanceLock()) {
+	// Never quietly: say why nothing new opened.
+	console.error("Worldwide AI is already open; its window was brought to the front.");
 	app.quit();
 } else {
 	app.on("second-instance", () => {
