@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
 	NATIVE_APP_USER_AGENT_MARKER,
+	WORLDWIDE_AI_APP_USER_AGENT_MARKER,
 	activeNativeTab,
 	isAndroidApp,
 	shouldShowNativeTabBar,
@@ -30,12 +31,29 @@ describe("isAndroidApp", () => {
 		).toBe(true);
 		expect(isAndroidApp({ userAgent: `Mozilla/5.0 (iPhone) ${NATIVE_APP_USER_AGENT_MARKER}/1` })).toBe(false);
 	});
+
+	it("is false in the Worldwide AI app, which is Capacitor on Android but not the store", () => {
+		expect(
+			isAndroidApp({
+				Capacitor: { getPlatform: () => "android" },
+				userAgent: `Mozilla/5.0 (Linux; Android 16; wv) Chrome/140 ${WORLDWIDE_AI_APP_USER_AGENT_MARKER}`,
+			}),
+		).toBe(false);
+	});
 });
 
 describe("capacitor.config.ts", () => {
 	it("appends the same user-agent marker the site looks for", () => {
 		const config = readFileSync(new URL("../../capacitor.config.ts", import.meta.url), "utf8");
 		expect(config).toContain(`appendUserAgent: "${NATIVE_APP_USER_AGENT_MARKER}"`);
+	});
+
+	it("gives the Worldwide AI app its own marker", () => {
+		const config = readFileSync(
+			new URL("../../worldwide-ai-android/capacitor.config.ts", import.meta.url),
+			"utf8",
+		);
+		expect(config).toContain(`appendUserAgent: "${WORLDWIDE_AI_APP_USER_AGENT_MARKER}"`);
 	});
 });
 

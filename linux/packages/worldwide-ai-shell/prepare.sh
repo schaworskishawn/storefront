@@ -23,7 +23,10 @@ sha="$(sha256sum "$zip" | cut -d' ' -f1)"
 [ "$sha" = "$ELECTRON_SHA256" ] || { echo "$zip has SHA-256 $sha, not the pinned $ELECTRON_SHA256." >&2; exit 1; }
 
 dest="$tree/opt/worldwide-ai/shell"
-mkdir -p "$dest/electron" "$dest/app"
+# Electron runs the program in its resources/app folder. A program named on the command line is loaded only by its
+# demonstration app, which is removed below, so the window's program has to be in resources/app.
+program="$dest/electron/resources/app"
+mkdir -p "$dest/electron"
 python3 - "$zip" "$dest/electron" <<'PY'
 import sys, zipfile
 with zipfile.ZipFile(sys.argv[1]) as archive:
@@ -39,14 +42,24 @@ find "$dest/electron" -type d -exec chmod 0755 {} +
 find "$dest/electron" -type f -exec chmod 0644 {} +
 chmod 0755 "$dest/electron/electron" "$dest/electron/chrome_crashpad_handler" "$dest/electron/chrome-sandbox"
 
+mkdir -p "$program"
 for file in package.json main.js offline.html not-set-up.html; do
-	tr -d '\r' <"$repo/linux/shell/app/$file" | sed -e "s/@VERSION@/$version/g" >"$dest/app/$file"
-	chmod 0644 "$dest/app/$file"
+	tr -d '\r' <"$repo/linux/shell/app/$file" | sed -e "s/@VERSION@/$version/g" >"$program/$file"
+	chmod 0644 "$program/$file"
 done
-chmod 0755 "$dest/app"
+chmod 0755 "$program"
+
+# Electron looks for resources/app, then resources/app.asar, then the demonstration app, and exits with status 1 when
+# none is there. Refuse a package whose window would do that.
+main="$(python3 -c 'import json, sys; print(json.load(open(sys.argv[1]))["main"])' "$program/package.json")"
+[ -f "$program/$main" ] || { echo "The window's program has no $main in $program." >&2; exit 1; }
+[ ! -e "$dest/electron/resources/app.asar" ] && [ ! -e "$dest/electron/resources/default_app.asar" ] || {
+	echo "Electron would start another program than the window's." >&2
+	exit 1
+}
 
 icon="$tree/usr/share/icons/hicolor/512x512/apps"
 mkdir -p "$icon"
-install -m 0644 "$repo/public/android-chrome-512x512.png" "$icon/worldwide-ai.png"
+install -m 0644 "$repo/public/worldwide-ai/icon-512.png" "$icon/worldwide-ai.png"
 find "$tree/usr/share/icons" -type d -exec chmod 0755 {} +
 echo "Added Electron $ELECTRON_VERSION, the window's program and the icon."

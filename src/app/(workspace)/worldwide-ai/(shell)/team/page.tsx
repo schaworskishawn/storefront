@@ -1,8 +1,10 @@
+import { Zap } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AREA_LABELS, type RoleArea } from "@/lib/worldwide-ai/agents/registry";
 import { loadTeam } from "@/lib/worldwide-ai/web/queries";
 import { getWorkspace } from "@/lib/worldwide-ai/web/session";
+import { AgentAvatar, lookOf } from "@/ui/sections/worldwide-ai/look";
 import { PageHeader, Pill, ReadinessPill, Stat, agentHref } from "@/ui/sections/worldwide-ai/ui";
 
 export const metadata: Metadata = { title: "Team" };
@@ -37,31 +39,39 @@ export default async function TeamPage() {
 				<Stat value={running} label="Tasks running right now" />
 			</div>
 
-			{areas.map((area) => (
-				<section key={area} style={{ marginBottom: 24 }} aria-labelledby={`area-${area}`}>
-					<h2 className="wai-h2" id={`area-${area}`}>
-						{AREA_LABELS[area]}
-					</h2>
-					<div className="wai-grid wai-grid--3">
-						{team.agents
-							.filter((agent) => agent.role.area === area)
-							.map(({ role, enabled, primary, functions, planned }) => (
-								<Link key={role.id} href={agentHref(role.id)} className="wai-card wai-card--link">
+			{areas.map((area) => {
+				const members = team.agents.filter((agent) => agent.role.area === area);
+				const { icon: AreaIcon, pink } = lookOf(area);
+				return (
+					<section key={area} style={{ marginBottom: 28 }} aria-labelledby={`area-${area}`}>
+						<h2 className="wai-section-title" id={`area-${area}`}>
+							<AreaIcon size={18} aria-hidden />
+							{AREA_LABELS[area]}
+							<span className="wai-muted">{members.length}</span>
+						</h2>
+						<div className="wai-grid wai-grid--3">
+							{members.map(({ role, enabled, primary, functions, planned }) => (
+								<Link
+									key={role.id}
+									href={agentHref(role.id)}
+									className="wai-card wai-card--link wai-agent-card"
+									data-tone={pink ? "pink" : "cyan"}
+								>
 									<div className="wai-agent">
-										<div className="wai-row" style={{ justifyContent: "space-between" }}>
+										<div className="wai-agent-top">
+											<AgentAvatar id={role.id} area={role.area} />
+											<div>
+												<h3>{role.name}</h3>
+												<span>{role.title}</span>
+											</div>
 											<span className="wai-agent-no">{String(role.number).padStart(2, "0")}</span>
+										</div>
+										<div className="wai-row">
 											<ReadinessPill status={primary.status} />
 										</div>
-										<div>
-											<h3 className="wai-h3" style={{ fontSize: 16, margin: 0 }}>
-												{role.name}
-											</h3>
-											<span className="wai-muted wai-small">{role.title}</span>
-										</div>
-										<p className="wai-small" style={{ margin: 0 }}>
-											<strong>
-												{functions.find((f) => f.kind === role.primary)?.action ?? "No function"}
-											</strong>
+										<p className="wai-agent-action">
+											<Zap size={15} aria-hidden />
+											{functions.find((f) => f.kind === role.primary)?.action ?? "No function"}
 										</p>
 										<p className="wai-muted wai-small" style={{ margin: 0, flex: 1 }}>
 											{primary.status === "ready"
@@ -82,9 +92,10 @@ export default async function TeamPage() {
 									</div>
 								</Link>
 							))}
-					</div>
-				</section>
-			))}
+						</div>
+					</section>
+				);
+			})}
 		</>
 	);
 }

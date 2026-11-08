@@ -389,16 +389,27 @@
 }
 .wos-agent {
 	display: grid;
-	grid-template-columns: 32px 1fr auto;
+	grid-template-columns: auto 1fr auto;
 	align-items: center;
-	gap: 10px;
-	padding: 12px;
+	gap: 12px;
+	padding: 11px 12px;
 	border: 1px solid var(--wos-line);
 	border-radius: 12px;
-	background: color-mix(in srgb, var(--wv-surface) 55%, transparent);
+	background: linear-gradient(
+		135deg,
+		color-mix(in srgb, var(--wv-surface) 70%, transparent),
+		color-mix(in srgb, var(--wv-bg) 60%, transparent)
+	);
+	transition:
+		border-color 0.15s ease,
+		box-shadow 0.15s ease;
 }
 .wos-agent:hover {
 	border-color: var(--wos-line-strong);
+	box-shadow: 0 0 22px color-mix(in srgb, var(--wos-cyan) 14%, transparent);
+}
+.wos-agent > svg:last-child {
+	color: var(--wos-dim);
 }
 .wos-agent strong {
 	display: block;
@@ -631,19 +642,29 @@
 	}
 }
 @media (max-width: 860px) {
+	/* minmax(0, …) and min-width: 0 keep any row from widening the page past the screen. */
 	.wos {
-		grid-template-columns: 1fr;
-		grid-template-rows: 44px auto 1fr;
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-rows: 44px auto minmax(0, 1fr);
 	}
 	.wos-top {
-		grid-template-columns: 1fr auto;
+		grid-template-columns: minmax(0, 1fr) auto;
 	}
 	.wos-centre {
 		display: none;
 	}
 	.wos-brand {
+		min-width: 0;
 		letter-spacing: 0.18em;
 		font-size: 13px;
+	}
+	.wos-brand span {
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	.wos-rail,
+	.wos-stage {
+		min-width: 0;
 	}
 	.wos-rail {
 		flex-direction: row;
@@ -672,9 +693,12 @@
 		border-left: 0;
 		border-top: 1px solid var(--wos-line);
 	}
+	/* The stage scrolls here, and the dock stays on screen while it does. */
 	.wos-dock {
+		position: fixed;
 		left: 12px;
 		right: 12px;
+		bottom: calc(12px + env(safe-area-inset-bottom, 0px));
 		transform: none;
 		overflow-x: auto;
 	}
@@ -682,5 +706,100 @@
 	.wos-dock button {
 		width: 46px;
 		flex: 0 0 auto;
+	}
+}
+
+/* ---- Phones: one window at a time, as tabs --------------------------------------------------------------- */
+@media (max-width: 600px) {
+	.wos {
+		padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) 0 env(safe-area-inset-left, 0px);
+	}
+	.wos-top {
+		gap: 8px;
+		padding: 0 10px;
+	}
+	.wos-brand {
+		gap: 8px;
+		font-size: 12px;
+		letter-spacing: 0.12em;
+	}
+	/* The phone shows its own network state and date. */
+	.wos-status {
+		gap: 4px;
+	}
+	.wos-status > [role="img"],
+	.wos-status .wos-divider,
+	.wos-date {
+		display: none;
+	}
+	.wos-rail {
+		justify-content: space-between;
+		gap: 0;
+		padding: 4px 6px;
+		border-bottom: 1px solid var(--wos-line);
+		background: color-mix(in srgb, var(--wv-bg) 72%, transparent);
+	}
+	.wos-rail a {
+		flex: 1 1 0;
+		min-width: 0;
+		width: auto;
+		gap: 3px;
+		padding: 6px 0;
+		font-size: 10.5px;
+	}
+	.wos-rail svg {
+		width: 24px;
+		height: 24px;
+	}
+	.wos-stage {
+		gap: 10px;
+		padding: 10px 8px calc(80px + env(safe-area-inset-bottom, 0px));
+	}
+	/* The dock's Home and chat buttons choose the window; the window buttons have nothing to do here. */
+	.wos-stage[data-focus="command"] .wos-window--nexus,
+	.wos-stage[data-focus="nexus"] .wos-window--command,
+	.wos-controls,
+	.wos-closed-note {
+		display: none;
+	}
+	.wos-stage[data-focus="command"] .wos-window--command,
+	.wos-stage[data-focus="nexus"] .wos-window--nexus {
+		display: flex;
+		flex: 1 0 auto;
+		max-width: none;
+	}
+	.wos-window {
+		min-height: auto;
+	}
+	.wos-body {
+		overflow: visible;
+	}
+	.wos-titlebar {
+		padding: 10px 14px;
+	}
+	.wos-main {
+		padding: 16px 14px 14px;
+	}
+	.wos-side {
+		padding: 14px 10px;
+	}
+	.wos-nexus {
+		padding: 16px 14px;
+	}
+	.wos-dock {
+		left: 8px;
+		right: 8px;
+		bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+		justify-content: space-between;
+		gap: 2px;
+		padding: 6px;
+		overflow: visible;
+	}
+	.wos-dock a,
+	.wos-dock button {
+		flex: 1 1 0;
+		min-width: 0;
+		width: auto;
+		height: 46px;
 	}
 }

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Behind the launch splash on Android 12+; the same dark the site and the app's web view use. -->
+    <color name="splash_background">#05030A</color>
+</resources>

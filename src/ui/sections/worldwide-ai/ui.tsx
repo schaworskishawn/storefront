@@ -49,29 +49,42 @@ export function PageHeader({
 	lead,
 	crumbs = [],
 	actions,
+	icon,
 }: {
 	title: string;
 	lead?: ReactNode;
 	crumbs?: Array<{ label: string; href?: string }>;
 	actions?: ReactNode;
+	/** Shown before the title, such as an agent's avatar. */
+	icon?: ReactNode;
 }) {
+	const heading = (
+		<>
+			{crumbs.length > 0 && (
+				<nav className="wai-crumbs" aria-label="Breadcrumb">
+					<Link href={WORKSPACE_PATH}>Today</Link>
+					{crumbs.map((crumb) => (
+						<span key={crumb.label} className="wai-row" style={{ gap: 6 }}>
+							<span aria-hidden>/</span>
+							{crumb.href ? <Link href={crumb.href}>{crumb.label}</Link> : <span>{crumb.label}</span>}
+						</span>
+					))}
+				</nav>
+			)}
+			<h1 className="wai-h1">{title}</h1>
+			{lead && <p className="wai-lead">{lead}</p>}
+		</>
+	);
 	return (
-		<header className="wai-page-head">
-			<div>
-				{crumbs.length > 0 && (
-					<nav className="wai-crumbs" aria-label="Breadcrumb">
-						<Link href={WORKSPACE_PATH}>Today</Link>
-						{crumbs.map((crumb) => (
-							<span key={crumb.label} className="wai-row" style={{ gap: 6 }}>
-								<span aria-hidden>/</span>
-								{crumb.href ? <Link href={crumb.href}>{crumb.label}</Link> : <span>{crumb.label}</span>}
-							</span>
-						))}
-					</nav>
-				)}
-				<h1 className="wai-h1">{title}</h1>
-				{lead && <p className="wai-lead">{lead}</p>}
-			</div>
+		<header className={`wai-page-head${icon ? " wai-page-head--icon" : ""}`}>
+			{icon ? (
+				<div>
+					{icon}
+					<div>{heading}</div>
+				</div>
+			) : (
+				<div>{heading}</div>
+			)}
 			{actions && <div className="wai-row">{actions}</div>}
 		</header>
 	);

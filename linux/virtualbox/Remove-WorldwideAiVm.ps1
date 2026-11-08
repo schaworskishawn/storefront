@@ -43,5 +43,12 @@ if ($PSCmdlet.ShouldProcess("""$($state.name)"" {$($state.uuid)} and $($state.di
 	# The image is detached first, so deleting the machine's media can't touch it.
 	VBox @('storageattach', $state.uuid, '--storagectl', 'SATA', '--port', '1', '--device', '0', '--type', 'dvddrive', '--medium', 'emptydrive') | Out-Null
 	VBox @('unregistervm', $state.uuid, '--delete') | Out-Null
+	# VirtualBox deletes only the files it knows. The record is this script's own: remove it, then the folder if that
+	# leaves it empty, so the next New-WorldwideAiVm.ps1 run doesn't find a record of a machine that is gone.
+	Remove-Item -LiteralPath $Record
+	$folder = Split-Path -Parent $Record
+	if ((Test-Path -LiteralPath $folder) -and -not (Get-ChildItem -LiteralPath $folder -Force | Select-Object -First 1)) {
+		Remove-Item -LiteralPath $folder
+	}
 	Write-Host "Removed ""$($state.name)"" {$($state.uuid)} and its disk. The image at $($state.iso) was left where it is."
 }

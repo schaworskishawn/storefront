@@ -12,6 +12,6 @@ tree="${1:?Give the package tree.}"
 theme="$tree/usr/share/plymouth/themes/worldwide-ai"
 mkdir -p "$theme"
 python3 "$here/make-splash.py" "$theme"
-install -m 0644 "$repo/public/android-chrome-192x192.png" "$theme/watermark.png"
+install -m 0644 "$repo/public/worldwide-ai/icon-192.png" "$theme/watermark.png"
 find "$theme" -type f -exec chmod 0644 {} +
 chmod 0755 "$theme"

@@ -53,6 +53,7 @@ import {
 	type DockItem,
 	type TeamMember,
 } from "./desktop-client";
+import { Mark } from "../look";
 import "../worldwide-ai.css";
 import "./desktop.css";
 
@@ -114,21 +115,6 @@ function greeting(now: Date): string {
 }
 
 /** The Worldwide AI mark: a W in the brand's cyan. */
-function Mark() {
-	return (
-		<svg width="30" height="24" viewBox="0 0 30 24" aria-hidden className="wos-cyan">
-			<path
-				d="M2 3 L8.5 21 L15 7 L21.5 21 L28 3"
-				fill="none"
-				stroke="currentColor"
-				strokeWidth="2.6"
-				strokeLinejoin="round"
-				strokeLinecap="round"
-			/>
-		</svg>
-	);
-}
-
 /** Nexus's orb. Decoration only: it turns slowly unless the person has asked for less motion, and means nothing by it. */
 function Orb() {
 	return (
@@ -360,7 +346,7 @@ export async function Desktop() {
 		<div className="wos">
 			<header className="wos-top">
 				<Link href={path("/desktop")} className="wos-brand" aria-label="Worldwide AI OS">
-					<Mark />
+					<Mark className="wos-cyan" />
 					<span>
 						WORLDWIDE <strong>AI</strong> OS
 					</span>
