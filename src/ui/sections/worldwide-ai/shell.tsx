@@ -1,3 +1,4 @@
+import { LayoutGrid } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { ROLES } from "@/lib/worldwide-ai/agents/registry";
@@ -5,6 +6,7 @@ import { primaryFunctionOf } from "@/lib/worldwide-ai/functions/registry";
 import { WORKSPACE_PATH } from "@/lib/worldwide-ai/types";
 import { navCounts } from "@/lib/worldwide-ai/web/queries";
 import { getWorkspace } from "@/lib/worldwide-ai/web/session";
+import { Mark } from "./look";
 import { Launcher, MobileNav, SideNav } from "./nav";
 import "./worldwide-ai.css";
 
@@ -27,8 +29,11 @@ export async function WorkspaceShell({ children }: { children: ReactNode }) {
 				Skip to the page
 			</a>
 			<aside className="wai-side">
-				<Link href={WORKSPACE_PATH} className="wai-brand">
-					WORLDWIDE <span>AI</span>
+				<Link href={WORKSPACE_PATH} className="wai-brand" aria-label="Worldwide AI OS">
+					<Mark />
+					<span>
+						WORLDWIDE <strong>AI</strong> OS
+					</span>
 				</Link>
 				<SideNav counts={counts} />
 			</aside>
@@ -43,7 +48,8 @@ export async function WorkspaceShell({ children }: { children: ReactNode }) {
 					<span className="wai-top-private wai-hide-mobile">Private workspace</span>
 					<Launcher agents={agents} />
 					<span className="wai-top-spacer" />
-					<Link href={`${WORKSPACE_PATH}/desktop`} className="wai-hide-mobile">
+					<Link href={`${WORKSPACE_PATH}/desktop`} className="wai-top-desktop wai-hide-mobile">
+						<LayoutGrid size={14} aria-hidden />
 						Desktop
 					</Link>
 					<span className="wai-who">

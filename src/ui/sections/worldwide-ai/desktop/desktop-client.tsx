@@ -1,32 +1,10 @@
 "use client";
 
-import {
-	BookOpen,
-	Box,
-	ChevronRight,
-	CodeXml,
-	Database,
-	Layers,
-	LifeBuoy,
-	Lock,
-	Maximize2,
-	Megaphone,
-	Minus,
-	Orbit,
-	PenLine,
-	Power,
-	Scale,
-	Send,
-	Sparkles,
-	Users,
-	Wifi,
-	WifiOff,
-	X,
-	type LucideIcon,
-} from "lucide-react";
+import { ChevronRight, Lock, Maximize2, Minus, Power, Send, Sparkles, Wifi, WifiOff, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { AgentAvatar } from "../look";
 
 /**
  * The parts of the Worldwide AI OS desktop that respond to the person: the clock, the network state, the power menu, the
@@ -56,7 +34,8 @@ export function Clock() {
 	const time = now.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
 	return (
 		<time dateTime={now.toISOString()}>
-			{date.replace(",", "")}&nbsp;&nbsp;{time}
+			<span className="wos-date">{date.replace(",", "")}&nbsp;&nbsp;</span>
+			{time}
 		</time>
 	);
 }
@@ -347,6 +326,9 @@ function WindowFrame({
 /**
  * The two windows of the desktop and the dock beneath them. Minimizing or closing a window hides it; Home on the dock
  * brings both back, and the chat button brings back Nexus. The rest of the dock opens applications.
+ *
+ * On a phone there is room for one window: they become two full-screen tabs, Home showing the Command Center and the chat
+ * button showing Nexus (desktop.css, under 600px). `focus` is which of the two was asked for last.
  */
 export function DesktopStage({
 	command,
@@ -363,6 +345,7 @@ export function DesktopStage({
 }) {
 	const [states, setStates] = useState<Record<WindowId, WindowState>>({ command: "open", nexus: "open" });
 	const [maximized, setMaximized] = useState<WindowId | null>(null);
+	const [focus, setFocus] = useState<WindowId>("command");
 	const set = (id: WindowId) => (state: WindowState) => {
 		setStates((current) => ({ ...current, [id]: state }));
 		if (state !== "open" && maximized === id) setMaximized(null);
@@ -371,7 +354,7 @@ export function DesktopStage({
 	const show = (...ids: WindowId[]) =>
 		setStates((current) => ({ ...current, ...Object.fromEntries(ids.map((id) => [id, "open" as const])) }));
 	return (
-		<div className="wos-stage" data-maximized={maximized ?? undefined}>
+		<div className="wos-stage" data-maximized={maximized ?? undefined} data-focus={focus}>
 			<WindowFrame
 				id="command"
 				title="Command Center"
@@ -396,7 +379,7 @@ export function DesktopStage({
 				{nexus}
 			</WindowFrame>
 			{states.command !== "open" && states.nexus !== "open" && (
-				<p className="wos-quiet" style={{ margin: "auto" }}>
+				<p className="wos-quiet wos-closed-note" style={{ margin: "auto" }}>
 					Both windows are closed. Home, on the dock, brings them back.
 				</p>
 			)}
@@ -419,8 +402,12 @@ export function DesktopStage({
 							title={item.label}
 							className={item.pink ? "wos-pink" : undefined}
 							data-open={item.key === "home" ? states.command === "open" : states.nexus === "open"}
-							aria-current={item.key === "home" ? "page" : undefined}
-							onClick={() => (item.key === "home" ? show("command", "nexus") : show("nexus"))}
+							aria-current={(item.key === "home" ? "command" : "nexus") === focus ? "true" : undefined}
+							onClick={() => {
+								if (item.key === "home") show("command", "nexus");
+								else show("nexus");
+								setFocus(item.key === "home" ? "command" : "nexus");
+							}}
 						>
 							{item.icon}
 							<span className="wos-sr">{item.label}</span>
@@ -443,20 +430,6 @@ export type TeamMember = {
 	status: string;
 	statusLabel: string;
 	href: string;
-};
-
-const AREA_ICONS: Record<string, { icon: LucideIcon; pink: boolean }> = {
-	operations: { icon: Orbit, pink: false },
-	support: { icon: LifeBuoy, pink: false },
-	finance: { icon: Database, pink: true },
-	knowledge: { icon: BookOpen, pink: false },
-	commerce: { icon: Megaphone, pink: true },
-	content: { icon: PenLine, pink: true },
-	people: { icon: Users, pink: true },
-	engineering: { icon: CodeXml, pink: false },
-	inventory: { icon: Box, pink: false },
-	manufacturing: { icon: Layers, pink: true },
-	compliance: { icon: Scale, pink: true },
 };
 
 /** All 49 agents, each with whether its main function can run now. A filter narrows them to one area. */
@@ -485,24 +458,20 @@ export function TeamGrid({ members }: { members: readonly TeamMember[] }) {
 				</div>
 			</div>
 			<div className="wos-team">
-				{shown.map((member) => {
-					const look = AREA_ICONS[member.area] ?? { icon: Orbit, pink: false };
-					const Icon = look.icon;
-					return (
-						<Link key={member.id} href={member.href} className="wos-agent">
-							<Icon size={30} strokeWidth={1.4} className={look.pink ? "wos-pink" : "wos-cyan"} aria-hidden />
-							<span>
-								<strong>{member.name}</strong>
-								<small>{member.title}</small>
-								<small>
-									<span className="wos-dot" data-status={member.status} aria-hidden />
-									{member.statusLabel}
-								</small>
-							</span>
-							<ChevronRight size={18} aria-hidden />
-						</Link>
-					);
-				})}
+				{shown.map((member) => (
+					<Link key={member.id} href={member.href} className="wos-agent">
+						<AgentAvatar id={member.id} area={member.area} size="sm" />
+						<span>
+							<strong>{member.name}</strong>
+							<small>{member.title}</small>
+							<small>
+								<span className="wos-dot" data-status={member.status} aria-hidden />
+								{member.statusLabel}
+							</small>
+						</span>
+						<ChevronRight size={18} aria-hidden />
+					</Link>
+				))}
 			</div>
 		</>
 	);

@@ -21,6 +21,7 @@ import { loadTeam } from "@/lib/worldwide-ai/web/queries";
 import { getWorkspace } from "@/lib/worldwide-ai/web/session";
 import { STANDING_LABELS, loadSkillRows } from "@/lib/worldwide-ai/web/skills";
 import { ButtonForm, FieldsForm } from "@/ui/sections/worldwide-ai/forms";
+import { AgentAvatar } from "@/ui/sections/worldwide-ai/look";
 import { FunctionForm } from "@/ui/sections/worldwide-ai/function-form";
 import { humanize } from "@/ui/sections/worldwide-ai/result-view";
 import {
@@ -86,6 +87,7 @@ export default async function AgentPage({ params, searchParams }: Props) {
 		<>
 			<PageHeader
 				title={role.name}
+				icon={<AgentAvatar id={role.id} area={role.area} size="lg" />}
 				lead={role.mission}
 				crumbs={[{ label: "Team", href: `${WORKSPACE_PATH}/team` }, { label: role.name }]}
 				actions={
@@ -93,6 +95,7 @@ export default async function AgentPage({ params, searchParams }: Props) {
 						<Pill>
 							Agent {role.number} of 49 · {AREA_LABELS[role.area]}
 						</Pill>
+						<ReadinessPill status={readiness.primary.status} />
 						{!settings.enabled && <Pill tone="warn">Switched off</Pill>}
 					</>
 				}
