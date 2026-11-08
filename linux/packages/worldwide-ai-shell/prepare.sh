@@ -60,6 +60,6 @@ main="$(python3 -c 'import json, sys; print(json.load(open(sys.argv[1]))["main"]
 
 icon="$tree/usr/share/icons/hicolor/512x512/apps"
 mkdir -p "$icon"
-install -m 0644 "$repo/public/android-chrome-512x512.png" "$icon/worldwide-ai.png"
+install -m 0644 "$repo/public/worldwide-ai/icon-512.png" "$icon/worldwide-ai.png"
 find "$tree/usr/share/icons" -type d -exec chmod 0755 {} +
 echo "Added Electron $ELECTRON_VERSION, the window's program and the icon."
