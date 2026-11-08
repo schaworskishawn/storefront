@@ -43,7 +43,7 @@ your signal" in both cases.
 - Emulator "Medium Phone API 36", against the local preview with demonstration data: the desktop renders in the phone
   layout, an agent's page opens, the store's tab bar stays out, and the launcher shows "Worldwide AI" with the W icon.
 - The live build opens the site password screen: the site password is on in production, and the workspace isn't switched
-  on there yet (PR #40 unmerged, no database or owner emails in Vercel). Not installed on a real phone.
+  on there yet (no database or owner emails in Vercel). Not installed on a real phone by me.
 - Debug build only, signed with the debug key; not for Google Play, whose rules on vape businesses make a listing unlikely.
 - 1.0.1 in the emulator: a live address answering 404 shows "didn't open"; airplane mode shows "can't reach"; the live
   desktop address reaches the site password screen.
