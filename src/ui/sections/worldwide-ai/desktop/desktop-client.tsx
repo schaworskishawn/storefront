@@ -128,7 +128,7 @@ export function PowerMenu({ name }: { name: string }) {
 						<Link href="/logout" role="menuitem">
 							Sign out
 						</Link>
-						<p>Restart and shut down are in the system menu.</p>
+						<p>On Worldwide AI OS, F11 leaves full screen. Restart and shut down are in the system menu.</p>
 					</div>
 				)}
 			</div>

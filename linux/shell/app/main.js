@@ -92,8 +92,11 @@ function createWindow() {
 			spellcheck: false,
 		},
 	});
-	// It is the main screen of Worldwide AI OS, so it fills the screen; the top bar stays for the session's controls.
+	// It is the main screen of Worldwide AI OS: it fills the screen, and the desktop's own top bar and dock take the place
+	// of the system's. F11 (in the window's menu) leaves full screen for the system's controls, and the window stays
+	// maximized; nothing intercepts the system's own keys.
 	mainWindow.maximize();
+	mainWindow.setFullScreen(true);
 	const contents = mainWindow.webContents;
 
 	// No new windows. A workspace link opens here; anything else opens in the normal browser.
