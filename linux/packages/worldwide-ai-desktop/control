@@ -1,0 +1,12 @@
+Package: worldwide-ai-desktop
+Version: @VERSION@
+Architecture: all
+Section: misc
+Priority: optional
+Maintainer: Worldwide Vapor
+Depends: worldwide-ai-shell, plymouth, initramfs-tools
+Description: Worldwide AI OS: how the computer looks
+ The Worldwide AI start-up screen, wallpaper, dark style and accent
+ colour, the login screen's background and logo, and the Worldwide AI
+ window first in the dock. They are defaults: anyone can change them in
+ Settings, and removing the package brings Ubuntu's back.

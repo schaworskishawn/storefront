@@ -90,6 +90,8 @@ function createWindow() {
 			spellcheck: false,
 		},
 	});
+	// It is the main screen of Worldwide AI OS, so it fills the screen; the top bar stays for the session's controls.
+	mainWindow.maximize();
 	const contents = mainWindow.webContents;
 
 	// No new windows. A workspace link opens here; anything else opens in the normal browser.
