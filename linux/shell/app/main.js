@@ -181,5 +181,5 @@ if (!app.requestSingleInstanceLock()) {
 		session.defaultSession.on("will-download", (event) => event.preventDefault());
 		createWindow();
 	});
-	app.on("mainWindow-all-closed", () => app.quit());
+	app.on("window-all-closed", () => app.quit());
 }
