@@ -30,6 +30,14 @@ then build; sync again without an address before building for a phone. Icons: `p
 The build needs Android Studio's SDK with API 36 and a working Java 17+. On this computer Android Studio's bundled Java is
 incomplete (`jbr\lib\jvm.cfg` missing), so the script falls back to the JetBrains Runtime 21 in `~/.jdks`.
 
+## When the desktop doesn't open
+
+Capacitor shows `www/offline.html` whenever the desktop doesn't load: when the phone can't reach the site, and also when
+the site answers the page itself with an error (`onReceivedHttpError` in Capacitor's `BridgeWebViewClient`). The page
+checks whether worldwidevapor.com answers and says which: "Can't reach Worldwide AI" (no connection), or "Worldwide AI
+didn't open" (the site answered, but not with the workspace), with a way to sign in with another account. 1.0 said "check
+your signal" in both cases.
+
 ## Tested 2026-11-08
 
 - Emulator "Medium Phone API 36", against the local preview with demonstration data: the desktop renders in the phone
@@ -37,3 +45,5 @@ incomplete (`jbr\lib\jvm.cfg` missing), so the script falls back to the JetBrain
 - The live build opens the site password screen: the site password is on in production, and the workspace isn't switched
   on there yet (PR #40 unmerged, no database or owner emails in Vercel). Not installed on a real phone.
 - Debug build only, signed with the debug key; not for Google Play, whose rules on vape businesses make a listing unlikely.
+- 1.0.1 in the emulator: a live address answering 404 shows "didn't open"; airplane mode shows "can't reach"; the live
+  desktop address reaches the site password screen.
