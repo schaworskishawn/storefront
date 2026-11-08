@@ -17,7 +17,8 @@ const { app, BrowserWindow, Menu, shell } = require("electron");
 const fs = require("node:fs");
 const path = require("node:path");
 
-const HOSTED = "https://www.worldwidevapor.com/worldwide-ai";
+// The Worldwide AI OS desktop: the top bar, rail, Command Center, Nexus and dock, drawn by the workspace itself.
+const HOSTED = "https://www.worldwidevapor.com/worldwide-ai/desktop";
 const SETTING = "/etc/worldwide-ai/workspace-url";
 const RETRY_MS = 30_000;
 const LOOPBACK = new Set(["127.0.0.1", "localhost", "[::1]"]);
@@ -36,6 +37,7 @@ function workspaceAddress() {
 
 const workspace = workspaceAddress();
 const offlinePage = path.join(__dirname, "offline.html");
+const notSetUpPage = path.join(__dirname, "not-set-up.html");
 let mainWindow = null;
 let retry = null;
 
@@ -108,6 +110,14 @@ function createWindow() {
 		});
 	contents.on("will-attach-webview", (event) => event.preventDefault());
 
+	// The workspace answers "not found" until it is switched on at that address: say that, not a bare error page.
+	contents.on("did-navigate", (_event, url, httpResponseCode) => {
+		if (httpResponseCode === 404 && isWorkspace(url)) {
+			void mainWindow.loadFile(notSetUpPage);
+			clearTimeout(retry);
+			retry = setTimeout(showWorkspace, RETRY_MS);
+		}
+	});
 	contents.on("did-fail-load", (_event, code, _description, _address, isMainFrame) => {
 		// -3 is a load replaced by another one, not a failure.
 		if (isMainFrame && code !== -3) showOffline();

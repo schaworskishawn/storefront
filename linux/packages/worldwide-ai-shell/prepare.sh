@@ -39,7 +39,7 @@ find "$dest/electron" -type d -exec chmod 0755 {} +
 find "$dest/electron" -type f -exec chmod 0644 {} +
 chmod 0755 "$dest/electron/electron" "$dest/electron/chrome_crashpad_handler" "$dest/electron/chrome-sandbox"
 
-for file in package.json main.js offline.html; do
+for file in package.json main.js offline.html not-set-up.html; do
 	tr -d '\r' <"$repo/linux/shell/app/$file" | sed -e "s/@VERSION@/$version/g" >"$dest/app/$file"
 	chmod 0644 "$dest/app/$file"
 done

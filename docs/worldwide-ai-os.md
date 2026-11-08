@@ -60,6 +60,18 @@ linux/iso/build-iso.sh <Ubuntu image> <packages directory> <output directory> <v
 
 The installer file keeps the language, keyboard, network, disk and storage plan, Linux account and time zone as questions for the person installing, and only adds the last step: installing the packages from the disc. Whether Ubuntu's desktop installer reads it from the disc and runs that step as written is unproven until an image is installed.
 
+## The desktop
+
+`/worldwide-ai/desktop` is the Worldwide AI OS desktop after the owner's design concept, and it is what the window opens. It is a page of the workspace, drawn by the same server and behind the same sign-in, with a frame of its own instead of the workspace's: a top bar ("Worldwide AI OS", "Private workspace", whether the computer is online, lock, a session menu and the time); a rail of Today, Agents, Lab, Inventory, Files and Settings; the Command Center window; the Nexus window; and a dock.
+
+Everything on it is read from the workspace when it is drawn, not sample data: the person's name and a greeting for the time of day in Winnipeg; all 49 agents, each with whether its main function can run now, filtered by area; how many things wait for review; how many services are connected; and the first three next actions from the briefing. Every button opens a page of the workspace. The ask bar finds applications and agents as you type; anything else, and anything sent to Nexus, opens Nexus with that goal filled in to be planned. Nothing on the desktop starts work by itself. The windows minimize, maximize and close, and Home and the chat button on the dock bring them back. Without a GPU it has no blur or heavy effects, and the orb is still for anyone who asks for less motion.
+
+The existing workspace pages moved into a `(shell)` route group so the desktop could have its own frame; their addresses did not change. They now link to the desktop from the top bar.
+
+The window shows the desktop of the hosted workspace, so on a computer it works once the workspace is switched on there (its database and settings in Vercel). Until then the window shows its own page saying so, or the storefront's sign-in. Checked in the local preview with demonstration data at 1280 by 800: every part renders, the ask bar suggests agents and applications, a message to Nexus arrives filled in on the Nexus page, and the windows hide and come back.
+
+The window also draws in software now unless `/etc/worldwide-ai/shell-gpu` exists: on 0.0.5 in VirtualBox it never appeared, because the machine has no 3D acceleration and Chromium's GPU process failed.
+
 ## What 0.0.4 and 0.0.5 add
 
 0.0.4 (built 2026-11-08) couldn't install: `worldwide-ai-desktop` depended on `initramfs-tools`, which Ubuntu 26.04 doesn't have, because it builds the start-up image with dracut. 0.0.5 drops that dependency and is otherwise the same: `worldwide-ai-os-0.0.5-amd64.iso`, SHA-256 `b19a587f394e8a841cc278357a2ef823027b2e542b288307fbe0998f5b9c1e8a`. Every build now runs `linux/iso/check-installable.sh` first: apt simulates an offline install of the packages against the package database in the image's minimal layer, and the build stops if anything is missing. Run against the 0.0.4 packages, it reports the same unmet dependency the installer hit; against 0.0.5's, it passes.
