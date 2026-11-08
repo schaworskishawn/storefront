@@ -1,0 +1,11 @@
+# Worldwide AI window (Electron). Ubuntu restricts the unprivileged user namespaces that Chromium's sandbox is built on
+# to programs with a profile allowing them. This profile allows that and nothing more: it adds no confinement and grants
+# no other access. It is the approach Ubuntu documents for Chromium-based applications, instead of turning the sandbox off.
+abi <abi/4.0>,
+include <tunables/global>
+
+profile worldwide-ai-shell /opt/worldwide-ai/shell/electron/electron flags=(unconfined) {
+  userns,
+
+  include if exists <local/worldwide-ai-shell>
+}

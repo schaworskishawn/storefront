@@ -1,0 +1,12 @@
+# These run on Linux, from a checkout that may have been made on Windows.
+*.sh text eol=lf
+*.env text eol=lf
+*.yaml text eol=lf
+*.service text eol=lf
+*.desktop text eol=lf
+# These run on Windows.
+*.ps1 text eol=crlf
+# Everything a package installs is a Linux file.
+packages/** text eol=lf
+# The window program and its pins run on Linux.
+shell/** text eol=lf

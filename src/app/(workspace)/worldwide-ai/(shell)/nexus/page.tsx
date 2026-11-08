@@ -23,7 +23,7 @@ import {
 
 export const metadata: Metadata = { title: "Nexus Command Center" };
 
-type Props = { searchParams: Promise<{ consolidate?: string }> };
+type Props = { searchParams: Promise<{ consolidate?: string; goal?: string }> };
 
 /**
  * Nexus, the only coordinator. Give it a goal and the steps to take; it orders them, names the one agent that owns each,
@@ -31,7 +31,9 @@ type Props = { searchParams: Promise<{ consolidate?: string }> };
  */
 export default async function NexusPage({ searchParams }: Props) {
 	const workspace = await getWorkspace();
-	const { consolidate } = await searchParams;
+	const { consolidate, goal } = await searchParams;
+	// A goal typed on the desktop arrives here to be planned. It only fills the field: nothing is run until a person does.
+	const typedGoal = typeof goal === "string" ? goal.slice(0, 1500) : "";
 	const { sql, now } = workspace.runtime;
 	const nexus = FUNCTIONS.get("nexus.goal-plan");
 	const [plans, briefing, { team }] = await Promise.all([
@@ -59,7 +61,11 @@ export default async function NexusPage({ searchParams }: Props) {
 								action={consolidate ? "Consolidate the results" : "Plan the steps"}
 								fields={nexus.fields}
 								hasSample={!consolidate}
-								initial={consolidate ? { mode: "consolidate", planTask: consolidate } : { mode: "plan" }}
+								initial={
+									consolidate
+										? { mode: "consolidate", planTask: consolidate }
+										: { mode: "plan", ...(typedGoal ? { goal: typedGoal } : {}) }
+								}
 							/>
 						)}
 						<p className="wai-help">

@@ -1,19 +1,12 @@
-import { Suspense, type ReactNode } from "react";
-import { ShellFallback, WorkspaceShell } from "@/ui/sections/worldwide-ai/shell";
+import type { ReactNode } from "react";
 
 /** Server actions started from these pages (a model call, a restore check) may take longer than the default. */
 export const maxDuration = 60;
 
 /**
- * The workspace frame. Who is signed in is read from the session on every request, so everything that depends on it sits
- * inside a Suspense boundary; what shows before that resolves says nothing about the workspace.
+ * Everything under /worldwide-ai. The workspace's pages sit in the (shell) group, inside its frame; the desktop of
+ * Worldwide AI OS has a frame of its own. Both check who is signed in before they show anything.
  */
 export default function WorkspaceLayout({ children }: { children: ReactNode }) {
-	return (
-		<div className="wai-root">
-			<Suspense fallback={<ShellFallback />}>
-				<WorkspaceShell>{children}</WorkspaceShell>
-			</Suspense>
-		</div>
-	);
+	return <div className="wai-root">{children}</div>;
 }

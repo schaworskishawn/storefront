@@ -43,6 +43,9 @@ export async function WorkspaceShell({ children }: { children: ReactNode }) {
 					<span className="wai-top-private wai-hide-mobile">Private workspace</span>
 					<Launcher agents={agents} />
 					<span className="wai-top-spacer" />
+					<Link href={`${WORKSPACE_PATH}/desktop`} className="wai-hide-mobile">
+						Desktop
+					</Link>
 					<span className="wai-who">
 						<span>{workspace.actor.label}</span>
 						<span className="wai-pill">{workspace.isOwner ? "Owner" : "Staff"}</span>
