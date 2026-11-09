@@ -11,6 +11,7 @@
 				--cyan: #69ebff;
 				--pink: #f179fb;
 				--text: #c9c3d6;
+				--muted: #8a8398;
 			}
 			* {
 				box-sizing: border-box;
@@ -39,18 +40,32 @@
 			svg {
 				color: var(--cyan);
 			}
+			section {
+				display: grid;
+				justify-items: center;
+				gap: 12px;
+			}
 			h1 {
 				margin: 0;
 				color: #fff;
-				font-size: 20px;
+				font-size: 18px;
 				font-weight: 500;
-				letter-spacing: 0.24em;
+				letter-spacing: 0.14em;
 				text-transform: uppercase;
+				text-wrap: balance;
 			}
 			p {
 				margin: 0;
-				max-width: 30ch;
+				max-width: 32ch;
 				line-height: 1.5;
+				text-wrap: pretty;
+			}
+			.detail {
+				max-width: 36ch;
+				color: var(--muted);
+				font-family: ui-monospace, "Cascadia Mono", monospace;
+				font-size: 12px;
+				overflow-wrap: anywhere;
 			}
 			button {
 				border: 1px solid var(--cyan);
@@ -63,9 +78,19 @@
 				text-transform: uppercase;
 				box-shadow: 0 0 16px color-mix(in srgb, var(--pink) 30%, transparent);
 			}
+			[hidden] {
+				display: none !important;
+			}
 		</style>
 	</head>
 	<body>
+		<!--
+			The app (MainActivity.java) shows this page only when a page of the site didn't arrive at all: an answer from the
+			site, even an error, is shown as the site sent it. Once this page has loaded, the app hands it what went wrong and
+			where (showDetail: "net::ERR_… · host/path"); Capacitor serves it only at exactly its address, so not in a query.
+			This page then checks whether the site answers at all, to tell "no connection" from "the site is
+			up, but that page failed". Addresses are production; keep them in step with capacitor.config.ts.
+		-->
 		<main>
 			<svg width="60" height="48" viewBox="0 0 30 24" aria-hidden="true">
 				<path
@@ -77,12 +102,44 @@
 					stroke-linecap="round"
 				/>
 			</svg>
-			<h1>Can't reach Worldwide AI</h1>
-			<p>The app needs a connection to open your workspace. Check your signal and try again.</p>
-			<!-- Reloading would only reload this page; go back to the desktop. (Keep in step with capacitor.config.ts.) -->
+			<section id="checking">
+				<h1>Opening Worldwide AI</h1>
+			</section>
+			<section id="offline" hidden>
+				<h1>Can't reach Worldwide AI</h1>
+				<p>The phone can't reach worldwidevapor.com. Check your connection and try again.</p>
+			</section>
+			<section id="failed" hidden>
+				<h1>That page didn't load</h1>
+				<p>
+					worldwidevapor.com is up, but this page couldn't be loaded. Try again; if it keeps happening, send
+					the line below.
+				</p>
+			</section>
+			<p class="detail" id="detail" hidden></p>
 			<button type="button" onclick="location.href = 'https://www.worldwidevapor.com/worldwide-ai/desktop'">
 				Try again
 			</button>
 		</main>
+		<script>
+			// The app calls this once the page has loaded, with what went wrong and where. Text only.
+			window.showDetail = (text) => {
+				const detail = document.getElementById("detail");
+				detail.textContent = String(text);
+				detail.hidden = false;
+			};
+			const show = (id) => {
+				for (const section of ["checking", "offline", "failed"]) {
+					document.getElementById(section).hidden = section !== id;
+				}
+			};
+			// Reachable at all? A no-cors request settles without reading anything: it fails only when nothing answers.
+			fetch("https://www.worldwidevapor.com/worldwide-ai/manifest.webmanifest", {
+				mode: "no-cors",
+				cache: "no-store",
+			})
+				.then(() => show("failed"))
+				.catch(() => show("offline"));
+		</script>
 	</body>
 </html>
