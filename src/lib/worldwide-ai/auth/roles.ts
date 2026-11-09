@@ -29,6 +29,35 @@ export function operatorFor(
 	return null;
 }
 
+/**
+ * Which of the checks above an account passed, for the audit log when it is turned away: "not found" says nothing to the
+ * person, so this is how the owner finds out why (a customer account, or an email that isn't exactly the one listed). It
+ * never includes the email itself.
+ */
+export type AccessChecks = {
+	staffAccount: boolean;
+	active: boolean;
+	onOwnerList: boolean;
+	onStaffList: boolean;
+	ownersListed: number;
+	staffListed: number;
+};
+
+export function accessChecks(
+	viewer: SaleorViewer,
+	config: Pick<WorldwideAiConfig, "ownerEmails" | "staffEmails">,
+): AccessChecks {
+	const email = viewer.email?.trim().toLowerCase();
+	return {
+		staffAccount: viewer.isStaff === true,
+		active: viewer.isActive !== false,
+		onOwnerList: Boolean(email && config.ownerEmails.includes(email)),
+		onStaffList: Boolean(email && config.staffEmails.includes(email)),
+		ownersListed: config.ownerEmails.length,
+		staffListed: config.staffEmails.length,
+	};
+}
+
 export const isOwner = (actor: OperatorActor): boolean => actor.role === "owner";
 
 /**

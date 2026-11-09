@@ -49,7 +49,7 @@ export async function authorizeApi(): Promise<
 				action: "workspace.api_access",
 				subject: state.accountId,
 				outcome: "denied",
-				detail: { reason: "not an owner or staff account" },
+				detail: { reason: "not an owner or staff account", ...state.checks },
 			});
 		} catch {
 			// Nowhere to record it; the request is refused all the same.

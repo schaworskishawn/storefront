@@ -57,7 +57,8 @@ export const getWorkspace = cache(async (): Promise<Workspace> => {
 				action: "workspace.access",
 				subject: state.accountId,
 				outcome: "denied",
-				detail: { reason: "not an owner or staff account" },
+				// Which check failed (never the email): "not found" tells the person nothing, so the owner reads it here.
+				detail: { reason: "not an owner or staff account", ...state.checks },
 			});
 		} catch {
 			// No database yet: nothing to record.
