@@ -32,11 +32,16 @@ incomplete (`jbr\lib\jvm.cfg` missing), so the script falls back to the JetBrain
 
 ## When the desktop doesn't open
 
-Capacitor shows `www/offline.html` whenever the desktop doesn't load: when the phone can't reach the site, and also when
-the site answers the page itself with an error (`onReceivedHttpError` in Capacitor's `BridgeWebViewClient`). The page
-checks whether worldwidevapor.com answers and says which: "Can't reach Worldwide AI" (no connection), or "Worldwide AI
-didn't open" (the site answered, but not with the workspace), with a way to sign in with another account. 1.0 said "check
-your signal" in both cases.
+Capacitor's own handling shows `www/offline.html` whenever the desktop doesn't load: when the phone can't reach the site,
+and also when the site answers with an error status (`onReceivedHttpError` in its `BridgeWebViewClient`). So 1.0 said
+"check your signal" over the site's own "not found", error or security-check page. Since 1.1 the app's `MainActivity`
+replaces that client: an answer from the site, even an error, is shown as sent, and the error page appears only when no
+page arrived at all. It then names what went wrong and where (for example
+`net::ERR_NAME_NOT_RESOLVED · www.worldwidevapor.com/worldwide-ai/desktop`, the path only, never the query), and checks
+whether worldwidevapor.com answers: "Can't reach Worldwide AI" (no connection) or "That page didn't load" (the site is up).
+
+Capacitor serves the error page only at exactly its address (`isErrorUrl` in `WebViewLocalServer`), so the details can't
+go in a query or after `#`: the app hands them to the page once it has loaded (`window.showDetail`).
 
 ## Tested 2026-11-08
 
@@ -47,3 +52,15 @@ your signal" in both cases.
 - Debug build only, signed with the debug key; not for Google Play, whose rules on vape businesses make a listing unlikely.
 - 1.0.1 in the emulator: a live address answering 404 shows "didn't open"; airplane mode shows "can't reach"; the live
   desktop address reaches the site password screen.
+
+## Tested 2026-11-09 (1.1)
+
+Emulator "Medium Phone API 36", the build for the live site:
+
+- The live desktop address opens the site password page.
+- A live address answering 404 shows the site's own "404 This page could not be found." (1.0 and 1.0.1 covered it with
+  the error page).
+- An address that doesn't resolve shows "That page didn't load" with `net::ERR_NAME_NOT_RESOLVED` and the address without
+  its query.
+- Airplane mode shows "Can't reach Worldwide AI" with `net::ERR_ADDRESS_UNREACHABLE`.
+- Not tested: past the site password and sign-in (I don't enter passwords on the live site); a real phone.

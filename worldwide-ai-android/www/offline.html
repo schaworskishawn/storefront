@@ -11,6 +11,7 @@
 				--cyan: #69ebff;
 				--pink: #f179fb;
 				--text: #c9c3d6;
+				--muted: #8a8398;
 			}
 			* {
 				box-sizing: border-box;
@@ -59,13 +60,14 @@
 				line-height: 1.5;
 				text-wrap: pretty;
 			}
-			.actions {
-				display: grid;
-				gap: 10px;
-				justify-items: center;
+			.detail {
+				max-width: 36ch;
+				color: var(--muted);
+				font-family: ui-monospace, "Cascadia Mono", monospace;
+				font-size: 12px;
+				overflow-wrap: anywhere;
 			}
-			button,
-			a {
+			button {
 				border: 1px solid var(--cyan);
 				border-radius: 12px;
 				background: transparent;
@@ -74,13 +76,7 @@
 				font: inherit;
 				letter-spacing: 0.08em;
 				text-transform: uppercase;
-				text-decoration: none;
 				box-shadow: 0 0 16px color-mix(in srgb, var(--pink) 30%, transparent);
-			}
-			a {
-				border-color: color-mix(in srgb, var(--cyan) 40%, transparent);
-				box-shadow: none;
-				font-size: 14px;
 			}
 			[hidden] {
 				display: none !important;
@@ -89,10 +85,11 @@
 	</head>
 	<body>
 		<!--
-			Capacitor shows this page whenever the desktop doesn't load: when the phone can't reach the site, and also when
-			the site answers with an error (onReceivedHttpError), such as "not found" while the workspace isn't switched on or
-			for an account that isn't one of its owners or staff. It can't tell which, so it checks whether the site answers
-			and says so. Addresses are production; keep them in step with capacitor.config.ts.
+			The app (MainActivity.java) shows this page only when a page of the site didn't arrive at all: an answer from the
+			site, even an error, is shown as the site sent it. Once this page has loaded, the app hands it what went wrong and
+			where (showDetail: "net::ERR_… · host/path"); Capacitor serves it only at exactly its address, so not in a query.
+			This page then checks whether the site answers at all, to tell "no connection" from "the site is
+			up, but that page failed". Addresses are production; keep them in step with capacitor.config.ts.
 		-->
 		<main>
 			<svg width="60" height="48" viewBox="0 0 30 24" aria-hidden="true">
@@ -112,33 +109,36 @@
 				<h1>Can't reach Worldwide AI</h1>
 				<p>The phone can't reach worldwidevapor.com. Check your connection and try again.</p>
 			</section>
-			<section id="refused" hidden>
-				<h1>Worldwide AI didn't open</h1>
+			<section id="failed" hidden>
+				<h1>That page didn't load</h1>
 				<p>
-					The site answered, but not with your workspace. It answers "not found" until the workspace is
-					switched on, and to any account that isn't one of its owners or staff.
+					worldwidevapor.com is up, but this page couldn't be loaded. Try again; if it keeps happening, send
+					the line below.
 				</p>
 			</section>
-			<div class="actions">
-				<button type="button" onclick="location.href = 'https://www.worldwidevapor.com/worldwide-ai/desktop'">
-					Try again
-				</button>
-				<a id="switch" href="https://www.worldwidevapor.com/logout" hidden>Sign in with another account</a>
-			</div>
+			<p class="detail" id="detail" hidden></p>
+			<button type="button" onclick="location.href = 'https://www.worldwidevapor.com/worldwide-ai/desktop'">
+				Try again
+			</button>
 		</main>
 		<script>
-			// Reachable at all? A no-cors request settles without reading anything: it fails only when nothing answers.
+			// The app calls this once the page has loaded, with what went wrong and where. Text only.
+			window.showDetail = (text) => {
+				const detail = document.getElementById("detail");
+				detail.textContent = String(text);
+				detail.hidden = false;
+			};
 			const show = (id) => {
-				for (const section of ["checking", "offline", "refused"]) {
+				for (const section of ["checking", "offline", "failed"]) {
 					document.getElementById(section).hidden = section !== id;
 				}
-				document.getElementById("switch").hidden = id !== "refused";
 			};
+			// Reachable at all? A no-cors request settles without reading anything: it fails only when nothing answers.
 			fetch("https://www.worldwidevapor.com/worldwide-ai/manifest.webmanifest", {
 				mode: "no-cors",
 				cache: "no-store",
 			})
-				.then(() => show("refused"))
+				.then(() => show("failed"))
 				.catch(() => show("offline"));
 		</script>
 	</body>
