@@ -6,7 +6,7 @@ import { fetchAuthenticatedUserIfSession } from "@/lib/auth/fetch-authenticated-
 import { resolveSessionUser } from "@/lib/auth/resolve-session-user";
 import { readConfig, type WorldwideAiConfig } from "../config";
 import type { OperatorActor } from "../types";
-import { demoOperatorFor, operatorFor } from "./roles";
+import { accessChecks, demoOperatorFor, operatorFor, type AccessChecks } from "./roles";
 
 /**
  * The dashboard's door. The signed-in store account is read on the server from the session cookie (the dashboard never
@@ -20,7 +20,7 @@ import { demoOperatorFor, operatorFor } from "./roles";
 export type OperatorState =
 	| { status: "guest" }
 	| { status: "unavailable" }
-	| { status: "forbidden"; accountId: string }
+	| { status: "forbidden"; accountId: string; checks: AccessChecks }
 	| { status: "operator"; actor: OperatorActor; config: WorldwideAiConfig };
 
 export const getOperatorState = cache(async (): Promise<OperatorState> => {
@@ -33,5 +33,7 @@ export const getOperatorState = cache(async (): Promise<OperatorState> => {
 	if (auth.status === "guest") return { status: "guest" };
 	if (auth.status === "unavailable") return { status: "unavailable" };
 	const actor = operatorFor(auth.user, config);
-	return actor ? { status: "operator", actor, config } : { status: "forbidden", accountId: auth.user.id };
+	return actor
+		? { status: "operator", actor, config }
+		: { status: "forbidden", accountId: auth.user.id, checks: accessChecks(auth.user, config) };
 });

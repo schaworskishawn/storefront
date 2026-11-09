@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { readConfig } from "../config";
-import { demoOperatorFor, operatorFor } from "./roles";
+import { accessChecks, demoOperatorFor, operatorFor } from "./roles";
 
 const config = readConfig({
 	WORLDWIDE_AI_OWNER_EMAILS: "Olivia@Example.com",
@@ -31,6 +31,22 @@ describe("who may use the dashboard", () => {
 			label: "Sam Staff",
 			role: "staff",
 		});
+	});
+
+	it("says which check an account turned away failed, without the email", () => {
+		expect(accessChecks({ ...staffer, isStaff: false, email: "olivia@example.com" }, config)).toEqual({
+			staffAccount: false,
+			active: true,
+			onOwnerList: true,
+			onStaffList: false,
+			ownersListed: 1,
+			staffListed: 2,
+		});
+		expect(accessChecks({ ...staffer, email: " Olivia@Example.com " }, config).onOwnerList).toBe(true);
+		const notListed = accessChecks({ ...staffer, email: "olivia.w@example.com" }, config);
+		expect(notListed).toMatchObject({ staffAccount: true, onOwnerList: false, onStaffList: false });
+		expect(JSON.stringify(notListed)).not.toContain("@");
+		expect(accessChecks(staffer, readConfig({}))).toMatchObject({ ownersListed: 0, staffListed: 0 });
 	});
 
 	it("never lets an ordinary customer account in, even if its email is on a list", () => {
