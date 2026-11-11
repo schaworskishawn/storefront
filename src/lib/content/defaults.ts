@@ -87,7 +87,7 @@ export const defaultStorefrontContent = {
 			trustBadges: {
 				badges: [
 					{ icon: "⚡", title: "24/7 SUPPORT", subtitle: "Always active direct line" },
-					{ icon: "🍁", title: "GLOBAL SHIPPING", subtitle: "Express Options" },
+					{ icon: "🌎", title: "GLOBAL SHIPPING", subtitle: "Express Options" },
 					{ icon: "🔞", title: "AGE VERIFIED CHECKOUT", subtitle: "Must Be Of Legal Age" },
 					{ icon: "📦", title: "WE SHIP PACKAGES ASAP", subtitle: "No Delay standard logistics" },
 				],
