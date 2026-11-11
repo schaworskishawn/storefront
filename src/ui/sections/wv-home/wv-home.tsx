@@ -27,7 +27,7 @@ const TRUST = [
 		text: "Always active direct line",
 		accent: "text-[var(--wv-cyan-soft)]",
 	},
-	{ icon: "🍁", title: "GLOBAL SHIPPING", text: "Coming Soon, Canada Only", accent: "text-[var(--wv-pink)]" },
+	{ icon: "🍁", title: "GLOBAL SHIPPING", text: "Express Options", accent: "text-[var(--wv-pink)]" },
 	{
 		icon: "🔞",
 		title: "AGE VERIFIED CHECKOUT",
