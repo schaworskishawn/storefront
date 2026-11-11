@@ -12,8 +12,8 @@ const OUT = join(dirname(fileURLToPath(import.meta.url)), "..", "public", "curso
 
 const CYAN = "#00e5ff";
 const CYAN_SOFT = "#69ebff";
-// A near-white cyan: the arrow stays visible on the dark page and on the cyan buttons (a pure cyan arrow would vanish there).
-const ICE = "#e6fcff";
+// The arrow and the hand are pink: it stands out on the dark page and on the cyan buttons alike (a cyan arrow would vanish on
+// those), and the dark outline keeps it visible over anything pink.
 const PINK = "#f179fb";
 const INK = "#05030a";
 const MUTED = "#7e7487";
@@ -33,8 +33,8 @@ const duotone = (front, back) =>
 
 const files = {};
 
-// Hotspot 4 3.
-files["default.svg"] = svg(duotone(ICE, PINK));
+// Hotspot 4 3. A pink arrow with a cyan copy offset behind it, like the hand.
+files["default.svg"] = svg(duotone(PINK, CYAN));
 
 // Hotspot 12 3 (the fingertip). A pointing hand: pink with a dark outline and a cyan copy offset behind it.
 const HAND =
@@ -85,7 +85,7 @@ const CIRCUMFERENCE = 2 * Math.PI * 6;
 for (let frame = 0; frame < 8; frame += 1) {
 	files[`loading-${frame}.svg`] = svg(
 		[
-			arrow({ fill: ICE, transform: "scale(0.85)" }),
+			arrow({ fill: PINK, transform: "scale(0.85)" }),
 			`  <circle cx="23.5" cy="23.5" r="7.4" fill="${INK}" fill-opacity="0.92"/>`,
 			`  <circle cx="23.5" cy="23.5" r="6" fill="none" stroke="${CYAN_SOFT}" stroke-opacity="0.25" stroke-width="2.6"/>`,
 			`  <circle cx="23.5" cy="23.5" r="6" fill="none" stroke="${PINK}" stroke-width="2.6" stroke-linecap="round" stroke-dasharray="${(CIRCUMFERENCE * 0.28).toFixed(2)} ${(CIRCUMFERENCE * 0.72).toFixed(2)}" transform="rotate(${frame * 45} 23.5 23.5)"/>`,
