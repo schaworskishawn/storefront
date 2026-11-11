@@ -9,6 +9,7 @@ import {
 	MAX_PULSES,
 	follow,
 	hasArrived,
+	hasLeftWindow,
 	isMagneticTarget,
 	magnetOffset,
 	type MagnetFacts,
@@ -229,7 +230,11 @@ export function PointerFx() {
 			kick();
 		};
 		const onOut = (event: MouseEvent) => {
-			if (event.relatedTarget === null) hide();
+			if (event.relatedTarget !== null) return;
+			const at = { x: event.clientX, y: event.clientY };
+			// Into an embedded frame (a chat widget, card fields): that page gets the mouse from here on, so no more moves arrive.
+			const intoFrame = document.elementFromPoint(at.x, at.y)?.tagName === "IFRAME";
+			if (intoFrame || hasLeftWindow(at, { width: window.innerWidth, height: window.innerHeight })) hide();
 		};
 
 		document.addEventListener("pointermove", onMove, { passive: true });
