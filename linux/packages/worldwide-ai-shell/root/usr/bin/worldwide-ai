@@ -1,4 +1,0 @@
-#!/bin/sh
-# Opens the Worldwide AI window. Electron starts the program in its own resources/app folder; arguments are not passed
-# on, so nothing can switch its sandbox off or point it at another program from here.
-exec /opt/worldwide-ai/shell/electron/electron

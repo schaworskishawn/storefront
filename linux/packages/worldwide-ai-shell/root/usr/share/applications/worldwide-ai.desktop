@@ -1,9 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=Worldwide AI
-Comment=The Worldwide AI workspace
-Exec=/usr/bin/worldwide-ai
-Icon=worldwide-ai
-Terminal=false
-Categories=Office;
-StartupWMClass=worldwide-ai-shell
