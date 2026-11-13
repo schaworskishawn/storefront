@@ -163,18 +163,20 @@ export function WvShop({
 			<section className="wv-promo-bg">
 				<div className="flex flex-col gap-6 px-4 py-8 md:gap-8 md:p-12 xl:flex-row xl:items-center xl:gap-12 xl:p-16">
 					<div className="flex flex-1 flex-col items-start gap-4 xl:gap-[18px]">
-						<h2 className={`${heyComic} text-[26px] md:text-[32px] xl:text-4xl`}>PROMOTIONAL BUNDLES</h2>
-						<p
-							className={`${orbitron} max-w-[540px] text-sm leading-[1.6] text-[var(--wv-text-dim)] xl:w-[540px]`}
-						>
-							Sign up today and get 15% off your first checkout order. Save big with curated bundle deals,
-							wholesale hardware access, and certified direct shipping.
+						<h2 className={`${heyComic} wv-heading-title text-[26px] md:text-[32px] xl:text-4xl`}>
+							PROMOTIONAL BUNDLES
+						</h2>
+						<p className={`${orbitron} wv-hero-copy max-w-[540px] text-sm leading-[1.6] xl:w-[540px]`}>
+							Sign up today and get{" "}
+							<strong className="wv-hero-key wv-hero-key--pink">15% off your first checkout order</strong>.
+							Save big with <strong className="wv-hero-key">curated bundle deals</strong>, wholesale hardware
+							access, and <strong className="wv-hero-key">certified direct shipping</strong>.
 						</p>
 						<Link
 							href="/shop"
-							className={`${heyComic} flex h-[45px] items-center justify-center rounded-xl border-[1.5px] border-[var(--wv-cyan-soft)] bg-[var(--wv-control)] px-6 text-sm text-[var(--wv-cyan-soft)]`}
+							className={`${heyComic} wv-btn-neon flex h-[45px] items-center justify-center rounded-xl border-[1.5px] border-[var(--wv-cyan-soft)] bg-[var(--wv-control)] px-6 text-sm text-[var(--wv-cyan-soft)]`}
 						>
-							SHOP NOW →
+							<span className="wv-btn-label">SHOP NOW →</span>
 						</Link>
 					</div>
 					<div className="relative aspect-[328/200] w-full shrink-0 overflow-hidden rounded-2xl border-[3px] border-[var(--wv-purple)] md:aspect-[672/320] xl:aspect-auto xl:h-[260px] xl:w-[480px]">
