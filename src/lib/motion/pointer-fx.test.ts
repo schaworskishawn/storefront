@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
 	MAGNET_SIZE,
+	WINDOW_EDGE_PX,
 	follow,
 	hasArrived,
+	hasLeftWindow,
 	isMagneticTarget,
 	magnetOffset,
 	type MagnetFacts,
@@ -115,5 +117,22 @@ describe("magnetOffset", () => {
 
 	it("copes with an empty box", () => {
 		expect(magnetOffset({ left: 0, top: 0, width: 0, height: 0 }, 10, 10)).toEqual({ x: 0, y: 0 });
+	});
+});
+
+describe("the halo stays while the mouse is over the page", () => {
+	const viewport = { width: 1280, height: 800 };
+
+	it("doesn't count a mouseout in the middle of the page as leaving", () => {
+		expect(hasLeftWindow({ x: 640, y: 400 }, viewport)).toBe(false);
+		expect(hasLeftWindow({ x: WINDOW_EDGE_PX + 1, y: WINDOW_EDGE_PX + 1 }, viewport)).toBe(false);
+	});
+
+	it("counts one at or past any edge of the window", () => {
+		expect(hasLeftWindow({ x: 0, y: 400 }, viewport)).toBe(true);
+		expect(hasLeftWindow({ x: -3, y: 400 }, viewport)).toBe(true);
+		expect(hasLeftWindow({ x: 640, y: 2 }, viewport)).toBe(true);
+		expect(hasLeftWindow({ x: 1279, y: 400 }, viewport)).toBe(true);
+		expect(hasLeftWindow({ x: 640, y: 812 }, viewport)).toBe(true);
 	});
 });

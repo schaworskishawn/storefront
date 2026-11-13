@@ -24,6 +24,24 @@ export function hasArrived(from: Point, to: Point): boolean {
 	return Math.abs(to.x - from.x) < ARRIVED_PX && Math.abs(to.y - from.y) < ARRIVED_PX;
 }
 
+/** How close to the window's edge (in px) the mouse must be for a "left for nowhere" mouseout to mean it left the window. */
+export const WINDOW_EDGE_PX = 8;
+
+/**
+ * Whether a mouseout with nowhere to go (`relatedTarget` null) means the mouse really left the window. Browsers send one in
+ * the middle of the page too, when the element under the mouse moves, is redrawn or is removed (the magnetic buttons and the
+ * holographic cards do all three), and hiding the halo then made it blink out while the mouse was still moving over the page.
+ * So it counts only at or past the window's edge.
+ */
+export function hasLeftWindow(at: Point, viewport: { width: number; height: number }): boolean {
+	return (
+		at.x <= WINDOW_EDGE_PX ||
+		at.y <= WINDOW_EDGE_PX ||
+		at.x >= viewport.width - WINDOW_EDGE_PX ||
+		at.y >= viewport.height - WINDOW_EDGE_PX
+	);
+}
+
 /** How far a magnetic button drifts toward the pointer at most, in px (sideways, then up and down). */
 export const MAGNET_PULL_PX = { x: 5, y: 3 };
 /** The button sizes that are magnets. Below the minimum is an icon button; above the maximum is a card (the holographic panels' territory). */
