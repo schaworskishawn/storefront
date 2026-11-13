@@ -18,16 +18,14 @@ const TRUST = [
 		icon: "⚡",
 		title: "24/7 SUPPORT",
 		text: "Always active direct line",
-		accent: "text-[var(--wv-cyan-soft)]",
 	},
-	{ icon: "🌎", title: "GLOBAL SHIPPING", text: "Express Options", accent: "text-[var(--wv-pink)]" },
+	{ icon: "🌎", title: "GLOBAL SHIPPING", text: "Express Options" },
 	{
 		icon: "🔞",
 		title: "AGE VERIFIED CHECKOUT",
 		text: "Must Be Of Legal Age",
-		accent: "text-[var(--wv-cyan-soft)]",
 	},
-	{ icon: "📦", title: "SAFE PACKAGING", text: "We ship packages sealed", accent: "text-[var(--wv-pink)]" },
+	{ icon: "📦", title: "SAFE PACKAGING", text: "We ship packages sealed" },
 ];
 
 /** Static-shell placeholder for `<Suspense>` around `ShopCatalog` — see the usage site below. */
@@ -151,11 +149,11 @@ export function WvShop({
 				className={`${heyComic} flex grid grid-cols-1 items-center justify-between gap-4 border-y border-[var(--wv-cyan)] bg-[var(--wv-surface)] px-4 py-6 md:grid-cols-2 md:gap-6 md:px-8 xl:flex xl:items-center xl:justify-between xl:px-20 xl:py-8`}
 			>
 				{TRUST.map((t) => (
-					<div key={t.title} className="flex items-center gap-4">
-						<span className={`text-2xl ${t.accent}`}>{t.icon}</span>
+					<div key={t.title} className="wv-trust-item flex items-center gap-4">
+						<span className="wv-trust-icon text-2xl">{t.icon}</span>
 						<div className="flex flex-col gap-[2px]">
-							<p className="text-sm">{t.title}</p>
-							<p className="text-xs text-[var(--wv-text-dim)]">{t.text}</p>
+							<p className="wv-trust-title text-sm">{t.title}</p>
+							<p className="wv-trust-text text-xs">{t.text}</p>
 						</div>
 					</div>
 				))}
