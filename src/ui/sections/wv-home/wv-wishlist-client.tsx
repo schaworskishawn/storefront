@@ -131,15 +131,17 @@ function Card({
 			)}
 			<div className="flex flex-1 flex-col gap-2 p-3">
 				{p.brand && (
-					<p className={`${heyComic} text-[10px] tracking-[1px] text-[var(--wv-cyan-soft)]`}>
+					<p className={`${heyComic} wv-pc-brand text-[10px] tracking-[1px] text-[var(--wv-cyan-soft)]`}>
 						{p.brand.toUpperCase()}
 					</p>
 				)}
-				<h3 className={`${bungee} text-sm leading-tight`}>
+				<h3 className={`${bungee} wv-pc-name text-sm leading-tight`}>
 					<Link href={href}>{p.name}</Link>
 				</h3>
 				<div className="flex flex-col">
-					<span className={`${bungee} text-base text-[var(--wv-cyan-soft)]`}>{money(p.price)}</span>
+					<span className={`${bungee} wv-pc-price self-start text-base text-[var(--wv-cyan-soft)]`}>
+						{money(p.price)}
+					</span>
 					{p.undiscountedPrice !== null && (
 						<span className="text-[11px] text-[var(--q-text-dim)] line-through">
 							{money(p.undiscountedPrice)}
@@ -152,15 +154,15 @@ function Card({
 						aria-label={`Add ${p.name} to cart`}
 						disabled={pending}
 						onClick={addToCart}
-						className="flex h-[34px] w-10 shrink-0 items-center justify-center rounded-md bg-[var(--wv-cyan)] text-sm text-[var(--wv-ink)] disabled:opacity-60"
+						className="wv-pc-cta flex h-[34px] w-10 shrink-0 items-center justify-center rounded-md bg-[var(--wv-cyan)] text-sm text-[var(--wv-ink)] disabled:opacity-60"
 					>
 						{pending ? "…" : "🛒"}
 					</button>
 					<Link
 						href={href}
-						className={`${bungee} flex h-[34px] flex-1 items-center justify-center rounded-md border border-[var(--wv-cyan-soft)] text-[10px] tracking-[1px] text-[var(--wv-cyan-soft)]`}
+						className={`${bungee} wv-btn-neon flex h-[34px] flex-1 items-center justify-center rounded-md border border-[var(--wv-cyan-soft)] text-[10px] tracking-[1px] text-[var(--wv-cyan-soft)]`}
 					>
-						QUICK VIEW
+						<span className="wv-btn-label">QUICK VIEW</span>
 					</Link>
 				</div>
 				<p

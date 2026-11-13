@@ -135,16 +135,16 @@ function ProductCard({ product, ctx }: { product: CardProduct; ctx: CatalogConte
 			</Link>
 			<div className="flex flex-1 flex-col gap-[6px] p-3 md:p-[15px]">
 				{product.brand && (
-					<p className={`${bungee} text-[9px] uppercase text-[var(--wv-cyan)] md:text-[10px]`}>
+					<p className={`${bungee} wv-pc-brand text-[9px] uppercase text-[var(--wv-cyan)] md:text-[10px]`}>
 						{product.brand}
 					</p>
 				)}
-				<h3 className={`${heyComic} text-sm text-white md:text-[15px]`}>
+				<h3 className={`${heyComic} wv-pc-name text-sm text-white md:text-[15px]`}>
 					<Link href={href}>{product.name}</Link>
 				</h3>
 				<div className="mt-auto flex flex-wrap items-center justify-between gap-2 pt-[6px]">
 					<div className={`${bungee} flex flex-col gap-[2px]`}>
-						<span className="text-sm text-white md:text-[17px]">
+						<span className="wv-pc-price text-sm text-white md:text-[17px]">
 							{money(product.price)}
 							{product.priceStop !== null && ` - ${money(product.priceStop)}`}
 						</span>
@@ -156,9 +156,9 @@ function ProductCard({ product, ctx }: { product: CardProduct; ctx: CatalogConte
 					</div>
 					<Link
 						href={href}
-						className={`${heyComic} rounded-lg border border-[var(--wv-cyan)] bg-[var(--wv-cyan)] p-2 text-[9px] text-[var(--wv-bg)] md:p-[11px] md:text-[10px]`}
+						className={`${heyComic} wv-pc-cta rounded-lg border border-[var(--wv-cyan)] bg-[var(--wv-cyan)] p-2 text-[9px] text-[var(--wv-bg)] md:p-[11px] md:text-[10px]`}
 					>
-						VIEW PRODUCT
+						<span className="wv-pc-cta-label">VIEW PRODUCT</span>
 					</Link>
 				</div>
 			</div>
