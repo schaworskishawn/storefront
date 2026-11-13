@@ -299,14 +299,14 @@ export function TrustRow() {
 			{items.map((t) => (
 				<li
 					key={t.title}
-					className="flex items-center gap-3 rounded-xl border border-[var(--q-border-strong)] bg-[var(--wv-deep)] p-4"
+					className="wv-trust-item flex items-center gap-3 rounded-xl border border-[var(--q-border-strong)] bg-[var(--wv-deep)] p-4"
 				>
-					<span aria-hidden className="text-xl">
+					<span aria-hidden className="wv-trust-icon text-xl">
 						{t.icon}
 					</span>
 					<span className="flex flex-col gap-[2px]">
-						<span className={`${heyComic} text-xs`}>{t.title}</span>
-						<span className={`${orbitron} text-[10px] text-[var(--q-text-dim)]`}>{t.text}</span>
+						<span className={`${heyComic} wv-trust-title text-xs`}>{t.title}</span>
+						<span className={`${orbitron} wv-trust-text text-[10px]`}>{t.text}</span>
 					</span>
 				</li>
 			))}

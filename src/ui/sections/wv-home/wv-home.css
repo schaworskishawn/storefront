@@ -245,3 +245,39 @@ body.wv-motion h1.wv-hero-title {
 	filter: drop-shadow(0 1px 0 var(--wv-purple)) drop-shadow(0 1px 0 var(--wv-ink))
 		drop-shadow(0 1px 0 var(--wv-ink)) drop-shadow(0 0 6px color-mix(in srgb, currentColor 60%, transparent));
 }
+
+/* Trust strips (home, shop, payments, cart): each item's icon sits in a glowing neon ring, its title is lifted with a dark
+ * edge, a purple one beneath and a glow, and its line of text is brighter with a dark edge. Items alternate cyan and
+ * pink. The ring is sized in em, so it fits each strip's icon size. */
+.wv-trust-item {
+	--accent: var(--wv-cyan-soft);
+}
+.wv-trust-item:nth-child(even) {
+	--accent: var(--wv-pink);
+}
+.wv-trust-icon {
+	display: inline-flex;
+	flex: none;
+	align-items: center;
+	justify-content: center;
+	width: 1.75em;
+	height: 1.75em;
+	border: 1.5px solid var(--accent);
+	border-radius: 9999px;
+	background: radial-gradient(circle, color-mix(in srgb, var(--accent) 24%, transparent) 0%, transparent 70%);
+	box-shadow:
+		0 0 10px color-mix(in srgb, var(--accent) 45%, transparent),
+		inset 0 0 8px color-mix(in srgb, var(--accent) 28%, transparent);
+	line-height: 1;
+}
+.wv-trust-title {
+	color: white;
+	text-shadow:
+		0 1px 0 var(--wv-ink),
+		0 2px 0 color-mix(in srgb, var(--wv-purple) 75%, transparent),
+		0 0 8px color-mix(in srgb, var(--accent) 45%, transparent);
+}
+.wv-trust-text {
+	color: color-mix(in srgb, white 72%, var(--wv-text-dim));
+	text-shadow: 0 1px 1px var(--wv-ink);
+}
