@@ -95,19 +95,22 @@ export function WvHome({
 						</div>
 						<div className="flex min-w-0 flex-1 flex-col gap-[6px] md:gap-[11px] xl:max-w-[1083px]">
 							<h1
-								className={`${retrochips} wv-title-glow text-[22px] leading-none tracking-[-1px] md:text-[30px] xl:text-[34px] xl:tracking-[-1.5px]`}
+								className={`${retrochips} wv-title-glow wv-hero-title text-[22px] leading-none tracking-[-1px] md:text-[30px] xl:text-[34px] xl:tracking-[-1.5px]`}
 							>
 								<span className="text-[var(--wv-pink)]">WORLDWIDE</span>{" "}
 								<span className="text-[var(--wv-cyan-soft)]">VAPOR</span>
 							</h1>
-							<p className={`${heyComic} text-[10px] tracking-[1px] md:text-sm`}>
-								RETAIL | WHOLESALE | DISTRIBUTION PRICES
+							<p className={`${heyComic} wv-hero-tagline text-[10px] tracking-[1px] md:text-base`}>
+								RETAIL <span className="wv-hero-sep">|</span> WHOLESALE <span className="wv-hero-sep">|</span>{" "}
+								DISTRIBUTION PRICES
 							</p>
 							<p
-								className={`${heyComic} max-w-[540px] text-[10px] leading-[1.6] text-[var(--wv-text-dim)] md:text-[11px]`}
+								className={`${heyComic} wv-hero-copy max-w-[540px] text-[11px] leading-[1.6] md:text-[13px]`}
 							>
-								Get direct access to leading hardware, premium disposables, and industry-grade distributions.
-								Certified compliance, bulk tier rates, and global standard logistics.
+								Get direct access to <strong className="wv-hero-key">leading hardware</strong>,{" "}
+								<strong className="wv-hero-key wv-hero-key--pink">premium disposables</strong>, and{" "}
+								<strong className="wv-hero-key">industry-grade distributions</strong>. Certified compliance,
+								bulk tier rates, and global standard logistics.
 							</p>
 							<div className="mt-[11px] hidden gap-4 md:flex">
 								<OutlineButton href="/shop" color="cyan">

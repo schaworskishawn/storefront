@@ -28,6 +28,46 @@
 	text-shadow: 0 0 24px rgba(105, 235, 255, 0.33);
 }
 
+/* The home hero's text, with depth instead of flat print. The title's words get a dark edge underneath and a glow in their
+ * own colour (a filter, so the title's pulsing text-shadow in motion.css still runs); the tagline is chrome-like with
+ * pink dividers; the copy is brighter, lifted off the backdrop, with its key phrases lit. */
+.wv-hero-title > span {
+	filter: drop-shadow(0 2px 0 var(--wv-ink))
+		drop-shadow(0 3px 0 color-mix(in srgb, var(--wv-purple) 80%, transparent))
+		drop-shadow(0 0 8px color-mix(in srgb, currentColor 65%, transparent));
+}
+.wv-hero-tagline {
+	background: linear-gradient(180deg, white 35%, var(--wv-cyan-soft) 100%);
+	-webkit-background-clip: text;
+	background-clip: text;
+	color: transparent;
+	filter: drop-shadow(0 1.5px 0 var(--wv-ink))
+		drop-shadow(0 0 7px color-mix(in srgb, var(--wv-cyan) 50%, transparent));
+}
+.wv-hero-sep {
+	color: var(--wv-pink);
+	-webkit-text-fill-color: var(--wv-pink);
+}
+.wv-hero-copy {
+	color: color-mix(in srgb, white 82%, var(--wv-text-dim));
+	text-shadow:
+		0 1px 2px var(--wv-ink),
+		0 0 16px color-mix(in srgb, var(--wv-purple) 75%, transparent);
+}
+.wv-hero-key {
+	font-weight: inherit;
+	color: var(--wv-cyan-soft);
+	text-shadow:
+		0 1px 2px var(--wv-ink),
+		0 0 9px color-mix(in srgb, var(--wv-cyan) 65%, transparent);
+}
+.wv-hero-key--pink {
+	color: var(--wv-pink);
+	text-shadow:
+		0 1px 2px var(--wv-ink),
+		0 0 9px color-mix(in srgb, var(--wv-pink) 65%, transparent);
+}
+
 .wv-hide-scrollbar {
 	scrollbar-width: none;
 }
