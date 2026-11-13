@@ -195,9 +195,11 @@ export function WvShop({
 			{/* Newsletter */}
 			<section className="flex flex-col gap-6 border-y border-[var(--wv-purple)] bg-[var(--wv-surface)] px-4 py-8 md:px-8 xl:flex-row xl:items-center xl:justify-between xl:px-20 xl:py-12">
 				<div className="flex w-full flex-col gap-2 xl:w-[500px]">
-					<h2 className={`${orbitron} text-[22px] font-black`}>STAY UPDATED</h2>
-					<p className="font-sans text-sm text-[var(--wv-text-dim)]">
-						Receive launch schedules and vape hardware drops directly to your catalog inbox.
+					<h2 className={`${orbitron} wv-heading-title text-[22px] font-black`}>STAY UPDATED</h2>
+					<p className="wv-hero-copy font-sans text-sm">
+						Receive <strong className="wv-hero-key">launch schedules</strong> and{" "}
+						<strong className="wv-hero-key wv-hero-key--pink">vape hardware drops</strong> directly to your
+						catalog inbox.
 					</p>
 				</div>
 				<NewsletterForm compact />

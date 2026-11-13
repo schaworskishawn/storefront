@@ -237,9 +237,13 @@ export function WvHome({
 			{/* Newsletter */}
 			<section className="flex flex-col items-center gap-6 border-y border-[var(--wv-purple)] bg-[var(--wv-surface)] px-4 py-8 md:gap-8 md:p-12 xl:p-20">
 				<div className="flex flex-col items-center gap-3 text-center">
-					<h2 className={`${orbitron} text-[22px] font-black md:text-[28px]`}>STAY UPDATED</h2>
-					<p className="font-sans text-sm text-[var(--wv-text-dim)]">
-						Get the latest deals, new products, and updates directly to your warehouse registry.
+					<h2 className={`${orbitron} wv-heading-title text-[22px] font-black md:text-[28px]`}>
+						STAY UPDATED
+					</h2>
+					<p className="wv-hero-copy font-sans text-sm">
+						Get the <strong className="wv-hero-key wv-hero-key--pink">latest deals</strong>,{" "}
+						<strong className="wv-hero-key">new products</strong>, and updates directly to your warehouse
+						registry.
 					</p>
 				</div>
 				<NewsletterForm />

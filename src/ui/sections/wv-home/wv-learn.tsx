@@ -36,12 +36,14 @@ function Newsletter() {
 		<section className="flex flex-col gap-5 bg-[var(--wv-ink)] px-5 py-8 md:flex-row md:items-center md:justify-between md:gap-10 md:px-8 md:py-10 xl:flex-col xl:justify-center xl:gap-6 xl:p-16">
 			<div className="flex flex-col gap-3 md:max-w-[364px] xl:max-w-[560px] xl:items-center xl:text-center">
 				<h2
-					className={`${outfit} text-xl font-extrabold text-[var(--wv-cyan-soft)] md:text-2xl xl:text-[32px]`}
+					className={`${outfit} wv-heading-title text-xl font-extrabold text-[var(--wv-cyan-soft)] md:text-2xl xl:text-[32px]`}
 				>
 					STAY UPDATED
 				</h2>
-				<p className="text-sm xl:text-base">
-					Get the latest vaping tips, product drops, and exclusive deals straight to your inbox.
+				<p className="wv-hero-copy text-sm xl:text-base">
+					Get the latest <strong className="wv-hero-key">vaping tips</strong>,{" "}
+					<strong className="wv-hero-key">product drops</strong>, and{" "}
+					<strong className="wv-hero-key wv-hero-key--pink">exclusive deals</strong> straight to your inbox.
 				</p>
 			</div>
 			<div className="w-full md:w-[300px] xl:w-[480px]">
