@@ -11,7 +11,8 @@ import { useShopFilters } from "@/lib/catalog/use-shop-filters";
 import { useShuffleSeed } from "@/lib/catalog/use-shuffle-seed";
 import { ShopFilterSidebar } from "./wv-shop-filter-sidebar";
 import { WishlistHeart } from "./wv-wishlist-client";
-import { CATEGORY_ART } from "./wv-category-art";
+import { CATEGORY_BADGE } from "./wv-category-art";
+import { CategoryBadge } from "./wv-category-badge";
 import { formatPrice } from "@/ui/components/plp/utils";
 
 const heyComic = "font-[family-name:var(--font-hey-comic)]";
@@ -185,7 +186,7 @@ export function ShopCatalog({
 					</div>
 					<div className="grid w-full max-w-[420px] grid-cols-3 justify-items-center gap-3 md:max-w-[560px] xl:flex xl:max-w-none xl:justify-center xl:gap-[26px]">
 						{categoryTiles.map((c) => {
-							const art = CATEGORY_ART[c.slug];
+							const badge = CATEGORY_BADGE[c.slug];
 							const on = filters.applied.cats.includes(c.slug);
 							return (
 								<button
@@ -194,11 +195,14 @@ export function ShopCatalog({
 									aria-pressed={on}
 									onClick={() => selectCategory(on ? null : c.slug)}
 									className={`relative block size-[100px] shrink-0 rounded-xl md:size-[90px] xl:size-[175px] ${
-										on ? "ring-2 ring-[var(--wv-cyan-soft)]" : ""
+										on && !badge ? "ring-2 ring-[var(--wv-cyan-soft)]" : ""
 									}`}
 								>
-									{art ? (
-										<Image src={art} alt={c.name} fill sizes="175px" className="rounded-xl object-cover" />
+									{badge ? (
+										<>
+											<CategoryBadge icon={badge} name={c.name} idPrefix={`shop-cat-${c.slug}`} active={on} />
+											<span className="sr-only">{c.name}</span>
+										</>
 									) : (
 										<span className="relative flex size-full items-end overflow-hidden rounded-xl border border-[var(--wv-cyan)] bg-[var(--wv-section)]">
 											{c.image && (

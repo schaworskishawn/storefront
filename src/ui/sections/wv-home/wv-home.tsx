@@ -2,7 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { type WvCategoryTile } from "@/lib/catalog/get-home-products";
 import { WvFooter, WvHeader } from "./wv-chrome";
-import { CATEGORY_ART } from "./wv-category-art";
+import { CATEGORY_BADGE } from "./wv-category-art";
+import { CategoryBadge } from "./wv-category-badge";
 import { BrandCarousel } from "./wv-home-client";
 import { type HomeMembership } from "@/lib/catalog/home-collections";
 import { HomeCollections } from "./wv-home-collections";
@@ -145,21 +146,18 @@ export function WvHome({
 					<div className="mx-auto mt-5 grid max-w-[704px] grid-cols-3 gap-3 md:gap-5 xl:flex xl:max-w-[1040px] xl:justify-center xl:gap-10">
 						{categories.map((c) => {
 							const href = `/shop?category=${encodeURIComponent(c.slug)}`;
-							const art = CATEGORY_ART[c.slug];
+							const badge = CATEGORY_BADGE[c.slug];
 							return (
 								<Link
 									key={c.slug}
 									href={href}
 									className="relative block aspect-[100/110] w-full md:aspect-square xl:h-[150px] xl:w-[140px] xl:shrink-0"
 								>
-									{art ? (
-										<Image
-											src={art}
-											alt={c.name}
-											fill
-											sizes="(min-width: 768px) 196px, 100px"
-											className="object-cover"
-										/>
+									{badge ? (
+										<>
+											<CategoryBadge icon={badge} name={c.name} idPrefix={`home-cat-${c.slug}`} />
+											<span className="sr-only">{c.name}</span>
+										</>
 									) : (
 										<span className="relative flex size-full items-end overflow-hidden rounded-xl border border-[var(--wv-cyan)] bg-[var(--wv-section)]">
 											{c.image && (
