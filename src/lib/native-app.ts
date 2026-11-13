@@ -8,23 +8,13 @@
 
 export const NATIVE_APP_USER_AGENT_MARKER = "WorldwideVaporApp";
 
-/**
- * The Worldwide AI app (worldwide-ai-android/) is a Capacitor shell on Android too, but it is not the store: it opens the
- * workspace, and the store's tab bar has no place in it. Its marker must equal `appendUserAgent` in
- * worldwide-ai-android/capacitor.config.ts.
- */
-export const WORLDWIDE_AI_APP_USER_AGENT_MARKER = "WorldwideAIApp";
-
 type NativeEnvironment = {
 	Capacitor?: { getPlatform?: () => string };
 	userAgent?: string;
 };
 
-/** True only inside the store's Android app — never in a mobile browser, the iOS app or the Worldwide AI app. */
+/** True only inside the store's Android app — never in a mobile browser or the iOS app. */
 export function isAndroidApp({ Capacitor, userAgent }: NativeEnvironment): boolean {
-	if (userAgent?.includes(WORLDWIDE_AI_APP_USER_AGENT_MARKER)) {
-		return false;
-	}
 	if (Capacitor?.getPlatform?.() === "android") {
 		return true;
 	}

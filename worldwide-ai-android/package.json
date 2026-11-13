@@ -1,5 +1,0 @@
-{
-	"name": "worldwide-ai-android",
-	"private": true,
-	"description": "Worldwide AI for Android: the Worldwide AI OS desktop in its own app. Capacitor runs from here; its packages are the repository's own (../node_modules). See docs/worldwide-ai-android.md."
-}

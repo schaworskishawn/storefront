@@ -1,8 +1,0 @@
-#!/bin/sh
-# Loads the window's AppArmor profile now, if AppArmor is running here. Inside the installer's target system it isn't,
-# and the profile loads with the others when the installed system starts.
-set -e
-if [ "$1" = "configure" ] && command -v apparmor_parser >/dev/null 2>&1 && [ -d /sys/kernel/security/apparmor/policy ]; then
-	apparmor_parser --replace --write-cache /etc/apparmor.d/worldwide-ai-shell || echo "worldwide-ai-shell: the AppArmor profile will load at the next start." >&2
-fi
-exit 0
