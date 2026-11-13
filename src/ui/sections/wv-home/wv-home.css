@@ -175,3 +175,28 @@ body.wv-motion h1.wv-hero-title {
 		transform: none;
 	}
 }
+
+/* Section headings (SectionHeading in wv-product-section.tsx), raised off the page like the hero: a dark edge under the
+ * pink eyebrow and the heading, which is chrome-like (white into cyan), each with a faint glow in its colour, and a glow
+ * on the cyan bar beneath. */
+.wv-heading-eyebrow {
+	filter: drop-shadow(0 2px 0 var(--wv-ink))
+		drop-shadow(0 3px 0 color-mix(in srgb, var(--wv-purple) 70%, transparent))
+		drop-shadow(0 0 3px color-mix(in srgb, var(--wv-pink) 35%, transparent));
+}
+.wv-heading-title {
+	filter: drop-shadow(0 2px 0 var(--wv-ink))
+		drop-shadow(0 3px 0 color-mix(in srgb, var(--wv-purple) 70%, transparent))
+		drop-shadow(0 0 3px color-mix(in srgb, var(--wv-cyan) 35%, transparent));
+}
+@supports (background-clip: text) or (-webkit-background-clip: text) {
+	.wv-heading-title {
+		background: linear-gradient(180deg, white 40%, var(--wv-cyan-soft) 100%);
+		-webkit-background-clip: text;
+		background-clip: text;
+		color: transparent;
+	}
+}
+.wv-heading-bar {
+	box-shadow: 0 0 8px color-mix(in srgb, var(--wv-cyan) 55%, transparent);
+}
