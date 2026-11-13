@@ -66,11 +66,15 @@ export function SectionHeading({
 }) {
 	return (
 		<div className="flex flex-col items-center gap-2 text-center">
-			<p className={`${marker} uppercase tracking-[2px] text-[var(--wv-pink)] ${HEADING_SIZE[size]}`}>
+			<p
+				className={`${marker} wv-heading-eyebrow uppercase tracking-[2px] text-[var(--wv-pink)] ${HEADING_SIZE[size]}`}
+			>
 				{eyebrow}
 			</p>
-			<h2 className={`${bungee} tracking-[1px] text-white ${HEADING_SIZE[size]}`}>{title}</h2>
-			<div className={`wv-bar h-[3px] rounded-full bg-[var(--wv-cyan-soft)] ${bar}`} />
+			<h2 className={`${bungee} wv-heading-title tracking-[1px] text-white ${HEADING_SIZE[size]}`}>
+				{title}
+			</h2>
+			<div className={`wv-bar wv-heading-bar h-[3px] rounded-full bg-[var(--wv-cyan-soft)] ${bar}`} />
 		</div>
 	);
 }
