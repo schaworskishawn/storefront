@@ -48,7 +48,7 @@ export function toCardProduct(p: HomeProduct): CardProduct {
 }
 
 const HEADING_SIZE = {
-	section: "text-[20px] md:text-[26px] xl:text-[32px]",
+	section: "text-[22px] md:text-[28px] xl:text-[34px]",
 	small: "text-[18px] md:text-[20px] xl:text-[23px]",
 	brands: "text-[18px] md:text-[22px] xl:text-[24px]",
 } as const;
