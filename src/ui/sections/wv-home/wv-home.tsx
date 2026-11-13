@@ -4,6 +4,7 @@ import { type WvCategoryTile } from "@/lib/catalog/get-home-products";
 import { WvFooter, WvHeader } from "./wv-chrome";
 import { CATEGORY_BADGE } from "./wv-category-art";
 import { CategoryBadge } from "./wv-category-badge";
+import { PromoBundleArt } from "./wv-promo-art";
 import { BrandCarousel } from "./wv-home-client";
 import { type HomeMembership } from "@/lib/catalog/home-collections";
 import { HomeCollections } from "./wv-home-collections";
@@ -224,12 +225,9 @@ export function WvHome({
 						</OutlineButton>
 					</div>
 					<div className="relative aspect-[328/200] w-full shrink-0 overflow-hidden rounded-2xl border border-[var(--wv-purple)] md:aspect-[672/320] xl:aspect-auto xl:h-[360px] xl:w-[540px]">
-						<Image
-							src="/home/imgPromoRightMedia.png"
-							alt="Promotional bundles"
-							fill
-							sizes="(min-width: 1280px) 540px, 100vw"
-							className="object-cover"
+						<PromoBundleArt
+							idPrefix="home-promo"
+							label="Promotional bundles: products rising from an open neon box over a synthwave sun"
 						/>
 					</div>
 				</div>

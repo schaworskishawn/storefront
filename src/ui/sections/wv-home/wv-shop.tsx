@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { type HomeProduct, type WvCategoryTile } from "@/lib/catalog/get-home-products";
 import { WvFooter, WvHeader } from "./wv-chrome";
+import { PromoBundleArt } from "./wv-promo-art";
 import { NewsletterForm } from "./wv-newsletter-client";
 import { ShopCatalog } from "./wv-shop-catalog";
 import "./wv-home.css";
@@ -180,12 +181,9 @@ export function WvShop({
 						</Link>
 					</div>
 					<div className="relative aspect-[328/200] w-full shrink-0 overflow-hidden rounded-2xl border-[3px] border-[var(--wv-purple)] md:aspect-[672/320] xl:aspect-auto xl:h-[260px] xl:w-[480px]">
-						<Image
-							src="/home/imgPromoRightMedia.png"
-							alt="Promotional bundles"
-							fill
-							sizes="480px"
-							className="object-cover"
+						<PromoBundleArt
+							idPrefix="shop-promo"
+							label="Promotional bundles: products rising from an open neon box over a synthwave sun"
 						/>
 					</div>
 				</div>

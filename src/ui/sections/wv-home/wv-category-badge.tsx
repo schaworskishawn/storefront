@@ -7,8 +7,9 @@ import type { CategoryBadgeIcon } from "./wv-category-art";
  * as text. Colours are the brand tokens; the hover glow is in wv-home.css (`.wv-badge`).
  */
 
-/** Line drawings in a 100 × 100 box, stroked with the icon gradient; `dots` are small filled accents. */
-const ICONS: Record<CategoryBadgeIcon, { strokes: string[]; dots?: string[] }> = {
+/** Line drawings in a 100 × 100 box, stroked with the icon gradient; `dots` are small filled accents. Shared with the
+ * promo art (wv-promo-art.tsx), so the products there are drawn the same way. */
+export const BADGE_DRAWINGS: Record<CategoryBadgeIcon, { strokes: string[]; dots?: string[] }> = {
 	// A disposable bar: body, tapered mouthpiece, a band, the LED, and two curls of vapour.
 	disposables: {
 		strokes: [
@@ -104,7 +105,7 @@ export function CategoryBadge({
 	const label = name.toUpperCase();
 	// The headline font is wide: a long name is fitted to the plate rather than spilling over it.
 	const fit = label.length > 8 ? { textLength: 150, lengthAdjust: "spacingAndGlyphs" as const } : {};
-	const drawing = ICONS[icon];
+	const drawing = BADGE_DRAWINGS[icon];
 
 	return (
 		<svg
