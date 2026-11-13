@@ -209,14 +209,18 @@ export function WvHome({
 			<section className="wv-nebula">
 				<div className="flex flex-col gap-6 p-4 py-8 md:gap-8 md:p-12 xl:flex-row xl:items-center xl:gap-12 xl:p-20">
 					<div className="flex flex-1 flex-col items-start gap-4 xl:gap-6">
-						<h2 className={`${heyComic} text-[28px] leading-tight md:text-[36px] xl:text-[44px]`}>
+						<h2
+							className={`${heyComic} wv-heading-title text-[28px] leading-tight md:text-[36px] xl:text-[44px]`}
+						>
 							PROMOTIONAL BUNDLES
 						</h2>
 						<p
-							className={`${orbitron} max-w-[540px] text-sm leading-[1.6] text-[var(--wv-text-dim)] xl:w-[540px] xl:text-base`}
+							className={`${orbitron} wv-hero-copy max-w-[540px] text-sm leading-[1.6] xl:w-[540px] xl:text-base`}
 						>
-							Save big with our curated bundle deals. Mix and match your favorite disposables, hardware kits,
-							and accessories at exclusive wholesale pricing. Bundle more, save more.
+							Save big with our <strong className="wv-hero-key">curated bundle deals</strong>. Mix and match
+							your favorite disposables, hardware kits, and accessories at{" "}
+							<strong className="wv-hero-key wv-hero-key--pink">exclusive wholesale pricing</strong>.{" "}
+							<strong className="wv-hero-key">Bundle more, save more.</strong>
 						</p>
 						<OutlineButton href="/shop?category=bundles" color="cyan">
 							SHOP BUNDLES
