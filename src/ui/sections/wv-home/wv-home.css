@@ -322,3 +322,37 @@ body.wv-motion h1.wv-hero-title {
 	display: inline-block;
 	filter: drop-shadow(0 1px 0 color-mix(in srgb, white 45%, transparent));
 }
+
+/* Footer link columns (WvFooter in wv-chrome.tsx): each heading is lifted with a dark edge, a purple one beneath and a
+ * cyan glow, over a short glowing cyan-to-pink bar; the links are brighter than the old grey with a dark edge, and glow
+ * cyan under the pointer (motion.css still turns them cyan and nudges them right). */
+.wv-foot-heading {
+	position: relative;
+	padding-bottom: 6px;
+	text-shadow:
+		0 1px 0 var(--wv-ink),
+		0 2px 0 color-mix(in srgb, var(--wv-purple) 75%, transparent),
+		0 0 8px color-mix(in srgb, var(--wv-cyan) 55%, transparent);
+}
+.wv-foot-heading::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	bottom: 0;
+	width: 24px;
+	height: 2px;
+	border-radius: 9999px;
+	background: linear-gradient(90deg, var(--wv-cyan), var(--wv-pink));
+	box-shadow: 0 0 6px color-mix(in srgb, var(--wv-cyan) 60%, transparent);
+}
+.wv-foot-text {
+	color: color-mix(in srgb, white 72%, var(--wv-footer-link));
+	text-shadow: 0 1px 0 var(--wv-ink);
+}
+@media (hover: hover) {
+	.wv-foot-text:hover {
+		text-shadow:
+			0 1px 0 var(--wv-ink),
+			0 0 8px color-mix(in srgb, var(--wv-cyan) 60%, transparent);
+	}
+}

@@ -166,7 +166,9 @@ export function WvFooter() {
 				<div className="grid grid-cols-1 gap-y-4 md:grid-cols-2 md:gap-x-[84px] md:gap-y-6 xl:flex xl:flex-1 xl:gap-8 xl:pl-6 xl:pt-6">
 					{FOOTER_COLUMNS.map((col) => (
 						<div key={col.title} className="flex flex-col gap-[10px] xl:gap-3">
-							<p className={`${heyComic} text-xs tracking-[2px] text-[var(--wv-cyan)] xl:mb-2`}>
+							<p
+								className={`${heyComic} wv-foot-heading text-xs tracking-[2px] text-[var(--wv-cyan)] xl:mb-2`}
+							>
 								{col.title}
 							</p>
 							{col.links
@@ -175,7 +177,7 @@ export function WvFooter() {
 									<a
 										key={l}
 										href={FOOTER_HREFS[l] ?? "#"}
-										className={`${heyComic} wv-foot-link whitespace-nowrap text-[13px] text-[var(--wv-footer-link)]`}
+										className={`${heyComic} wv-foot-link wv-foot-text whitespace-nowrap text-[13px]`}
 									>
 										{l}
 									</a>
