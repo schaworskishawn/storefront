@@ -176,22 +176,42 @@ body.wv-motion h1.wv-hero-title {
 	}
 }
 
-/* Section headings (SectionHeading in wv-product-section.tsx), raised off the page like the hero: a dark edge under the
- * pink eyebrow and the heading, which is chrome-like (white into cyan), each with a faint glow in its colour, and a glow
- * on the cyan bar beneath. */
+/* Section headings (SectionHeading in wv-product-section.tsx) as solid 3D lettering: a thin dark outline, an edge five or six
+ * pixels deep underneath (stacked drop-shadows, each adding a pixel: purple near the letters, the page's ink below), and
+ * a glow in the heading's colour. The pink eyebrow shades from light pink to deep magenta; the heading is chrome, white
+ * above a horizon line and cyan below. Without gradient text, both keep their plain colour. */
+.wv-heading-eyebrow,
+.wv-heading-title {
+	-webkit-text-stroke: 0.6px var(--wv-ink);
+	paint-order: stroke fill;
+}
 .wv-heading-eyebrow {
-	filter: drop-shadow(0 2px 0 var(--wv-ink))
-		drop-shadow(0 3px 0 color-mix(in srgb, var(--wv-purple) 70%, transparent))
-		drop-shadow(0 0 3px color-mix(in srgb, var(--wv-pink) 35%, transparent));
+	filter: drop-shadow(0 1px 0 var(--wv-purple)) drop-shadow(0 1px 0 var(--wv-purple))
+		drop-shadow(0 1px 0 var(--wv-purple)) drop-shadow(0 1px 0 var(--wv-ink))
+		drop-shadow(0 1px 0 var(--wv-ink))
+		drop-shadow(0 0 6px color-mix(in srgb, var(--wv-pink) 45%, transparent));
 }
 .wv-heading-title {
-	filter: drop-shadow(0 2px 0 var(--wv-ink))
-		drop-shadow(0 3px 0 color-mix(in srgb, var(--wv-purple) 70%, transparent))
-		drop-shadow(0 0 3px color-mix(in srgb, var(--wv-cyan) 35%, transparent));
+	filter: drop-shadow(0 1px 0 color-mix(in srgb, var(--wv-cyan) 45%, var(--wv-purple)))
+		drop-shadow(0 1px 0 color-mix(in srgb, var(--wv-cyan) 45%, var(--wv-purple)))
+		drop-shadow(0 1px 0 var(--wv-purple)) drop-shadow(0 1px 0 var(--wv-purple))
+		drop-shadow(0 1px 0 var(--wv-ink)) drop-shadow(0 1px 0 var(--wv-ink))
+		drop-shadow(0 0 7px color-mix(in srgb, var(--wv-cyan) 40%, transparent));
 }
 @supports (background-clip: text) or (-webkit-background-clip: text) {
+	.wv-heading-eyebrow {
+		background: linear-gradient(
+			180deg,
+			color-mix(in srgb, var(--wv-pink) 50%, white) 0%,
+			var(--wv-pink) 55%,
+			color-mix(in srgb, var(--wv-pink) 65%, var(--wv-purple)) 100%
+		);
+		-webkit-background-clip: text;
+		background-clip: text;
+		color: transparent;
+	}
 	.wv-heading-title {
-		background: linear-gradient(180deg, white 40%, var(--wv-cyan-soft) 100%);
+		background: linear-gradient(180deg, white 0%, white 46%, var(--wv-cyan-soft) 54%, var(--wv-cyan) 100%);
 		-webkit-background-clip: text;
 		background-clip: text;
 		color: transparent;
