@@ -97,9 +97,9 @@ export function OutlineButton({
 	return (
 		<Link
 			href={href}
-			className={`${heyComic} wv-btn wv-btn-outline flex h-9 items-center justify-center rounded-xl border-[1.5px] px-6 text-sm tracking-[1px] md:h-[45px] ${c} ${className}`}
+			className={`${heyComic} wv-btn wv-btn-outline wv-btn-neon flex h-9 items-center justify-center rounded-xl border-[1.5px] px-6 text-sm tracking-[1px] md:h-[45px] ${c} ${className}`}
 		>
-			{children}
+			<span className="wv-btn-label">{children}</span>
 		</Link>
 	);
 }

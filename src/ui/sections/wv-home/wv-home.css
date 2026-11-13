@@ -200,3 +200,24 @@ body.wv-motion h1.wv-hero-title {
 .wv-heading-bar {
 	box-shadow: 0 0 8px color-mix(in srgb, var(--wv-cyan) 55%, transparent);
 }
+
+/* Outline buttons (OutlineButton in wv-product-section.tsx), lifted off the page: a glassy tint of their colour with a
+ * soft inner and outer glow, and lettering that is a touch brighter with a dark edge underneath and a faint glow. The
+ * lettering's depth is a filter on its own span, so the magnetic buttons' cyan and pink ghosts (a text-shadow on the
+ * button, pointer-fx.css) still show on top; on hover motion.css's fill and glow take over the button's shadow. */
+.wv-btn-neon {
+	background-image: linear-gradient(
+		180deg,
+		color-mix(in srgb, currentColor 12%, transparent),
+		color-mix(in srgb, currentColor 3%, transparent)
+	);
+	box-shadow:
+		inset 0 0 10px color-mix(in srgb, currentColor 16%, transparent),
+		0 0 8px color-mix(in srgb, currentColor 22%, transparent);
+}
+.wv-btn-label {
+	display: inline-block;
+	color: color-mix(in srgb, currentColor 80%, white);
+	filter: drop-shadow(0 1.5px 0 var(--wv-ink))
+		drop-shadow(0 0 4px color-mix(in srgb, currentColor 50%, transparent));
+}
