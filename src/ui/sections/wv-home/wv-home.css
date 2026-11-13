@@ -33,8 +33,24 @@
  * pink dividers; the copy is brighter, lifted off the backdrop, with its key phrases lit. */
 .wv-hero-title > span {
 	filter: drop-shadow(0 2px 0 var(--wv-ink))
-		drop-shadow(0 3px 0 color-mix(in srgb, var(--wv-purple) 80%, transparent))
-		drop-shadow(0 0 8px color-mix(in srgb, currentColor 65%, transparent));
+		drop-shadow(0 3px 0 color-mix(in srgb, var(--wv-purple) 70%, transparent))
+		drop-shadow(0 0 3px color-mix(in srgb, currentColor 35%, transparent));
+}
+/* A gentler version of the titles' glow pulse (motion.css) for the home hero, whose words already carry an edge glow.
+ * Only the keyframes change, so it still runs only when motion is allowed. */
+body.wv-motion h1.wv-hero-title {
+	animation-name: wv-hero-glow-pulse;
+}
+@keyframes wv-hero-glow-pulse {
+	0%,
+	100% {
+		text-shadow: 0 0 10px color-mix(in srgb, var(--wv-cyan-soft) 16%, transparent);
+	}
+	50% {
+		text-shadow:
+			0 0 16px color-mix(in srgb, var(--wv-cyan-soft) 26%, transparent),
+			0 0 8px color-mix(in srgb, var(--wv-pink) 16%, transparent);
+	}
 }
 .wv-hero-tagline {
 	background: linear-gradient(180deg, white 35%, var(--wv-cyan-soft) 100%);
