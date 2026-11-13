@@ -66,13 +66,15 @@ function ResultCard({ p, money }: { p: HomeProduct; money: (n: number) => string
 				) : null}
 			</Link>
 			<div className="flex flex-1 flex-col gap-2 p-4">
-				{p.brand && <p className={`${orbitron} text-[11px] text-[var(--wv-text-dim)]`}>{p.brand}</p>}
-				<h3 className={`${heyComic} text-[15px] uppercase`}>
+				{p.brand && (
+					<p className={`${orbitron} wv-pc-brand text-[11px] text-[var(--wv-text-dim)]`}>{p.brand}</p>
+				)}
+				<h3 className={`${heyComic} wv-pc-name text-[15px] uppercase`}>
 					<Link href={href}>{p.name}</Link>
 				</h3>
 				<div className="mt-auto flex items-center justify-between gap-3 pt-2">
 					<p className={`${bungee} flex items-baseline gap-2 text-base text-[var(--wv-cyan-soft)]`}>
-						{money(p.price)}
+						<span className="wv-pc-price">{money(p.price)}</span>
 						{p.undiscountedPrice !== null && (
 							<span className="text-[10px] text-[var(--wv-muted)] line-through">
 								{money(p.undiscountedPrice)}

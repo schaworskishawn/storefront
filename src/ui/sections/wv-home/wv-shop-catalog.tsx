@@ -55,14 +55,16 @@ function ShopProductCard({ product, ctx }: { product: HomeProduct; ctx: Ctx }) {
 				<span className="to-[var(--wv-bg)]/80 absolute inset-0 bg-gradient-to-b from-transparent" />
 			</Link>
 			<div className="flex flex-1 flex-col gap-[6px]">
-				<h3 className={`${heyComic} text-sm uppercase text-white`}>
+				<h3 className={`${heyComic} wv-pc-name text-sm uppercase text-white`}>
 					<Link href={href}>{product.name}</Link>
 				</h3>
 				{product.brand && (
-					<p className={`${orbitron} text-[11px] leading-[1.4] text-[var(--wv-text-dim)]`}>{product.brand}</p>
+					<p className={`${orbitron} wv-pc-brand text-[11px] leading-[1.4] text-[var(--wv-text-dim)]`}>
+						{product.brand}
+					</p>
 				)}
 				<p className={`${bungee} mt-auto flex items-baseline gap-2 text-sm text-[var(--wv-cyan-soft)]`}>
-					<span>
+					<span className="wv-pc-price">
 						{money(product.price)}
 						{product.priceStop !== null && ` - ${money(product.priceStop)}`}
 					</span>
