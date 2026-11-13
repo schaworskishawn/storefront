@@ -93,3 +93,29 @@
 		0 0 15px color-mix(in srgb, var(--glow) 45%, transparent),
 		0 0 6px color-mix(in srgb, var(--glow) 75%, transparent);
 }
+
+/* Category badges (wv-category-badge.tsx): a soft pink glow always; under the pointer or keyboard focus, and while
+ * selected in the shop's filter, they glow brighter in pink and cyan, and lift. No movement for reduced motion. */
+.wv-badge {
+	overflow: visible;
+	filter: drop-shadow(0 0 6px color-mix(in srgb, var(--wv-pink) 45%, transparent));
+	transition:
+		transform 220ms ease,
+		filter 220ms ease;
+}
+:is(a, button):is(:hover, :focus-visible) > .wv-badge,
+.wv-badge[data-active] {
+	filter: drop-shadow(0 0 12px color-mix(in srgb, var(--wv-pink) 75%, transparent))
+		drop-shadow(0 0 22px color-mix(in srgb, var(--wv-cyan) 45%, transparent));
+}
+:is(a, button):is(:hover, :focus-visible) > .wv-badge {
+	transform: translateY(-3px) scale(1.04);
+}
+@media (prefers-reduced-motion: reduce) {
+	.wv-badge {
+		transition: filter 220ms ease;
+	}
+	:is(a, button):is(:hover, :focus-visible) > .wv-badge {
+		transform: none;
+	}
+}
