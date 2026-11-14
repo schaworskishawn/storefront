@@ -37,7 +37,7 @@ export function WvHeader() {
 						className="wv-glitch relative block h-[45px] w-[100px] md:h-14 md:w-28 xl:h-[71px] xl:w-[142px]"
 					>
 						<Image
-							src="/home/logo-wordmark.webp"
+							src="/home/logo-wordmark-pink.webp"
 							alt="Worldwide Vapor"
 							fill
 							sizes="(min-width: 1280px) 142px, (min-width: 768px) 112px, 100px"
