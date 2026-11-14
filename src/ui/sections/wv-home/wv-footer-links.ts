@@ -10,6 +10,7 @@ export const FOOTER_COLUMNS: { title: string; links: string[] }[] = [
 			"Payments",
 			"Blog",
 			"Quit Nicotine",
+			"Community",
 			"Affiliate Program",
 			"Become a Distributor",
 		],
@@ -34,6 +35,9 @@ export const FOOTER_COLUMNS: { title: string; links: string[] }[] = [
 /** The footer link to the rewards page, which exists only while the program is switched on (the footer hides it otherwise). */
 export const REWARDS_FOOTER_LABEL = "Vapor Tokens";
 
+/** The footer link to the community, which exists only once it has somewhere to keep messages (the footer hides it otherwise). */
+export const COMMUNITY_FOOTER_LABEL = "Community";
+
 /** Label -> link. A label with no entry here has no page yet and renders as a placeholder `#` link. */
 export const FOOTER_HREFS: Record<string, string> = {
 	"All Products": "/shop",
@@ -47,6 +51,7 @@ export const FOOTER_HREFS: Record<string, string> = {
 	Payments: "/payments",
 	Blog: "/learn",
 	"Quit Nicotine": "/quit",
+	Community: "/community",
 	"Affiliate Program": "/affiliate-program",
 	"Become a Distributor": "/distributor",
 	Learn: "/learn",
