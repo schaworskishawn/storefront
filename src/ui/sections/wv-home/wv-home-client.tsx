@@ -130,7 +130,7 @@ export function BrandCarousel() {
 			</button>
 			<div
 				ref={trackRef}
-				className="wv-hide-scrollbar flex cursor-grab touch-pan-x select-none snap-x snap-proximity gap-3 overflow-x-auto scroll-smooth active:cursor-grabbing md:scroll-px-12 md:gap-4 md:px-12 xl:gap-5"
+				className="wv-hide-scrollbar -my-3 flex cursor-grab touch-pan-x select-none snap-x snap-proximity gap-3 overflow-x-auto scroll-smooth py-3 active:cursor-grabbing md:scroll-px-12 md:gap-4 md:px-12 xl:gap-5"
 				onPointerDown={startDrag}
 				onPointerMove={moveDrag}
 				onPointerUp={endDrag}
@@ -139,7 +139,7 @@ export function BrandCarousel() {
 				{BRAND_LOGOS.map((brand) => (
 					<div
 						key={brand.name}
-						className="relative h-[60px] w-[150px] shrink-0 snap-start overflow-hidden rounded-xl border border-[var(--wv-cyan)] bg-[var(--wv-control)] md:h-20 md:w-[200px] xl:h-16 xl:w-40"
+						className="wv-brand-tile relative h-[60px] w-[150px] shrink-0 snap-start overflow-hidden rounded-xl md:h-20 md:w-[200px] xl:h-16 xl:w-40"
 					>
 						<Image
 							src={brand.src}
@@ -147,7 +147,7 @@ export function BrandCarousel() {
 							fill
 							draggable={false}
 							sizes="(min-width: 1280px) 160px, (min-width: 768px) 200px, 150px"
-							className="object-cover"
+							className="wv-brand-logo object-cover"
 						/>
 					</div>
 				))}
