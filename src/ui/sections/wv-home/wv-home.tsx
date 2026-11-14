@@ -84,8 +84,10 @@ export function WvHome({
 				))}
 				<div className="relative flex flex-col gap-4 p-4 md:flex-row md:items-center md:gap-6 md:px-8 md:py-6 xl:min-h-[231px] xl:gap-10 xl:py-0 xl:pl-14 xl:pr-10">
 					<div className="flex items-center gap-3 md:contents">
-						{/* The emblem is a 2:3 shield, so its box is too: it shows whole, uncropped. */}
-						<div className="wv-float wv-glitch relative h-[150px] w-[100px] shrink-0 md:h-[195px] md:w-[130px] xl:h-[231px] xl:w-[154px]">
+						{/* The emblem (a 2:3 shield) is as tall as the text beside it: its box keeps a width and stretches to the
+						    row's height, and the shield is fitted inside, whole. Text taller than the shield's full size leaves it at
+						    full size, centred. */}
+						<div className="wv-float wv-glitch relative w-[100px] shrink-0 self-stretch md:w-[130px] xl:w-[154px]">
 							<Image
 								src="/home/logo-worldwide-vapor.webp"
 								alt=""
