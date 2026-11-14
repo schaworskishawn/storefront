@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { type ReactNode } from "react";
 import { readRewardsConfig } from "@/lib/rewards/tokens";
+import { AccountCover } from "./wv-cover";
 import { WvFooter, WvHeader } from "./wv-chrome";
 import "./wv-home.css";
 
@@ -196,6 +197,7 @@ export function WvAccount({ user, base }: AccountView) {
 			title="MY ACCOUNT"
 			subtitle="Manage orders, saved details, and account settings."
 		>
+			{user ? <AccountCover fallbackName={user.name} /> : null}
 			{user ? (
 				<div className="grid gap-4 md:grid-cols-3">
 					<SummaryCard
