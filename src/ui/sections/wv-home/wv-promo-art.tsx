@@ -10,6 +10,11 @@ import type { CategoryBadgeIcon } from "./wv-category-art";
  * It fills its frame (`slice`); the frames differ by screen (about 1.5 to 2.1 wide per 1 high), so everything that
  * matters sits inside x 70–570, y 30–330 of the 640 × 360 drawing. The box, the light and the products share one centre
  * line, x 320, which is also the sun's centre and the grid's vanishing point.
+ *
+ * Lighting: the glowing inside of the box is the key light. It lights the products' feet and the inner faces of the
+ * flaps, pours up in beams, blooms over the rim and pools on the floor (with the box's reflection). The sky and sun are
+ * the fill: a purple sheen on the top of the box's faces. A fine grain over everything keeps the long gradients from
+ * banding, and a vignette holds the eye in the middle.
  */
 
 const stop = (offset: string, color: string, opacity = 1) => (
@@ -52,12 +57,40 @@ const box = (() => {
 		// out; the right one hangs out and down over the side (lifted, it would be seen edge-on from this angle).
 		flapLeft: `M${pt(l, t)} L${pt(l - 35, t - 20)} L${pt(l - 35 + dx, t - 20 + dy)} L${pt(l + dx, t + dy)} Z`,
 		flapRight: `M${pt(r, t)} L${pt(r + 36, t + 17)} L${pt(r + 36 + dx, t + 17 + dy)} L${pt(r + dx, t + dy)} Z`,
+		// The box mirrored in the floor: the front about its bottom edge, the side about its slanted one.
+		reflection: [
+			`M${pt(l, b)} L${pt(l, 2 * b - t)} L${pt(r, 2 * b - t)} L${pt(r, b)}`,
+			`M${pt(r, 2 * b - t)} L${pt(r + dx, 2 * (b + dy) - (t + dy))} L${pt(r + dx, b + dy)}`,
+		],
 		// Where the box meets the floor: its footprint's centre.
 		floor: [(l + r + dx) / 2, b + dy / 2] as const,
 	};
 })();
+/** The middle of each flap's hinge and of its free edge: the light from inside the box runs from one to the other. */
+const FLAP_LIGHT = {
+	left: [BOX.left + BOX.dx / 2, BOX.top + BOX.dy / 2, BOX.left + BOX.dx / 2 - 35, BOX.top + BOX.dy / 2 - 20],
+	right: [
+		BOX.right + BOX.dx / 2,
+		BOX.top + BOX.dy / 2,
+		BOX.right + BOX.dx / 2 + 36,
+		BOX.top + BOX.dy / 2 + 17,
+	],
+} as const;
 
 const SPARK = "M0 -12 C1 -4 4 -1 12 0 C4 1 1 4 0 12 C-1 4 -4 1 -12 0 C-4 -1 -1 -4 0 -12 Z";
+
+/** Motes of light drifting up in the beams, clear of the products: x, y, radius. */
+const MOTES = [
+	[282, 190, 1.2],
+	[360, 186, 1],
+	[338, 72, 1.1],
+	[302, 60, 0.9],
+	[270, 82, 1],
+	[372, 92, 0.8],
+	[352, 40, 0.9],
+	[288, 36, 0.8],
+	[318, 186, 0.9],
+] as const;
 
 /** A pointy-topped hexagon of radius r around (cx, cy). */
 const hex = (cx: number, cy: number, r: number) => {
@@ -78,8 +111,11 @@ const TAG_LINE_GAP = 4.5;
 const tagCap = TAG_FONT * 0.72;
 const tagBaseline1 = TAG.cy - (2 * tagCap + TAG_LINE_GAP) / 2 + tagCap;
 const tagBaseline2 = tagBaseline1 + tagCap + TAG_LINE_GAP;
+const tagHex = hex(TAG.cx, TAG.cy, TAG.r);
+const badgeHex = hex((BOX.left + BOX.right) / 2, (BOX.top + BOX.bottom) / 2, 25);
 
 const bungee = { fontFamily: "var(--font-bungee), system-ui, sans-serif" } as const;
+const screen = { mixBlendMode: "screen" } as const;
 
 export function PromoBundleArt({ idPrefix, label }: { idPrefix: string; label: string }) {
 	const id = (part: string) => `${idPrefix}-${part}`;
@@ -88,63 +124,213 @@ export function PromoBundleArt({ idPrefix, label }: { idPrefix: string; label: s
 	// The floor's lines: from the vanishing point at the horizon's middle out to the bottom edge, and across it ever wider apart.
 	const rays = Array.from({ length: 17 }, (_, i) => -320 + i * 80);
 	const rungs = [242, 252, 266, 286, 314, 352];
-	// The box's faces from back to front, each filled and then outlined, so a nearer face hides the edges behind it.
-	// The side is in shadow, darker than the front; the right flap hangs in front of the side.
+	// The box's faces from back to front, each filled, shaded and then outlined, so a nearer face hides the edges behind
+	// it. The side is in shadow, darker than the front; the right flap hangs in front of the side.
 	const boxFaces = [
-		{ d: box.flapLeft, fill: "var(--wv-deep)", opacity: 0.88 },
-		{ d: box.opening, fill: "var(--wv-pink)", opacity: 0.45 },
-		{ d: box.side, fill: "var(--wv-bg)", opacity: 0.94 },
-		{ d: box.flapRight, fill: "var(--wv-deep)", opacity: 0.96 },
-		{ d: box.front, fill: "var(--wv-deep)", opacity: 0.94 },
+		{ d: box.flapLeft, base: "var(--wv-deep)", shade: "flap-left" },
+		{ d: box.opening, base: "var(--wv-purple)", shade: "inside" },
+		{ d: box.side, base: "var(--wv-bg)", shade: "side" },
+		{ d: box.flapRight, base: "var(--wv-deep)", shade: "flap-right" },
+		{ d: box.front, base: "var(--wv-deep)", shade: "front" },
 	];
 
 	return (
 		<svg
 			viewBox="0 0 640 360"
 			preserveAspectRatio="xMidYMid slice"
-			className="absolute inset-0 size-full"
+			// `isolate`: the screen and overlay blends below mix only with the drawing, never with the page behind it.
+			className="absolute inset-0 isolate size-full"
 			role="img"
 			aria-label={label}
 		>
 			<defs>
+				{/* Sky: the nebula's heart behind the sun, and two drifts of colour either side of it. */}
 				<radialGradient id={id("sky")} cx="50%" cy="46%" r="70%">
 					{stop("0%", "var(--wv-pink)", 0.55)}
 					{stop("32%", "var(--wv-purple)", 0.9)}
 					{stop("70%", "var(--wv-deep)")}
 					{stop("100%", "var(--wv-bg)")}
 				</radialGradient>
+				<radialGradient id={id("drift-cyan")}>
+					{stop("0%", "var(--wv-cyan)", 0.16)}
+					{stop("100%", "var(--wv-cyan)", 0)}
+				</radialGradient>
+				<radialGradient id={id("drift-pink")}>
+					{stop("0%", "var(--wv-pink)", 0.18)}
+					{stop("100%", "var(--wv-pink)", 0)}
+				</radialGradient>
+
+				{/* Sun: pink at the top, purple at the foot, a hot core high up, a rim lit from above, and a halo. */}
 				<linearGradient id={id("sun")} x1="0" y1="0" x2="0" y2="1">
 					{stop("0%", "var(--wv-pink)")}
 					{stop("100%", "var(--wv-purple)")}
 				</linearGradient>
-				{/* One light for the whole box (cyan at the top left to pink at the bottom right), not one per edge. */}
-				<linearGradient id={id("neon")} gradientUnits="userSpaceOnUse" x1="198" y1="160" x2="443" y2="292">
-					{stop("0%", "var(--wv-cyan)")}
-					{stop("100%", "var(--wv-pink)")}
+				<radialGradient id={id("sun-core")} cx="50%" cy="28%" r="55%">
+					{stop("0%", "white", 0.1)}
+					{stop("100%", "white", 0)}
+				</radialGradient>
+				<linearGradient id={id("sun-rim")} x1="0" y1="0" x2="0" y2="1">
+					{stop("0%", "white", 0.7)}
+					{stop("45%", "var(--wv-pink)", 0.55)}
+					{stop("100%", "var(--wv-pink)", 0.1)}
 				</linearGradient>
-				<linearGradient id={id("tag-neon")} x1="0" y1="0" x2="1" y2="1">
-					{stop("0%", "var(--wv-cyan)")}
-					{stop("100%", "var(--wv-pink)")}
-				</linearGradient>
-				{/* Each product cyan at its top to pink at its foot, across the whole drawing (its 100 × 100 box): lit from above
-				    like the box, and cyan where it crosses the pink sun, so it stands off it. */}
-				<linearGradient id={id("icon")} gradientUnits="userSpaceOnUse" x1="0" y1="10" x2="0" y2="92">
-					{stop("0%", "var(--wv-cyan)")}
-					{stop("100%", "var(--wv-pink)")}
-				</linearGradient>
-				<linearGradient id={id("beam")} x1="0" y1="1" x2="0" y2="0">
-					{stop("0%", "var(--wv-pink)", 0.7)}
-					{stop("100%", "var(--wv-pink)", 0)}
-				</linearGradient>
+
+				{/* Floor: purple at the horizon to black, haze along the horizon, and the grid fading into the distance. */}
 				<linearGradient id={id("floor")} x1="0" y1="0" x2="0" y2="1">
 					{stop("0%", "var(--wv-purple)", 0.55)}
 					{stop("100%", "var(--wv-bg)", 0.95)}
 				</linearGradient>
+				<linearGradient
+					id={id("haze")}
+					gradientUnits="userSpaceOnUse"
+					x1="0"
+					y1={horizon - 40}
+					x2="0"
+					y2={horizon + 50}
+				>
+					{stop("0%", "var(--wv-pink)", 0)}
+					{stop("44%", "var(--wv-pink)", 0.34)}
+					{stop("62%", "var(--wv-purple)", 0.3)}
+					{stop("100%", "var(--wv-purple)", 0)}
+				</linearGradient>
+				<linearGradient
+					id={id("grid-fade")}
+					gradientUnits="userSpaceOnUse"
+					x1="0"
+					y1={horizon}
+					x2="0"
+					y2="360"
+				>
+					{stop("0%", "white", 0.15)}
+					{stop("100%", "white", 1)}
+				</linearGradient>
+				<mask
+					id={id("grid-mask")}
+					maskUnits="userSpaceOnUse"
+					x="0"
+					y={horizon}
+					width="640"
+					height={360 - horizon}
+				>
+					<rect x="0" y={horizon} width="640" height={360 - horizon} fill={url("grid-fade")} />
+				</mask>
+				<linearGradient
+					id={id("reflection-fade")}
+					gradientUnits="userSpaceOnUse"
+					x1="0"
+					y1={BOX.bottom - 18}
+					x2="0"
+					y2={BOX.bottom + 44}
+				>
+					{stop("0%", "white", 0.55)}
+					{stop("100%", "white", 0)}
+				</linearGradient>
+				<mask id={id("reflection-mask")} maskUnits="userSpaceOnUse" x="0" y="0" width="640" height="360">
+					<rect x="0" y="0" width="640" height="360" fill={url("reflection-fade")} />
+				</mask>
+				<radialGradient id={id("pool")}>
+					{stop("0%", "var(--wv-pink)", 0.6)}
+					{stop("100%", "var(--wv-pink)", 0)}
+				</radialGradient>
+
+				{/* The box. One light for all its edges (cyan at the top left to pink at the bottom right), not one per edge. */}
+				<linearGradient id={id("neon")} gradientUnits="userSpaceOnUse" x1="198" y1="160" x2="443" y2="292">
+					{stop("0%", "var(--wv-cyan)")}
+					{stop("100%", "var(--wv-pink)")}
+				</linearGradient>
+				{/* Inside: white-hot in the middle, pink, then purple in the corners. */}
+				<radialGradient id={id("inside")}>
+					{stop("0%", "white", 0.95)}
+					{stop("30%", "var(--wv-pink)", 0.95)}
+					{stop("100%", "var(--wv-purple)", 0.9)}
+				</radialGradient>
+				{/* Front: the sky's purple on its top, dark in the middle, the floor's pink glow on its foot, and a glassy
+				    sheen from the top left. */}
+				<linearGradient id={id("front")} x1="0" y1="0" x2="0" y2="1">
+					{stop("0%", "var(--wv-purple)", 0.42)}
+					{stop("45%", "var(--wv-purple)", 0)}
+					{stop("80%", "var(--wv-pink)", 0)}
+					{stop("100%", "var(--wv-pink)", 0.2)}
+				</linearGradient>
+				<linearGradient id={id("sheen")} x1="0" y1="0" x2="0.7" y2="1">
+					{stop("0%", "white", 0.12)}
+					{stop("38%", "white", 0.03)}
+					{stop("39%", "white", 0)}
+				</linearGradient>
+				<linearGradient id={id("side")} x1="0" y1="0" x2="0" y2="1">
+					{stop("0%", "var(--wv-purple)", 0.22)}
+					{stop("70%", "var(--wv-purple)", 0)}
+					{stop("100%", "var(--wv-pink)", 0.14)}
+				</linearGradient>
+				{/* Each flap's inner face, lit by the box at its hinge and dark at its free edge. */}
+				{(["left", "right"] as const).map((side) => {
+					const [x1, y1, x2, y2] = FLAP_LIGHT[side];
+					return (
+						<linearGradient
+							key={side}
+							id={id(`flap-${side}`)}
+							gradientUnits="userSpaceOnUse"
+							x1={x1}
+							y1={y1}
+							x2={x2}
+							y2={y2}
+						>
+							{stop("0%", "var(--wv-pink)", 0.55)}
+							{stop("100%", "var(--wv-pink)", 0)}
+						</linearGradient>
+					);
+				})}
+				<radialGradient id={id("bloom")}>
+					{stop("0%", "white", 0.75)}
+					{stop("35%", "var(--wv-pink)", 0.5)}
+					{stop("100%", "var(--wv-pink)", 0)}
+				</radialGradient>
+				<linearGradient id={id("beam")} x1="0" y1="1" x2="0" y2="0">
+					{stop("0%", "white", 0.22)}
+					{stop("22%", "var(--wv-pink)", 0.32)}
+					{stop("100%", "var(--wv-pink)", 0)}
+				</linearGradient>
+
+				{/* Products: cyan at the top to pink at the foot across each whole drawing (its 100 × 100 box), lit from above
+				    like the box and cyan where it crosses the pink sun. Where an outline closes it is smoked glass, a little darker
+				    than the sun behind, so the neon reads against it. */}
+				<linearGradient id={id("icon")} gradientUnits="userSpaceOnUse" x1="0" y1="10" x2="0" y2="92">
+					{stop("0%", "var(--wv-cyan)")}
+					{stop("100%", "var(--wv-pink)")}
+				</linearGradient>
+				<linearGradient id={id("glass")} gradientUnits="userSpaceOnUse" x1="0" y1="10" x2="0" y2="92">
+					{stop("0%", "var(--wv-deep)", 0.32)}
+					{stop("100%", "var(--wv-purple)", 0.3)}
+				</linearGradient>
+
+				{/* Tag: dark glass in the hexagon, glowing at its rim, and a glossy plate. */}
+				<linearGradient id={id("tag-neon")} x1="0" y1="0" x2="1" y2="1">
+					{stop("0%", "var(--wv-cyan)")}
+					{stop("100%", "var(--wv-pink)")}
+				</linearGradient>
+				<linearGradient id={id("tag-glass")} x1="0" y1="0" x2="0" y2="1">
+					{stop("0%", "var(--wv-bg)", 0.78)}
+					{stop("100%", "var(--wv-purple)", 0.55)}
+				</linearGradient>
+				<clipPath id={id("tag-clip")}>
+					<path d={tagHex} />
+				</clipPath>
 				<linearGradient id={id("plate")} x1="0" y1="0" x2="1" y2="0">
 					{stop("0%", "var(--wv-purple)")}
 					{stop("50%", "var(--wv-pink)")}
 					{stop("100%", "var(--wv-purple)")}
 				</linearGradient>
+				<linearGradient id={id("plate-gloss")} x1="0" y1="0" x2="0" y2="1">
+					{stop("0%", "white", 0.32)}
+					{stop("48%", "white", 0.06)}
+					{stop("50%", "white", 0)}
+					{stop("100%", "var(--wv-ink)", 0.25)}
+				</linearGradient>
+
+				<radialGradient id={id("vignette")} r="72%">
+					{stop("62%", "var(--wv-bg)", 0)}
+					{stop("100%", "var(--wv-bg)", 0.6)}
+				</radialGradient>
 				<clipPath id={id("ground")}>
 					<rect x="0" y={horizon} width="640" height={360 - horizon} />
 				</clipPath>
@@ -159,11 +345,21 @@ export function PromoBundleArt({ idPrefix, label }: { idPrefix: string; label: s
 				<filter id={id("soft")} x="-50%" y="-50%" width="200%" height="200%">
 					<feGaussianBlur stdDeviation="8" />
 				</filter>
+				<filter id={id("halo")} x="-60%" y="-60%" width="220%" height="220%">
+					<feGaussianBlur stdDeviation="18" />
+				</filter>
+				{/* Fine grey grain, laid over everything at a low strength. */}
+				<filter id={id("grain")} x="0" y="0" width="100%" height="100%">
+					<feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch" />
+					<feColorMatrix type="saturate" values="0" />
+				</filter>
 			</defs>
 
 			{/* Sky, stars and the sun. */}
 			<rect width="640" height="360" fill={url("sky")} />
-			<g fill="white">
+			<ellipse cx="120" cy="96" rx="170" ry="96" fill={url("drift-cyan")} />
+			<ellipse cx="536" cy="74" rx="160" ry="90" fill={url("drift-pink")} />
+			<g fill="white" filter={url("glow")}>
 				{[
 					[88, 52, 1.6],
 					[150, 96, 1.1],
@@ -179,20 +375,21 @@ export function PromoBundleArt({ idPrefix, label }: { idPrefix: string; label: s
 					<circle key={`${cx}-${cy}`} cx={cx} cy={cy} r={r} opacity="0.8" />
 				))}
 			</g>
+			<circle cx="320" cy="168" r="112" fill="var(--wv-pink)" opacity="0.22" filter={url("halo")} />
 			<circle cx="320" cy="168" r="104" fill={url("sun")} opacity="0.7" />
-			<circle
-				cx="320"
-				cy="168"
-				r="104"
-				fill="none"
-				stroke="var(--wv-pink)"
-				strokeOpacity="0.5"
-				strokeWidth="2"
-			/>
+			<circle cx="320" cy="168" r="104" fill={url("sun-core")} />
+			<circle cx="320" cy="168" r="104" fill="none" stroke={url("sun-rim")} strokeWidth="2" />
 
-			{/* The floor: a dark gradient under a cyan grid, the horizon lit pink, and the box's glow on it. */}
+			{/* The floor: a dark gradient under a grid that fades into the distance, haze and a pink glow along the horizon,
+			    and the box's light pooling on it with its reflection. */}
 			<rect x="0" y={horizon} width="640" height={360 - horizon} fill={url("floor")} />
-			<g clipPath={`url(#${id("ground")})`} stroke="var(--wv-cyan)" strokeOpacity="0.45" strokeWidth="1.4">
+			<g
+				clipPath={`url(#${id("ground")})`}
+				mask={`url(#${id("grid-mask")})`}
+				stroke="var(--wv-cyan)"
+				strokeOpacity="0.6"
+				strokeWidth="1.4"
+			>
 				{rays.map((x) => (
 					<path key={x} d={`M320 ${horizon} L${x} 360`} />
 				))}
@@ -200,30 +397,44 @@ export function PromoBundleArt({ idPrefix, label }: { idPrefix: string; label: s
 					<path key={y} d={`M0 ${y} L640 ${y}`} />
 				))}
 			</g>
+			<rect x="0" y={horizon - 40} width="640" height="90" fill={url("haze")} />
 			<path
 				d={`M0 ${horizon} L640 ${horizon}`}
 				stroke="var(--wv-pink)"
 				strokeWidth="2.5"
 				filter={url("glow")}
 			/>
-			<ellipse
-				cx={box.floor[0]}
-				cy={box.floor[1] + 6}
-				rx="112"
-				ry="13"
-				fill="var(--wv-pink)"
-				opacity="0.45"
-				filter={url("soft")}
-			/>
+			<ellipse cx={box.floor[0]} cy={box.floor[1] + 8} rx="150" ry="26" fill={url("pool")} style={screen} />
+			<g
+				mask={`url(#${id("reflection-mask")})`}
+				fill="none"
+				stroke={url("neon")}
+				strokeWidth="2.5"
+				strokeLinejoin="round"
+				filter={url("glow")}
+			>
+				{box.reflection.map((d) => (
+					<path key={d} d={d} />
+				))}
+				<path
+					d={hex((BOX.left + BOX.right) / 2, 2 * BOX.bottom - (BOX.top + BOX.bottom) / 2, 25)}
+					stroke="var(--wv-pink)"
+				/>
+			</g>
 
-			{/* Light pouring up out of the box. */}
-			<g filter={url("soft")} opacity="0.85">
+			{/* Light pouring up out of the box, and motes drifting in it. */}
+			<g filter={url("soft")} opacity="0.7" style={screen}>
 				<path d="M268 214 L150 40 L250 40 L300 214 Z" fill={url("beam")} />
 				<path d="M300 214 L290 20 L350 20 L340 214 Z" fill={url("beam")} />
 				<path d="M340 214 L390 40 L490 40 L372 214 Z" fill={url("beam")} />
 			</g>
+			<g fill="white" filter={url("glow")}>
+				{MOTES.map(([cx, cy, r]) => (
+					<circle key={`${cx}-${cy}`} cx={cx} cy={cy} r={r} opacity="0.75" />
+				))}
+			</g>
 
-			{/* The products, as neon: a glowing coloured stroke under a white core. */}
+			{/* The products, as neon: tinted glass, a glowing coloured stroke, and a white core. */}
 			{PRODUCTS.map(({ icon, cx, cy, scale, tilt }) => {
 				const drawing = BADGE_DRAWINGS[icon];
 				const [ox, oy] = DRAWING_CENTRE[icon] ?? [50, 50];
@@ -235,6 +446,13 @@ export function PromoBundleArt({ idPrefix, label }: { idPrefix: string; label: s
 						strokeLinecap="round"
 						strokeLinejoin="round"
 					>
+						<g fill={url("glass")}>
+							{drawing.strokes
+								.filter((d) => d.trimEnd().endsWith("Z"))
+								.map((d) => (
+									<path key={d} d={d} />
+								))}
+						</g>
 						<g stroke={url("icon")} strokeWidth="5.5" filter={url("glow")}>
 							{drawing.strokes.map((d) => (
 								<path key={d} d={d} />
@@ -252,29 +470,32 @@ export function PromoBundleArt({ idPrefix, label }: { idPrefix: string; label: s
 				);
 			})}
 
-			{/* The open box: solid faces (so the grid and sun don't show through, and the opening glows) with neon edges. */}
-			{boxFaces.map(({ d, fill, opacity }) => (
+			{/* The open box: each face solid (so the grid and sun don't show through), shaded by its light, and edged in neon.
+			    The front also catches a glassy sheen. */}
+			{boxFaces.map(({ d, base, shade }) => (
 				<g key={d} strokeLinejoin="round" strokeLinecap="round">
-					<path d={d} fill={fill} fillOpacity={opacity} />
+					<path d={d} fill={base} fillOpacity="0.97" />
+					<path d={d} fill={url(shade)} />
+					{d === box.front && <path d={d} fill={url("sheen")} />}
 					<path d={d} fill="none" stroke={url("neon")} strokeWidth="5" filter={url("glow")} />
 					<path d={d} fill="none" stroke="white" strokeOpacity="0.85" strokeWidth="1.4" />
 				</g>
 			))}
+			{/* The light blooming over the rim. */}
+			<ellipse
+				cx="320"
+				cy={BOX.top + BOX.dy / 2}
+				rx="96"
+				ry="16"
+				fill={url("bloom")}
+				filter={url("soft")}
+				style={screen}
+			/>
 
 			{/* A neon hexagon with a % in the middle of the box's front. */}
 			<g fill="none">
-				<path
-					d={hex((BOX.left + BOX.right) / 2, (BOX.top + BOX.bottom) / 2, 25)}
-					stroke="var(--wv-pink)"
-					strokeWidth="3.5"
-					filter={url("glow")}
-				/>
-				<path
-					d={hex((BOX.left + BOX.right) / 2, (BOX.top + BOX.bottom) / 2, 25)}
-					stroke="white"
-					strokeOpacity="0.85"
-					strokeWidth="1.2"
-				/>
+				<path d={badgeHex} stroke="var(--wv-pink)" strokeWidth="3.5" filter={url("glow")} />
+				<path d={badgeHex} stroke="white" strokeOpacity="0.85" strokeWidth="1.2" />
 			</g>
 			<text
 				x={(BOX.left + BOX.right) / 2}
@@ -293,24 +514,22 @@ export function PromoBundleArt({ idPrefix, label }: { idPrefix: string; label: s
 				<path d={SPARK} transform="translate(396 58) scale(0.5)" />
 			</g>
 
-			{/* The tag: a neon hexagon with BUNDLE & SAVE on a plate inside it. */}
+			{/* The tag: a neon hexagon of dark glass, glowing inside its rim, with BUNDLE & SAVE on a glossy plate. */}
 			<g>
-				<path d={hex(TAG.cx, TAG.cy, TAG.r)} fill="var(--wv-bg)" fillOpacity="0.6" />
+				<path d={tagHex} fill={url("tag-glass")} />
 				<path
-					d={hex(TAG.cx, TAG.cy, TAG.r)}
+					d={tagHex}
 					fill="none"
-					stroke={url("tag-neon")}
-					strokeWidth="4.5"
-					filter={url("glow")}
+					stroke="var(--wv-pink)"
+					strokeOpacity="0.45"
+					strokeWidth="12"
+					filter={url("soft")}
+					clipPath={`url(#${id("tag-clip")})`}
 				/>
-				<path
-					d={hex(TAG.cx, TAG.cy, TAG.r)}
-					fill="none"
-					stroke="white"
-					strokeOpacity="0.85"
-					strokeWidth="1.2"
-				/>
+				<path d={tagHex} fill="none" stroke={url("tag-neon")} strokeWidth="4.5" filter={url("glow")} />
+				<path d={tagHex} fill="none" stroke="white" strokeOpacity="0.85" strokeWidth="1.2" />
 				<path d={plate} fill={url("plate")} />
+				<path d={plate} fill={url("plate-gloss")} />
 				<path d={plate} fill="none" stroke="white" strokeOpacity="0.35" strokeWidth="1" />
 				{[
 					["BUNDLE", tagBaseline1],
@@ -332,6 +551,16 @@ export function PromoBundleArt({ idPrefix, label }: { idPrefix: string; label: s
 					</text>
 				))}
 			</g>
+
+			{/* Over everything: the vignette, then the grain. */}
+			<rect width="640" height="360" fill={url("vignette")} />
+			<rect
+				width="640"
+				height="360"
+				filter={url("grain")}
+				opacity="0.07"
+				style={{ mixBlendMode: "overlay" }}
+			/>
 		</svg>
 	);
 }
