@@ -242,6 +242,33 @@ export function quantize(img, seed) {
 	return out;
 }
 
+const LINEAR = Float64Array.from({ length: 256 }, (_, i) => {
+	const v = i / 255;
+	return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+});
+const labF = (t) => (t > 216 / 24389 ? Math.cbrt(t) : ((24389 / 27) * t + 16) / 116);
+/** CIE L*a*b* (D65) of an 8-bit sRGB colour. */
+function lab(r, g, b) {
+	const R = LINEAR[r];
+	const G = LINEAR[g];
+	const B = LINEAR[b];
+	const x = labF((0.4124 * R + 0.3576 * G + 0.1805 * B) / 0.95047);
+	const y = labF(0.2126 * R + 0.7152 * G + 0.0722 * B);
+	const z = labF((0.0193 * R + 0.1192 * G + 0.9505 * B) / 1.08883);
+	return [116 * y - 16, 500 * (x - y), 200 * (y - z)];
+}
+
+/** The mean colour difference (CIE ΔE76) between two 8-bit images of the same size: about 1 is just noticeable. */
+export function meanDeltaE(a, b, w, h) {
+	let sum = 0;
+	for (let i = 0; i < w * h * 3; i += 3) {
+		const p = lab(a[i], a[i + 1], a[i + 2]);
+		const q = lab(b[i], b[i + 1], b[i + 2]);
+		sum += Math.hypot(p[0] - q[0], p[1] - q[1], p[2] - q[2]);
+	}
+	return sum / (w * h);
+}
+
 /** Halve an image by averaging each 2 × 2 block: the colour exactly as rendered, with no sharpening and no ringing. */
 export function average2(src, sw, sh) {
 	const w = sw >> 1;

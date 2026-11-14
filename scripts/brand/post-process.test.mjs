@@ -5,6 +5,7 @@ import {
 	darkHalos,
 	deband,
 	grain,
+	meanDeltaE,
 	quantize,
 	random,
 	reduce2,
@@ -148,6 +149,13 @@ describe("helpers", () => {
 		const a = random(42);
 		const b = random(42);
 		for (let i = 0; i < 5; i++) expect(a()).toBe(b());
+	});
+
+	it("meanDeltaE is 0 for the same image and 100 from black to white", () => {
+		const black = Buffer.alloc(4 * 3);
+		const white = Buffer.alloc(4 * 3, 255);
+		expect(meanDeltaE(black, black, 2, 2)).toBe(0);
+		expect(meanDeltaE(black, white, 2, 2)).toBeCloseTo(100, 1);
 	});
 
 	it("average2 averages each 2 × 2 block", () => {

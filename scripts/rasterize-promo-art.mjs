@@ -1,12 +1,12 @@
-// Rasterizes the promotional-bundles art to PNG: node scripts/rasterize-promo-art.mjs [outDir]
+// Rasterizes the promotional-bundles art to PNG and WebP: node scripts/rasterize-promo-art.mjs [outDir]
 //
 // The source is the site's own drawing, src/ui/sections/wv-home/wv-promo-art.tsx: it is compiled with TypeScript and
 // rendered to SVG with react-dom/server, the brand tokens it uses (var(--wv-*)) are filled in from src/styles/brand.css,
 // and its font (Bungee, src/fonts) is loaded through fontconfig. So the pixels are the drawing itself, not a copy of it.
 //
 // Each image is rendered at twice its size and halved (supersampling), so edges, hairlines and text are anti-aliased
-// cleanly; the 4K canvas, already fine-grained, is rendered directly. Every image is opaque RGB on the site's background
-// colour, 8 bits a channel, lossless PNG.
+// cleanly; the 4K canvas, already fine-grained, is rendered directly. Every image is opaque, on the site's background
+// colour.
 //
 // Post-processing (scripts/brand/post-process.mjs) works in floating point from the render to a single rounding at the end:
 //   retouching   the halving is Lanczos3 with each sample clamped to the source pixels under it, which keeps Lanczos's
@@ -21,24 +21,33 @@
 //   compositing  grain made in pixels, sized for the screen the image is for and as strong as the drawing's own, then
 //                dithered to 8 bits on the site's background colour
 //
+// Encoding: each image is written twice, both 8 bits a channel, RGB without alpha, and tagged sRGB with a compact ICC v2
+// profile (scripts/brand/icc.mjs; v2 because Firefox ignores v4 profiles by default, and libvips's own is v4):
+//   .png    the lossless master, for editing and re-encoding
+//   .webp   lossy, for delivery: quality 95, the photo preset (it blocks least in the dark gradients), sharp YUV (the
+//           neon's colour edges stay clean through 4:2:0 chroma) and the most effort. 95 is the knee: within about 15 %
+//           of the fidelity lossy WebP reaches at 100, for 50–65 % of its bytes. WebP has no deeper bit depth (lossy is
+//           8-bit YUV 4:2:0, lossless 8-bit RGB); lossless WebP would only be 20–25 % smaller than the PNG.
+//
 //   canvas/   the whole drawing (640 × 360, 16:9) at 1280 × 720, 1920 × 1080 and 3840 × 2160
 //   frames/   cut as the site cuts it (the drawing fills its frame, centred) at each frame's design size, 1×, 2× and 3×:
 //             mobile 328 × 200 · tablet 672 × 320 · home desktop 540 × 360 · shop desktop 480 × 260
 //
-// Then every file is decoded again and checked (size, channels, not blank, no halos, colours unchanged), the font is
-// checked to really be Bungee, and a contact sheet and a manifest (size, bytes, SHA-256) are written beside them. The
-// grain and dither are seeded, so the same drawing always makes the same files.
+// Then every file is decoded again and checked (size, channels, bit depth, profile, not blank, no halos, colours
+// unchanged, and each WebP close to its PNG), the font is checked to really be Bungee, and a contact sheet and a manifest
+// (size, bytes, SHA-256) are written beside them. The grain and dither are seeded, so the same drawing always makes the
+// same files.
 //
 // Default output: brand-kit/promo-art/ at the repository root (not committed).
 import { createHash } from "node:crypto";
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
-import { dirname, join, relative } from "node:path";
+import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const OUT = process.argv[2] ? join(process.cwd(), process.argv[2]) : join(ROOT, "brand-kit", "promo-art");
+const OUT = process.argv[2] ? resolve(process.argv[2]) : join(ROOT, "brand-kit", "promo-art");
 const SOURCE = join(ROOT, "src/ui/sections/wv-home/wv-promo-art.tsx");
 const require = createRequire(import.meta.url);
 
@@ -60,8 +69,13 @@ writeFileSync(
 );
 process.env.FONTCONFIG_FILE = join(fcDir, "fonts.conf");
 const { default: sharp } = await import("sharp");
-const { average2, cellMeans, darkHalos, deband, grain, quantize, reduce2, sharpen } =
+const { average2, cellMeans, darkHalos, deband, grain, meanDeltaE, quantize, reduce2, sharpen } =
 	await import("./brand/post-process.mjs");
+const { srgbV2Profile } = await import("./brand/icc.mjs");
+// The sRGB profile every file carries (sharp attaches a profile from a file).
+const ICC = srgbV2Profile();
+const ICC_FILE = join(fcDir, "sRGB-v2.icc");
+writeFileSync(ICC_FILE, ICC);
 
 /** Load a .tsx/.ts module from src: compiled by TypeScript to CommonJS, its relative and `@/` imports loaded the same way. */
 const ts = require("typescript");
@@ -125,6 +139,9 @@ const BG = tokens["--wv-bg"];
 /** The drawing's own grain, an overlay at 7 %, moves the mid-tones by about a level and the darks by about a quarter. */
 const GRAIN_STRENGTH = 0.008;
 const SHARPEN = { sigma: 0.6, amount: 0.35, threshold: 2, maxDark: 2 };
+const WEBP = { quality: 95, preset: "photo", smartSubsample: true, effort: 6 };
+/** The most a WebP may differ from its PNG: mean ΔE76, both seen at about a CSS pixel (measured: 0.4–1.34). */
+const WEBP_MAX_DELTA_E = 1.5;
 
 /**
  * The drawing at `w` × `h` pixels, cut to that shape as the site cuts it (`slice`: fill, centred) and post-processed,
@@ -153,10 +170,19 @@ async function rasterize(w, h, density, seed) {
 	const shift = Math.max(
 		...cellMeans(out, w, h, 16, 9).flatMap((cell, i) => cell.map((v, c) => Math.abs(v - rendered[i][c]))),
 	);
-	const png = await sharp(out, { raw: { width: w, height: h, channels: 3 } })
+	// Encode, tagged sRGB (the profile is sRGB, so tagging moves no pixel; checked below).
+	const raw = { raw: { width: w, height: h, channels: 3 } };
+	const png = await sharp(out, raw)
+		.withIccProfile(ICC_FILE)
 		.png({ compressionLevel: 9, adaptiveFiltering: true })
 		.toBuffer();
-	return { png, halos, shift };
+	const webp = await sharp(out, raw).withIccProfile(ICC_FILE).webp(WEBP).toBuffer();
+	const lossless = (await sharp(png).raw().toBuffer()).equals(out);
+	// The WebP against the PNG, both blurred to about a CSS pixel, the scale they are seen at.
+	const seen = (b) => sharp(b, raw).blur(density).raw().toBuffer();
+	const decoded = await sharp(webp).removeAlpha().raw().toBuffer();
+	const deltaE = meanDeltaE(await seen(out), await seen(decoded), w, h);
+	return { png, webp, halos, shift, lossless, deltaE };
 }
 
 // 2. The outputs.
@@ -173,10 +199,10 @@ const FRAMES = {
 	"shop-desktop": [480, 260],
 };
 const jobs = [
-	...CANVAS.map(([w, h, density]) => ({ path: `canvas/promo-bundles-${w}x${h}.png`, w, h, density })),
+	...CANVAS.map(([w, h, density]) => ({ name: `canvas/promo-bundles-${w}x${h}`, w, h, density })),
 	...Object.entries(FRAMES).flatMap(([name, [w, h]]) =>
 		[1, 2, 3].map((x) => ({
-			path: `frames/promo-bundles-${name}@${x}x.png`,
+			name: `frames/promo-bundles-${name}@${x}x`,
 			w: w * x,
 			h: h * x,
 			density: x,
@@ -185,30 +211,43 @@ const jobs = [
 ];
 rmSync(OUT, { recursive: true, force: true });
 const results = [];
+const kb = (b) => `${(b.length / 1024).toFixed(0)} KB`;
 for (const job of jobs) {
-	const { png, halos, shift } = await rasterize(job.w, job.h, job.density, job.w * 7919 + job.h);
-	const file = join(OUT, job.path);
-	mkdirSync(dirname(file), { recursive: true });
-	writeFileSync(file, png);
-	results.push({ ...job, png, halos, shift });
+	const result = await rasterize(job.w, job.h, job.density, job.w * 7919 + job.h);
+	mkdirSync(dirname(join(OUT, job.name)), { recursive: true });
+	writeFileSync(join(OUT, `${job.name}.png`), result.png);
+	writeFileSync(join(OUT, `${job.name}.webp`), result.webp);
+	results.push({ ...job, ...result });
 	console.log(
-		`${job.path.padEnd(44)} ${`${job.w} × ${job.h}`.padStart(12)}  ${(png.length / 1024).toFixed(0).padStart(5)} KB  colour moved ≤ ${shift.toFixed(2)}`,
+		`${job.name.padEnd(40)} ${`${job.w} × ${job.h}`.padStart(12)}  PNG ${kb(result.png).padStart(7)}  WebP ${kb(result.webp).padStart(6)} (ΔE ${result.deltaE.toFixed(2)})  colour moved ≤ ${result.shift.toFixed(2)}`,
 	);
 }
 
-// 3. Checks: every file decodes at its size as opaque RGB and isn't blank; post-processing drew no halos and moved no
+// 3. Checks: every file decodes at its size as 8-bit RGB without alpha, carrying the sRGB profile, and isn't blank; the
+// PNG holds exactly the post-processed pixels and the WebP is close to it; post-processing drew no halos and moved no
 // colour (no cell of the image more than 3 levels from the render); and the text is really set in Bungee (rendered
 // against a serif, the two must differ).
 const failures = [];
-for (const { path, w, h, png, halos, shift } of results) {
-	if (halos > 0) failures.push(`${path}: dark halos in ${(halos * 100).toFixed(3)} % of samples`);
-	if (shift > 3) failures.push(`${path}: colour moved ${shift.toFixed(1)} levels from the render`);
-	const meta = await sharp(png).metadata();
-	const stats = await sharp(png).stats();
-	if (meta.width !== w || meta.height !== h)
-		failures.push(`${path}: ${meta.width} × ${meta.height}, wanted ${w} × ${h}`);
-	if (meta.channels !== 3 || meta.hasAlpha) failures.push(`${path}: ${meta.channels} channels`);
-	if (stats.channels.every((c) => c.stdev < 8)) failures.push(`${path}: looks blank`);
+for (const { name, w, h, png, webp, halos, shift, lossless, deltaE } of results) {
+	if (halos > 0) failures.push(`${name}: dark halos in ${(halos * 100).toFixed(3)} % of samples`);
+	if (shift > 3) failures.push(`${name}: colour moved ${shift.toFixed(1)} levels from the render`);
+	if (!lossless) failures.push(`${name}.png: pixels differ from the post-processed image`);
+	if (deltaE > WEBP_MAX_DELTA_E) failures.push(`${name}.webp: ΔE ${deltaE.toFixed(2)} from the PNG`);
+	for (const [ext, buf] of [
+		["png", png],
+		["webp", webp],
+	]) {
+		const file = `${name}.${ext}`;
+		const meta = await sharp(buf).metadata();
+		if (meta.format !== ext) failures.push(`${file}: is ${meta.format}`);
+		if (meta.width !== w || meta.height !== h)
+			failures.push(`${file}: ${meta.width} × ${meta.height}, wanted ${w} × ${h}`);
+		if (meta.channels !== 3 || meta.hasAlpha) failures.push(`${file}: ${meta.channels} channels`);
+		if (meta.depth !== "uchar") failures.push(`${file}: ${meta.depth}, not 8 bits a channel`);
+		if (!meta.icc?.equals(ICC)) failures.push(`${file}: not tagged with the sRGB profile`);
+		const stats = await sharp(buf).stats();
+		if (stats.channels.every((c) => c.stdev < 8)) failures.push(`${file}: looks blank`);
+	}
 }
 const sample = (family) =>
 	sharp(
@@ -228,11 +267,11 @@ if (failures.length) {
 // 4. A contact sheet (each image scaled to 300 px wide, labelled) and the manifest.
 const THUMB = 300;
 const tiles = await Promise.all(
-	results.map(async ({ path, w, h, png }) => {
+	results.map(async ({ name, w, h, png, webp }) => {
 		const img = await sharp(png).resize(THUMB).png().toBuffer();
 		const th = Math.round((THUMB * h) / w);
 		const label = Buffer.from(
-			`<svg xmlns="http://www.w3.org/2000/svg" width="${THUMB}" height="34"><text x="0" y="13" font-family="sans-serif" font-size="11" fill="#e8e8ef">${path.split("/").pop()}</text><text x="0" y="28" font-family="sans-serif" font-size="11" fill="#9a9aae">${w} × ${h} · ${(png.length / 1024).toFixed(0)} KB</text></svg>`,
+			`<svg xmlns="http://www.w3.org/2000/svg" width="${THUMB}" height="34"><text x="0" y="13" font-family="sans-serif" font-size="11" fill="#e8e8ef">${name.split("/").pop()}</text><text x="0" y="28" font-family="sans-serif" font-size="11" fill="#9a9aae">${w} × ${h} · PNG ${kb(png)} · WebP ${kb(webp)}</text></svg>`,
 		);
 		return { img, label, th };
 	}),
@@ -258,15 +297,31 @@ await sharp({
 	.png()
 	.toFile(join(OUT, "contact-sheet.png"));
 
-const manifest = results.map(({ path, w, h, png }) => ({
-	file: path,
-	width: w,
-	height: h,
-	bytes: png.length,
-	sha256: createHash("sha256").update(png).digest("hex"),
-}));
-writeFileSync(
-	join(OUT, "manifest.json"),
-	`${JSON.stringify({ source: relative(ROOT, SOURCE).replaceAll("\\", "/"), files: manifest }, null, "\t")}\n`,
+const sha256 = (b) => createHash("sha256").update(b).digest("hex");
+const manifest = {
+	source: relative(ROOT, SOURCE).replaceAll("\\", "/"),
+	colour: {
+		space: "sRGB IEC61966-2.1",
+		profile: `ICC v2.1, ${ICC.length} bytes, embedded in every file`,
+		bitsPerChannel: 8,
+		channels: "RGB, no alpha",
+	},
+	png: "lossless, compression level 9, adaptive filtering",
+	webp: { ...WEBP, fidelity: "mean ΔE76 from the PNG, both seen at about a CSS pixel" },
+	files: results.flatMap(({ name, w, h, png, webp, deltaE }) => [
+		{ file: `${name}.png`, width: w, height: h, bytes: png.length, sha256: sha256(png) },
+		{
+			file: `${name}.webp`,
+			width: w,
+			height: h,
+			bytes: webp.length,
+			sha256: sha256(webp),
+			deltaE: Math.round(deltaE * 100) / 100,
+		},
+	]),
+};
+writeFileSync(join(OUT, "manifest.json"), `${JSON.stringify(manifest, null, "\t")}\n`);
+const total = (key) => `${(results.reduce((s, r) => s + r[key].length, 0) / 1024 / 1024).toFixed(1)} MB`;
+console.log(
+	`\n${results.length} images (PNG ${total("png")}, WebP ${total("webp")}), all checks passed → ${relative(process.cwd(), OUT) || "."}`,
 );
-console.log(`\n${results.length} images, all checks passed → ${relative(process.cwd(), OUT) || "."}`);
