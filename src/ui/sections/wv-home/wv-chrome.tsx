@@ -25,22 +25,25 @@ export function WvHeader() {
 	return (
 		<header
 			data-wv-header
-			className="relative border-b border-[var(--wv-cyan)] bg-[var(--wv-header)] px-4 py-3 md:px-6 xl:px-[14px] xl:py-[7px]"
+			className="relative border-b border-[var(--wv-cyan)] bg-[var(--wv-header)] px-4 py-3 md:px-8 xl:px-14 xl:py-[7px]"
 		>
 			{/* The band above (border/background) stays full-bleed on ultra-wide monitors; only the
 			    actual nav content is capped at the widest width we have a real design for (1440,
 			    Figma desktop) so logo/links/icons don't stretch apart on a 1920+/4K screen. */}
 			<div className="mx-auto flex w-full max-w-[1440px] items-center justify-between">
 				<div className="flex items-center gap-4 xl:gap-[23px]">
+					{/* The wordmark is as wide as the hero's shield logo below it at every breakpoint, in a box of its own shape
+					    (960:410), and the header's side padding matches the hero's, so the two logos share a left edge and a centre
+					    line. */}
 					<Link
 						href="/home"
-						className="wv-glitch relative block h-[45px] w-[100px] md:h-14 md:w-28 xl:h-[71px] xl:w-[142px]"
+						className="wv-glitch relative block aspect-[960/410] w-[120px] md:w-[140px] xl:w-[164px]"
 					>
 						<Image
 							src="/home/logo-wordmark-pink.webp"
 							alt="Worldwide Vapor"
 							fill
-							sizes="(min-width: 1280px) 142px, (min-width: 768px) 112px, 100px"
+							sizes="(min-width: 1280px) 164px, (min-width: 768px) 140px, 120px"
 							className="object-contain"
 							priority
 						/>
@@ -117,12 +120,12 @@ export function WvFooter() {
 			{/* Background band stays full-bleed on ultra-wide monitors; content is capped at 1440
 			    (the widest width we have a real design for) so it doesn't stretch apart on 1920+/4K. */}
 			<div className="mx-auto flex w-full max-w-[1440px] flex-col gap-6 md:gap-8 xl:flex-row xl:items-start xl:gap-[50px]">
-				{/* Brand art: the emblem, a 2:3 shield shown whole in a 2:3 box. Mobile centres it on its own row (the socials
+				{/* Brand art: the emblem, a shield about 5:7, shown whole in a box of its shape. Mobile centres it on its own row (the socials
 				    sit at the bottom there); tablet pairs it with the socials side by side; desktop gives it a column. */}
 				<div className="flex w-full items-center justify-between gap-4 xl:contents">
-					<div className="wv-glitch relative mx-auto h-[300px] w-[200px] shrink-0 md:mx-0 md:h-[240px] md:w-[160px] xl:h-[192px] xl:w-[128px]">
+					<div className="wv-glitch relative mx-auto h-[281px] w-[200px] shrink-0 md:mx-0 md:h-[225px] md:w-[160px] xl:h-[180px] xl:w-[128px]">
 						<Image
-							src="/home/logo-worldwide-vapor.webp"
+							src="/home/logo-worldwide-vapor-clean.webp"
 							alt="Worldwide Vapor"
 							fill
 							sizes="(min-width: 1280px) 128px, (min-width: 768px) 160px, 200px"
