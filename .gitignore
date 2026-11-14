@@ -66,3 +66,7 @@ next-env.d.ts
 
 # Internal/marketing docs — keep local, never commit (strategy lives in the brain)
 docs/marketing/
+
+# Brand kit build output (node scripts/build-brand-kit.mjs)
+/brand-kit/
+/brand-kit.zip

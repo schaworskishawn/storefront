@@ -186,7 +186,7 @@ function readFont(file) {
 function contourPath(pts, tf) {
 	if (pts.length === 0) return "";
 	const P = (pt) => tf(pt.x, pt.y);
-	const f = (n) => Math.round(n * 100) / 100;
+	const f = (n) => Math.round(n * 10) / 10;
 	// Start on an on-curve point; if there is none, at the midpoint of the first two.
 	let start = pts.findIndex((pt) => pt.on);
 	const seq = [];
@@ -282,7 +282,7 @@ const VAPOR = [
 	// a: the bowl, then its stem, leaving to the right.
 	"M494 590C484 568 452 566 438 590C422 618 432 652 458 650C480 648 492 620 498 592L488 636C486 652 500 656 512 646",
 	// p: up to the x-height, down past the baseline, and the bowl.
-	"M512 646C522 622 528 600 534 584L512 732",
+	"M512 646C522 622 528 600 534 584L514 714",
 	"M528 604C538 578 578 572 590 598C600 626 572 656 540 648",
 	// o, and the stroke that joins it to the r.
 	"M640 584C612 582 600 620 612 642C624 662 660 654 668 624C674 600 660 582 640 584Z",
@@ -295,7 +295,7 @@ const VAPOR = [
 const VAPOR_DRIPS = [
 	[336, 650, 46],
 	[458, 650, 26],
-	[512, 734, 30],
+	[514, 714, 22],
 	[612, 646, 38],
 	[686, 652, 52],
 ];
@@ -327,7 +327,7 @@ const SHADES = [
 const cloud = (mirror) => {
 	const X = (x) => (mirror ? 1000 - x : x);
 	return (
-		`<g>${PUFFS.map(([x, y, r]) => `<circle cx="${X(x)}" cy="${y}" r="${r}"/>`).join("")}</g>` +
+		`<rect x="${mirror ? 500 : 60}" y="340" width="440" height="380"/>` +
 		`<g filter="url(#soft)">${SHADES.map(([x, y, r]) => `<circle cx="${X(x)}" cy="${y}" r="${r}" fill="${C.blue}" opacity="0.55"/>`).join("")}` +
 		`${LIGHTS.map(([x, y, r]) => `<circle cx="${X(x)}" cy="${y}" r="${r}" fill="${C.pinkLight}" opacity="0.6"/>`).join("")}</g>`
 	);
@@ -350,6 +350,7 @@ const TANK = `
 		<path d="M458 268H542M458 290H542" stroke="${C.cyan}" stroke-width="3" opacity="0.8"/>
 		<rect x="446" y="314" width="108" height="20" rx="6" fill="url(#metal)" stroke="${C.cyanSoft}" stroke-width="3"/>
 		<rect x="452" y="334" width="96" height="62" rx="8" fill="url(#glass)" stroke="${C.cyanSoft}" stroke-width="3"/>
+		<rect x="462" y="340" width="10" height="50" rx="5" fill="${C.white}" opacity="0.3"/>
 		<rect x="440" y="396" width="120" height="22" rx="6" fill="url(#metal)" stroke="${C.pink}" stroke-width="3"/>
 		<rect x="430" y="418" width="140" height="200" rx="14" fill="url(#metal)" stroke="${C.violet}" stroke-width="3.5"/>
 		<rect x="452" y="430" width="16" height="176" rx="8" fill="${C.white}" opacity="0.18"/>
@@ -366,16 +367,7 @@ const DOTS = [
 	[718, 768],
 ];
 
-// Drips under "Vapor".
-const DRIPS = [
-	[322, 700, 34],
-	[402, 704, 22],
-	[566, 706, 40],
-	[672, 702, 26],
-	[728, 698, 46],
-];
-
-const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="60 60 880 840" width="880" height="840" role="img" aria-labelledby="t">
+const svg = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="60 60 880 840" width="880" height="840" role="img" aria-labelledby="t">
 <title id="t">Worldwide Vapor</title>
 <defs>
 	<linearGradient id="ringFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${C.purple}"/><stop offset="1" stop-color="${C.deep}"/></linearGradient>
@@ -388,6 +380,7 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="60 60 880 840" wid
 	<linearGradient id="vapor" gradientUnits="userSpaceOnUse" x1="0" y1="460" x2="0" y2="740"><stop offset="0" stop-color="${C.white}"/><stop offset="0.35" stop-color="${C.cyanSoft}"/><stop offset="0.75" stop-color="${C.blue}"/><stop offset="1" stop-color="${C.violet}"/></linearGradient>
 	<linearGradient id="drip" gradientUnits="userSpaceOnUse" x1="0" y1="640" x2="0" y2="790"><stop offset="0" stop-color="${C.violet}"/><stop offset="1" stop-color="${C.blue}" stop-opacity="0.7"/></linearGradient>
 	<linearGradient id="plate" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${C.section}"/><stop offset="1" stop-color="${C.bg}"/></linearGradient>
+	<g id="vs">${VAPOR.map((d) => `<path d="${d}"/>`).join("")}</g>
 	<clipPath id="globeClip"><circle cx="${CX}" cy="${CY}" r="${R_GLOBE}"/></clipPath>
 	<filter id="glow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
 	<filter id="soft" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="10"/></filter>
@@ -441,19 +434,58 @@ ${TANK}
 <!-- Vapor: a dark 3D edge, a glow, the coloured tube, and its white-hot core; drips fall from the letters -->
 <g transform="translate(510 610) scale(1.22) translate(-510 -610)">
 <g fill="none" stroke-linecap="round" stroke-linejoin="round">
-	<g transform="translate(4 12)" stroke="${C.purple}" stroke-width="22">${VAPOR.map((d) => `<path d="${d}"/>`).join("")}</g>
-	<g transform="translate(2 7)" stroke="${C.ink}" stroke-width="22">${VAPOR.map((d) => `<path d="${d}"/>`).join("")}</g>
-	<g stroke="${C.cyan}" stroke-width="30" opacity="0.45" filter="url(#soft)">${VAPOR.map((d) => `<path d="${d}"/>`).join("")}</g>
+	<use xlink:href="#vs" transform="translate(4 12)" stroke="${C.purple}" stroke-width="22"/>
+	<use xlink:href="#vs" transform="translate(2 7)" stroke="${C.ink}" stroke-width="22"/>
+	<g opacity="0.45" filter="url(#soft)"><use xlink:href="#vs" stroke="${C.cyan}" stroke-width="30"/></g>
 </g>
 <g fill="url(#drip)">${VAPOR_DRIPS.map(([x, y, h]) => `<path d="M${x - 6} ${y}C${x - 6} ${y + h * 0.6} ${x - 9} ${y + h} ${x} ${y + h + 8}C${x + 9} ${y + h} ${x + 6} ${y + h * 0.6} ${x + 6} ${y}Z"/>`).join("")}</g>
 <g fill="none" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)">
-	<g stroke="url(#vapor)" stroke-width="18">${VAPOR.map((d) => `<path d="${d}"/>`).join("")}</g>
-	<g stroke="${C.white}" stroke-width="6" stroke-opacity="0.9">${VAPOR.map((d) => `<path d="${d}"/>`).join("")}</g>
+	<use xlink:href="#vs" stroke="url(#vapor)" stroke-width="18"/>
+	<use xlink:href="#vs" stroke="${C.white}" stroke-width="6" stroke-opacity="0.9"/>
 </g>
 </g>
 </svg>
 `;
 
+/** Comments out, whitespace between tags out: the file is generated, so the source here stays the readable copy. */
+const minify = (text) =>
+	`${text
+		.replace(/<!--[\s\S]*?-->/g, "")
+		.replace(/>\s+</g, "><")
+		.replace(/\s{2,}/g, " ")
+		.trim()}\n`;
+
+/* ---------------- The icon mark: the neon V in a hexagon on a dark tile, for favicons and app icons. ---------------- */
+
+// Strokes are thicker than the emblem's, so the V still reads at 16-32 px.
+const markSvg = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512" width="512" height="512" role="img" aria-labelledby="t">
+<title id="t">Worldwide Vapor</title>
+<defs>
+	<linearGradient id="tile" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${C.section}"/><stop offset="1" stop-color="${C.bg}"/></linearGradient>
+	<linearGradient id="neon" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${C.pink}"/><stop offset="0.5" stop-color="${C.violet}"/><stop offset="1" stop-color="${C.cyan}"/></linearGradient>
+	<radialGradient id="aura" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="${C.purple}" stop-opacity="0.9"/><stop offset="1" stop-color="${C.purple}" stop-opacity="0"/></radialGradient>
+	<filter id="glow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="7" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+	<path id="v" d="${VAPOR[0]}" transform="translate(-50 -246) scale(0.94)"/>
+</defs>
+<rect x="8" y="8" width="496" height="496" rx="112" fill="url(#tile)"/>
+<circle cx="256" cy="262" r="190" fill="url(#aura)"/>
+<path d="${hex(256, 262, 200)}" fill="none" stroke="url(#neon)" stroke-width="24" stroke-linejoin="round" filter="url(#glow)"/>
+<path d="${hex(256, 262, 200)}" fill="none" stroke="${C.white}" stroke-opacity="0.8" stroke-width="5" stroke-linejoin="round"/>
+<g fill="none" stroke-linecap="round" stroke-linejoin="round">
+	<use xlink:href="#v" transform="translate(3 10)" stroke="${C.ink}" stroke-width="52"/>
+	<g filter="url(#glow)"><use xlink:href="#v" stroke="${C.cyan}" stroke-width="44"/></g>
+	<use xlink:href="#v" stroke="${C.white}" stroke-width="13" stroke-opacity="0.9"/>
+</g>
+</svg>
+`;
+
+const MARK = join(ROOT, "public", "brand", "worldwide-vapor-mark.svg");
 mkdirSync(dirname(OUT), { recursive: true });
-writeFileSync(OUT, svg);
-console.log(`Wrote ${OUT} (${(svg.length / 1024).toFixed(1)} KB)`);
+const emblem = minify(svg);
+const mark = minify(markSvg);
+writeFileSync(OUT, emblem);
+writeFileSync(MARK, mark);
+console.log(
+	`Wrote ${OUT} (${(emblem.length / 1024).toFixed(1)} KB; ${(svg.length / 1024).toFixed(1)} KB unminified)`,
+);
+console.log(`Wrote ${MARK} (${(mark.length / 1024).toFixed(1)} KB)`);
