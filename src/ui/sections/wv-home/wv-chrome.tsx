@@ -25,22 +25,25 @@ export function WvHeader() {
 	return (
 		<header
 			data-wv-header
-			className="relative border-b border-[var(--wv-cyan)] bg-[var(--wv-header)] px-4 py-3 md:px-6 xl:px-[14px] xl:py-[7px]"
+			className="relative border-b border-[var(--wv-cyan)] bg-[var(--wv-header)] px-4 py-3 md:px-8 xl:px-14 xl:py-[7px]"
 		>
 			{/* The band above (border/background) stays full-bleed on ultra-wide monitors; only the
 			    actual nav content is capped at the widest width we have a real design for (1440,
 			    Figma desktop) so logo/links/icons don't stretch apart on a 1920+/4K screen. */}
 			<div className="mx-auto flex w-full max-w-[1440px] items-center justify-between">
 				<div className="flex items-center gap-4 xl:gap-[23px]">
+					{/* The wordmark is as wide as the hero's shield logo below it at every breakpoint, in a box of its own shape
+					    (960:410), and the header's side padding matches the hero's, so the two logos share a left edge and a centre
+					    line. */}
 					<Link
 						href="/home"
-						className="wv-glitch relative block h-[45px] w-[100px] md:h-14 md:w-28 xl:h-[71px] xl:w-[142px]"
+						className="wv-glitch relative block aspect-[960/410] w-[120px] md:w-[140px] xl:w-[164px]"
 					>
 						<Image
 							src="/home/logo-wordmark-pink.webp"
 							alt="Worldwide Vapor"
 							fill
-							sizes="(min-width: 1280px) 142px, (min-width: 768px) 112px, 100px"
+							sizes="(min-width: 1280px) 164px, (min-width: 768px) 140px, 120px"
 							className="object-contain"
 							priority
 						/>
