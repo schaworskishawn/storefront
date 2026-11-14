@@ -84,12 +84,15 @@ export function WvHome({
 				))}
 				<div className="relative flex flex-col gap-4 p-4 md:flex-row md:items-center md:gap-6 md:px-8 md:py-6 xl:min-h-[231px] xl:gap-10 xl:py-0 xl:pl-14 xl:pr-10">
 					<div className="flex items-center gap-3 md:contents">
-						<div className="wv-float wv-glitch relative h-[125px] w-[130px] shrink-0 overflow-hidden md:h-[173px] md:w-[180px] xl:h-[219px] xl:w-[227px]">
-							{/* eslint-disable-next-line @next/next/no-img-element -- cropped artwork positioned by percentage */}
-							<img
-								src="/home/imgHeroLogo.png"
+						{/* The emblem is a 2:3 shield, so its box is too: it shows whole, uncropped. */}
+						<div className="wv-float wv-glitch relative h-[150px] w-[100px] shrink-0 md:h-[195px] md:w-[130px] xl:h-[231px] xl:w-[154px]">
+							<Image
+								src="/home/logo-worldwide-vapor.webp"
 								alt=""
-								className="absolute left-[-4.74%] top-[-37.03%] h-[178.45%] w-[109.36%] max-w-none"
+								fill
+								priority
+								sizes="(min-width: 1280px) 154px, (min-width: 768px) 130px, 100px"
+								className="object-contain"
 							/>
 						</div>
 						<div className="flex min-w-0 flex-1 flex-col gap-[6px] md:gap-[11px] xl:max-w-[1083px]">

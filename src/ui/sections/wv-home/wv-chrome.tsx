@@ -117,46 +117,16 @@ export function WvFooter() {
 			{/* Background band stays full-bleed on ultra-wide monitors; content is capped at 1440
 			    (the widest width we have a real design for) so it doesn't stretch apart on 1920+/4K. */}
 			<div className="mx-auto flex w-full max-w-[1440px] flex-col gap-6 md:gap-8 xl:flex-row xl:items-start xl:gap-[50px]">
-				{/* Brand art: three breakpoint-specific crops (Figma 6.02 Footer: Mobile/Tablet/Desktop
-				    variants), each a fixed box + `object-cover` so the crop never distorts. Mobile pairs
-				    with the socials block at the bottom; tablet pairs it inline, side-by-side with the logo.
-				    Mobile is `aspect-[6/5]` (a hair taller than Figma's literal 360×280 mobile frame) rather
-				    than a bare fixed height: at `w-full` it scales proportionally across the whole mobile
-				    range (a fixed height instead would stretch the same crop window wider as the viewport
-				    grows, cropping away more and more of the logo until it's an unrecognizable sliver near
-				    768px — see git blame for that first attempt). Figma's exact 9:7 box measured ~2.6%
-				    shorter, top to bottom, than the artwork (1024×1536) needs to show it uncropped at
-				    all — no position could avoid cutting one edge or the other. `aspect-[6/5]` is the
-				    smallest bump over that which comfortably clears the artwork's measured content bounds
-				    (top 22.14%, bottom 76.63% of the image height) on both sides; `object-[50%_49%]` then
-				    centers the crop on that content instead of the image canvas's own (slightly
-				    top-heavy) padding, leaving an even few-pixel margin top and bottom. */}
+				{/* Brand art: the emblem, a 2:3 shield shown whole in a 2:3 box. Mobile centres it on its own row (the socials
+				    sit at the bottom there); tablet pairs it with the socials side by side; desktop gives it a column. */}
 				<div className="flex w-full items-center justify-between gap-4 xl:contents">
-					<div className="wv-glitch relative aspect-[6/5] w-full shrink-0 overflow-hidden md:hidden">
+					<div className="wv-glitch relative mx-auto h-[300px] w-[200px] shrink-0 md:mx-0 md:h-[240px] md:w-[160px] xl:h-[192px] xl:w-[128px]">
 						<Image
-							src="/home/imgHeroLogo.png"
+							src="/home/logo-worldwide-vapor.webp"
 							alt="Worldwide Vapor"
 							fill
-							sizes="336px"
-							className="object-cover object-[50%_49%]"
-						/>
-					</div>
-					<div className="wv-glitch relative hidden size-[240px] shrink-0 overflow-hidden md:block xl:hidden">
-						<Image
-							src="/home/imgHeroLogo.png"
-							alt="Worldwide Vapor"
-							fill
-							sizes="240px"
-							className="object-cover"
-						/>
-					</div>
-					<div className="wv-glitch relative hidden size-[160px] shrink-0 overflow-hidden xl:block">
-						<Image
-							src="/home/imgHeroLogo.png"
-							alt="Worldwide Vapor"
-							fill
-							sizes="160px"
-							className="object-cover"
+							sizes="(min-width: 1280px) 128px, (min-width: 768px) 160px, 200px"
+							className="object-contain"
 						/>
 					</div>
 					<FooterSocials className="hidden flex-col items-end gap-3 md:flex xl:hidden" />
