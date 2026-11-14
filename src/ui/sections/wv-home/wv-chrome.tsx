@@ -117,12 +117,12 @@ export function WvFooter() {
 			{/* Background band stays full-bleed on ultra-wide monitors; content is capped at 1440
 			    (the widest width we have a real design for) so it doesn't stretch apart on 1920+/4K. */}
 			<div className="mx-auto flex w-full max-w-[1440px] flex-col gap-6 md:gap-8 xl:flex-row xl:items-start xl:gap-[50px]">
-				{/* Brand art: the emblem, a 2:3 shield shown whole in a 2:3 box. Mobile centres it on its own row (the socials
+				{/* Brand art: the emblem, a shield about 5:7, shown whole in a box of its shape. Mobile centres it on its own row (the socials
 				    sit at the bottom there); tablet pairs it with the socials side by side; desktop gives it a column. */}
 				<div className="flex w-full items-center justify-between gap-4 xl:contents">
-					<div className="wv-glitch relative mx-auto h-[300px] w-[200px] shrink-0 md:mx-0 md:h-[240px] md:w-[160px] xl:h-[192px] xl:w-[128px]">
+					<div className="wv-glitch relative mx-auto h-[281px] w-[200px] shrink-0 md:mx-0 md:h-[225px] md:w-[160px] xl:h-[180px] xl:w-[128px]">
 						<Image
-							src="/home/logo-worldwide-vapor.webp"
+							src="/home/logo-worldwide-vapor-clean.webp"
 							alt="Worldwide Vapor"
 							fill
 							sizes="(min-width: 1280px) 128px, (min-width: 768px) 160px, 200px"
