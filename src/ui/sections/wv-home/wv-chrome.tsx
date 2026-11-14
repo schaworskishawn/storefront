@@ -33,19 +33,19 @@ export function WvHeader() {
 			<div className="mx-auto flex w-full max-w-[1440px] items-center justify-between">
 				<div className="flex items-center gap-4 xl:gap-[23px]">
 					{/* The wordmark is as wide as the hero's shield logo below it at every breakpoint, in a box of its own shape
-					    (960:410), and the header's side padding matches the hero's, so the two logos share a left edge and a centre
-					    line. */}
+					    (1192:556, the artwork's own bounds), and the header's side padding matches the hero's, so the two logos
+					    share a left edge and a centre line. It is vector, so it is served as is and stays sharp at any size. */}
 					<Link
 						href="/home"
-						className="wv-glitch relative block aspect-[960/410] w-[120px] md:w-[140px] xl:w-[164px]"
+						className="wv-glitch relative block aspect-[1192/556] w-[120px] md:w-[140px] xl:w-[164px]"
 					>
 						<Image
-							src="/home/logo-wordmark-pink.webp"
+							src="/home/logo-nav.svg"
 							alt="Worldwide Vapor"
 							fill
 							sizes="(min-width: 1280px) 164px, (min-width: 768px) 140px, 120px"
 							className="object-contain"
-							priority
+							loading="eager"
 						/>
 					</Link>
 					<nav
