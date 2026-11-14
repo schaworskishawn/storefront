@@ -356,3 +356,51 @@ body.wv-motion h1.wv-hero-title {
 			0 0 8px color-mix(in srgb, var(--wv-cyan) 60%, transparent);
 	}
 }
+
+/* Brand tiles (BrandCarousel in wv-home-client.tsx): a glassy neon tile with a purple glow at its heart, a glowing edge
+ * that alternates cyan and pink, a highlight along the top and a halo; the logos' white lettering glows in the tile's
+ * colour. Under the pointer the tile lifts and glows brighter (no movement for reduced motion). The carousel's track has
+ * vertical padding (offset by a negative margin) so the halo isn't clipped. */
+.wv-brand-tile {
+	--accent: var(--wv-cyan);
+	border: 1.5px solid var(--accent);
+	background:
+		radial-gradient(
+			ellipse 70% 90% at 50% 55%,
+			color-mix(in srgb, var(--wv-purple) 55%, transparent),
+			transparent 75%
+		),
+		linear-gradient(180deg, color-mix(in srgb, var(--accent) 14%, var(--wv-control)), var(--wv-deep));
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 30%, transparent),
+		inset 0 0 14px color-mix(in srgb, var(--accent) 22%, transparent),
+		0 0 10px color-mix(in srgb, var(--accent) 45%, transparent);
+	transition:
+		transform 200ms ease,
+		box-shadow 200ms ease;
+}
+.wv-brand-tile:nth-child(even) {
+	--accent: var(--wv-pink);
+}
+.wv-brand-logo {
+	filter: drop-shadow(0 1px 0 var(--wv-ink))
+		drop-shadow(0 0 5px color-mix(in srgb, var(--accent) 70%, transparent));
+	transition: filter 200ms ease;
+}
+@media (hover: hover) {
+	.wv-brand-tile:hover {
+		transform: translateY(-2px);
+		box-shadow:
+			inset 0 1px 0 color-mix(in srgb, white 40%, transparent),
+			inset 0 0 18px color-mix(in srgb, var(--accent) 32%, transparent),
+			0 0 16px color-mix(in srgb, var(--accent) 70%, transparent);
+	}
+	.wv-brand-tile:hover .wv-brand-logo {
+		filter: drop-shadow(0 1px 0 var(--wv-ink)) drop-shadow(0 0 8px var(--accent));
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.wv-brand-tile:hover {
+		transform: none;
+	}
+}
