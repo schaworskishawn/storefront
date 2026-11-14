@@ -84,14 +84,15 @@ export function WvHome({
 				))}
 				<div className="relative flex flex-col gap-4 p-4 md:flex-row md:items-center md:gap-6 md:px-8 md:py-6 xl:min-h-[231px] xl:gap-10 xl:py-0 xl:pl-14 xl:pr-10">
 					<div className="flex items-center gap-3 md:contents">
-						{/* The emblem (a shield, 1000:1405) at a fixed size in a box of its own shape, so it never shrinks with the text
-						    beside it; the text is centred against it. On desktop it fills the 231px band. */}
-						<div className="wv-float wv-glitch relative aspect-[1000/1405] w-[120px] shrink-0 md:w-[140px] xl:w-[164px]">
+						{/* The emblem (a round badge, 876:839, cut to its own edges) at a fixed size in a box of its own shape, so it
+						    never shrinks with the text beside it; the text is centred against it, and on desktop it sits centred in the
+						    231px band. It is as wide as the header's wordmark, so the two share a left edge and a centre line. */}
+						<div className="wv-float wv-glitch relative aspect-[876/839] w-[120px] shrink-0 md:w-[140px] xl:w-[164px]">
 							<Image
-								src="/home/logo-worldwide-vapor-clean.webp"
+								src="/home/logo-emblem.webp"
 								alt=""
 								fill
-								priority
+								loading="eager"
 								sizes="(min-width: 1280px) 164px, (min-width: 768px) 140px, 120px"
 								className="object-contain"
 							/>
