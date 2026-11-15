@@ -5,6 +5,11 @@ import type { CategoryBadgeIcon } from "./wv-category-art";
  * the category holds, and its name on a plate across the bottom in the headline font. Drawn here rather than shipped as
  * pictures, so the six read as one set, stay sharp at any size, cost a few KB instead of ~2.4 MB each, and carry the name
  * as text. Colours are the brand tokens; the hover glow is in wv-home.css (`.wv-badge`).
+ *
+ * It is built for depth, not as a flat outline: the frame is a bevelled rim lit from above with the neon tube on its
+ * outer edge; the glass inside sits sunk into it (a shadow along the rim, light caught across the top); the drawing is
+ * dark glass edged in neon, with a tight glow and a wide bloom and a shadow behind it, since neon pops against the
+ * dark; and the name plate is a glossy bar lifted off the badge by its own shadow.
  */
 
 /** Line drawings in a 100 × 100 box, stroked with the icon gradient; `dots` are small filled accents. Shared with the
@@ -81,8 +86,13 @@ export const BADGE_DRAWINGS: Record<CategoryBadgeIcon, { strokes: string[]; dots
 /** A pointy-topped hexagon filling the 200 × 220 box, and the same one inset. */
 const HEX = "M100 8 L188 58 L188 162 L100 212 L12 162 L12 58 Z";
 const HEX_INNER = "M100 22 L176 65 L176 155 L100 198 L24 155 L24 65 Z";
+/** The rim: the band between the two, wound the other way round inside so it fills as a ring. */
+const RIM = `${HEX} M100 22 L24 65 L24 155 L100 198 L176 155 L176 65 Z`;
+/** Light caught on the glass: the top of the inner hexagon, down to a soft curve. */
+const GLOSS = "M24 65 L100 22 L176 65 L176 88 Q100 66 24 110 Z";
 /** The name plate across the bottom, with pointed ends that cross the frame. */
 const PLATE = "M26 150 L174 150 L188 167 L174 184 L26 184 L12 167 Z";
+const isClosed = (d: string) => d.trimEnd().endsWith("Z");
 
 const stop = (offset: string, color: string, opacity = 1) => (
 	<stop offset={offset} style={{ stopColor: color, stopOpacity: opacity }} />
@@ -124,21 +134,61 @@ export function CategoryBadge({
 					{stop("0%", "var(--wv-pink)")}
 					{stop("100%", "var(--wv-cyan)")}
 				</linearGradient>
-				{/* A nebula: hot pink at the heart, through purple, to the page's black at the edge. */}
+				{/* A nebula: a pink glow behind the drawing, deepening fast through purple to near black at the rim. */}
 				<radialGradient id={id("field")} cx="50%" cy="42%" r="62%">
-					{stop("0%", "var(--wv-pink)", 0.75)}
-					{stop("38%", "var(--wv-purple)", 0.95)}
-					{stop("75%", "var(--wv-deep)")}
+					{stop("0%", "var(--wv-pink)", 0.55)}
+					{stop("36%", "var(--wv-purple)", 0.85)}
+					{stop("70%", "var(--wv-deep)")}
 					{stop("100%", "var(--wv-bg)")}
 				</radialGradient>
+				{/* The rim, lit from above: bright on the top facets, purple on the sides, dark underneath. */}
+				<linearGradient id={id("rim")} x1="0" y1="0" x2="0" y2="1">
+					{stop("0%", "var(--wv-pink)", 0.75)}
+					{stop("30%", "var(--wv-purple)", 0.8)}
+					{stop("70%", "var(--wv-deep)", 0.95)}
+					{stop("100%", "var(--wv-bg)")}
+				</linearGradient>
+				<linearGradient id={id("gloss")} x1="0" y1="0" x2="0" y2="1">
+					{stop("0%", "white", 0.2)}
+					{stop("100%", "white", 0.02)}
+				</linearGradient>
+				{/* Dark glass inside the drawing's closed outlines, a touch of purple at the foot. */}
+				<linearGradient id={id("glass")} gradientUnits="userSpaceOnUse" x1="0" y1="10" x2="0" y2="92">
+					{stop("0%", "var(--wv-deep)", 0.88)}
+					{stop("100%", "var(--wv-purple)", 0.75)}
+				</linearGradient>
 				<linearGradient id={id("plate")} x1="0" y1="0" x2="1" y2="0">
 					{stop("0%", "var(--wv-purple)")}
 					{stop("50%", "var(--wv-pink)")}
 					{stop("100%", "var(--wv-purple)")}
 				</linearGradient>
+				{/* The plate is a glossy bar: light on its upper half, a crisp edge, shade underneath. */}
+				<linearGradient id={id("plate-gloss")} x1="0" y1="0" x2="0" y2="1">
+					{stop("0%", "white", 0.38)}
+					{stop("46%", "white", 0.08)}
+					{stop("50%", "white", 0)}
+					{stop("100%", "var(--wv-ink)", 0.35)}
+				</linearGradient>
 				<clipPath id={id("clip")}>
 					<path d={HEX} />
 				</clipPath>
+				<clipPath id={id("clip-inner")}>
+					<path d={HEX_INNER} />
+				</clipPath>
+				{/* Dark glass, over the drawing's glow but not over its tubes: the bloom would otherwise fill the small shapes
+				    and wash them out, and neon pops against the dark. */}
+				<mask id={id("glass-mask")} maskUnits="userSpaceOnUse" x="-20" y="-20" width="140" height="140">
+					<g fill="white">
+						{drawing.strokes.filter(isClosed).map((d) => (
+							<path key={d} d={d} />
+						))}
+					</g>
+					<g fill="none" stroke="black" strokeWidth="5.5" strokeLinecap="round" strokeLinejoin="round">
+						{drawing.strokes.map((d) => (
+							<path key={d} d={d} />
+						))}
+					</g>
+				</mask>
 				<filter id={id("glow")} x="-40%" y="-40%" width="180%" height="180%">
 					<feGaussianBlur stdDeviation="3.2" result="blur" />
 					<feMerge>
@@ -147,8 +197,22 @@ export function CategoryBadge({
 						<feMergeNode in="SourceGraphic" />
 					</feMerge>
 				</filter>
+				{/* Neon: a tight glow hugging the tube and a wide bloom around it, so it reads as light, not a line. */}
+				<filter id={id("neon")} x="-50%" y="-50%" width="200%" height="200%">
+					<feGaussianBlur in="SourceGraphic" stdDeviation="2.2" result="tight" />
+					<feGaussianBlur in="SourceGraphic" stdDeviation="8" result="wide" />
+					<feMerge>
+						<feMergeNode in="wide" />
+						<feMergeNode in="tight" />
+						<feMergeNode in="tight" />
+						<feMergeNode in="SourceGraphic" />
+					</feMerge>
+				</filter>
 				<filter id={id("halo")} x="-25%" y="-25%" width="150%" height="150%">
 					<feGaussianBlur stdDeviation="6" />
+				</filter>
+				<filter id={id("shadow")} x="-50%" y="-50%" width="200%" height="200%">
+					<feGaussianBlur stdDeviation="5" />
 				</filter>
 			</defs>
 
@@ -162,7 +226,8 @@ export function CategoryBadge({
 				filter={`url(#${id("halo")})`}
 			/>
 
-			{/* Inside: the nebula, beams of light crossing it, a scatter of stars. */}
+			{/* Inside: the nebula, beams of light crossing it, a scatter of stars, and a shadow along the rim, so the glass
+			    sits sunk into the frame. */}
 			<g clipPath={`url(#${id("clip")})`}>
 				<path d={HEX} fill={`url(#${id("field")})`} />
 				<g strokeWidth="2" strokeLinecap="round" opacity="0.5">
@@ -178,17 +243,30 @@ export function CategoryBadge({
 					<circle cx="128" cy="40" r="1.1" opacity="0.8" />
 					<circle cx="36" cy="110" r="1" opacity="0.6" />
 				</g>
+				<path
+					d={HEX_INNER}
+					fill="none"
+					stroke="var(--wv-bg)"
+					strokeOpacity="0.85"
+					strokeWidth="20"
+					filter={`url(#${id("shadow")})`}
+					clipPath={`url(#${id("clip-inner")})`}
+				/>
 			</g>
 
-			{/* The frame as a neon tube: a coloured stroke with a white-hot core, and a thin pink bevel inside it. */}
-			<path d={HEX_INNER} fill="none" stroke="var(--wv-pink)" strokeOpacity="0.55" strokeWidth="1.5" />
+			{/* The rim: a bevelled band lit from above, a pink line where it meets the glass, and light caught on the glass. */}
+			<path d={RIM} fill={`url(#${id("rim")})`} fillRule="evenodd" />
+			<path d={GLOSS} fill={`url(#${id("gloss")})`} clipPath={`url(#${id("clip-inner")})`} />
+			<path d={HEX_INNER} fill="none" stroke="var(--wv-pink)" strokeOpacity="0.7" strokeWidth="1.5" />
+
+			{/* The frame as a neon tube on the rim's outer edge: a coloured stroke with a white-hot core. */}
 			<path
 				d={HEX}
 				fill="none"
 				stroke={`url(#${id("frame")})`}
 				strokeWidth={active ? 6.5 : 5}
 				strokeLinejoin="round"
-				filter={`url(#${id("glow")})`}
+				filter={`url(#${id("neon")})`}
 			/>
 			<path
 				d={HEX}
@@ -215,10 +293,28 @@ export function CategoryBadge({
 				filter={`url(#${id("glow")})`}
 			/>
 
-			{/* The drawing, also as neon: a glowing coloured stroke under a white core. */}
+			{/* The drawing, as neon: a dark shadow around it so it stands off the glow behind, the glowing coloured tube,
+			    dark glass inside its outlines, and a white core. */}
 			<g transform="translate(50 40)" fill="none" strokeLinecap="round" strokeLinejoin="round">
-				<g stroke={`url(#${id("icon")})`} strokeWidth="5.5" filter={`url(#${id("glow")})`}>
+				<g
+					stroke="var(--wv-bg)"
+					strokeOpacity="0.8"
+					strokeWidth="14"
+					fill="var(--wv-bg)"
+					fillOpacity="0.7"
+					filter={`url(#${id("shadow")})`}
+				>
 					{drawing.strokes.map((d) => (
+						<path key={d} d={d} fill={isClosed(d) ? undefined : "none"} />
+					))}
+				</g>
+				<g stroke={`url(#${id("icon")})`} strokeWidth="5.5" filter={`url(#${id("neon")})`}>
+					{drawing.strokes.map((d) => (
+						<path key={d} d={d} />
+					))}
+				</g>
+				<g fill={`url(#${id("glass")})`} mask={`url(#${id("glass-mask")})`}>
+					{drawing.strokes.filter(isClosed).map((d) => (
 						<path key={d} d={d} />
 					))}
 				</g>
@@ -232,10 +328,20 @@ export function CategoryBadge({
 				))}
 			</g>
 
-			{/* The name plate: hot pink, edged in the frame's neon, with outlined white lettering. */}
+			{/* The name plate: a glossy hot-pink bar lifted off the badge by its shadow, edged in the frame's neon, with
+			    outlined white lettering. */}
 			<path
 				d={PLATE}
-				fill={`url(#${id("plate")})`}
+				fill="var(--wv-bg)"
+				opacity="0.75"
+				transform="translate(0 5)"
+				filter={`url(#${id("shadow")})`}
+			/>
+			<path d={PLATE} fill={`url(#${id("plate")})`} />
+			<path d={PLATE} fill={`url(#${id("plate-gloss")})`} />
+			<path
+				d={PLATE}
+				fill="none"
 				stroke={`url(#${id("frame")})`}
 				strokeWidth="3"
 				strokeLinejoin="round"
