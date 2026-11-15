@@ -1,6 +1,18 @@
 "use client";
 
-import { ChevronRight, Search, ShoppingCart, User } from "lucide-react";
+import {
+	BookOpen,
+	ChevronRight,
+	CigaretteOff,
+	CreditCard,
+	Home,
+	Search,
+	ShoppingBag,
+	ShoppingCart,
+	Truck,
+	User,
+	type LucideIcon,
+} from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { NAV } from "./wv-data";
@@ -8,10 +20,20 @@ import { WishlistLink } from "./wv-wishlist-client";
 
 const heyComic = "font-[family-name:var(--font-hey-comic)]";
 
+/** A neon icon for each menu row, so the rows read apart at a glance. */
+const ROW_ICONS: Record<string, LucideIcon> = {
+	"/home": Home,
+	"/shop": ShoppingBag,
+	"/payments": CreditCard,
+	"/shipping": Truck,
+	"/learn": BookOpen,
+	"/quit": CigaretteOff,
+};
+
 /**
  * Mobile hamburger + slide-down nav panel (visible below the `md` breakpoint). The panel is a lit glass sheet floating
- * over the page, each link a neon row, the page you're on lit pink, and the icons neon tiles (styles: `.wv-menu-*` in
- * wv-home.css).
+ * over the page, each link a neon row (a glowing icon, a cyan-to-pink neon edge), the page you're on lit pink, and the
+ * icons neon tiles (styles: `.wv-menu-*` in wv-home.css).
  */
 export function MobileMenu() {
 	const [open, setOpen] = useState(false);
@@ -61,6 +83,7 @@ export function MobileMenu() {
 				>
 					{NAV.map((item, i) => {
 						const current = path === item.href || path.startsWith(`${item.href}/`);
+						const Icon = ROW_ICONS[item.href];
 						return (
 							<Link
 								key={item.label}
@@ -70,7 +93,10 @@ export function MobileMenu() {
 								className="wv-menu-item wv-menu-link"
 								style={{ "--i": i } as CSSProperties}
 							>
-								{item.label}
+								<span className="wv-menu-label">
+									{Icon && <Icon aria-hidden className="wv-menu-row-icon" strokeWidth={2} />}
+									{item.label}
+								</span>
 								<ChevronRight aria-hidden className="wv-menu-chevron size-4" strokeWidth={2.5} />
 							</Link>
 						);

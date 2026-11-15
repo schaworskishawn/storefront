@@ -486,8 +486,9 @@ body.wv-motion .wv-nav-link[aria-current="page"]:is(:hover, :focus-visible) {
 }
 
 /* Mobile menu (wv-menu-client.tsx): a glass sheet floating over the page (a nebula glow in two corners, a neon edge
- * along the bottom and a deep shadow under it), each link a lit row with a neon chevron, the page you're on lit pink with
- * a bar down its edge, and the icons as neon tiles big enough to tap (44px). */
+ * along the bottom and a deep shadow under it), each link a lit row (a glowing icon, a cyan-to-pink neon edge and a
+ * neon chevron), the page you're on lit pink with a bar down its edge, and the icons as neon tiles big enough to tap
+ * (44px). */
 .wv-menu-glass {
 	background:
 		radial-gradient(
@@ -512,24 +513,49 @@ body.wv-motion .wv-nav-link[aria-current="page"]:is(:hover, :focus-visible) {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	padding: 11px 14px 11px 18px;
-	border: 1px solid color-mix(in srgb, var(--wv-cyan) 22%, transparent);
+	padding: 10px 14px 10px 18px;
+	/* A neon edge running cyan into pink: the row's fill on the padding box, the gradient showing in the border. */
+	border: 1.5px solid transparent;
 	border-radius: 12px;
 	font-size: 16px;
 	letter-spacing: 1.5px;
 	color: white;
 	text-shadow:
-		0 0 10px color-mix(in srgb, var(--wv-cyan) 55%, transparent),
+		0 0 12px color-mix(in srgb, var(--wv-cyan) 75%, transparent),
 		0 1px 1px var(--wv-ink);
-	background: linear-gradient(
-		90deg,
-		color-mix(in srgb, var(--wv-cyan) 10%, transparent),
-		color-mix(in srgb, var(--wv-purple) 8%, transparent) 70%,
-		transparent
-	);
+	background:
+		linear-gradient(
+				90deg,
+				color-mix(in srgb, var(--wv-cyan) 13%, var(--wv-header)),
+				color-mix(in srgb, var(--wv-purple) 16%, var(--wv-header)) 70%,
+				var(--wv-header)
+			)
+			padding-box,
+		linear-gradient(
+				90deg,
+				color-mix(in srgb, var(--wv-cyan) 75%, transparent),
+				color-mix(in srgb, var(--wv-pink) 60%, transparent)
+			)
+			border-box;
 	box-shadow:
-		inset 0 1px 0 color-mix(in srgb, white 7%, transparent),
-		0 3px 10px color-mix(in srgb, var(--wv-bg) 75%, transparent);
+		0 0 12px color-mix(in srgb, var(--wv-cyan) 24%, transparent),
+		inset 0 1px 0 color-mix(in srgb, white 10%, transparent),
+		0 4px 12px color-mix(in srgb, var(--wv-bg) 80%, transparent);
+}
+.wv-menu-label {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+.wv-menu-row-icon {
+	width: 20px;
+	height: 20px;
+	color: var(--wv-cyan);
+	filter: drop-shadow(0 0 5px color-mix(in srgb, var(--wv-cyan) 90%, transparent));
+}
+.wv-menu-link[aria-current="page"] .wv-menu-row-icon {
+	color: var(--wv-pink);
+	filter: drop-shadow(0 0 5px var(--wv-pink));
 }
 .wv-menu-chevron {
 	color: var(--wv-cyan);
