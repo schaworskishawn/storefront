@@ -266,6 +266,82 @@ body.wv-motion .wv-nav-link[aria-current="page"]:is(:hover, :focus-visible) {
 	}
 }
 
+/* The shop breadcrumb (wv-shop.tsx): a glass strip set just under the header (a shade darker, its top in the header's
+ * shadow), a cyan glow at its left end, and a neon edge along its foot that runs cyan into pink and fades out. Home glows
+ * cyan behind a house icon, a pink chevron leads on, and the page you're on sits in a neon pill. */
+.wv-crumbs {
+	position: relative;
+	color: var(--wv-text-dim);
+	background:
+		radial-gradient(
+			35% 240% at 0% 100%,
+			color-mix(in srgb, var(--wv-cyan) 12%, transparent),
+			transparent 70%
+		),
+		linear-gradient(180deg, color-mix(in srgb, var(--wv-header) 60%, var(--wv-bg)), var(--wv-header));
+	box-shadow:
+		inset 0 10px 12px -10px color-mix(in srgb, var(--wv-bg) 95%, transparent),
+		inset 0 -12px 14px -12px color-mix(in srgb, var(--wv-cyan) 45%, transparent);
+}
+.wv-crumbs::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	height: 1px;
+	background: linear-gradient(
+		90deg,
+		var(--wv-cyan),
+		color-mix(in srgb, var(--wv-pink) 85%, transparent) 55%,
+		transparent
+	);
+	box-shadow: 0 0 6px color-mix(in srgb, var(--wv-cyan) 60%, transparent);
+}
+.wv-crumb-link {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	color: var(--wv-cyan-soft);
+	text-shadow:
+		0 0 8px color-mix(in srgb, var(--wv-cyan) 70%, transparent),
+		0 1px 1px var(--wv-ink);
+}
+.wv-crumb-link svg {
+	filter: drop-shadow(0 0 3px color-mix(in srgb, var(--wv-cyan) 85%, transparent));
+}
+.wv-crumb-link:is(:hover, :focus-visible) {
+	color: white;
+	text-shadow:
+		0 0 12px var(--wv-cyan),
+		0 1px 1px var(--wv-ink);
+}
+.wv-crumb-sep {
+	flex: none;
+	color: var(--wv-pink);
+	filter: drop-shadow(0 0 4px color-mix(in srgb, var(--wv-pink) 90%, transparent));
+}
+.wv-crumb-current {
+	padding: 3px 11px;
+	border: 1px solid transparent;
+	border-radius: 999px;
+	color: white;
+	background:
+		linear-gradient(
+				180deg,
+				color-mix(in srgb, var(--wv-pink) 24%, var(--wv-header)),
+				color-mix(in srgb, var(--wv-purple) 20%, var(--wv-header))
+			)
+			padding-box,
+		linear-gradient(90deg, var(--wv-cyan), var(--wv-pink)) border-box;
+	box-shadow:
+		0 0 12px color-mix(in srgb, var(--wv-pink) 40%, transparent),
+		inset 0 1px 0 color-mix(in srgb, white 14%, transparent);
+	text-shadow:
+		0 0 8px color-mix(in srgb, var(--wv-pink) 90%, transparent),
+		0 1px 1px var(--wv-ink);
+}
+
 /* Category badges (wv-category-badge.tsx): a soft pink glow always; under the pointer or keyboard focus, and while
  * selected in the shop's filter, they glow brighter in pink and cyan, and lift. No movement for reduced motion. */
 .wv-badge {
