@@ -186,6 +186,86 @@ body.wv-motion h1.wv-hero-title {
 	text-shadow: 0 1px 1px var(--wv-ink);
 }
 
+/* The site header (wv-chrome.tsx): a glass bar with a nebula glow at each end, a neon edge along its foot that lights the
+ * top of the page and a shadow cast onto it; the wordmark glows; the links glow, the page you're on lit pink and
+ * underlined in neon (wv-nav-client.tsx); and the icons are neon tiles, glass inside a cyan-to-pink edge. */
+.wv-header-glass {
+	background:
+		radial-gradient(45% 160% at 0% 0%, color-mix(in srgb, var(--wv-cyan) 11%, transparent), transparent 70%),
+		radial-gradient(
+			45% 160% at 100% 0%,
+			color-mix(in srgb, var(--wv-pink) 15%, transparent),
+			transparent 70%
+		),
+		linear-gradient(180deg, color-mix(in srgb, var(--wv-header) 82%, var(--wv-purple)), var(--wv-header));
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 6%, transparent),
+		0 0 18px color-mix(in srgb, var(--wv-cyan) 45%, transparent),
+		0 14px 26px -10px color-mix(in srgb, var(--wv-bg) 95%, transparent);
+}
+.wv-header-logo img {
+	filter: drop-shadow(0 0 10px color-mix(in srgb, var(--wv-pink) 40%, transparent))
+		drop-shadow(0 0 3px color-mix(in srgb, var(--wv-cyan) 35%, transparent));
+}
+.wv-nav-link {
+	position: relative;
+	color: white;
+	text-shadow:
+		0 0 10px color-mix(in srgb, var(--wv-cyan) 60%, transparent),
+		0 1px 1px var(--wv-ink);
+}
+.wv-nav-link:is(:hover, :focus-visible) {
+	color: var(--wv-cyan-soft);
+	text-shadow:
+		0 0 12px color-mix(in srgb, var(--wv-cyan) 85%, transparent),
+		0 1px 1px var(--wv-ink);
+}
+.wv-nav-link[aria-current="page"] {
+	color: white;
+	text-shadow:
+		0 0 12px color-mix(in srgb, var(--wv-pink) 85%, transparent),
+		0 1px 1px var(--wv-ink);
+}
+.wv-nav-link[aria-current="page"]::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: -7px;
+	height: 2px;
+	border-radius: 1px;
+	background: linear-gradient(90deg, var(--wv-cyan), var(--wv-pink));
+	box-shadow: 0 0 8px var(--wv-pink);
+}
+/* The neon bar stands in for the hover underline (motion.css) on the page you're on. */
+body.wv-motion .wv-nav-link[aria-current="page"]:is(:hover, :focus-visible) {
+	background-size: 0 2px;
+}
+.wv-header-icons > a {
+	border: 1.5px solid transparent;
+	border-radius: 10px;
+	background:
+		linear-gradient(180deg, color-mix(in srgb, var(--wv-purple) 24%, var(--wv-header)), var(--wv-header))
+			padding-box,
+		linear-gradient(135deg, var(--wv-cyan), var(--wv-pink)) border-box;
+	box-shadow:
+		0 0 10px color-mix(in srgb, var(--wv-cyan) 30%, transparent),
+		inset 0 1px 0 color-mix(in srgb, white 12%, transparent);
+}
+.wv-header-icons > a svg {
+	filter: drop-shadow(0 0 4px color-mix(in srgb, var(--wv-cyan) 85%, transparent));
+}
+@media (min-width: 1280px) {
+	.wv-header-icons > a {
+		width: 36px;
+		height: 36px;
+	}
+	.wv-header-icons > a svg {
+		width: 18px;
+		height: 18px;
+	}
+}
+
 /* Category badges (wv-category-badge.tsx): a soft pink glow always; under the pointer or keyboard focus, and while
  * selected in the shop's filter, they glow brighter in pink and cyan, and lift. No movement for reduced motion. */
 .wv-badge {

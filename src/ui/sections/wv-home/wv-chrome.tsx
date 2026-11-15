@@ -2,10 +2,10 @@ import { Search, ShoppingCart, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { WishlistLink } from "./wv-wishlist-client";
-import { NAV } from "./wv-data";
 import { readRewardsConfig } from "@/lib/rewards/tokens";
 import { FOOTER_COLUMNS, FOOTER_HREFS, LEGAL_LINKS, REWARDS_FOOTER_LABEL } from "./wv-footer-links";
 import { MobileMenu } from "./wv-menu-client";
+import { PrimaryNav } from "./wv-nav-client";
 import "./wv-home.css";
 
 /**
@@ -21,11 +21,17 @@ const SOCIALS = [
 	{ name: "YouTube", src: "/home/imgYoutube.svg" },
 ];
 
+/**
+ * The header is a glass bar that pops off the page: a nebula glow at each end, a neon edge along its foot that lights the
+ * top of the page, a shadow cast onto it (it sits above the page, z-30, so the shadow shows), a glowing wordmark, neon
+ * links with the page you're on lit pink, and the icons as neon tiles. Styles: `.wv-header-*` and `.wv-nav-link` in
+ * wv-home.css.
+ */
 export function WvHeader() {
 	return (
 		<header
 			data-wv-header
-			className="relative border-b border-[var(--wv-cyan)] bg-[var(--wv-header)] px-4 py-3 md:px-8 xl:px-14 xl:py-[7px]"
+			className="wv-header-glass relative z-30 border-b border-[var(--wv-cyan)] px-4 py-3 md:px-8 xl:px-14 xl:py-[7px]"
 		>
 			{/* The band above (border/background) stays full-bleed on ultra-wide monitors; only the
 			    actual nav content is capped at the widest width we have a real design for (1440,
@@ -37,7 +43,7 @@ export function WvHeader() {
 					    share a left edge and a centre line. It is vector, so it is served as is and stays sharp at any size. */}
 					<Link
 						href="/home"
-						className="wv-glitch relative block aspect-[1192/556] w-[120px] md:w-[140px] xl:w-[164px]"
+						className="wv-glitch wv-header-logo relative block aspect-[1192/556] w-[120px] md:w-[140px] xl:w-[164px]"
 					>
 						<Image
 							src="/home/logo-nav.svg"
@@ -48,18 +54,9 @@ export function WvHeader() {
 							loading="eager"
 						/>
 					</Link>
-					<nav
-						aria-label="Primary"
-						className={`${heyComic} hidden items-center gap-3 text-[13px] uppercase tracking-[1px] md:flex xl:gap-[21px]`}
-					>
-						{NAV.map((item) => (
-							<Link key={item.label} href={item.href} className="wv-link">
-								{item.label}
-							</Link>
-						))}
-					</nav>
+					<PrimaryNav />
 				</div>
-				<div className="hidden items-center gap-3 md:flex xl:gap-[11px]">
+				<div className="wv-header-icons hidden items-center gap-3 md:flex xl:gap-[11px]">
 					<Link
 						href="/search"
 						aria-label="Search"
