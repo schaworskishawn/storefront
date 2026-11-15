@@ -110,26 +110,29 @@ export function WvShop({
 					className="object-cover opacity-60"
 					priority
 				/>
-				<div className="relative flex items-center gap-6 px-4 py-6 md:px-8 xl:h-[220px] xl:gap-10 xl:px-20 xl:py-8">
+				{/* The hero's text has depth, as on the home hero (`.wv-hero-*`): a 3D title over a neon underline, a chrome
+				    tagline with pink dividers, brighter copy with its key phrases lit; behind it a pink and cyan glow, a neon
+				    edge along its foot, and the art in a glowing neon frame (`.wv-shop-hero*` in wv-home.css). */}
+				<div className="wv-shop-hero relative flex items-center gap-6 px-4 py-6 md:px-8 xl:h-[220px] xl:gap-10 xl:px-20 xl:py-8">
 					<div className="flex flex-1 flex-col gap-[10px]">
 						<h1
-							className={`${heyComic} wv-title-glow text-[24px] leading-none tracking-[-1px] md:text-[30px] xl:text-[34px] xl:tracking-[-1.5px]`}
+							className={`${heyComic} wv-title-glow wv-hero-title wv-shop-hero-title text-[24px] leading-none tracking-[-1px] md:text-[30px] xl:text-[34px] xl:tracking-[-1.5px]`}
 						>
 							<span className="text-[var(--wv-pink)]">SHOP ALL</span>{" "}
 							<span className="text-[var(--wv-cyan-soft)]">PRODUCTS</span>
 						</h1>
-						<p className={`${bungee} text-[10px] tracking-[1px] md:text-xs xl:text-sm`}>
-							PREMIUM VAPING HARDWARE | CERTIFIED COMPLIANCE | BULK TIER RATES
+						<p className={`${bungee} wv-hero-tagline text-[10px] tracking-[1px] md:text-xs xl:text-sm`}>
+							PREMIUM VAPING HARDWARE <span className="wv-hero-sep">|</span> CERTIFIED COMPLIANCE{" "}
+							<span className="wv-hero-sep">|</span> BULK TIER RATES
 						</p>
-						<p
-							className={`${orbitron} max-w-[650px] text-[10px] leading-[1.6] text-[var(--wv-text-dim)] md:text-[11px]`}
-						>
-							Direct access to the industry&apos;s leading hardware, premium disposables, and grade-A
-							distributions. Seamlessly browse through our complete selection of liquids, hardware kits, and
-							high-quality accessories.
+						<p className={`${orbitron} wv-hero-copy max-w-[650px] text-[10px] leading-[1.6] md:text-[11px]`}>
+							Direct access to the industry&apos;s <strong className="wv-hero-key">leading hardware</strong>,{" "}
+							<strong className="wv-hero-key wv-hero-key--pink">premium disposables</strong>, and{" "}
+							<strong className="wv-hero-key">grade-A distributions</strong>. Seamlessly browse through our
+							complete selection of liquids, hardware kits, and high-quality accessories.
 						</p>
 					</div>
-					<div className="relative hidden h-[120px] w-[180px] shrink-0 overflow-hidden rounded-xl shadow-[0_0_16px_0_rgba(105,235,255,0.2)] md:block xl:h-40 xl:w-[240px]">
+					<div className="wv-shop-hero-art relative hidden h-[120px] w-[180px] shrink-0 overflow-hidden rounded-xl md:block xl:h-40 xl:w-[240px]">
 						<Image
 							src="/home/imgShopPromoGraphic.png"
 							alt=""
