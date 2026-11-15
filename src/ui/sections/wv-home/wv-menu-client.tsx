@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, ShoppingCart, User } from "lucide-react";
+import { ChevronRight, Search, ShoppingCart, User } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { NAV } from "./wv-data";
@@ -8,9 +8,16 @@ import { WishlistLink } from "./wv-wishlist-client";
 
 const heyComic = "font-[family-name:var(--font-hey-comic)]";
 
-/** Mobile hamburger + slide-down nav panel (visible below the `md` breakpoint). */
+/**
+ * Mobile hamburger + slide-down nav panel (visible below the `md` breakpoint). The panel is a lit glass sheet floating
+ * over the page, each link a neon row, the page you're on lit pink, and the icons neon tiles (styles: `.wv-menu-*` in
+ * wv-home.css).
+ */
 export function MobileMenu() {
 	const [open, setOpen] = useState(false);
+	// The page you're on, read when the menu opens (the panel only exists after a tap, so there is nothing to render
+	// on the server and no pathname hook to wait on).
+	const [path, setPath] = useState("");
 	// Closing plays the panel folding away for 160ms before it is removed (instantly for reduced motion).
 	const [leaving, setLeaving] = useState(false);
 	const timer = useRef<number | undefined>(undefined);
@@ -21,7 +28,10 @@ export function MobileMenu() {
 		setOpen(false);
 	};
 	const toggle = () => {
-		if (!open) return setOpen(true);
+		if (!open) {
+			setPath(window.location.pathname);
+			return setOpen(true);
+		}
 		if (leaving) return;
 		if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return closeNow();
 		setLeaving(true);
@@ -47,20 +57,25 @@ export function MobileMenu() {
 				<nav
 					id="wv-mobile-nav"
 					aria-label="Mobile"
-					className={`${heyComic} wv-menu-panel ${leaving ? "wv-menu-leave" : ""} absolute inset-x-0 top-full z-30 flex flex-col gap-4 border-b border-[var(--wv-cyan)] bg-[var(--wv-header)] px-4 py-5 text-sm uppercase tracking-[1px]`}
+					className={`${heyComic} wv-menu-panel wv-menu-glass ${leaving ? "wv-menu-leave" : ""} absolute inset-x-0 top-full z-30 flex flex-col gap-2 px-4 pb-5 pt-4 uppercase`}
 				>
-					{NAV.map((item, i) => (
-						<Link
-							key={item.label}
-							href={item.href}
-							onClick={closeNow}
-							className="wv-menu-item"
-							style={{ "--i": i } as CSSProperties}
-						>
-							{item.label}
-						</Link>
-					))}
-					<div className="flex gap-3 pt-2 normal-case">
+					{NAV.map((item, i) => {
+						const current = path === item.href || path.startsWith(`${item.href}/`);
+						return (
+							<Link
+								key={item.label}
+								href={item.href}
+								onClick={closeNow}
+								aria-current={current ? "page" : undefined}
+								className="wv-menu-item wv-menu-link"
+								style={{ "--i": i } as CSSProperties}
+							>
+								{item.label}
+								<ChevronRight aria-hidden className="wv-menu-chevron size-4" strokeWidth={2.5} />
+							</Link>
+						);
+					})}
+					<div className="wv-menu-icons mt-2 flex gap-3 normal-case">
 						<Link
 							href="/search"
 							aria-label="Search"
