@@ -1,3 +1,4 @@
+import { ChevronRight, Home } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -67,12 +68,20 @@ export function WvShop({
 		<div className="min-h-dvh overflow-x-clip bg-[var(--wv-bg)] text-white">
 			<WvHeader />
 
-			{/* Breadcrumb */}
+			{/* Breadcrumb: a glass strip under the header, Home glowing cyan, a pink chevron, and the page you're on in a neon
+			    pill (styles: `.wv-crumb*` in wv-home.css). */}
 			<nav
 				aria-label="Breadcrumb"
-				className={`${heyComic} border-b border-[var(--wv-cyan)] bg-[var(--wv-header)] px-4 py-3 text-xs tracking-[0.5px] text-[var(--wv-text-dim)] md:px-8 xl:px-20 xl:py-4`}
+				className={`${heyComic} wv-crumbs flex items-center gap-2 px-4 py-2 text-xs tracking-[0.5px] md:px-8 xl:px-20 xl:py-3`}
 			>
-				<Link href="/home">Home</Link> {">"} <span aria-current="page">Shop All Products</span>
+				<Link href="/home" className="wv-link wv-crumb-link">
+					<Home aria-hidden className="size-3.5" strokeWidth={2.25} />
+					Home
+				</Link>
+				<ChevronRight aria-hidden className="wv-crumb-sep size-3.5" strokeWidth={2.5} />
+				<span aria-current="page" className="wv-crumb-current">
+					Shop All Products
+				</span>
 			</nav>
 
 			{/* Hero */}
