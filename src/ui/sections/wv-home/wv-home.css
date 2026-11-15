@@ -404,3 +404,122 @@ body.wv-motion h1.wv-hero-title {
 		transform: none;
 	}
 }
+
+/* Mobile menu (wv-menu-client.tsx): a glass sheet floating over the page (a nebula glow in two corners, a neon edge
+ * along the bottom and a deep shadow under it), each link a lit row with a neon chevron, the page you're on lit pink with
+ * a bar down its edge, and the icons as neon tiles big enough to tap (44px). */
+.wv-menu-glass {
+	background:
+		radial-gradient(
+			120% 70% at 100% 0%,
+			color-mix(in srgb, var(--wv-pink) 16%, transparent),
+			transparent 60%
+		),
+		radial-gradient(
+			110% 60% at 0% 100%,
+			color-mix(in srgb, var(--wv-cyan) 12%, transparent),
+			transparent 60%
+		),
+		linear-gradient(180deg, var(--wv-header), color-mix(in srgb, var(--wv-header) 55%, var(--wv-bg)));
+	border-bottom: 1px solid var(--wv-cyan);
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 7%, transparent),
+		0 0 16px color-mix(in srgb, var(--wv-cyan) 40%, transparent),
+		0 28px 40px -8px color-mix(in srgb, var(--wv-bg) 92%, transparent);
+}
+.wv-menu-link {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 11px 14px 11px 18px;
+	border: 1px solid color-mix(in srgb, var(--wv-cyan) 22%, transparent);
+	border-radius: 12px;
+	font-size: 16px;
+	letter-spacing: 1.5px;
+	color: white;
+	text-shadow:
+		0 0 10px color-mix(in srgb, var(--wv-cyan) 55%, transparent),
+		0 1px 1px var(--wv-ink);
+	background: linear-gradient(
+		90deg,
+		color-mix(in srgb, var(--wv-cyan) 10%, transparent),
+		color-mix(in srgb, var(--wv-purple) 8%, transparent) 70%,
+		transparent
+	);
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 7%, transparent),
+		0 3px 10px color-mix(in srgb, var(--wv-bg) 75%, transparent);
+}
+.wv-menu-chevron {
+	color: var(--wv-cyan);
+	filter: drop-shadow(0 0 4px color-mix(in srgb, var(--wv-cyan) 80%, transparent));
+}
+.wv-menu-link:is(:hover, :focus-visible, :active) {
+	border-color: color-mix(in srgb, var(--wv-cyan) 75%, transparent);
+	box-shadow:
+		0 0 14px color-mix(in srgb, var(--wv-cyan) 38%, transparent),
+		inset 0 0 14px color-mix(in srgb, var(--wv-cyan) 16%, transparent);
+}
+.wv-menu-link:focus-visible {
+	outline: 2px solid var(--wv-cyan);
+	outline-offset: 2px;
+}
+/* The page you're on: lit pink, with a neon bar down its left edge. */
+.wv-menu-link[aria-current="page"] {
+	border-color: color-mix(in srgb, var(--wv-pink) 75%, transparent);
+	background: linear-gradient(
+		90deg,
+		color-mix(in srgb, var(--wv-pink) 30%, transparent),
+		color-mix(in srgb, var(--wv-purple) 22%, transparent) 65%,
+		transparent
+	);
+	text-shadow:
+		0 0 10px color-mix(in srgb, var(--wv-pink) 75%, transparent),
+		0 1px 1px var(--wv-ink);
+	box-shadow:
+		0 0 16px color-mix(in srgb, var(--wv-pink) 42%, transparent),
+		inset 0 1px 0 color-mix(in srgb, white 10%, transparent);
+}
+.wv-menu-link[aria-current="page"]::before {
+	content: "";
+	position: absolute;
+	left: 7px;
+	top: 10px;
+	bottom: 10px;
+	width: 3px;
+	border-radius: 2px;
+	background: linear-gradient(var(--wv-cyan), var(--wv-pink));
+	box-shadow: 0 0 8px var(--wv-pink);
+}
+.wv-menu-link[aria-current="page"] .wv-menu-chevron {
+	color: var(--wv-pink);
+	filter: drop-shadow(0 0 4px var(--wv-pink));
+}
+/* The icons: glass inside a cyan-to-pink edge, glowing. (Styled from here so the shared wishlist link needs no change.) */
+.wv-menu-icons > a {
+	width: 44px;
+	height: 44px;
+	border: 1.5px solid transparent;
+	border-radius: 12px;
+	background:
+		linear-gradient(180deg, color-mix(in srgb, var(--wv-purple) 24%, var(--wv-header)), var(--wv-header))
+			padding-box,
+		linear-gradient(135deg, var(--wv-cyan), var(--wv-pink)) border-box;
+	box-shadow:
+		0 0 12px color-mix(in srgb, var(--wv-cyan) 30%, transparent),
+		inset 0 1px 0 color-mix(in srgb, white 12%, transparent);
+	color: var(--wv-cyan);
+}
+.wv-menu-icons > a svg {
+	width: 20px;
+	height: 20px;
+	filter: drop-shadow(0 0 4px color-mix(in srgb, var(--wv-cyan) 85%, transparent));
+}
+@media (prefers-reduced-motion: no-preference) {
+	.wv-menu-link {
+		transition:
+			border-color 180ms ease,
+			box-shadow 180ms ease;
+	}
+}
