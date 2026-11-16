@@ -82,12 +82,20 @@ const TRUST = [
 
 const FAQS = [
 	{
-		q: "What security compliance do you use?",
+		// Each claim here is what the checkout actually does, so keep it in step with the code: the card form sends the card
+		// straight to Authorize.net through Accept.js and only a one-time token reaches our servers (wvpay/accept-js.ts);
+		// Authorize.net is a PCI DSS Level 1 service provider; the billing name and ZIP go with the payment for the
+		// processor's checks (wvpay-payment.tsx); a fraud-review hold is not taken as paid (payments-app/handlers.ts).
+		q: "How do you keep my payment secure?",
 		a: (
 			<>
-				We utilize <strong className="wv-hero-key">level 1 PCI-DSS compliant processing</strong> along with{" "}
-				<strong className="wv-hero-key wv-hero-key--pink">automated fraud protection filters</strong> to
-				ensure fully verified, highly encrypted transactional pipelines.
+				Card details go from your browser straight to our card processor, which is certified to{" "}
+				<strong className="wv-hero-key">PCI DSS Level 1</strong>, the card industry&apos;s highest security
+				standard. There they are swapped for a one-time token, so your card number{" "}
+				<strong className="wv-hero-key wv-hero-key--pink">never reaches or is stored on our servers</strong>.
+				Your billing name and ZIP or postal code go with the payment so the processor can check them against
+				your card, and a payment it flags is held for review instead of going through. Every page, checkout
+				included, is served over an <strong className="wv-hero-key">encrypted HTTPS connection</strong>.
 			</>
 		),
 	},
