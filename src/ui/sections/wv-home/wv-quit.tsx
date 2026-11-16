@@ -1,5 +1,6 @@
 "use client";
 
+import { HeartPulse } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { saveQuitPlan } from "@/app/(root)/quit/actions";
@@ -178,11 +179,22 @@ export function WvQuit({ account }: { account: QuitAccountState }) {
 
 	return (
 		<div className={`${inter} min-h-dvh overflow-x-clip bg-[var(--qp-bg)] pb-10 text-[var(--qp-text)]`}>
-			{/* The site menu sits above (see the page); this bar is the quit program's own, and stays in view while scrolling. */}
-			<header className="bg-[var(--qp-bg)]/90 sticky top-0 z-20 border-b border-[var(--qp-border)] px-4 py-2.5 backdrop-blur-[9px] md:px-7">
+			{/* The site menu sits above (see the page); this bar is the quit program's own, and stays in view while scrolling.
+			    It is lit glass like the site header (`.wv-quit-bar` in wv-home.css): cyan and pink glows at its ends and a
+			    glowing neon edge along its foot. The program's mark leads it, a heart-pulse beating gently in a neon ring,
+			    then the title in cyan-to-pink neon lettering; the quick links and "Start Over" are glowing glass. */}
+			<header className="wv-quit-bar sticky top-0 z-20 px-4 py-2.5 backdrop-blur-[9px] md:px-7">
 				<div className="mx-auto flex max-w-[1200px] flex-wrap items-center justify-between gap-x-4 gap-y-2">
-					<span className="bg-gradient-to-r from-[var(--qp-primary)] to-[var(--qp-secondary)] bg-clip-text text-base font-black tracking-[-0.01em] text-transparent">
-						Quit Nicotine
+					<span className="flex items-center gap-2.5">
+						<span
+							aria-hidden
+							className="wv-quit-mark flex size-8 shrink-0 items-center justify-center rounded-full md:size-9"
+						>
+							<HeartPulse className="size-4 md:size-[18px]" strokeWidth={2.25} />
+						</span>
+						<span className="wv-quit-title text-base font-black tracking-[-0.01em] md:text-lg">
+							Quit Nicotine
+						</span>
 					</span>
 					{data?.setup && (
 						<nav
@@ -193,7 +205,7 @@ export function WvQuit({ account }: { account: QuitAccountState }) {
 								<a
 									key={section.id}
 									href={`#${section.id}`}
-									className="hover:border-[var(--qp-primary)]/60 shrink-0 rounded-full border border-[var(--qp-border)] bg-[var(--qp-field)] px-3.5 py-1.5 text-xs font-bold text-[var(--qp-muted)] hover:text-[var(--qp-text)]"
+									className="wv-quit-link shrink-0 rounded-full px-3.5 py-1.5 text-xs font-bold"
 								>
 									{section.label}
 								</a>
@@ -202,7 +214,7 @@ export function WvQuit({ account }: { account: QuitAccountState }) {
 					)}
 					{data?.setup && (
 						<div className="flex gap-2">
-							<button type="button" onClick={restart} className={ghostBtn}>
+							<button type="button" onClick={restart} className={`${ghostBtn} wv-quit-ghost`}>
 								Start Over
 							</button>
 							<a href="#quick-log" className={primaryBtn}>

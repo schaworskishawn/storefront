@@ -841,6 +841,132 @@ body.wv-motion .wv-nav-link[aria-current="page"]:is(:hover, :focus-visible) {
 	text-shadow: 0 1px 0 color-mix(in srgb, white 45%, transparent);
 }
 
+/* The Quit Nicotine page's own sticky bar (wv-quit.tsx), under the site header. Lit glass like the header: a cyan glow
+ * at its left end and a pink one at its right over a hint of purple (it also blurs what scrolls under it), and a neon
+ * edge along its foot running cyan into pink that glows. The program's mark leads it: a heart-pulse in a neon ring (glass
+ * inside a cyan-to-pink edge that glows), beating gently when motion is allowed; then the title in cyan-to-pink neon
+ * lettering, lifted with a dark edge and a glow. Once there's a plan, its quick links are glass pills inside a soft
+ * neon edge that glow under the pointer, and "Start Over" gets the same neon edge. */
+.wv-quit-bar {
+	background:
+		radial-gradient(40% 180% at 0% 50%, color-mix(in srgb, var(--wv-cyan) 12%, transparent), transparent 70%),
+		radial-gradient(
+			40% 180% at 100% 50%,
+			color-mix(in srgb, var(--wv-pink) 14%, transparent),
+			transparent 70%
+		),
+		linear-gradient(
+			180deg,
+			color-mix(in srgb, var(--wv-purple) 16%, var(--qp-bg)),
+			color-mix(in srgb, var(--qp-bg) 88%, transparent)
+		);
+	box-shadow: 0 12px 24px -12px var(--wv-bg);
+}
+.wv-quit-bar::after {
+	content: "";
+	position: absolute;
+	inset: auto 0 -1px;
+	height: 1.5px;
+	pointer-events: none;
+	background: linear-gradient(
+		90deg,
+		transparent,
+		var(--wv-cyan) 18%,
+		var(--wv-purple) 50%,
+		var(--wv-pink) 82%,
+		transparent
+	);
+	box-shadow:
+		0 0 10px color-mix(in srgb, var(--wv-cyan) 55%, transparent),
+		0 0 16px color-mix(in srgb, var(--wv-pink) 40%, transparent);
+}
+.wv-quit-mark {
+	color: var(--wv-pink);
+	border: 1.5px solid transparent;
+	background:
+		radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--wv-pink) 26%, transparent), transparent 70%)
+			padding-box,
+		linear-gradient(180deg, color-mix(in srgb, var(--wv-pink) 14%, var(--wv-control)), var(--wv-bg))
+			padding-box,
+		linear-gradient(135deg, var(--wv-cyan), var(--wv-pink)) border-box;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 22%, transparent),
+		0 0 12px color-mix(in srgb, var(--wv-pink) 45%, transparent);
+}
+.wv-quit-mark svg {
+	filter: drop-shadow(0 0 4px color-mix(in srgb, var(--wv-pink) 90%, transparent));
+}
+.wv-quit-title {
+	background: linear-gradient(
+		90deg,
+		var(--wv-cyan-soft),
+		color-mix(in srgb, var(--wv-cyan-soft) 45%, var(--wv-pink)),
+		var(--wv-pink)
+	);
+	-webkit-background-clip: text;
+	background-clip: text;
+	color: transparent;
+	filter: drop-shadow(0 1.5px 0 var(--wv-ink))
+		drop-shadow(0 0 8px color-mix(in srgb, var(--wv-cyan) 40%, transparent))
+		drop-shadow(0 0 10px color-mix(in srgb, var(--wv-pink) 30%, transparent));
+}
+.wv-quit-link,
+.wv-quit-ghost {
+	border: 1px solid transparent;
+	background:
+		linear-gradient(180deg, color-mix(in srgb, var(--wv-purple) 20%, var(--qp-field)), var(--qp-field))
+			padding-box,
+		linear-gradient(
+				135deg,
+				color-mix(in srgb, var(--wv-cyan) 70%, transparent),
+				color-mix(in srgb, var(--wv-purple) 70%, transparent) 55%,
+				color-mix(in srgb, var(--wv-pink) 70%, transparent)
+			)
+			border-box;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 10%, transparent),
+		0 0 10px color-mix(in srgb, var(--wv-purple) 45%, transparent);
+	transition:
+		box-shadow 180ms ease,
+		color 180ms ease;
+}
+.wv-quit-link {
+	color: color-mix(in srgb, white 80%, var(--qp-muted));
+	text-shadow: 0 1px 1px var(--wv-ink);
+}
+.wv-quit-link:is(:hover, :focus-visible),
+.wv-quit-ghost:is(:hover, :focus-visible) {
+	color: white;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 16%, transparent),
+		0 0 14px color-mix(in srgb, var(--wv-cyan) 45%, transparent),
+		0 0 22px -6px color-mix(in srgb, var(--wv-pink) 50%, transparent);
+	text-shadow:
+		0 1px 1px var(--wv-ink),
+		0 0 8px color-mix(in srgb, var(--wv-cyan) 60%, transparent);
+}
+@media (prefers-reduced-motion: no-preference) {
+	body.wv-motion .wv-quit-mark svg {
+		animation: wv-quit-beat 2.4s ease-in-out infinite;
+	}
+}
+@keyframes wv-quit-beat {
+	0%,
+	40%,
+	100% {
+		transform: scale(1);
+	}
+	12% {
+		transform: scale(1.14);
+	}
+	24% {
+		transform: scale(1.04);
+	}
+	32% {
+		transform: scale(1.1);
+	}
+}
+
 /* Footer link columns (WvFooter in wv-chrome.tsx): each heading is lifted with a dark edge, a purple one beneath and a
  * cyan glow, over a short glowing cyan-to-pink bar; the links are brighter than the old grey with a dark edge, and glow
  * cyan under the pointer (motion.css still turns them cyan and nudges them right). */
