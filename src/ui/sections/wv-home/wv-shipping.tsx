@@ -69,7 +69,14 @@ const PERKS = [
 const INFO = [
 	{
 		q: "Processing Times & Order Cut-offs",
-		a: "Orders received before 2PM EST Monday through Friday are processed and handed over to our verified carriers on the same business day. Delivery tracking triggers automatically.",
+		a: (
+			<>
+				Orders received before <strong className="wv-hero-key">2PM EST</strong> Monday through Friday are
+				processed and handed over to our verified carriers on the{" "}
+				<strong className="wv-hero-key wv-hero-key--pink">same business day</strong>. Delivery tracking
+				triggers automatically.
+			</>
+		),
 	},
 	{ q: "Address Limitations & PO Boxes" },
 	{ q: "International Customs & Compliance" },
@@ -79,30 +86,62 @@ const INFO = [
 const PENDING_ANSWER =
 	"Details for this answer are coming soon. Contact support@worldwidevapor.com in the meantime.";
 
+// Each answer's key phrase is lit (`.wv-hero-key`, cyan or pink), as in the shipping information above.
 const FAQS = [
 	{
 		q: "How long does standard shipping take?",
-		a: "Standard shipping takes 3-5 business days once processed by our fulfillment center.",
+		a: (
+			<>
+				Standard shipping takes <strong className="wv-hero-key">3-5 business days</strong> once processed by
+				our fulfillment center.
+			</>
+		),
 	},
 	{
 		q: "What happens if my package is delayed?",
-		a: "Please contact our customer support with your tracking number, and we will immediately open a trace with the carrier.",
+		a: (
+			<>
+				Please contact our customer support with your <strong className="wv-hero-key">tracking number</strong>
+				, and we will immediately{" "}
+				<strong className="wv-hero-key wv-hero-key--pink">open a trace with the carrier</strong>.
+			</>
+		),
 	},
 	{
 		q: "Can I track my order?",
-		a: "Yes, you will receive a tracking link via email as soon as your order ships from our warehouse.",
+		a: (
+			<>
+				Yes, you will receive a <strong className="wv-hero-key">tracking link</strong> via email as soon as
+				your order ships from our warehouse.
+			</>
+		),
 	},
 	{
 		q: "Will my package be discreet?",
-		a: "Absolutely. All packages ship in plain brown boxes or envelopes with completely neutral labeling.",
+		a: (
+			<>
+				Absolutely. All packages ship in plain brown boxes or envelopes with{" "}
+				<strong className="wv-hero-key wv-hero-key--pink">completely neutral labeling</strong>.
+			</>
+		),
 	},
 	{
 		q: "Do you ship internationally?",
-		a: "Yes, we ship to most major global destinations subject to local custom import regulations.",
+		a: (
+			<>
+				Yes, we ship to <strong className="wv-hero-key">most major global destinations</strong> subject to
+				local custom import regulations.
+			</>
+		),
 	},
 	{
 		q: "Who pays for custom duties or import taxes?",
-		a: "The recipient is responsible for all local import charges and VAT duties assessed by customs.",
+		a: (
+			<>
+				The <strong className="wv-hero-key wv-hero-key--pink">recipient</strong> is responsible for all local
+				import charges and VAT duties assessed by customs.
+			</>
+		),
 	},
 ];
 
@@ -282,50 +321,53 @@ export function WvShipping() {
 			</section>
 			<Divider />
 
-			{/* Info + newsletter */}
+			{/* Info + newsletter. The heading is solid 3D lettering over a glowing bar, like the site's other section
+			    headings (`.wv-heading-*`); each answer is a glassy neon panel, pink while closed and glowing cyan when open,
+			    with its +/− in a neon ring and its title lifted; the newsletter is a lit glass card with a glowing input and
+			    a glossy button (`.wv-info-*` and `.wv-news-card` in wv-home.css). */}
 			<section className="flex flex-col gap-8 px-5 py-8 md:px-10 md:py-10 xl:flex-row xl:items-start xl:gap-12 xl:p-20">
 				<div className="flex min-w-0 flex-1 flex-col gap-4 xl:gap-6">
 					<div className="flex flex-col gap-2">
-						<p className={`${marker} text-lg text-[var(--wv-pink)] md:text-xl`}>LOGISTICS DETAIL</p>
-						<h2 className={`${bungee} text-2xl md:text-[28px] xl:text-[32px]`}>SHIPPING INFORMATION</h2>
+						<p className={`${marker} wv-heading-eyebrow text-lg text-[var(--wv-pink)] md:text-xl`}>
+							LOGISTICS DETAIL
+						</p>
+						<h2 className={`${bungee} wv-heading-title text-2xl text-white md:text-[28px] xl:text-[32px]`}>
+							SHIPPING INFORMATION
+						</h2>
+						<div className="wv-heading-bar mt-1 h-[3px] w-20 rounded-full bg-[var(--wv-cyan-soft)]" />
 					</div>
 					<div className="flex flex-col gap-3 xl:gap-4">
 						{INFO.map((f, i) => (
-							<details
-								key={f.q}
-								open={i === 0}
-								className="group rounded-xl border border-[var(--wv-pink)] bg-[var(--wv-control)] p-4 open:border-[var(--wv-cyan-soft)]"
-							>
+							<details key={f.q} open={i === 0} className="wv-info-item group rounded-xl p-4">
 								<summary
-									className={`${heyComic} flex cursor-pointer list-none items-center justify-between gap-4 text-[15px] [&::-webkit-details-marker]:hidden`}
+									className={`${heyComic} wv-trust-title flex cursor-pointer list-none items-center justify-between gap-4 text-[15px] [&::-webkit-details-marker]:hidden`}
 								>
 									{f.q}
-									<span
-										aria-hidden
-										className="font-mono text-base text-[var(--wv-pink)] group-open:text-[var(--wv-cyan-soft)]"
-									>
+									<span aria-hidden className="wv-info-toggle font-mono text-base">
 										<span className="group-open:hidden">+</span>
 										<span className="hidden group-open:inline">−</span>
 									</span>
 								</summary>
-								<p className={`${orbitron} mt-3 text-[13px] leading-[1.5] text-[var(--wv-text-dim)]`}>
+								<p className={`${orbitron} wv-trust-text mt-3 text-[13px] leading-[1.5]`}>
 									{f.a ?? PENDING_ANSWER}
 								</p>
 							</details>
 						))}
 					</div>
 				</div>
-				<div className="flex w-full shrink-0 flex-col gap-6 rounded-[20px] border border-[var(--wv-cyan-soft)] bg-[var(--wv-control)] p-6 shadow-[0_0_12px_rgba(241,121,251,0.06)] md:gap-8 md:p-10 xl:w-[480px]">
+				<div className="wv-news-card flex w-full shrink-0 flex-col gap-6 rounded-[20px] p-6 md:gap-8 md:p-10 xl:w-[480px]">
 					<div className="flex flex-col gap-3">
 						<p
-							className={`${marker} text-sm uppercase tracking-[1px] text-[var(--wv-pink)] md:text-base xl:text-lg`}
+							className={`${marker} wv-heading-eyebrow text-sm uppercase tracking-[1px] text-[var(--wv-pink)] md:text-base xl:text-lg`}
 						>
 							EXCLUSIVE DEALS &amp; NEW ARRIVALS
 						</p>
-						<h2 className={`${heyComic} text-xl leading-tight md:text-2xl xl:text-[28px] xl:leading-[34px]`}>
+						<h2
+							className={`${heyComic} wv-heading-title text-xl leading-tight text-white md:text-2xl xl:text-[28px] xl:leading-[34px]`}
+						>
 							STAY CONNECTED
 						</h2>
-						<p className={`${orbitron} text-[13px] leading-[1.5] text-[var(--wv-text-dim)]`}>
+						<p className={`${orbitron} wv-hero-copy text-[13px] leading-[1.5]`}>
 							Register your warehouse directly and secure alerts on fresh tier discounts, regulatory
 							announcements, and active inventory.
 						</p>
@@ -335,31 +377,26 @@ export function WvShipping() {
 			</section>
 			<Divider />
 
-			{/* FAQ */}
+			{/* FAQ: the same glassy neon answer panels as the shipping information (`.wv-info-*`: cyan while open, pink
+			    once closed, the +/− in a neon ring, the title lifted), over a soft pink and cyan glow (`.wv-faq-glow`). */}
 			<section
 				id="faqs"
-				className="flex flex-col items-center gap-8 px-5 py-12 md:px-16 md:py-16 xl:gap-12 xl:p-20"
+				className="wv-faq-glow flex flex-col items-center gap-8 px-5 py-12 md:px-16 md:py-16 xl:gap-12 xl:p-20"
 			>
 				<Heading eyebrow="QUESTIONS" title="SHIPPING FAQS" />
 				<div className="grid w-full max-w-[1280px] grid-cols-1 gap-3 md:gap-4 xl:grid-cols-2 xl:gap-x-5">
 					{FAQS.map((f) => (
-						<details
-							key={f.q}
-							open
-							className="group h-fit rounded-xl border border-[var(--wv-cyan-soft)] bg-[var(--wv-control)] p-4 md:p-5"
-						>
+						<details key={f.q} open className="wv-info-item group h-fit rounded-xl p-4 md:p-5">
 							<summary
-								className={`${heyComic} flex cursor-pointer list-none items-center justify-between gap-4 text-[15px] [&::-webkit-details-marker]:hidden`}
+								className={`${heyComic} wv-trust-title flex cursor-pointer list-none items-center justify-between gap-4 text-[15px] [&::-webkit-details-marker]:hidden`}
 							>
 								{f.q}
-								<span aria-hidden className="font-mono text-base text-[var(--wv-cyan-soft)]">
+								<span aria-hidden className="wv-info-toggle font-mono text-base">
 									<span className="group-open:hidden">+</span>
 									<span className="hidden group-open:inline">−</span>
 								</span>
 							</summary>
-							<p className={`${orbitron} mt-[10px] text-[13px] leading-[1.5] text-[var(--wv-text-dim)]`}>
-								{f.a}
-							</p>
+							<p className={`${orbitron} wv-trust-text mt-[10px] text-[13px] leading-[1.5]`}>{f.a}</p>
 						</details>
 					))}
 				</div>
