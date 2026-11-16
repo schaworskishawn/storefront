@@ -232,6 +232,84 @@ body.wv-motion h1.wv-hero-title {
 	text-shadow: 0 1px 1px var(--wv-ink);
 }
 
+/* Lit glass bands: the shipping page's perks (its items styled as a trust strip, above) and the payments page's "proudly
+ * accepting" strip. A cyan glow at the left end and a pink one at the right over a hint of purple, top and bottom edges
+ * that are neon lines running cyan into pink and glowing inward; the title (chrome, .wv-hero-tagline) set between two
+ * glowing neon dashes. */
+.wv-band {
+	background:
+		radial-gradient(40% 130% at 0% 50%, color-mix(in srgb, var(--wv-cyan) 11%, transparent), transparent 70%),
+		radial-gradient(
+			40% 130% at 100% 50%,
+			color-mix(in srgb, var(--wv-pink) 13%, transparent),
+			transparent 70%
+		),
+		linear-gradient(180deg, color-mix(in srgb, var(--wv-purple) 16%, var(--wv-ink)), var(--wv-ink) 70%);
+	border-block: 1px solid transparent;
+	border-image: linear-gradient(
+			90deg,
+			color-mix(in srgb, var(--wv-cyan) 30%, transparent),
+			var(--wv-cyan) 30%,
+			var(--wv-pink) 70%,
+			color-mix(in srgb, var(--wv-pink) 30%, transparent)
+		)
+		1;
+	box-shadow:
+		inset 0 12px 18px -14px color-mix(in srgb, var(--wv-cyan) 55%, transparent),
+		inset 0 -12px 18px -14px color-mix(in srgb, var(--wv-pink) 55%, transparent);
+}
+.wv-band-dash {
+	flex: none;
+	width: 36px;
+	height: 2px;
+	border-radius: 1px;
+	background: linear-gradient(90deg, transparent, var(--wv-pink));
+	box-shadow: 0 0 8px color-mix(in srgb, var(--wv-pink) 70%, transparent);
+}
+.wv-band-dash--end {
+	background: linear-gradient(90deg, var(--wv-cyan), transparent);
+	box-shadow: 0 0 8px color-mix(in srgb, var(--wv-cyan) 70%, transparent);
+}
+/* The payments strip's chips, one for each way to pay, alternating cyan and pink: a glass pill inside a gradient edge that
+ * glows, its icon in a glowing neon ring (.wv-trust-icon) and its label lifted (.wv-trust-title). Under the pointer a
+ * chip lifts and glows brighter (no movement for reduced motion). */
+.wv-pay-chip {
+	--accent: var(--wv-cyan-soft);
+	border: 1.5px solid transparent;
+	background:
+		linear-gradient(180deg, color-mix(in srgb, var(--accent) 14%, var(--wv-control)), var(--wv-control))
+			padding-box,
+		linear-gradient(
+				135deg,
+				var(--accent),
+				color-mix(in srgb, var(--wv-purple) 70%, transparent) 60%,
+				color-mix(in srgb, var(--accent) 50%, transparent)
+			)
+			border-box;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 12%, transparent),
+		0 0 12px color-mix(in srgb, var(--accent) 30%, transparent);
+	transition:
+		transform 200ms ease,
+		box-shadow 200ms ease;
+}
+.wv-pay-chip:nth-child(even) {
+	--accent: var(--wv-pink);
+}
+@media (hover: hover) {
+	.wv-pay-chip:hover {
+		transform: translateY(-2px);
+		box-shadow:
+			inset 0 1px 0 color-mix(in srgb, white 18%, transparent),
+			0 0 20px color-mix(in srgb, var(--accent) 55%, transparent);
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.wv-pay-chip:hover {
+		transform: none;
+	}
+}
+
 /* The site header (wv-chrome.tsx): a glass bar with a nebula glow at each end, a neon edge along its foot that lights the
  * top of the page and a shadow cast onto it; the wordmark glows; the links glow, the page you're on lit pink and
  * underlined in neon (wv-nav-client.tsx); and the icons are neon tiles, glass inside a cyan-to-pink edge. */
