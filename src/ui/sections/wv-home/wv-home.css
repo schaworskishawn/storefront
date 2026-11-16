@@ -530,6 +530,12 @@ body.wv-motion .wv-nav-link[aria-current="page"]:is(:hover, :focus-visible) {
 	text-shadow: 0 0 6px var(--accent);
 	line-height: 1;
 }
+/* The FAQ section below uses the same panels, set over a soft glow: pink up by the heading, cyan lower down. */
+.wv-faq-glow {
+	background:
+		radial-gradient(45% 30% at 50% 6%, color-mix(in srgb, var(--wv-pink) 11%, transparent), transparent 70%),
+		radial-gradient(60% 45% at 50% 70%, color-mix(in srgb, var(--wv-cyan) 7%, transparent), transparent 70%);
+}
 
 /* The newsletter card beside them: lit glass (a pink glow in its top corner and a cyan one in the bottom, over a hint
  * of purple) inside a cyan-through-purple-to-pink edge that glows cyan and pink and casts a shadow; the email field is

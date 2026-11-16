@@ -65,30 +65,62 @@ const INFO = [
 const PENDING_ANSWER =
 	"Details for this answer are coming soon. Contact support@worldwidevapor.com in the meantime.";
 
+// Each answer's key phrase is lit (`.wv-hero-key`, cyan or pink), as in the shipping information above.
 const FAQS = [
 	{
 		q: "How long does standard shipping take?",
-		a: "Standard shipping takes 3-5 business days once processed by our fulfillment center.",
+		a: (
+			<>
+				Standard shipping takes <strong className="wv-hero-key">3-5 business days</strong> once processed by
+				our fulfillment center.
+			</>
+		),
 	},
 	{
 		q: "What happens if my package is delayed?",
-		a: "Please contact our customer support with your tracking number, and we will immediately open a trace with the carrier.",
+		a: (
+			<>
+				Please contact our customer support with your <strong className="wv-hero-key">tracking number</strong>
+				, and we will immediately{" "}
+				<strong className="wv-hero-key wv-hero-key--pink">open a trace with the carrier</strong>.
+			</>
+		),
 	},
 	{
 		q: "Can I track my order?",
-		a: "Yes, you will receive a tracking link via email as soon as your order ships from our warehouse.",
+		a: (
+			<>
+				Yes, you will receive a <strong className="wv-hero-key">tracking link</strong> via email as soon as
+				your order ships from our warehouse.
+			</>
+		),
 	},
 	{
 		q: "Will my package be discreet?",
-		a: "Absolutely. All packages ship in plain brown boxes or envelopes with completely neutral labeling.",
+		a: (
+			<>
+				Absolutely. All packages ship in plain brown boxes or envelopes with{" "}
+				<strong className="wv-hero-key wv-hero-key--pink">completely neutral labeling</strong>.
+			</>
+		),
 	},
 	{
 		q: "Do you ship internationally?",
-		a: "Yes, we ship to most major global destinations subject to local custom import regulations.",
+		a: (
+			<>
+				Yes, we ship to <strong className="wv-hero-key">most major global destinations</strong> subject to
+				local custom import regulations.
+			</>
+		),
 	},
 	{
 		q: "Who pays for custom duties or import taxes?",
-		a: "The recipient is responsible for all local import charges and VAT duties assessed by customs.",
+		a: (
+			<>
+				The <strong className="wv-hero-key wv-hero-key--pink">recipient</strong> is responsible for all local
+				import charges and VAT duties assessed by customs.
+			</>
+		),
 	},
 ];
 
@@ -309,31 +341,26 @@ export function WvShipping() {
 			</section>
 			<Divider />
 
-			{/* FAQ */}
+			{/* FAQ: the same glassy neon answer panels as the shipping information (`.wv-info-*`: cyan while open, pink
+			    once closed, the +/− in a neon ring, the title lifted), over a soft pink and cyan glow (`.wv-faq-glow`). */}
 			<section
 				id="faqs"
-				className="flex flex-col items-center gap-8 px-5 py-12 md:px-16 md:py-16 xl:gap-12 xl:p-20"
+				className="wv-faq-glow flex flex-col items-center gap-8 px-5 py-12 md:px-16 md:py-16 xl:gap-12 xl:p-20"
 			>
 				<Heading eyebrow="QUESTIONS" title="SHIPPING FAQS" />
 				<div className="grid w-full max-w-[1280px] grid-cols-1 gap-3 md:gap-4 xl:grid-cols-2 xl:gap-x-5">
 					{FAQS.map((f) => (
-						<details
-							key={f.q}
-							open
-							className="group h-fit rounded-xl border border-[var(--wv-cyan-soft)] bg-[var(--wv-control)] p-4 md:p-5"
-						>
+						<details key={f.q} open className="wv-info-item group h-fit rounded-xl p-4 md:p-5">
 							<summary
-								className={`${heyComic} flex cursor-pointer list-none items-center justify-between gap-4 text-[15px] [&::-webkit-details-marker]:hidden`}
+								className={`${heyComic} wv-trust-title flex cursor-pointer list-none items-center justify-between gap-4 text-[15px] [&::-webkit-details-marker]:hidden`}
 							>
 								{f.q}
-								<span aria-hidden className="font-mono text-base text-[var(--wv-cyan-soft)]">
+								<span aria-hidden className="wv-info-toggle font-mono text-base">
 									<span className="group-open:hidden">+</span>
 									<span className="hidden group-open:inline">−</span>
 								</span>
 							</summary>
-							<p className={`${orbitron} mt-[10px] text-[13px] leading-[1.5] text-[var(--wv-text-dim)]`}>
-								{f.a}
-							</p>
+							<p className={`${orbitron} wv-trust-text mt-[10px] text-[13px] leading-[1.5]`}>{f.a}</p>
 						</details>
 					))}
 				</div>
