@@ -76,10 +76,10 @@ export function LearnBrowser({ articles }: { articles: LearnArticleSummary[] }) 
 	return (
 		<>
 			{/* Hero, in the neon style of the site's other heroes: a pink and cyan glow behind it (`.wv-hero-backdrop`), a 3D
-			    two-tone title over a glowing bar and brighter copy with its key words lit (`.wv-hero-*`), the Learn categories
-			    as a neon lineup on a synthwave grid in a glowing frame (wv-learn-hero-art.tsx, in place of the "vape tech
-			    mockup" placeholder), and a neon glass search field (`.wv-search-field`). The frame keeps a set shape at each
-			    size (a wide banner up to the desktop layout, then 3:2) so the lineup is never cropped. */}
+			    two-tone title over a glowing bar and brighter copy with its key words lit (`.wv-hero-*`), a neon library in a
+			    glowing frame (wv-learn-hero-art.tsx, in place of the "vape tech mockup" placeholder), and a neon glass search
+			    field (`.wv-search-field`). The frame keeps a set shape at each size (a wide banner up to the desktop layout,
+			    then 3:2), so the art's middle band, the book and its cards, is always in view. */}
 			<section className="wv-hero-backdrop grid gap-5 px-5 py-8 md:gap-6 md:px-8 md:py-10 xl:grid-cols-[680px_420px] xl:justify-between xl:gap-x-12 xl:gap-y-6 xl:px-20 xl:py-16">
 				<div className="flex flex-col gap-4 xl:col-start-1 xl:row-start-1 xl:gap-6">
 					<div className="flex flex-col gap-3">
