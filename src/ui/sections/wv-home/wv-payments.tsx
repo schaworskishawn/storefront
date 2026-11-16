@@ -4,6 +4,8 @@ import Link from "next/link";
 import { WvFooter, WvHeader } from "./wv-chrome";
 import { CardNewsletterForm } from "./wv-newsletter-client";
 import "./wv-home.css";
+import { describePayIn4 } from "./wv-payments-copy";
+import { readInstallmentConfig } from "@/lib/installments/plan";
 import { describeProgram } from "@/lib/rewards/program-copy";
 import { readRewardsConfig } from "@/lib/rewards/tokens";
 
@@ -52,12 +54,12 @@ const METHODS: Method[] = [
 		title: "Gift Cards",
 		text: "Redeem a gift card at checkout and use it across several orders until the balance runs out, or give one to a friend.",
 	},
-	{
-		icon: "🗓️",
-		title: "Buy Now Pay Later",
-		text: "Tier options enabling custom payment plans and split credit rates for bulk distributions.",
-	},
 ];
+
+/** Pay in 4, listed only while it can be used (`describePayIn4` is null otherwise), worded from its settings. */
+function payIn4Method(text: string | null): Method[] {
+	return text ? [{ icon: "🗓️", title: "Buy Now Pay Later", text }] : [];
+}
 
 /** The rewards program, listed with the other ways to pay only while it is switched on, worded from its live settings. */
 function vaporTokensMethod(): Method[] {
@@ -73,40 +75,109 @@ function vaporTokensMethod(): Method[] {
 	];
 }
 
+// Only what the checkout actually does (see the security answer in paymentFaqs below): cards go straight to the
+// processor; a card payment is approved or declined while the shopper waits; the ways to pay are the ones listed on this
+// page (no digital wallets: Apple Pay and Google Pay don't allow vape sales); support is the support@ inbox, which is
+// forwarded and read.
 const TRUST = [
-	{ icon: "🛡️", title: "100% Secure Payments", text: "AES-256 bank-level encryption standard." },
-	{ icon: "⚡", title: "Fast & Reliable", text: "Immediate order updates and validation." },
-	{ icon: "🌀", title: "Multiple Options", text: "Traditional cards, digital wallets & crypto." },
-	{ icon: "📞", title: "24/7 Priority Support", text: "Direct response line for all transaction logs." },
-];
-
-const FAQS = [
 	{
-		// Each claim here is what the checkout actually does, so keep it in step with the code: the card form sends the card
-		// straight to Authorize.net through Accept.js and only a one-time token reaches our servers (wvpay/accept-js.ts);
-		// Authorize.net is a PCI DSS Level 1 service provider; the billing name and ZIP go with the payment for the
-		// processor's checks (wvpay-payment.tsx); a fraud-review hold is not taken as paid (payments-app/handlers.ts).
-		q: "How do you keep my payment secure?",
-		a: (
-			<>
-				Card details go from your browser straight to our card processor, which is certified to{" "}
-				<strong className="wv-hero-key">PCI DSS Level 1</strong>, the card industry&apos;s highest security
-				standard. There they are swapped for a one-time token, so your card number{" "}
-				<strong className="wv-hero-key wv-hero-key--pink">never reaches or is stored on our servers</strong>.
-				Your billing name and ZIP or postal code go with the payment so the processor can check them against
-				your card, and a payment it flags is held for review instead of going through. Every page, checkout
-				included, is served over an <strong className="wv-hero-key">encrypted HTTPS connection</strong>.
-			</>
-		),
+		icon: "🛡️",
+		title: "Secure Card Payments",
+		text: "Card numbers go straight to a PCI DSS Level 1 processor.",
 	},
-	{ q: "Can I pay with multiple payment methods?" },
-	{ q: "Do you support immediate cryptocurrency settlements?" },
-	{ q: "Are there extra transactional fee rates?" },
-	{ q: "How are payment declines resolved?" },
+	{ icon: "⚡", title: "Fast Checkout", text: "Card payments are approved or declined on the spot." },
+	{ icon: "🌀", title: "Multiple Options", text: "Cards, Interac e-Transfer, crypto, gift cards and more." },
+	{ icon: "✉️", title: "Real Support", text: "Email support@worldwidevapor.com about any payment." },
 ];
 
-const PENDING_ANSWER =
-	"Details for this answer are coming soon. Contact support@worldwidevapor.com in the meantime.";
+/**
+ * The payment FAQs. Every answer says only what the checkout actually does, so keep them in step with the code; the
+ * sources are noted on each. Pay in 4 and Vapor Tokens are mentioned only while they are switched on.
+ */
+function paymentFaqs({ payIn4, tokens }: { payIn4: boolean; tokens: boolean }) {
+	return [
+		{
+			// The card form sends the card straight to Authorize.net through Accept.js and only a one-time token reaches our
+			// servers (wvpay/accept-js.ts); Authorize.net is a PCI DSS Level 1 service provider; the billing name and ZIP go with
+			// the payment for the processor's checks (wvpay-payment.tsx); a fraud-review hold is not taken as paid
+			// (payments-app/handlers.ts).
+			q: "How do you keep my payment secure?",
+			a: (
+				<>
+					Card details go from your browser straight to our card processor, which is certified to{" "}
+					<strong className="wv-hero-key">PCI DSS Level 1</strong>, the card industry&apos;s highest security
+					standard. There they are swapped for a one-time token, so your card number{" "}
+					<strong className="wv-hero-key wv-hero-key--pink">never reaches or is stored on our servers</strong>
+					. Your billing name and ZIP or postal code go with the payment so the processor can check them
+					against your card, and a payment it flags is held for review instead of going through. Every page,
+					checkout included, is served over an{" "}
+					<strong className="wv-hero-key">encrypted HTTPS connection</strong>.
+				</>
+			),
+		},
+		{
+			// Gift cards (and Vapor Tokens, which are gift cards) are applied to the checkout and lower what's left to pay; the
+			// rest is one payment by one method (expectedInitializeAmount charges the whole remaining total).
+			q: "Can I pay with multiple payment methods?",
+			a: (
+				<>
+					Yes, by combining{" "}
+					<strong className="wv-hero-key">gift cards{tokens ? " and Vapor Tokens" : ""}</strong>
+					{/* A string, not JSX text: the compiler drops a leading space from JSX text that has an &apos; in it. */}
+					{
+						" with one other method. Apply them at checkout and they come off your total first, then pay what's left by card, Interac e-Transfer or crypto. The rest of an order can't be split across two cards or two other methods."
+					}
+				</>
+			),
+		},
+		{
+			// A crypto order is marked paid only when NOWPayments reports "finished" (nowpayments.ts classifyIpnStatus);
+			// "partially_paid" is not taken as paid and needs a person (crypto/ipn/route.ts).
+			q: "Do you support immediate cryptocurrency settlements?",
+			a: (
+				<>
+					Crypto payments aren&apos;t instant. You pay on our crypto processor&apos;s secure payment page, and
+					your order is confirmed <strong className="wv-hero-key">once the full payment has arrived</strong>,
+					which depends on how quickly the network confirms it. If less than the amount due arrives, the order
+					isn&apos;t marked paid: email{" "}
+					<strong className="wv-hero-key wv-hero-key--pink">support@worldwidevapor.com</strong>
+					{" and we'll sort it out with you."}
+				</>
+			),
+		},
+		{
+			// Nothing in checkout adds a surcharge for any way to pay; Pay in 4 has no interest or fees (installments/plan.ts).
+			q: "Are there extra transactional fee rates?",
+			a: (
+				<>
+					<strong className="wv-hero-key">We don&apos;t add a fee</strong> for paying by card, Interac
+					e-Transfer, crypto or gift card{payIn4 ? ", and Pay in 4 has no interest or fees" : ""}. Your own
+					bank or wallet may still charge its usual costs: some banks charge to send an e-Transfer, crypto
+					networks charge a network fee, and a card in a different currency from your order may carry your
+					bank&apos;s foreign transaction fee.
+				</>
+			),
+		},
+		{
+			// A decline is returned to checkout and no order is placed; a fraud-review hold shows "Your payment is being
+			// reviewed. Please contact support." (payments-app/handlers.ts). Pay in 4 retries a declined payment 3 days, then 7
+			// days later, emailing each time, and after 3 tries a person takes over; the order ships only once fully paid
+			// (installments/record.ts, messages.ts).
+			q: "How are payment declines resolved?",
+			a: (
+				<>
+					If your card is declined at checkout, <strong className="wv-hero-key">no order is placed</strong>{" "}
+					and you can try again or pay another way. If a payment is held for review, you&apos;ll be asked to
+					contact support at{" "}
+					<strong className="wv-hero-key wv-hero-key--pink">support@worldwidevapor.com</strong>.
+					{payIn4
+						? " With Pay in 4, if a later payment is declined we email you and try your card again 3 days later, then 7 days after that. If it still can't be taken, we'll be in touch to finish or cancel the order, and it doesn't ship until it's paid in full."
+						: ""}
+				</>
+			),
+		},
+	];
+}
 
 /** The site's neon outline button (`.wv-btn-neon`, as in OutlineButton): a glassy cyan tint, glow and solid lettering. */
 function OutlineLink({ href, children }: { href: string; children: string }) {
@@ -121,7 +192,9 @@ function OutlineLink({ href, children }: { href: string; children: string }) {
 }
 
 export function WvPayments() {
-	const methods = [...METHODS, ...vaporTokensMethod()];
+	const payIn4 = describePayIn4(readInstallmentConfig());
+	const methods = [...METHODS, ...payIn4Method(payIn4), ...vaporTokensMethod()];
+	const faqs = paymentFaqs({ payIn4: payIn4 !== null, tokens: readRewardsConfig().enabled });
 
 	return (
 		<div className="min-h-dvh overflow-x-clip bg-[var(--wv-bg)] text-white">
@@ -287,7 +360,7 @@ export function WvPayments() {
 						<div className="wv-heading-bar mt-1 h-[3px] w-20 rounded-full bg-[var(--wv-cyan-soft)]" />
 					</div>
 					<div className="flex flex-col gap-3 xl:gap-4">
-						{FAQS.map((f, i) => (
+						{faqs.map((f, i) => (
 							<details key={f.q} open={i === 0} className="wv-info-item group rounded-xl p-4">
 								<summary
 									className={`${heyComic} wv-trust-title flex cursor-pointer list-none items-center justify-between gap-4 text-[15px] [&::-webkit-details-marker]:hidden`}
@@ -298,9 +371,7 @@ export function WvPayments() {
 										<span className="hidden group-open:inline">−</span>
 									</span>
 								</summary>
-								<p className={`${orbitron} wv-trust-text mt-3 text-[13px] leading-[1.5]`}>
-									{f.a ?? PENDING_ANSWER}
-								</p>
+								<p className={`${orbitron} wv-trust-text mt-3 text-[13px] leading-[1.5]`}>{f.a}</p>
 							</details>
 						))}
 					</div>
