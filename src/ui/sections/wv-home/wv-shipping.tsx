@@ -225,20 +225,26 @@ export function WvShipping() {
 			</section>
 			<Divider />
 
-			{/* Perks */}
-			<section className="flex flex-col items-center gap-5 border-y border-[var(--wv-cyan-soft)] bg-[var(--wv-ink)] px-5 py-8 md:gap-6 md:px-10 xl:px-20 xl:py-10">
-				<p
-					className={`${heyComic} text-center text-xs uppercase tracking-[2px] text-[var(--wv-text-dim)] md:text-sm`}
-				>
-					EXPERIENCE PREMIUM WORLDWIDE LOGISTICS
+			{/* Perks: a lit glass band (`.wv-perks-*` in wv-home.css) with a chrome title between neon dashes, and the items
+			    styled like the home page's trust strip (`.wv-trust-*`): each icon in a glowing neon ring, alternating cyan
+			    and pink, its title lifted and its text brighter. */}
+			<section className="wv-perks-band flex flex-col items-center gap-5 px-5 py-8 md:gap-6 md:px-10 xl:px-20 xl:py-10">
+				<p className="flex items-center gap-3 text-center">
+					<span aria-hidden className="wv-perks-dash hidden md:block" />
+					<span className={`${heyComic} wv-hero-tagline text-xs uppercase tracking-[2px] md:text-sm`}>
+						EXPERIENCE PREMIUM WORLDWIDE LOGISTICS
+					</span>
+					<span aria-hidden className="wv-perks-dash wv-perks-dash--end hidden md:block" />
 				</p>
 				<div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2 md:gap-x-4 md:gap-y-4 xl:flex xl:flex-wrap xl:justify-center xl:gap-6">
 					{PERKS.map((p) => (
-						<div key={p.title} className="flex items-center gap-4 xl:w-[280px]">
-							<span className="text-2xl md:text-[32px]">{p.icon}</span>
+						<div key={p.title} className="wv-trust-item flex items-center gap-4 xl:w-[280px]">
+							<span aria-hidden className="wv-trust-icon text-xl md:text-2xl">
+								{p.icon}
+							</span>
 							<div className="flex min-w-0 flex-1 flex-col gap-[2px]">
-								<p className={`${heyComic} text-sm`}>{p.title}</p>
-								<p className={`${orbitron} text-[11px] text-[var(--wv-text-dim)]`}>{p.text}</p>
+								<p className={`${heyComic} wv-trust-title text-sm`}>{p.title}</p>
+								<p className={`${orbitron} wv-trust-text text-[11px]`}>{p.text}</p>
 							</div>
 						</div>
 					))}
