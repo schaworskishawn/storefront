@@ -123,21 +123,29 @@ export function LearnBrowser({ articles }: { articles: LearnArticleSummary[] }) 
 				</form>
 			</section>
 
-			{/* Categories */}
-			<section className="flex flex-col gap-5 bg-[var(--wv-control)] px-5 py-6 md:px-8 md:py-8 xl:gap-8 xl:px-20 xl:py-12">
+			{/* Categories, on a lit glass band (`.wv-band`) under a chrome 3D title (`.wv-heading-title`) and a glowing bar:
+			    neon glass chips, alternating cyan and pink, that lift and glow under the pointer; the chosen one lights up,
+			    filled with its colour (`.wv-cat-*` in wv-home.css). The strip scrolls sideways below the desktop layout,
+			    with room above and below so the glow and the lift aren't clipped. */}
+			<section className="wv-band flex flex-col gap-5 px-5 py-6 md:px-8 md:py-8 xl:gap-8 xl:px-20 xl:py-12">
 				<div className="flex items-center justify-between">
-					<h2 className={`${outfit} text-lg font-extrabold md:text-xl xl:text-2xl`}>CATEGORIES</h2>
+					<div className="flex flex-col gap-2">
+						<h2 className={`${outfit} wv-heading-title text-lg font-extrabold md:text-xl xl:text-2xl`}>
+							CATEGORIES
+						</h2>
+						<div className="wv-hero-bar h-[3px] w-12 rounded-full md:w-16" />
+					</div>
 					{filtering && (
 						<button
 							type="button"
 							onClick={clear}
-							className="font-sans text-sm font-bold uppercase text-[var(--wv-cyan-soft)]"
+							className="wv-cat-all font-sans text-sm font-bold uppercase"
 						>
 							View All →
 						</button>
 					)}
 				</div>
-				<ul className="wv-hide-scrollbar -mx-5 flex gap-3 overflow-x-auto px-5 md:-mx-8 md:px-8 xl:mx-0 xl:justify-center xl:gap-6 xl:overflow-visible xl:px-0">
+				<ul className="wv-hide-scrollbar -mx-5 -my-3 flex gap-3 overflow-x-auto px-5 py-3 md:-mx-8 md:px-8 xl:mx-0 xl:justify-center xl:gap-6 xl:overflow-visible xl:px-0">
 					{categories.map(({ slug, label }) => {
 						const Icon = CATEGORY_ICONS[slug] ?? Tag;
 						const active = category === slug;
@@ -147,18 +155,14 @@ export function LearnBrowser({ articles }: { articles: LearnArticleSummary[] }) 
 									type="button"
 									aria-pressed={active}
 									onClick={() => setCategory(active ? null : slug)}
-									className={`flex items-center gap-2 rounded-full border px-4 py-2 xl:w-[156px] xl:flex-col xl:gap-3 xl:rounded-2xl xl:p-5 ${
-										active
-											? "border-[var(--wv-cyan-soft)] bg-[var(--wv-cyan-soft)] text-[var(--wv-bg)]"
-											: "border-[var(--wv-disabled)] bg-[var(--wv-ink)]"
-									}`}
+									className="wv-cat-chip flex items-center gap-2 rounded-full px-4 py-2 xl:w-[156px] xl:flex-col xl:gap-3 xl:rounded-2xl xl:p-5"
 								>
-									<span
-										className={`flex items-center justify-center xl:size-14 xl:rounded-full ${active ? "xl:bg-[var(--wv-bg)]/15" : "xl:bg-[var(--wv-control)]"}`}
-									>
+									<span className="wv-cat-icon flex items-center justify-center xl:size-14 xl:rounded-full">
 										<Icon aria-hidden className="size-4 xl:size-6" />
 									</span>
-									<span className={`${outfit} whitespace-nowrap text-xs font-bold xl:text-center`}>
+									<span
+										className={`${outfit} wv-cat-label whitespace-nowrap text-xs font-bold xl:text-center`}
+									>
 										{label}
 									</span>
 								</button>
