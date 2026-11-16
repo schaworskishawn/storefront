@@ -46,6 +46,15 @@ describe("footer links", () => {
 		expect(labels).not.toContain("Help Center");
 		expect(FOOTER_HREFS.Learn).toBe("/learn");
 	});
+
+	it("lists Learn once, in Blog's old place in the Company column, and no Blog", () => {
+		const company = FOOTER_COLUMNS.find((c) => c.title === "COMPANY")?.links ?? [];
+		const help = FOOTER_COLUMNS.find((c) => c.title === "HELP")?.links ?? [];
+		expect(company.indexOf("Learn")).toBe(company.indexOf("Payments") + 1);
+		expect(help).not.toContain("Learn");
+		expect(labels).not.toContain("Blog");
+		expect(FOOTER_HREFS.Blog).toBeUndefined();
+	});
 });
 
 describe("the legal pages in the footer", () => {

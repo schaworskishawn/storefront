@@ -8,7 +8,8 @@ export const FOOTER_COLUMNS: { title: string; links: string[] }[] = [
 			"About Us",
 			"Shipping Info",
 			"Payments",
-			"Blog",
+			// The guides library. It took the place of "Blog", which went to the same page.
+			"Learn",
 			"Quit Nicotine",
 			"Affiliate Program",
 			"Become a Distributor",
@@ -17,7 +18,6 @@ export const FOOTER_COLUMNS: { title: string; links: string[] }[] = [
 	{
 		title: "HELP",
 		links: [
-			"Learn",
 			"FAQs",
 			"Terms & Conditions",
 			"Privacy Policy",
@@ -45,11 +45,10 @@ export const FOOTER_HREFS: Record<string, string> = {
 	Accessories: "/shop?category=accessories",
 	"Shipping Info": "/shipping",
 	Payments: "/payments",
-	Blog: "/learn",
+	Learn: "/learn",
 	"Quit Nicotine": "/quit",
 	"Affiliate Program": "/affiliate-program",
 	"Become a Distributor": "/distributor",
-	Learn: "/learn",
 	FAQs: "/faqs",
 	"Terms & Conditions": "/terms-and-conditions",
 	"Privacy Policy": "/privacy-policy",
