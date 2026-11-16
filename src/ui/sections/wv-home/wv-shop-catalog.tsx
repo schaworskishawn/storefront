@@ -186,7 +186,10 @@ export function ShopCatalog({
 							VIEW ALL →
 						</button>
 					</div>
-					<div className="grid w-full max-w-[420px] grid-cols-3 justify-items-center gap-3 md:max-w-[560px] xl:flex xl:max-w-none xl:justify-center xl:gap-[26px]">
+					{/* Each badge fills its cell in the badge art's own shape (200:220, the SVG's viewBox), so it is never squeezed
+					    into a square. Three across on a phone; one row of six from tablet up, as wide as the space allows and capped
+					    so the row never runs past the section (about 147px each on tablet, 160px on desktop). */}
+					<div className="grid w-full max-w-[400px] grid-cols-3 gap-3 md:max-w-[960px] md:grid-cols-6 md:gap-4 xl:max-w-[1080px] xl:gap-6">
 						{categoryTiles.map((c) => {
 							const badge = CATEGORY_BADGE[c.slug];
 							const on = filters.applied.cats.includes(c.slug);
@@ -196,7 +199,7 @@ export function ShopCatalog({
 									type="button"
 									aria-pressed={on}
 									onClick={() => selectCategory(on ? null : c.slug)}
-									className={`relative block size-[100px] shrink-0 rounded-xl md:size-[90px] xl:size-[175px] ${
+									className={`relative block aspect-[200/220] w-full rounded-xl ${
 										on && !badge ? "ring-2 ring-[var(--wv-cyan-soft)]" : ""
 									}`}
 								>
@@ -208,7 +211,13 @@ export function ShopCatalog({
 									) : (
 										<span className="relative flex size-full items-end overflow-hidden rounded-xl border border-[var(--wv-cyan)] bg-[var(--wv-section)]">
 											{c.image && (
-												<Image src={c.image.url} alt="" fill sizes="175px" className="object-cover" />
+												<Image
+													src={c.image.url}
+													alt=""
+													fill
+													sizes="(min-width: 1280px) 160px, (min-width: 768px) 150px, 130px"
+													className="object-cover"
+												/>
 											)}
 											<span className="absolute inset-0 bg-gradient-to-t from-[var(--wv-bg)] to-transparent" />
 											<span
