@@ -1,5 +1,6 @@
 "use client";
 
+import { Search, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -166,29 +167,44 @@ export function SearchExperience({
 
 	return (
 		<>
-			{/* Hero */}
-			<section className="flex flex-col items-center gap-6 bg-[var(--wv-surface)] px-4 pb-8 pt-8 md:px-6 md:pt-12 xl:px-16 xl:pb-12 xl:pt-16">
-				<div className="flex flex-col items-center gap-3 text-center">
-					<p className={`${bungee} flex items-center gap-2 text-xs uppercase text-[var(--wv-cyan)]`}>
-						<span className="size-[6px] rounded-[3px] bg-[var(--wv-cyan)] shadow-[0_0_6px_rgba(0,229,255,0.4)]" />
+			{/* Hero, in the neon style of the site's other heroes (`.wv-hero-*` in wv-home.css): a pink and cyan glow behind
+			    it, a neon badge with a glowing magnifier, a 3D two-tone title over a glowing bar, brighter copy with its key
+			    phrases lit; a big neon glass search bar (`.wv-search-bar`) whose edge glows brighter while you type; and the
+			    popular searches as the payments strip's glowing chips, alternating cyan and pink, the one being searched lit
+			    up. A neon divider runs under it, as on the other pages. */}
+			<section className="wv-hero-backdrop flex flex-col items-center gap-6 px-4 pb-8 pt-8 md:px-6 md:pt-12 xl:px-16 xl:pb-12 xl:pt-16">
+				<div className="flex flex-col items-center gap-4 text-center">
+					<span
+						className={`${heyComic} wv-hero-badge flex items-center gap-2 rounded-full px-3 py-1 text-[10px] tracking-[1.5px] md:px-4 md:py-[6px] md:text-[11px]`}
+					>
+						<Search aria-hidden className="size-3.5 md:size-4" strokeWidth={2.5} />
 						SEARCH WORLDWIDE VAPOR
-					</p>
-					<h1 className={`${heyComic} text-[24px] uppercase md:text-[30px] xl:text-[36px]`}>
-						FIND YOUR PERFECT PRODUCT
-					</h1>
-					<p className={`${orbitron} hidden max-w-[600px] text-base text-[var(--wv-text-dim)] md:block`}>
-						Access high-performance mods, premium pods, and intense disposable vapes with secure
-						military-grade shipping.
+					</span>
+					<div className="flex flex-col items-center gap-3">
+						<h1
+							className={`${heyComic} wv-title-glow wv-hero-title text-[28px] uppercase leading-[1.1] md:text-[38px] xl:text-[46px]`}
+						>
+							<span>FIND YOUR PERFECT</span> <span className="text-[var(--wv-cyan-soft)]">PRODUCT</span>
+						</h1>
+						<div className="wv-hero-bar h-1 w-20 rounded-full md:w-[120px]" />
+					</div>
+					<p className={`${orbitron} wv-hero-copy hidden max-w-[600px] text-base leading-[1.6] md:block`}>
+						Access <strong className="wv-hero-key">high-performance mods</strong>,{" "}
+						<strong className="wv-hero-key wv-hero-key--pink">premium pods</strong>, and intense{" "}
+						<strong className="wv-hero-key">disposable vapes</strong> with secure military-grade shipping.
 					</p>
 				</div>
 				<div className="flex w-full max-w-[800px] flex-col gap-4">
 					<form
 						role="search"
 						onSubmit={(e) => e.preventDefault()}
-						className="flex h-12 items-center gap-3 rounded-xl bg-[var(--wv-section)] px-4 md:h-14 md:px-5"
+						className="wv-search-bar flex h-12 items-center gap-3 rounded-xl pl-2 pr-3 md:h-14 md:pl-[10px] md:pr-4"
 					>
-						<span aria-hidden className="text-lg text-[var(--wv-cyan)]">
-							⌕
+						<span
+							aria-hidden
+							className="wv-search-bar-icon flex size-8 shrink-0 items-center justify-center rounded-lg md:size-9"
+						>
+							<Search className="size-4 md:size-[18px]" strokeWidth={2.5} />
 						</span>
 						<label htmlFor="site-search" className="sr-only">
 							Search products
@@ -207,22 +223,23 @@ export function SearchExperience({
 								type="button"
 								aria-label="Clear search"
 								onClick={() => updateQuery("")}
-								className="flex size-[26px] items-center justify-center rounded-full text-[var(--wv-text-dim)]"
+								className="wv-search-clear flex size-[26px] items-center justify-center rounded-full"
 							>
-								✕
+								<X aria-hidden className="size-4" strokeWidth={2.5} />
 							</button>
 						)}
 					</form>
-					<div className="flex flex-wrap items-center gap-2">
-						<span className={`${heyComic} text-xs text-[var(--wv-muted)]`}>POPULAR:</span>
+					<div className="flex flex-wrap items-center justify-center gap-2">
+						<span className={`${heyComic} wv-search-popular text-xs`}>POPULAR:</span>
 						{popular.map((t) => {
 							const on = query.toLowerCase() === t.toLowerCase();
 							return (
 								<button
 									key={t}
 									type="button"
+									aria-pressed={on}
 									onClick={() => updateQuery(on ? "" : t)}
-									className={`${heyComic} rounded-md border px-3 py-[6px] text-xs ${on ? "bg-[var(--wv-pink)]/10 border-[var(--wv-pink)] text-[var(--wv-pink)]" : "border-[var(--wv-section)] bg-[var(--wv-section)] text-[var(--wv-text-dim)]"}`}
+									className={`${heyComic} wv-pay-chip wv-search-chip rounded-md px-3 py-[6px] text-xs text-white`}
 								>
 									{t}
 								</button>
@@ -231,6 +248,7 @@ export function SearchExperience({
 					</div>
 				</div>
 			</section>
+			<div className="wv-glow-line mx-auto !h-[2px] w-[calc(100%-32px)] max-w-[1280px] md:w-[calc(100%-48px)]" />
 
 			{/* Status bar */}
 			<section className="flex flex-col gap-4 px-4 py-6 md:px-6 xl:px-16">
