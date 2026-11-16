@@ -479,6 +479,105 @@ body.wv-motion .wv-nav-link[aria-current="page"]:is(:hover, :focus-visible) {
 	filter: drop-shadow(0 1px 0 color-mix(in srgb, white 45%, transparent));
 }
 
+/* Shipping information (wv-shipping.tsx). Each answer is a glassy neon panel in its colour, pink while closed and cyan
+ * once open: a tint of its colour at the top, a gradient edge that glows (brighter when open, or under the pointer), a
+ * highlight along the top; its title is lifted (.wv-trust-title, glowing in the panel's colour) and its +/− sits in a
+ * neon ring. */
+.wv-info-item {
+	--accent: var(--wv-pink);
+	border: 1.5px solid transparent;
+	background:
+		linear-gradient(180deg, color-mix(in srgb, var(--accent) 9%, var(--wv-control)), var(--wv-control))
+			padding-box,
+		linear-gradient(
+				120deg,
+				var(--accent),
+				color-mix(in srgb, var(--wv-purple) 80%, transparent) 60%,
+				color-mix(in srgb, var(--accent) 45%, transparent)
+			)
+			border-box;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 9%, transparent),
+		0 0 10px color-mix(in srgb, var(--accent) 18%, transparent);
+	transition: box-shadow 200ms ease;
+}
+.wv-info-item[open] {
+	--accent: var(--wv-cyan-soft);
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 12%, transparent),
+		inset 0 0 18px color-mix(in srgb, var(--accent) 10%, transparent),
+		0 0 18px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+@media (hover: hover) {
+	.wv-info-item:hover {
+		box-shadow:
+			inset 0 1px 0 color-mix(in srgb, white 12%, transparent),
+			0 0 18px color-mix(in srgb, var(--accent) 40%, transparent);
+	}
+}
+.wv-info-toggle {
+	display: inline-flex;
+	flex: none;
+	align-items: center;
+	justify-content: center;
+	width: 26px;
+	height: 26px;
+	border: 1.5px solid var(--accent);
+	border-radius: 9999px;
+	color: var(--accent);
+	background: radial-gradient(circle, color-mix(in srgb, var(--accent) 22%, transparent), transparent 70%);
+	box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 50%, transparent);
+	text-shadow: 0 0 6px var(--accent);
+	line-height: 1;
+}
+
+/* The newsletter card beside them: lit glass (a pink glow in its top corner and a cyan one in the bottom, over a hint
+ * of purple) inside a cyan-through-purple-to-pink edge that glows cyan and pink and casts a shadow; the email field is
+ * set into it and glows cyan when focused; the subscribe button is glossy (a highlight along the top, an edge beneath,
+ * a cyan glow). */
+.wv-news-card {
+	border: 1.5px solid transparent;
+	background:
+		radial-gradient(70% 45% at 100% 0%, color-mix(in srgb, var(--wv-pink) 15%, transparent), transparent 70%)
+			padding-box,
+		radial-gradient(60% 45% at 0% 100%, color-mix(in srgb, var(--wv-cyan) 11%, transparent), transparent 70%)
+			padding-box,
+		linear-gradient(180deg, color-mix(in srgb, var(--wv-purple) 16%, var(--wv-control)), var(--wv-control))
+			padding-box,
+		linear-gradient(150deg, var(--wv-cyan), var(--wv-purple) 50%, var(--wv-pink)) border-box;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 12%, transparent),
+		0 0 22px color-mix(in srgb, var(--wv-cyan) 22%, transparent),
+		0 0 46px -10px color-mix(in srgb, var(--wv-pink) 40%, transparent),
+		0 20px 30px -16px var(--wv-ink);
+}
+.wv-news-card input {
+	background: linear-gradient(180deg, var(--wv-bg), color-mix(in srgb, var(--wv-purple) 10%, var(--wv-bg)));
+	box-shadow:
+		inset 0 2px 6px var(--wv-ink),
+		0 0 8px color-mix(in srgb, var(--wv-cyan) 20%, transparent);
+	transition: box-shadow 200ms ease;
+}
+.wv-news-card input:focus-visible {
+	box-shadow:
+		inset 0 2px 6px var(--wv-ink),
+		0 0 0 3px color-mix(in srgb, var(--wv-cyan) 25%, transparent),
+		0 0 16px color-mix(in srgb, var(--wv-cyan) 50%, transparent);
+}
+.wv-news-card button[type="submit"] {
+	background-image: linear-gradient(
+		180deg,
+		color-mix(in srgb, white 30%, var(--wv-cyan-soft)),
+		var(--wv-cyan-soft) 55%,
+		color-mix(in srgb, var(--wv-cyan) 80%, var(--wv-purple))
+	);
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 55%, transparent),
+		inset 0 -2px 0 color-mix(in srgb, var(--wv-ink) 30%, transparent),
+		0 0 14px color-mix(in srgb, var(--wv-cyan) 50%, transparent);
+	text-shadow: 0 1px 0 color-mix(in srgb, white 45%, transparent);
+}
+
 /* Footer link columns (WvFooter in wv-chrome.tsx): each heading is lifted with a dark edge, a purple one beneath and a
  * cyan glow, over a short glowing cyan-to-pink bar; the links are brighter than the old grey with a dark edge, and glow
  * cyan under the pointer (motion.css still turns them cyan and nudges them right). */
