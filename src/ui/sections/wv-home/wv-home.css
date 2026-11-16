@@ -466,6 +466,92 @@ body.wv-motion .wv-nav-link[aria-current="page"]:is(:hover, :focus-visible) {
 		0 1px 1px var(--wv-ink);
 }
 
+/* The shipping and payments heroes (wv-shipping.tsx, wv-payments.tsx) use the home hero's text styles above and the neon
+ * outline button. Around them: a pink glow behind the text and a cyan one behind the art (.wv-hero-backdrop), the badge a
+ * neon pill (glass inside a cyan-to-pink edge) led by a glowing pink icon (.wv-hero-badge), and the title's underline a
+ * glowing pink-to-cyan bar (.wv-hero-bar). */
+.wv-hero-backdrop {
+	background:
+		radial-gradient(50% 55% at 15% 30%, color-mix(in srgb, var(--wv-pink) 12%, transparent), transparent 70%),
+		radial-gradient(45% 60% at 85% 65%, color-mix(in srgb, var(--wv-cyan) 9%, transparent), transparent 70%);
+}
+.wv-hero-badge {
+	border: 1px solid transparent;
+	color: var(--wv-cyan-soft);
+	background:
+		linear-gradient(180deg, color-mix(in srgb, var(--wv-cyan) 16%, var(--wv-control)), var(--wv-control))
+			padding-box,
+		linear-gradient(90deg, var(--wv-cyan), var(--wv-pink)) border-box;
+	box-shadow:
+		0 0 12px color-mix(in srgb, var(--wv-cyan) 35%, transparent),
+		inset 0 1px 0 color-mix(in srgb, white 14%, transparent);
+	text-shadow:
+		0 0 8px color-mix(in srgb, var(--wv-cyan) 80%, transparent),
+		0 1px 1px var(--wv-ink);
+}
+.wv-hero-badge svg {
+	flex: none;
+	color: var(--wv-pink);
+	filter: drop-shadow(0 0 4px color-mix(in srgb, var(--wv-pink) 90%, transparent));
+}
+.wv-hero-bar {
+	background: linear-gradient(90deg, var(--wv-pink), var(--wv-cyan));
+	box-shadow:
+		0 0 10px color-mix(in srgb, var(--wv-pink) 70%, transparent),
+		0 0 16px color-mix(in srgb, var(--wv-cyan) 35%, transparent);
+}
+/* The hero art as a lit neon screen: a cyan-through-purple-to-pink edge glowing cyan and pink, with a shadow beneath; the
+ * art's neon lifted a touch; glass over it (a sheen from the top-left, a fine highlight along the top, an inner cyan glow
+ * and edges falling away into the page); and HUD corner brackets, cyan on the left and pink on the right. */
+.wv-ship-art {
+	border: 1.5px solid transparent;
+	background:
+		linear-gradient(var(--wv-bg), var(--wv-bg)) padding-box,
+		linear-gradient(135deg, var(--wv-cyan), var(--wv-purple) 50%, var(--wv-pink)) border-box;
+	box-shadow:
+		0 0 18px color-mix(in srgb, var(--wv-cyan) 35%, transparent),
+		0 0 40px -6px color-mix(in srgb, var(--wv-pink) 45%, transparent),
+		0 22px 34px -16px var(--wv-ink);
+}
+.wv-ship-art-img {
+	filter: saturate(1.18) contrast(1.06) brightness(1.04);
+}
+.wv-ship-art-glass {
+	pointer-events: none;
+	background:
+		linear-gradient(155deg, color-mix(in srgb, white 9%, transparent), transparent 26%),
+		radial-gradient(
+			130% 100% at 62% 45%,
+			transparent 55%,
+			color-mix(in srgb, var(--wv-bg) 65%, transparent) 100%
+		);
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 18%, transparent),
+		inset 0 0 26px color-mix(in srgb, var(--wv-cyan) 16%, transparent);
+}
+.wv-ship-art-hud {
+	--hud-len: 18px;
+	--hud-w: 2px;
+	pointer-events: none;
+	background:
+		linear-gradient(var(--wv-cyan), var(--wv-cyan)) left top / var(--hud-len) var(--hud-w) no-repeat,
+		linear-gradient(var(--wv-cyan), var(--wv-cyan)) left top / var(--hud-w) var(--hud-len) no-repeat,
+		linear-gradient(var(--wv-cyan), var(--wv-cyan)) left bottom / var(--hud-len) var(--hud-w) no-repeat,
+		linear-gradient(var(--wv-cyan), var(--wv-cyan)) left bottom / var(--hud-w) var(--hud-len) no-repeat,
+		linear-gradient(var(--wv-pink), var(--wv-pink)) right top / var(--hud-len) var(--hud-w) no-repeat,
+		linear-gradient(var(--wv-pink), var(--wv-pink)) right top / var(--hud-w) var(--hud-len) no-repeat,
+		linear-gradient(var(--wv-pink), var(--wv-pink)) right bottom / var(--hud-len) var(--hud-w) no-repeat,
+		linear-gradient(var(--wv-pink), var(--wv-pink)) right bottom / var(--hud-w) var(--hud-len) no-repeat;
+	/* A thin dark outline first, so the brackets read over the art's own neon, then the glow. */
+	filter: drop-shadow(0 0 1px var(--wv-ink))
+		drop-shadow(0 0 3px color-mix(in srgb, var(--wv-cyan) 70%, transparent));
+}
+@media (min-width: 1280px) {
+	.wv-ship-art-hud {
+		--hud-len: 24px;
+	}
+}
+
 /* Category badges (wv-category-badge.tsx): a soft pink glow always; under the pointer or keyboard focus, and while
  * selected in the shop's filter, they glow brighter in pink and cyan, and lift. No movement for reduced motion. */
 .wv-badge {
