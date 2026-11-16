@@ -9,7 +9,6 @@ import {
 	Search,
 	Star,
 	Tag,
-	Wind,
 	Zap,
 	type LucideIcon,
 } from "lucide-react";
@@ -17,6 +16,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { LearnArticleSummary } from "@/lib/learn/articles";
 import { ArticleImage, ArticleMeta, LearnCard, learnHref } from "./wv-learn-card";
+import { ShopHeroArt } from "./wv-shop-hero-art";
 
 const outfit = "font-[family-name:var(--font-outfit)]";
 
@@ -75,36 +75,40 @@ export function LearnBrowser({ articles }: { articles: LearnArticleSummary[] }) 
 
 	return (
 		<>
-			{/* Hero */}
-			<section className="grid gap-5 px-5 py-8 md:gap-6 md:px-8 md:py-10 xl:grid-cols-[680px_420px] xl:justify-between xl:gap-x-12 xl:gap-y-6 xl:px-20 xl:py-16">
+			{/* Hero, in the neon style of the site's other heroes: a pink and cyan glow behind it (`.wv-hero-backdrop`), a 3D
+			    two-tone title over a glowing bar and brighter copy with its key words lit (`.wv-hero-*`), the store's range
+			    as a neon lineup on a synthwave grid in a glowing frame (in place of the "vape tech mockup" placeholder), and a
+			    neon glass search field (`.wv-search-field`). */}
+			<section className="wv-hero-backdrop grid gap-5 px-5 py-8 md:gap-6 md:px-8 md:py-10 xl:grid-cols-[680px_420px] xl:justify-between xl:gap-x-12 xl:gap-y-6 xl:px-20 xl:py-16">
 				<div className="flex flex-col gap-4 xl:col-start-1 xl:row-start-1 xl:gap-6">
-					<h1 className={`${outfit} text-[30px] font-extrabold leading-[1.1] md:text-[44px] xl:text-[56px]`}>
-						WORLDWIDE VAPOR LEARN
-					</h1>
-					<p className="text-sm leading-[1.6] md:text-base xl:text-lg">
-						<span className="xl:hidden">Tips, guides, and latest news to elevate your vape experience.</span>
-						<span className="hidden xl:inline">
-							Tips, guides, and the latest news from the vaping world. Stay informed and elevate your vape
+					<div className="flex flex-col gap-3">
+						<h1
+							className={`${outfit} wv-title-glow wv-hero-title text-[30px] font-extrabold leading-[1.1] md:text-[44px] xl:text-[56px]`}
+						>
+							<span>WORLDWIDE VAPOR</span> <span className="text-[var(--wv-cyan-soft)]">LEARN</span>
+						</h1>
+						<div className="wv-hero-bar h-1 w-20 rounded-full md:w-[120px]" />
+					</div>
+					<p className="wv-hero-copy text-sm leading-[1.6] md:text-base xl:text-lg">
+						<span className="xl:hidden">
+							<strong className="wv-hero-key">Tips, guides</strong>, and{" "}
+							<strong className="wv-hero-key wv-hero-key--pink">latest news</strong> to elevate your vape
 							experience.
+						</span>
+						<span className="hidden xl:inline">
+							<strong className="wv-hero-key">Tips, guides</strong>, and the{" "}
+							<strong className="wv-hero-key wv-hero-key--pink">latest news</strong> from the vaping world.
+							Stay informed and elevate your vape experience.
 						</span>
 					</p>
 				</div>
-				<div className="flex h-[140px] flex-col items-center justify-center gap-2 rounded-3xl border border-[var(--wv-cyan-soft)] bg-[var(--wv-control)] md:h-[264px] xl:col-start-2 xl:row-span-2 xl:row-start-1 xl:h-[320px]">
-					<Wind
-						aria-hidden
-						className="size-8 text-[var(--wv-cyan-soft)] md:size-14 xl:size-16"
-						strokeWidth={1.25}
-					/>
-					<p className={`${outfit} text-sm font-bold md:text-lg xl:text-xl`}>
-						<span className="xl:hidden">VAPE TECH MOCKUP</span>
-						<span className="hidden xl:inline">WORLDWIDE VAPE TECH</span>
-					</p>
-					<p className="hidden text-xs xl:block">E-Cigarette illustration mockup</p>
+				<div className="wv-art relative h-[140px] overflow-hidden rounded-3xl md:h-[264px] xl:col-start-2 xl:row-span-2 xl:row-start-1 xl:h-[320px]">
+					<ShopHeroArt idPrefix="learn-hero-art" />
 				</div>
 				<form
 					role="search"
 					onSubmit={(e) => e.preventDefault()}
-					className="flex items-center gap-3 rounded-xl border border-[var(--wv-disabled)] bg-[var(--wv-ink)] px-4 py-[10px] xl:col-start-1 xl:row-start-2 xl:py-[14px]"
+					className="wv-search-field flex items-center gap-3 rounded-xl px-4 py-[10px] xl:col-start-1 xl:row-start-2 xl:py-[14px]"
 				>
 					<Search aria-hidden className="size-4 shrink-0 md:size-5" />
 					<input
