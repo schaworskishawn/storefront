@@ -83,7 +83,13 @@ const TRUST = [
 const FAQS = [
 	{
 		q: "What security compliance do you use?",
-		a: "We utilize level 1 PCI-DSS compliant processing along with automated fraud protection filters to ensure fully verified, highly encrypted transactional pipelines.",
+		a: (
+			<>
+				We utilize <strong className="wv-hero-key">level 1 PCI-DSS compliant processing</strong> along with{" "}
+				<strong className="wv-hero-key wv-hero-key--pink">automated fraud protection filters</strong> to
+				ensure fully verified, highly encrypted transactional pipelines.
+			</>
+		),
 	},
 	{ q: "Can I pay with multiple payment methods?" },
 	{ q: "Do you support immediate cryptocurrency settlements?" },
@@ -246,53 +252,56 @@ export function WvPayments() {
 				))}
 			</section>
 
-			{/* FAQ + newsletter */}
+			{/* FAQ + newsletter, as on the shipping page: the heading is solid 3D lettering over a glowing bar
+			    (`.wv-heading-*`); each answer is a glassy neon panel, pink while closed and glowing cyan when open, with its
+			    +/− in a neon ring and its title lifted; the newsletter is a lit glass card with a glowing input and a glossy
+			    button (`.wv-info-*`, `.wv-news-card` in wv-home.css). */}
 			<section
 				id="faqs"
 				className="flex flex-col gap-8 px-5 py-8 md:px-8 md:py-12 xl:flex-row xl:items-start xl:gap-12 xl:p-20"
 			>
 				<div className="flex min-w-0 flex-1 flex-col gap-4 xl:gap-6">
 					<div className="flex flex-col gap-2">
-						<p className={`${marker} text-lg text-[var(--wv-pink)] md:text-xl`}>QUESTIONS</p>
-						<h2 className={`${bungee} text-2xl md:text-[28px] xl:text-[32px]`}>PAYMENT FAQS</h2>
+						<p className={`${marker} wv-heading-eyebrow text-lg text-[var(--wv-pink)] md:text-xl`}>
+							QUESTIONS
+						</p>
+						<h2 className={`${bungee} wv-heading-title text-2xl text-white md:text-[28px] xl:text-[32px]`}>
+							PAYMENT FAQS
+						</h2>
+						<div className="wv-heading-bar mt-1 h-[3px] w-20 rounded-full bg-[var(--wv-cyan-soft)]" />
 					</div>
 					<div className="flex flex-col gap-3 xl:gap-4">
 						{FAQS.map((f, i) => (
-							<details
-								key={f.q}
-								open={i === 0}
-								className="group rounded-xl border border-[var(--wv-pink)] bg-[var(--wv-control)] p-4 open:border-[var(--wv-cyan-soft)]"
-							>
+							<details key={f.q} open={i === 0} className="wv-info-item group rounded-xl p-4">
 								<summary
-									className={`${heyComic} flex cursor-pointer list-none items-center justify-between gap-4 text-[15px] [&::-webkit-details-marker]:hidden`}
+									className={`${heyComic} wv-trust-title flex cursor-pointer list-none items-center justify-between gap-4 text-[15px] [&::-webkit-details-marker]:hidden`}
 								>
 									{f.q}
-									<span
-										aria-hidden
-										className="font-mono text-base text-[var(--wv-pink)] group-open:text-[var(--wv-cyan-soft)]"
-									>
+									<span aria-hidden className="wv-info-toggle font-mono text-base">
 										<span className="group-open:hidden">+</span>
 										<span className="hidden group-open:inline">−</span>
 									</span>
 								</summary>
-								<p className={`${orbitron} mt-3 text-[13px] leading-[1.5] text-[var(--wv-text-dim)]`}>
+								<p className={`${orbitron} wv-trust-text mt-3 text-[13px] leading-[1.5]`}>
 									{f.a ?? PENDING_ANSWER}
 								</p>
 							</details>
 						))}
 					</div>
 				</div>
-				<div className="flex w-full shrink-0 flex-col gap-6 rounded-[20px] border-[1.5px] border-[var(--wv-cyan-soft)] bg-[var(--wv-control)] p-5 shadow-[0_0_12px_rgba(241,121,251,0.06)] md:gap-8 md:p-8 xl:w-[480px] xl:p-10">
+				<div className="wv-news-card flex w-full shrink-0 flex-col gap-6 rounded-[20px] p-5 md:gap-8 md:p-8 xl:w-[480px] xl:p-10">
 					<div className="flex flex-col gap-3">
 						<p
-							className={`${marker} text-sm uppercase tracking-[1px] text-[var(--wv-pink)] md:text-base xl:text-lg`}
+							className={`${marker} wv-heading-eyebrow text-sm uppercase tracking-[1px] text-[var(--wv-pink)] md:text-base xl:text-lg`}
 						>
 							EXCLUSIVE DEALS &amp; NEW ARRIVALS
 						</p>
-						<h2 className={`${heyComic} text-xl leading-tight md:text-2xl xl:text-[28px] xl:leading-[34px]`}>
+						<h2
+							className={`${heyComic} wv-heading-title text-xl leading-tight text-white md:text-2xl xl:text-[28px] xl:leading-[34px]`}
+						>
 							STAY CONNECTED
 						</h2>
-						<p className={`${orbitron} text-[13px] leading-[1.5] text-[var(--wv-text-dim)]`}>
+						<p className={`${orbitron} wv-hero-copy text-[13px] leading-[1.5]`}>
 							Register your warehouse directly and secure alerts on fresh tier discounts, regulatory
 							announcements, and active inventory.
 						</p>
