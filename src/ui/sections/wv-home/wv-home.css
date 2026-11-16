@@ -195,7 +195,8 @@ body.wv-motion h1.wv-hero-title {
 	background-color: #05030a;
 }
 
-/* Dual-handle price slider: two stacked range inputs, only the thumbs take pointer events. */
+/* Dual-handle price slider: two stacked range inputs, only the thumbs take pointer events. The thumbs are glowing neon
+ * knobs: white, ringed in cyan, with a cyan and pink glow. */
 .wv-range {
 	position: absolute;
 	inset: 0;
@@ -211,27 +212,181 @@ body.wv-motion h1.wv-hero-title {
 	pointer-events: auto;
 	-webkit-appearance: none;
 	appearance: none;
-	width: 12px;
-	height: 12px;
+	width: 14px;
+	height: 14px;
 	border-radius: 9999px;
-	background: #ffffff;
-	border: 2px solid #69ebff;
+	background: white;
+	border: 2px solid var(--wv-cyan-soft);
+	box-shadow:
+		0 0 8px color-mix(in srgb, var(--wv-cyan) 80%, transparent),
+		0 0 16px color-mix(in srgb, var(--wv-pink) 40%, transparent);
 	cursor: pointer;
 }
 .wv-range::-moz-range-thumb {
 	pointer-events: auto;
-	width: 12px;
-	height: 12px;
+	width: 14px;
+	height: 14px;
 	border-radius: 9999px;
-	background: #ffffff;
-	border: 2px solid #69ebff;
+	background: white;
+	border: 2px solid var(--wv-cyan-soft);
+	box-shadow:
+		0 0 8px color-mix(in srgb, var(--wv-cyan) 80%, transparent),
+		0 0 16px color-mix(in srgb, var(--wv-pink) 40%, transparent);
 	cursor: pointer;
+}
+.wv-range:focus-visible::-webkit-slider-thumb {
+	outline: 2px solid var(--wv-pink);
+	outline-offset: 2px;
+}
+.wv-range:focus-visible::-moz-range-thumb {
+	outline: 2px solid var(--wv-pink);
+	outline-offset: 2px;
 }
 .wv-range::-webkit-slider-runnable-track {
 	background: transparent;
 }
 .wv-range::-moz-range-track {
 	background: transparent;
+}
+/* A native thumb travels half its width short of each end, so on its own it never meets the fill's ends. The aligned
+ * inputs reach one thumb-radius past the track on both sides, so each thumb sits exactly on the end of the fill. */
+.wv-range--aligned {
+	inset: 0 -7px;
+	width: auto;
+}
+
+/* The shop and search filter sidebar (wv-shop-filter-sidebar.tsx): a glassy neon panel. Dark glass with a purple tint at
+ * the top and a pink glow in one corner, inside a cyan-through-purple-to-pink edge that glows; a neon rule under the
+ * 3D heading and a neon divider above each group; glowing group titles; a neon dot per category (a dim ring, lit cyan
+ * and glowing when ticked); counts in small pills; rows that light up under the pointer; and the price slider's track
+ * and fill in neon, with the chosen range in its own glassy readout. */
+.wv-filter-card {
+	border: 1.5px solid transparent;
+	background:
+		radial-gradient(70% 40% at 100% 0%, color-mix(in srgb, var(--wv-pink) 12%, transparent), transparent 70%)
+			padding-box,
+		linear-gradient(180deg, color-mix(in srgb, var(--wv-purple) 16%, var(--wv-surface)), var(--wv-surface))
+			padding-box,
+		linear-gradient(160deg, var(--wv-cyan), var(--wv-purple) 45%, var(--wv-pink)) border-box;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 10%, transparent),
+		0 0 18px color-mix(in srgb, var(--wv-cyan) 18%, transparent),
+		0 0 36px -8px color-mix(in srgb, var(--wv-pink) 35%, transparent),
+		0 18px 30px -16px var(--wv-ink);
+}
+.wv-filter-rule {
+	height: 2px;
+	border-radius: 1px;
+	background: linear-gradient(90deg, var(--wv-cyan), var(--wv-pink) 60%, transparent);
+	box-shadow: 0 0 8px color-mix(in srgb, var(--wv-cyan) 55%, transparent);
+}
+.wv-filter-clear {
+	color: var(--wv-cyan-soft);
+	text-shadow: 0 0 8px color-mix(in srgb, var(--wv-cyan) 70%, transparent);
+}
+.wv-filter-section::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 1px;
+	background: linear-gradient(
+		90deg,
+		transparent,
+		color-mix(in srgb, var(--wv-purple) 90%, var(--wv-pink)) 20%,
+		color-mix(in srgb, var(--wv-pink) 70%, var(--wv-purple)) 80%,
+		transparent
+	);
+}
+.wv-filter-section:first-child::before {
+	display: none;
+}
+.wv-filter-title {
+	color: var(--wv-cyan-soft);
+	text-shadow:
+		0 1px 0 var(--wv-ink),
+		0 0 8px color-mix(in srgb, var(--wv-cyan) 70%, transparent);
+}
+.wv-filter-chevron {
+	color: var(--wv-cyan-soft);
+	text-shadow: 0 0 6px color-mix(in srgb, var(--wv-cyan) 80%, transparent);
+}
+.wv-filter-row {
+	margin-inline: -6px;
+	padding: 3px 6px;
+	transition:
+		background-color 150ms ease,
+		text-shadow 150ms ease;
+}
+@media (hover: hover) {
+	.wv-filter-row:hover {
+		background-color: color-mix(in srgb, var(--wv-purple) 22%, transparent);
+		text-shadow: 0 0 8px color-mix(in srgb, var(--wv-cyan) 55%, transparent);
+	}
+}
+.wv-filter-on {
+	color: var(--wv-cyan-soft);
+	text-shadow:
+		0 1px 0 var(--wv-ink),
+		0 0 8px color-mix(in srgb, var(--wv-cyan) 75%, transparent);
+}
+.wv-filter-count {
+	flex: none;
+	min-width: 22px;
+	padding: 1px 6px;
+	border: 1px solid color-mix(in srgb, var(--wv-purple) 70%, transparent);
+	border-radius: 9999px;
+	background: color-mix(in srgb, var(--wv-purple) 18%, var(--wv-bg));
+	color: var(--wv-text-dim);
+	font-size: 10px;
+	line-height: 1.3;
+	text-align: center;
+	text-shadow: none;
+}
+.wv-filter-on .wv-filter-count {
+	border-color: color-mix(in srgb, var(--wv-cyan) 60%, transparent);
+	color: var(--wv-cyan-soft);
+}
+.wv-filter-dot {
+	width: 10px;
+	height: 10px;
+	border: 1.5px solid color-mix(in srgb, var(--wv-purple) 85%, var(--wv-pink));
+	border-radius: 9999px;
+	transition:
+		background-color 150ms ease,
+		box-shadow 150ms ease;
+}
+button[aria-pressed="true"] > .wv-filter-dot {
+	border-color: var(--wv-cyan-soft);
+	background: var(--wv-cyan-soft);
+	box-shadow:
+		0 0 6px var(--wv-cyan),
+		0 0 12px color-mix(in srgb, var(--wv-cyan) 50%, transparent);
+}
+.wv-filter-branch {
+	border-left: 1px solid transparent;
+	border-image: linear-gradient(180deg, var(--wv-cyan), color-mix(in srgb, var(--wv-purple) 60%, transparent))
+		1;
+}
+.wv-range-track {
+	background: color-mix(in srgb, var(--wv-purple) 70%, var(--wv-bg));
+	box-shadow: inset 0 1px 2px var(--wv-ink);
+}
+.wv-range-fill {
+	background: linear-gradient(90deg, var(--wv-cyan), var(--wv-pink));
+	box-shadow: 0 0 8px color-mix(in srgb, var(--wv-cyan) 60%, transparent);
+}
+.wv-price-readout {
+	border: 1px solid transparent;
+	background:
+		linear-gradient(180deg, color-mix(in srgb, var(--wv-purple) 30%, var(--wv-bg)), var(--wv-bg)) padding-box,
+		linear-gradient(90deg, var(--wv-cyan), var(--wv-pink)) border-box;
+	box-shadow: 0 0 10px color-mix(in srgb, var(--wv-cyan) 25%, transparent);
+	color: white;
+	text-shadow: 0 0 6px color-mix(in srgb, var(--wv-cyan) 60%, transparent);
+	/* A long range wraps at the dash rather than spilling out of the narrow tablet panel. */
+	max-width: 100%;
 }
 
 /* Affiliate tier neon glow — set --glow on the element */

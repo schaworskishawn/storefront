@@ -25,13 +25,13 @@ function OptionButton({
 			type="button"
 			aria-pressed={ticked}
 			onClick={onClick}
-			className={`${heyComic} flex items-center justify-between gap-2 text-left text-xs ${ticked ? "text-[var(--wv-cyan-soft)]" : "text-white"}`}
+			className={`${heyComic} wv-filter-row flex items-center justify-between gap-2 rounded-md text-left text-xs ${ticked ? "wv-filter-on" : "text-white"}`}
 		>
 			<span>
 				{ticked ? "✓ " : ""}
 				{label}
 			</span>
-			<span className={`${orbitron} text-[var(--wv-text-dim)]`}>({count})</span>
+			<span className={`${orbitron} wv-filter-count`}>{count}</span>
 		</button>
 	);
 }
@@ -42,6 +42,10 @@ function OptionButton({
  *
  * The card styling is built in; `className` supplies how it sits on the page, including its `display` (`flex`, or
  * `hidden` while a mobile toggle has it closed) and its width.
+ *
+ * It is a glassy neon panel (`.wv-filter-*` in wv-home.css): a gradient edge that glows, a 3D heading over a neon rule,
+ * glowing section titles between neon dividers, a neon dot for each category (lit cyan when ticked), counts in small
+ * pills, a neon price slider with the chosen range in its own readout, and the glossy APPLY button.
  */
 export function ShopFilterSidebar({
 	filters,
@@ -61,24 +65,21 @@ export function ShopFilterSidebar({
 	const right = ((draft.hi - bounds.min) / span) * 100;
 
 	return (
-		<aside
-			aria-label="Filters"
-			className={`flex-col gap-4 rounded-2xl border border-[var(--wv-purple)] bg-[var(--wv-surface)] p-5 ${className}`}
-		>
-			<div className="flex flex-col gap-[6px]">
+		<aside aria-label="Filters" className={`wv-filter-card flex-col gap-4 rounded-2xl p-5 ${className}`}>
+			<div className="flex flex-col gap-2">
 				<div className="flex items-center justify-between gap-2">
-					<h2 className={`${bungee} text-base text-white`}>FILTERS</h2>
+					<h2 className={`${bungee} wv-heading-title text-base text-white`}>FILTERS</h2>
 					{filters.hasAnyFilter && (
 						<button
 							type="button"
 							onClick={filters.clearAll}
-							className={`${heyComic} text-[11px] text-[var(--wv-cyan-soft)] underline`}
+							className={`${heyComic} wv-filter-clear text-[11px] underline`}
 						>
 							Clear all
 						</button>
 					)}
 				</div>
-				<div className="h-px bg-[var(--wv-purple)]" />
+				<div aria-hidden className="wv-filter-rule" />
 			</div>
 
 			<FilterSection title="CATEGORIES" defaultOpen>
@@ -97,11 +98,9 @@ export function ShopFilterSidebar({
 										aria-pressed={on}
 										aria-label={`Select ${c.name}`}
 										onClick={() => filters.toggleCategory(c.slug)}
-										className={`flex size-4 shrink-0 items-center justify-center text-base leading-none ${
-											on ? "text-[var(--wv-cyan-soft)]" : "text-[var(--wv-purple)]"
-										}`}
+										className="flex size-4 shrink-0 items-center justify-center"
 									>
-										•
+										<span aria-hidden className="wv-filter-dot" />
 									</button>
 									{/* The heading opens and closes what is under it (or ticks the category when nothing is). */}
 									<button
@@ -112,15 +111,15 @@ export function ShopFilterSidebar({
 												? setOpenOverride((cur) => ({ ...cur, [c.slug]: !open }))
 												: filters.toggleCategory(c.slug)
 										}
-										className={`${heyComic} flex min-w-0 flex-1 items-center justify-between gap-2 text-left text-xs ${on ? "text-[var(--wv-cyan-soft)]" : "text-white"}`}
+										className={`${heyComic} wv-filter-row flex min-w-0 flex-1 items-center justify-between gap-2 rounded-md text-left text-xs ${on ? "wv-filter-on" : "text-white"}`}
 									>
 										<span>{c.name}</span>
 										<span className="flex items-center gap-2">
-											<span className={`${orbitron} text-[var(--wv-text-dim)]`}>({c.count})</span>
+											<span className={`${orbitron} wv-filter-count`}>{c.count}</span>
 											{expandable && (
 												<span
 													aria-hidden
-													className={`text-[var(--wv-cyan-soft)] transition-transform ${open ? "rotate-180" : ""}`}
+													className={`wv-filter-chevron transition-transform ${open ? "rotate-180" : ""}`}
 												>
 													▾
 												</span>
@@ -130,11 +129,7 @@ export function ShopFilterSidebar({
 								</div>
 								{/* Under the heading: collapsible groups (Battery Capacity, Mods, …), or the items directly. */}
 								{expandable && (
-									<div
-										className={
-											open ? "ml-1 flex flex-col gap-3 border-l border-[var(--wv-purple)] pl-3" : "hidden"
-										}
-									>
+									<div className={open ? "wv-filter-branch ml-1 flex flex-col gap-3 pl-3" : "hidden"}>
 										{groupsHere.map((group) => {
 											const tickedValues =
 												group.kind === "type"
@@ -186,16 +181,23 @@ export function ShopFilterSidebar({
 			</FilterSection>
 
 			<FilterSection title="PRICE RANGE" defaultOpen>
+				{/* The chosen range has a line of its own, above the slider; the scale's two ends sit under the slider's ends.
+				    (On one line, the three labels ran into each other in the narrow tablet sidebar.) */}
 				<div className="flex flex-col gap-3">
-					<div className="relative h-1 rounded-sm bg-[var(--wv-purple)]">
+					<p
+						className={`${orbitron} wv-price-readout self-center rounded-full px-3 py-1 text-center text-[11px]`}
+					>
+						{money(draft.lo)} – {money(draft.hi)}
+					</p>
+					<div className="wv-range-track relative mx-[7px] h-1 rounded-full">
 						<div
-							className="absolute inset-y-0 bg-[var(--wv-cyan-soft)]"
+							className="wv-range-fill absolute inset-y-0 rounded-full"
 							style={{ left: `${left}%`, width: `${Math.max(0, right - left)}%` }}
 						/>
 						<input
 							type="range"
 							aria-label="Minimum price"
-							className="wv-range"
+							className="wv-range wv-range--aligned"
 							min={bounds.min}
 							max={bounds.max}
 							value={draft.lo}
@@ -204,19 +206,16 @@ export function ShopFilterSidebar({
 						<input
 							type="range"
 							aria-label="Maximum price"
-							className="wv-range"
+							className="wv-range wv-range--aligned"
 							min={bounds.min}
 							max={bounds.max}
 							value={draft.hi}
 							onChange={(e) => filters.setRange([draft.lo, Math.max(Number(e.target.value), draft.lo)])}
 						/>
 					</div>
-					<div className={`${orbitron} flex justify-between text-[11px]`}>
-						<span className="text-[var(--wv-text-dim)]">{money(bounds.min)}</span>
-						<span className="text-white">
-							{money(draft.lo)} - {money(draft.hi)}
-						</span>
-						<span className="text-[var(--wv-text-dim)]">{money(bounds.max)}</span>
+					<div className={`${orbitron} flex justify-between gap-2 text-[10px] text-[var(--wv-text-dim)]`}>
+						<span>{money(bounds.min)}</span>
+						<span>{money(bounds.max)}</span>
 					</div>
 				</div>
 			</FilterSection>
@@ -224,9 +223,9 @@ export function ShopFilterSidebar({
 			<button
 				type="button"
 				onClick={filters.apply}
-				className={`${heyComic} h-[45px] w-full rounded-xl bg-[var(--wv-cyan-soft)] text-sm text-[var(--wv-bg)]`}
+				className={`${heyComic} wv-pc-cta h-[45px] w-full rounded-xl bg-[var(--wv-cyan-soft)] text-sm text-[var(--wv-bg)]`}
 			>
-				APPLY FILTERS
+				<span className="wv-pc-cta-label">APPLY FILTERS</span>
 			</button>
 		</aside>
 	);
