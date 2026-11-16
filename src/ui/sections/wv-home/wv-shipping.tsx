@@ -101,15 +101,21 @@ function Heading({
 	title: string;
 	bar?: string;
 }) {
+	// Solid 3D lettering, as on the site's other section headings (SectionHeading): a shaded pink eyebrow (its cyan word
+	// stays solid cyan), a chrome title with an edge beneath, and a glowing bar (`.wv-heading-*` in wv-home.css).
 	return (
 		<div className="flex flex-col items-center gap-2 text-center">
 			<p
-				className={`${marker} text-lg uppercase tracking-[2px] text-[var(--wv-pink)] md:text-xl xl:text-2xl`}
+				className={`${marker} wv-heading-eyebrow text-lg uppercase tracking-[2px] text-[var(--wv-pink)] md:text-xl xl:text-2xl`}
 			>
 				{eyebrow}
 			</p>
-			<h2 className={`${bungee} text-[22px] tracking-[1px] md:text-[26px] xl:text-[32px]`}>{title}</h2>
-			<div className={`wv-bar h-[3px] rounded-full bg-[var(--wv-cyan-soft)] ${bar}`} />
+			<h2
+				className={`${bungee} wv-heading-title text-[22px] tracking-[1px] text-white md:text-[26px] xl:text-[32px]`}
+			>
+				{title}
+			</h2>
+			<div className={`wv-bar wv-heading-bar h-[3px] rounded-full bg-[var(--wv-cyan-soft)] ${bar}`} />
 		</div>
 	);
 }
