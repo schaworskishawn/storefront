@@ -225,17 +225,17 @@ export function WvShipping() {
 					{/* The art as a lit neon screen, like the page's other neon pieces: a cyan-to-pink edge that glows, its
 					    colours lifted, glass over it (a sheen, an inner glow, edges falling into the page) and HUD corner
 					    brackets. On the wide tablet crop it sits a little low so the whole parcel stays in view. */}
-					<div className="wv-ship-art relative aspect-[320/200] w-full shrink-0 overflow-hidden rounded-[20px] md:aspect-[688/320] xl:aspect-auto xl:h-[444px] xl:w-[540px]">
+					<div className="wv-art relative aspect-[320/200] w-full shrink-0 overflow-hidden rounded-[20px] md:aspect-[688/320] xl:aspect-auto xl:h-[444px] xl:w-[540px]">
 						<Image
 							src="/home/imgShippingHero.png"
 							alt="Shipping box orbited by a glowing network"
 							fill
 							sizes="(min-width: 1280px) 540px, 100vw"
-							className="wv-ship-art-img object-cover object-[50%_62%]"
+							className="wv-art-img object-cover object-[50%_62%]"
 							priority
 						/>
-						<span aria-hidden className="wv-ship-art-glass absolute inset-0" />
-						<span aria-hidden className="wv-ship-art-hud absolute inset-[10px] md:inset-[14px]" />
+						<span aria-hidden className="wv-art-glass absolute inset-0" />
+						<span aria-hidden className="wv-art-hud absolute inset-[10px] md:inset-[14px]" />
 					</div>
 				</div>
 			</section>

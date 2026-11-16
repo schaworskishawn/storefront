@@ -5,6 +5,7 @@ import { Suspense } from "react";
 import { type HomeProduct, type WvCategoryTile } from "@/lib/catalog/get-home-products";
 import { WvFooter, WvHeader } from "./wv-chrome";
 import { PromoBundleArt } from "./wv-promo-art";
+import { ShopHeroArt } from "./wv-shop-hero-art";
 import { NewsletterForm } from "./wv-newsletter-client";
 import { ShopCatalog } from "./wv-shop-catalog";
 import "./wv-home.css";
@@ -132,16 +133,10 @@ export function WvShop({
 							complete selection of liquids, hardware kits, and high-quality accessories.
 						</p>
 					</div>
-					<div className="wv-shop-hero-art relative hidden h-[120px] w-[180px] shrink-0 overflow-hidden rounded-xl md:block xl:h-40 xl:w-[240px]">
-						<Image
-							src="/home/imgShopPromoGraphic.png"
-							alt=""
-							fill
-							sizes="240px"
-							className="object-cover"
-							priority
-						/>
-						<span className="to-[var(--wv-bg)]/80 absolute inset-0 bg-gradient-to-b from-transparent" />
+					{/* The art: the store's range as a neon lineup on a synthwave grid, drawn in the promo art's style
+					    (wv-shop-hero-art.tsx), in a glowing cyan-to-pink frame like the shipping hero's art (`.wv-art`). */}
+					<div className="wv-art relative hidden h-[120px] w-[180px] shrink-0 overflow-hidden rounded-xl md:block xl:h-40 xl:w-[240px]">
+						<ShopHeroArt idPrefix="shop-hero-art" />
 					</div>
 				</div>
 			</section>
