@@ -15,9 +15,17 @@ const bungee = "font-[family-name:var(--font-bungee)]";
 const orbitron = "font-[family-name:var(--font-orbitron)]";
 const marker = "font-[family-name:var(--font-permanent-marker)]";
 
-const BADGES = ["Visa", "Mastercard", "Amex", "Discover", "Interac e-Transfer", "⚡ Bitcoin"];
-
-type Method = { icon: string; title: string; text: string; more?: { href: string; label: string } };
+/**
+ * A way to pay. Each one is a card under "Payment options" and a chip in the "proudly accepting" strip, so the two always
+ * list the same ways; `chip` is the strip's shorter label where the card's title is long.
+ */
+type Method = {
+	icon: string;
+	title: string;
+	chip?: string;
+	text: string;
+	more?: { href: string; label: string };
+};
 
 const METHODS: Method[] = [
 	{
@@ -31,8 +39,10 @@ const METHODS: Method[] = [
 		text: "Place your order, then send an Interac e-Transfer from your Canadian bank. We email the details and ship once it arrives.",
 	},
 	{
-		icon: "🪙",
+		// The Bitcoin sign, not 🪙: that emoji is too new for Windows 10's emoji font, which shows an empty box instead.
+		icon: "₿",
 		title: "Crypto Payments",
+		chip: "Crypto",
 		text: "Decentralized privacy using standard Bitcoin (BTC), Ethereum (ETH), and major stablecoins.",
 	},
 	{
@@ -145,23 +155,30 @@ export function WvPayments() {
 				</div>
 			</section>
 
-			{/* We accept */}
-			<section className="flex flex-col items-center gap-5 border-y border-[var(--wv-cyan-soft)] bg-[var(--wv-ink)] px-5 py-5 md:px-8 md:py-7 xl:px-20 xl:py-8">
-				<p
-					className={`${heyComic} text-center text-xs uppercase tracking-[2px] text-[var(--wv-text-dim)] md:text-sm`}
-				>
-					PROUDLY ACCEPTING SECURED PAYMENTS FROM
+			{/* We accept: a lit glass band (`.wv-band*`) with a chrome title between neon dashes, and a chip for each way to
+			    pay, the same list as the cards below (Vapor Tokens only while the program is on): glass pills alternating
+			    cyan and pink, each icon in a glowing neon ring (`.wv-pay-chip`, `.wv-trust-*`). */}
+			<section className="wv-band flex flex-col items-center gap-5 px-5 py-6 md:px-8 md:py-7 xl:px-20 xl:py-8">
+				<p className="flex items-center gap-3 text-center">
+					<span aria-hidden className="wv-band-dash hidden md:block" />
+					<span className={`${heyComic} wv-hero-tagline text-xs uppercase tracking-[2px] md:text-sm`}>
+						PROUDLY ACCEPTING SECURED PAYMENTS FROM
+					</span>
+					<span aria-hidden className="wv-band-dash wv-band-dash--end hidden md:block" />
 				</p>
-				<div className="flex flex-wrap justify-center gap-3 xl:gap-4">
-					{BADGES.map((b) => (
-						<span
-							key={b}
-							className={`${heyComic} rounded-lg border border-[var(--wv-cyan-soft)] bg-[var(--wv-control)] px-4 py-[6px] text-[13px] xl:px-5 xl:py-2 xl:text-sm`}
+				<ul className="flex flex-wrap justify-center gap-3 xl:gap-4">
+					{methods.map((m) => (
+						<li
+							key={m.title}
+							className="wv-pay-chip flex items-center gap-2 rounded-full py-[5px] pl-[5px] pr-4 xl:gap-[10px] xl:pr-5"
 						>
-							{b}
-						</span>
+							<span aria-hidden className="wv-trust-icon text-sm xl:text-base">
+								{m.icon}
+							</span>
+							<span className={`${heyComic} wv-trust-title text-[13px] xl:text-sm`}>{m.chip ?? m.title}</span>
+						</li>
 					))}
-				</div>
+				</ul>
 			</section>
 
 			{/* Payment options */}

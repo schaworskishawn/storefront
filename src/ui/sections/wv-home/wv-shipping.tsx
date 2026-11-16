@@ -225,16 +225,16 @@ export function WvShipping() {
 			</section>
 			<Divider />
 
-			{/* Perks: a lit glass band (`.wv-perks-*` in wv-home.css) with a chrome title between neon dashes, and the items
+			{/* Perks: a lit glass band (`.wv-band*` in wv-home.css) with a chrome title between neon dashes, and the items
 			    styled like the home page's trust strip (`.wv-trust-*`): each icon in a glowing neon ring, alternating cyan
 			    and pink, its title lifted and its text brighter. */}
-			<section className="wv-perks-band flex flex-col items-center gap-5 px-5 py-8 md:gap-6 md:px-10 xl:px-20 xl:py-10">
+			<section className="wv-band flex flex-col items-center gap-5 px-5 py-8 md:gap-6 md:px-10 xl:px-20 xl:py-10">
 				<p className="flex items-center gap-3 text-center">
-					<span aria-hidden className="wv-perks-dash hidden md:block" />
+					<span aria-hidden className="wv-band-dash hidden md:block" />
 					<span className={`${heyComic} wv-hero-tagline text-xs uppercase tracking-[2px] md:text-sm`}>
 						EXPERIENCE PREMIUM WORLDWIDE LOGISTICS
 					</span>
-					<span aria-hidden className="wv-perks-dash wv-perks-dash--end hidden md:block" />
+					<span aria-hidden className="wv-band-dash wv-band-dash--end hidden md:block" />
 				</p>
 				<div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2 md:gap-x-4 md:gap-y-4 xl:flex xl:flex-wrap xl:justify-center xl:gap-6">
 					{PERKS.map((p) => (
