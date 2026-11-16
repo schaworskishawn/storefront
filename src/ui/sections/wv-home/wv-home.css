@@ -827,6 +827,134 @@ body.wv-motion .wv-nav-link[aria-current="page"]:is(:hover, :focus-visible) {
 	}
 }
 
+/* Neon cards: the shipping options (wv-shipping.tsx) and the payment options (wv-payments.tsx). Each is a glassy card in
+ * its own colour: cyan; pink (--pink, the payment cards alternate); or pink and brighter for the popular shipping option
+ * (--featured). A glow in its colour in the top corner, a gradient edge (its colour into purple into the other neon) that
+ * glows, a highlight along the top and a shadow beneath; the icon a lit tile; the title lifted (.wv-pc-name), the delivery
+ * time glowing in the card's colour, the copy brighter with its key words lit (.wv-neon-key) and a link in the card's
+ * colour; the popular pill glows and gently pulses. Under the pointer the card lifts and glows brighter (no movement for
+ * reduced motion). */
+.wv-neon-card {
+	--accent: var(--wv-cyan-soft);
+	--edge: linear-gradient(
+		150deg,
+		color-mix(in srgb, var(--accent) 85%, transparent),
+		color-mix(in srgb, var(--wv-purple) 75%, transparent) 50%,
+		color-mix(in srgb, var(--wv-pink) 55%, transparent)
+	);
+	--glow: 0 0 16px color-mix(in srgb, var(--accent) 20%, transparent);
+	border: 1.5px solid transparent;
+	background:
+		radial-gradient(75% 60% at 0% 0%, color-mix(in srgb, var(--accent) 13%, transparent), transparent 70%)
+			padding-box,
+		linear-gradient(180deg, color-mix(in srgb, var(--wv-purple) 16%, var(--wv-ink)), var(--wv-ink))
+			padding-box,
+		var(--edge) border-box;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 12%, transparent),
+		var(--glow),
+		0 16px 26px -14px var(--wv-ink);
+	transition:
+		transform 200ms ease,
+		box-shadow 200ms ease;
+}
+.wv-neon-card--pink {
+	--accent: var(--wv-pink);
+}
+.wv-neon-card-link {
+	color: var(--accent);
+	text-shadow:
+		0 1px 1px var(--wv-ink),
+		0 0 8px color-mix(in srgb, var(--accent) 70%, transparent);
+}
+.wv-neon-card--featured {
+	--accent: var(--wv-pink);
+	--edge: linear-gradient(150deg, var(--wv-pink), var(--wv-purple) 50%, var(--wv-cyan));
+	--glow:
+		0 0 22px color-mix(in srgb, var(--wv-pink) 35%, transparent),
+		0 0 46px -10px color-mix(in srgb, var(--wv-pink) 45%, transparent);
+}
+@media (hover: hover) {
+	.wv-neon-card:hover {
+		transform: translateY(-3px);
+		box-shadow:
+			inset 0 1px 0 color-mix(in srgb, white 18%, transparent),
+			0 0 26px color-mix(in srgb, var(--accent) 45%, transparent),
+			0 20px 30px -14px var(--wv-ink);
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.wv-neon-card:hover {
+		transform: none;
+	}
+}
+.wv-neon-card-icon {
+	border: 1.5px solid transparent;
+	background:
+		radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--accent) 26%, transparent), transparent 70%)
+			padding-box,
+		linear-gradient(180deg, color-mix(in srgb, var(--accent) 14%, var(--wv-control)), var(--wv-bg))
+			padding-box,
+		linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--wv-purple) 70%, var(--accent))) border-box;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 24%, transparent),
+		inset 0 0 10px color-mix(in srgb, var(--accent) 25%, transparent),
+		0 0 12px color-mix(in srgb, var(--accent) 40%, transparent);
+	text-shadow: 0 0 10px color-mix(in srgb, var(--accent) 85%, transparent);
+}
+.wv-neon-card-timing {
+	color: var(--accent);
+	text-shadow:
+		0 1px 0 var(--wv-ink),
+		0 0 8px color-mix(in srgb, var(--accent) 70%, transparent);
+}
+.wv-neon-card-text {
+	color: color-mix(in srgb, white 70%, var(--wv-muted));
+	text-shadow: 0 1px 1px var(--wv-ink);
+}
+.wv-neon-key {
+	font-weight: inherit;
+	color: white;
+	text-shadow:
+		0 1px 1px var(--wv-ink),
+		0 0 8px color-mix(in srgb, var(--accent) 85%, transparent);
+}
+.wv-ship-popular {
+	border: 1px solid transparent;
+	color: white;
+	letter-spacing: 0.5px;
+	background:
+		linear-gradient(
+				90deg,
+				color-mix(in srgb, var(--wv-pink) 45%, var(--wv-control)),
+				color-mix(in srgb, var(--wv-purple) 45%, var(--wv-control))
+			)
+			padding-box,
+		linear-gradient(90deg, var(--wv-pink), var(--wv-cyan)) border-box;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 25%, transparent),
+		0 0 10px color-mix(in srgb, var(--wv-pink) 55%, transparent);
+	text-shadow: 0 0 6px var(--wv-pink);
+}
+@media (prefers-reduced-motion: no-preference) {
+	body.wv-motion .wv-ship-popular {
+		animation: wv-popular-pulse 2.8s ease-in-out infinite;
+	}
+}
+@keyframes wv-popular-pulse {
+	0%,
+	100% {
+		box-shadow:
+			inset 0 1px 0 color-mix(in srgb, white 25%, transparent),
+			0 0 8px color-mix(in srgb, var(--wv-pink) 45%, transparent);
+	}
+	50% {
+		box-shadow:
+			inset 0 1px 0 color-mix(in srgb, white 25%, transparent),
+			0 0 16px color-mix(in srgb, var(--wv-pink) 80%, transparent);
+	}
+}
+
 /* Mobile menu (wv-menu-client.tsx): a glass sheet floating over the page (a nebula glow in two corners, a neon edge
  * along the bottom and a deep shadow under it), each link a lit row (a glowing icon, a cyan-to-pink neon edge and a
  * neon chevron), the page you're on lit pink with a bar down its edge, and the icons as neon tiles big enough to tap

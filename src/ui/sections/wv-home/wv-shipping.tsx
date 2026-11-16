@@ -15,26 +15,46 @@ const bungee = "font-[family-name:var(--font-bungee)]";
 const orbitron = "font-[family-name:var(--font-orbitron)]";
 const marker = "font-[family-name:var(--font-permanent-marker)]";
 
+/** A price or cut-off in an option's copy, lit in the card's colour (`.wv-neon-key`). */
+function Key({ children }: { children: React.ReactNode }) {
+	return <strong className="wv-neon-key">{children}</strong>;
+}
+
 const OPTIONS = [
 	{
 		icon: "📦",
 		title: "Standard Shipping",
 		timing: "3 - 5 Business Days",
-		text: "Reliable delivery for everyday restocking. FREE on all orders over $115, or a low $4.99 flat rate for smaller orders.",
+		text: (
+			<>
+				Reliable delivery for everyday restocking. <Key>FREE</Key> on all orders over <Key>$115</Key>, or a
+				low <Key>$4.99</Key> flat rate for smaller orders.
+			</>
+		),
 		featured: false,
 	},
 	{
 		icon: "⚡",
 		title: "Express Shipping",
 		timing: "1 - 2 Business Days",
-		text: "Expedited priority handling. Slashed times to ensure your inventory stays stacked. Flat rate of $9.99 for all orders.",
+		text: (
+			<>
+				Expedited priority handling. Slashed times to ensure your inventory stays stacked. Flat rate of{" "}
+				<Key>$9.99</Key> for all orders.
+			</>
+		),
 		featured: true,
 	},
 	{
 		icon: "🚀",
 		title: "Overnight Delivery",
 		timing: "Next Business Day",
-		text: "Order by 2PM EST for same-day dispatch. Next-day arrival guaranteed for urgent bulk shipments. Flat rate of $24.99.",
+		text: (
+			<>
+				Order by <Key>2PM EST</Key> for same-day dispatch. Next-day arrival guaranteed for urgent bulk
+				shipments. Flat rate of <Key>$24.99</Key>.
+			</>
+		),
 		featured: false,
 	},
 ];
@@ -194,25 +214,23 @@ export function WvShipping() {
 					bar="w-20"
 				/>
 				<div className="grid w-full max-w-[1280px] grid-cols-1 gap-4 md:gap-5 xl:grid-cols-3 xl:gap-6">
+					{/* Each option is a glassy neon card in its own colour (cyan, or pink for the popular one): a glowing
+					    gradient edge, a lit icon tile, a glowing pill on the popular one, lifted lettering and its prices
+					    lit; under the pointer it lifts and glows brighter (`.wv-neon-card*` in wv-home.css). */}
 					{OPTIONS.map((o) => (
 						<article
 							key={o.title}
-							className={`flex flex-col gap-4 rounded-2xl border bg-[var(--wv-ink)] p-5 md:flex-row md:items-start md:gap-5 md:p-6 xl:flex-col xl:p-7 ${
-								o.featured
-									? "border-[var(--wv-pink)] shadow-[0_8px_8px_rgba(241,121,251,0.08)]"
-									: "border-[var(--wv-purple)] shadow-[0_8px_8px_rgba(0,0,0,0.53)]"
-							}`}
+							className={`wv-neon-card ${o.featured ? "wv-neon-card--featured" : ""} flex flex-col gap-4 rounded-2xl p-5 md:flex-row md:items-start md:gap-5 md:p-6 xl:flex-col xl:p-7`}
 						>
 							<div className="flex items-center justify-between md:block xl:flex">
 								<span
-									className={`flex size-11 shrink-0 items-center justify-center rounded-xl border bg-[var(--wv-bg)] text-[22px] ${
-										o.featured ? "border-[var(--wv-pink)]" : "border-[var(--wv-cyan-soft)]"
-									}`}
+									aria-hidden
+									className="wv-neon-card-icon flex size-11 shrink-0 items-center justify-center rounded-xl text-[22px]"
 								>
 									{o.icon}
 								</span>
 								{o.featured && (
-									<span className="rounded-full border border-[var(--wv-pink)] bg-[var(--wv-control)] px-[10px] py-1 font-sans text-[9px] font-extrabold text-[var(--wv-pink)] md:hidden xl:inline">
+									<span className="wv-ship-popular rounded-full px-[10px] py-1 font-sans text-[9px] font-extrabold md:hidden xl:inline">
 										POPULAR
 									</span>
 								)}
@@ -220,20 +238,16 @@ export function WvShipping() {
 							<div className="flex min-w-0 flex-1 flex-col gap-4 xl:gap-4">
 								<div className="flex flex-col gap-[6px]">
 									<div className="flex items-start justify-between gap-3">
-										<h3 className={`${heyComic} text-lg`}>{o.title}</h3>
+										<h3 className={`${heyComic} wv-pc-name text-lg`}>{o.title}</h3>
 										{o.featured && (
-											<span className="hidden shrink-0 rounded-full border border-[var(--wv-pink)] bg-[var(--wv-control)] px-[10px] py-1 font-sans text-[9px] font-extrabold text-[var(--wv-pink)] md:inline xl:hidden">
+											<span className="wv-ship-popular hidden shrink-0 rounded-full px-[10px] py-1 font-sans text-[9px] font-extrabold md:inline xl:hidden">
 												POPULAR
 											</span>
 										)}
 									</div>
-									<p
-										className={`${bungee} text-sm ${o.featured ? "text-[var(--wv-pink)]" : "text-[var(--wv-cyan-soft)]"}`}
-									>
-										{o.timing}
-									</p>
+									<p className={`${bungee} wv-neon-card-timing text-sm`}>{o.timing}</p>
 								</div>
-								<p className={`${orbitron} text-[13px] leading-[1.5] text-[var(--wv-muted)]`}>{o.text}</p>
+								<p className={`${orbitron} wv-neon-card-text text-[13px] leading-[1.5]`}>{o.text}</p>
 							</div>
 						</article>
 					))}
