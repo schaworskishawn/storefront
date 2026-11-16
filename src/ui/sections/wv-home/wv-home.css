@@ -342,6 +342,40 @@ body.wv-motion .wv-nav-link[aria-current="page"]:is(:hover, :focus-visible) {
 		0 1px 1px var(--wv-ink);
 }
 
+/* The shipping hero (wv-shipping.tsx) uses the home hero's text styles (.wv-hero-*) and the neon outline button. Around
+ * them: a pink glow behind the text and a cyan one behind the art, the badge a neon pill (glass inside a cyan-to-pink
+ * edge) with a glowing pink truck, and the title's underline a glowing pink-to-cyan bar. */
+.wv-ship-hero {
+	background:
+		radial-gradient(50% 55% at 15% 30%, color-mix(in srgb, var(--wv-pink) 12%, transparent), transparent 70%),
+		radial-gradient(45% 60% at 85% 65%, color-mix(in srgb, var(--wv-cyan) 9%, transparent), transparent 70%);
+}
+.wv-ship-badge {
+	border: 1px solid transparent;
+	color: var(--wv-cyan-soft);
+	background:
+		linear-gradient(180deg, color-mix(in srgb, var(--wv-cyan) 16%, var(--wv-control)), var(--wv-control))
+			padding-box,
+		linear-gradient(90deg, var(--wv-cyan), var(--wv-pink)) border-box;
+	box-shadow:
+		0 0 12px color-mix(in srgb, var(--wv-cyan) 35%, transparent),
+		inset 0 1px 0 color-mix(in srgb, white 14%, transparent);
+	text-shadow:
+		0 0 8px color-mix(in srgb, var(--wv-cyan) 80%, transparent),
+		0 1px 1px var(--wv-ink);
+}
+.wv-ship-badge svg {
+	flex: none;
+	color: var(--wv-pink);
+	filter: drop-shadow(0 0 4px color-mix(in srgb, var(--wv-pink) 90%, transparent));
+}
+.wv-ship-hero-bar {
+	background: linear-gradient(90deg, var(--wv-pink), var(--wv-cyan));
+	box-shadow:
+		0 0 10px color-mix(in srgb, var(--wv-pink) 70%, transparent),
+		0 0 16px color-mix(in srgb, var(--wv-cyan) 35%, transparent);
+}
+
 /* Category badges (wv-category-badge.tsx): a soft pink glow always; under the pointer or keyboard focus, and while
  * selected in the shop's filter, they glow brighter in pink and cyan, and lift. No movement for reduced motion. */
 .wv-badge {

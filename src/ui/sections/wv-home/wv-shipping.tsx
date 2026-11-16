@@ -1,3 +1,4 @@
+import { Truck } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { WvFooter, WvHeader } from "./wv-chrome";
@@ -119,37 +120,41 @@ export function WvShipping() {
 			<WvHeader />
 
 			{/* Hero */}
-			<section className="relative overflow-hidden">
+			{/* The hero's text has depth, as on the home hero (`.wv-hero-*`): a neon badge with a glowing truck, a 3D title
+			    over a glowing pink-to-cyan bar, brighter copy with its key phrases lit, and the neon outline button; behind
+			    it a pink and cyan glow (`.wv-ship-hero*` in wv-home.css). */}
+			<section className="wv-ship-hero relative overflow-hidden">
 				<span className="absolute left-[120px] top-[90px] hidden size-[5px] rounded-full bg-[var(--wv-cyan-soft)] xl:block" />
 				<span className="absolute left-[450px] top-[320px] hidden size-[3px] rounded-full bg-[var(--wv-pink)] xl:block" />
 				<span className="absolute left-[600px] top-20 hidden size-1 rounded-full bg-[var(--wv-cyan-soft)] xl:block" />
 				<div className="relative flex flex-col gap-6 px-5 py-8 md:gap-6 md:px-10 md:py-10 xl:flex-row xl:items-center xl:gap-12 xl:px-20 xl:py-12">
 					<div className="flex min-w-0 flex-1 flex-col items-start gap-4 xl:gap-6">
 						<span
-							className={`${heyComic} rounded-full border border-[var(--wv-cyan-soft)] bg-[var(--wv-control)] px-3 py-1 text-[10px] tracking-[1.5px] text-[var(--wv-cyan-soft)] md:px-4 md:py-[6px] md:text-[11px]`}
+							className={`${heyComic} wv-ship-badge flex items-center gap-2 rounded-full px-3 py-1 text-[10px] tracking-[1.5px] md:px-4 md:py-[6px] md:text-[11px]`}
 						>
+							<Truck aria-hidden className="size-3.5 md:size-4" strokeWidth={2.25} />
 							<span className="md:hidden">DISPATCHED IN 24H</span>
 							<span className="hidden md:inline">DISCREET &amp; DISPATCHED WITHIN 24 HOURS</span>
 						</span>
 						<div className="flex w-full flex-col gap-3">
 							<h1
-								className={`${heyComic} text-[30px] leading-[34px] md:text-[44px] md:leading-[44px] xl:text-[54px] xl:leading-[60px]`}
+								className={`${heyComic} wv-title-glow wv-hero-title text-[30px] leading-[34px] md:text-[44px] md:leading-[44px] xl:text-[54px] xl:leading-[60px]`}
 							>
-								FAST &amp; RELIABLE SHIPPING
+								<span>FAST &amp; RELIABLE</span> <span className="text-[var(--wv-cyan-soft)]">SHIPPING</span>
 							</h1>
-							<div className="h-1 w-20 rounded-full bg-[var(--wv-pink)] md:w-[120px]" />
+							<div className="wv-ship-hero-bar h-1 w-20 rounded-full md:w-[120px]" />
 						</div>
-						<p
-							className={`${orbitron} max-w-[692px] text-sm leading-[1.6] text-[var(--wv-text-dim)] xl:text-base`}
-						>
-							We deliver your favorite vaping products safely, swiftly, and discreetly right to your doorstep.
-							Explore our flexible delivery speeds and reliable carriers.
+						<p className={`${orbitron} wv-hero-copy max-w-[692px] text-sm leading-[1.6] xl:text-base`}>
+							We deliver your favorite vaping products{" "}
+							<strong className="wv-hero-key">safely, swiftly, and discreetly</strong> right to your doorstep.
+							Explore our <strong className="wv-hero-key wv-hero-key--pink">flexible delivery speeds</strong>{" "}
+							and <strong className="wv-hero-key">reliable carriers</strong>.
 						</p>
 						<Link
 							href="#faqs"
-							className={`${heyComic} flex h-[41px] w-full items-center justify-center rounded-xl border border-[var(--wv-cyan-soft)] px-8 text-base text-[var(--wv-cyan-soft)] md:h-9 md:w-auto xl:h-[49px]`}
+							className={`${heyComic} wv-btn wv-btn-outline wv-btn-neon flex h-[41px] w-full items-center justify-center rounded-xl border-[1.5px] border-[var(--wv-cyan-soft)] px-8 text-base text-[var(--wv-cyan-soft)] md:h-9 md:w-auto xl:h-[49px]`}
 						>
-							View Shipping FAQs
+							<span className="wv-btn-label">View Shipping FAQs</span>
 						</Link>
 					</div>
 					<div className="relative aspect-[320/200] w-full shrink-0 overflow-hidden rounded-[20px] shadow-[0_0_32px_4px_rgba(0,229,255,0.12)] md:aspect-[688/320] xl:aspect-auto xl:h-[444px] xl:w-[540px]">
