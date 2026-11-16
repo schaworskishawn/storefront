@@ -15,5 +15,6 @@ export const primaryBtn = `${inter} wv-quit-primary flex h-11 items-center justi
 /** Glass inside a soft neon edge that glows under the pointer (`.wv-quit-ghost`, wv-home.css). */
 export const ghostBtn = `${inter} wv-quit-ghost flex h-11 items-center justify-center rounded-xl px-5 text-sm font-bold text-[var(--qp-text)] disabled:opacity-50`;
 
+/** A text field set into the glass, glowing cyan while focused (`.wv-quit-field`, wv-home.css). */
 export const fieldClass =
-	"h-11 w-full min-w-0 rounded-lg border border-[var(--qp-border)] bg-[var(--qp-field)] px-3 text-sm text-[var(--qp-text)] placeholder:text-[var(--qp-dim)] focus:border-[var(--qp-primary)] focus:outline-none";
+	"wv-quit-field h-11 w-full min-w-0 rounded-lg px-3 text-sm text-[var(--qp-text)] placeholder:text-[var(--qp-dim)] focus:outline-none";
