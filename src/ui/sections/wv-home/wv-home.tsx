@@ -3,7 +3,7 @@ import Link from "next/link";
 import { type WvCategoryTile } from "@/lib/catalog/get-home-products";
 import { WvFooter, WvHeader } from "./wv-chrome";
 import { CATEGORY_BADGE } from "./wv-category-art";
-import { CategoryBadge } from "./wv-category-badge";
+import { CategoryBadgeImage } from "./wv-category-badge-image";
 import { PromoBundleArt } from "./wv-promo-art";
 import { BrandCarousel } from "./wv-home-client";
 import { type HomeMembership } from "@/lib/catalog/home-collections";
@@ -158,7 +158,10 @@ export function WvHome({
 								>
 									{badge ? (
 										<>
-											<CategoryBadge icon={badge} name={c.name} idPrefix={`home-cat-${c.slug}`} />
+											<CategoryBadgeImage
+												icon={badge}
+												sizes="(min-width: 1280px) 140px, (min-width: 768px) 230px, 33vw"
+											/>
 											<span className="sr-only">{c.name}</span>
 										</>
 									) : (

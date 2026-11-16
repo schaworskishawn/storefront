@@ -2,9 +2,11 @@ import type { CategoryBadgeIcon } from "./wv-category-art";
 
 /**
  * A category badge in the site's look: a neon hexagon (cyan into pink) over a dark nebula, a glowing line drawing of what
- * the category holds, and its name on a plate across the bottom in the headline font. Drawn here rather than shipped as
- * pictures, so the six read as one set, stay sharp at any size, cost a few KB instead of ~2.4 MB each, and carry the name
- * as text. Colours are the brand tokens; the hover glow is in wv-home.css (`.wv-badge`).
+ * the category holds, and its name on a plate across the bottom in the headline font. Colours are the brand tokens.
+ *
+ * This is the badges' source art. The site shows production WebPs made from it by the local Graphics Production Pipeline
+ * (`CategoryBadgeImage`, wv-category-badge-image.tsx), so a change here reaches the site only once the badge is re-run
+ * through the pipeline. Its line drawings (`BADGE_DRAWINGS`) are also drawn live in the promo art and the shop hero art.
  *
  * It is built for depth, not as a flat outline: the frame is a bevelled rim lit from above with the neon tube on its
  * outer edge; the glass inside sits sunk into it (a shadow along the rim, light caught across the top); the drawing is

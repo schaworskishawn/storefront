@@ -12,7 +12,7 @@ import { useShuffleSeed } from "@/lib/catalog/use-shuffle-seed";
 import { ShopFilterSidebar } from "./wv-shop-filter-sidebar";
 import { WishlistHeart } from "./wv-wishlist-client";
 import { CATEGORY_BADGE } from "./wv-category-art";
-import { CategoryBadge } from "./wv-category-badge";
+import { CategoryBadgeImage } from "./wv-category-badge-image";
 import { formatPrice } from "@/ui/components/plp/utils";
 
 const heyComic = "font-[family-name:var(--font-hey-comic)]";
@@ -205,7 +205,11 @@ export function ShopCatalog({
 								>
 									{badge ? (
 										<>
-											<CategoryBadge icon={badge} name={c.name} idPrefix={`shop-cat-${c.slug}`} active={on} />
+											<CategoryBadgeImage
+												icon={badge}
+												active={on}
+												sizes="(min-width: 1280px) 160px, (min-width: 768px) 150px, 33vw"
+											/>
 											<span className="sr-only">{c.name}</span>
 										</>
 									) : (
