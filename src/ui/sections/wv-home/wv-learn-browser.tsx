@@ -1,35 +1,21 @@
 "use client";
 
-import {
-	Award,
-	BookOpen,
-	FileText,
-	Heart,
-	Package,
-	Search,
-	Star,
-	Tag,
-	Zap,
-	type LucideIcon,
-} from "lucide-react";
+import { Search, Tag } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { LearnArticleSummary } from "@/lib/learn/articles";
-import { ArticleImage, ArticleMeta, LearnCard, learnHref } from "./wv-learn-card";
+import {
+	ArticleImage,
+	ArticleMeta,
+	ArticleTag,
+	articleCardClass,
+	CATEGORY_ICONS,
+	LearnCard,
+	learnHref,
+} from "./wv-learn-card";
 import { LearnHeroArt } from "./wv-learn-hero-art";
 
 const outfit = "font-[family-name:var(--font-outfit)]";
-
-/** Icons for the design's standard categories; any other category you invent gets a tag icon. */
-const CATEGORY_ICONS: Record<string, LucideIcon> = {
-	guides: BookOpen,
-	reviews: Star,
-	news: FileText,
-	"tips-and-tricks": Zap,
-	products: Package,
-	lifestyle: Heart,
-	beginners: Award,
-};
 
 const STANDARD_CATEGORIES = [
 	{ slug: "guides", label: "GUIDES" },
@@ -40,6 +26,22 @@ const STANDARD_CATEGORIES = [
 	{ slug: "lifestyle", label: "LIFESTYLE" },
 	{ slug: "beginners", label: "BEGINNERS" },
 ];
+
+/** A section's title: chrome 3D lettering (`.wv-heading-title`) over a glowing bar. `status` announces it when it
+ * changes (the results count). */
+function SectionTitle({ children, status }: { children: string; status?: boolean }) {
+	return (
+		<div className="flex flex-col gap-2">
+			<h2
+				role={status ? "status" : undefined}
+				className={`${outfit} wv-heading-title text-lg font-extrabold md:text-xl xl:text-2xl`}
+			>
+				{children}
+			</h2>
+			<div className="wv-hero-bar h-[3px] w-12 rounded-full md:w-16" />
+		</div>
+	);
+}
 
 export function LearnBrowser({ articles }: { articles: LearnArticleSummary[] }) {
 	const [query, setQuery] = useState("");
@@ -129,12 +131,7 @@ export function LearnBrowser({ articles }: { articles: LearnArticleSummary[] }) 
 			    with room above and below so the glow and the lift aren't clipped. */}
 			<section className="wv-band flex flex-col gap-5 px-5 py-6 md:px-8 md:py-8 xl:gap-8 xl:px-20 xl:py-12">
 				<div className="flex items-center justify-between">
-					<div className="flex flex-col gap-2">
-						<h2 className={`${outfit} wv-heading-title text-lg font-extrabold md:text-xl xl:text-2xl`}>
-							CATEGORIES
-						</h2>
-						<div className="wv-hero-bar h-[3px] w-12 rounded-full md:w-16" />
-					</div>
+					<SectionTitle>CATEGORIES</SectionTitle>
 					{filtering && (
 						<button
 							type="button"
@@ -172,42 +169,47 @@ export function LearnBrowser({ articles }: { articles: LearnArticleSummary[] }) 
 				</ul>
 			</section>
 
-			{/* Featured */}
+			{/* Featured: a big neon glass card in its category's colour (`.wv-neon-card`), which lifts and glows under the
+			    pointer; its art, tag, meta and "Read More" glow in that colour, and the arrow nudges forward. */}
 			{featured && (
-				<section className="flex flex-col gap-5 px-5 py-8 md:px-8 md:py-10 xl:gap-8 xl:px-20 xl:py-16">
-					<h2 className={`${outfit} text-lg font-extrabold md:text-xl xl:text-2xl`}>FEATURED ARTICLE</h2>
+				<section className="wv-hero-backdrop flex flex-col gap-5 px-5 py-8 md:px-8 md:py-10 xl:gap-8 xl:px-20 xl:py-16">
+					<SectionTitle>FEATURED ARTICLE</SectionTitle>
 					<Link
 						href={learnHref(featured.slug)}
-						className="group overflow-hidden rounded-3xl border border-[var(--wv-disabled)] bg-[var(--wv-ink)] transition-colors hover:border-[var(--wv-cyan-soft)] xl:flex"
+						className={`${articleCardClass(featured.categorySlug)} group overflow-hidden rounded-3xl xl:flex`}
 					>
 						<ArticleImage
 							article={featured}
 							className="h-40 w-full md:h-[200px] xl:h-[420px] xl:w-[640px] xl:shrink-0"
 							sizes="(min-width: 1280px) 640px, 100vw"
 							priority
+							large
 						/>
 						<div className="flex flex-1 flex-col justify-center gap-4 p-5 md:p-8 xl:gap-5 xl:p-12">
 							<div className="flex flex-wrap items-center justify-between gap-3">
-								<span className="rounded-md bg-[var(--wv-cyan-soft)] px-[10px] py-1 text-[11px] font-bold uppercase text-[var(--wv-bg)]">
-									{featured.category}
-								</span>
+								<ArticleTag>{featured.category}</ArticleTag>
 								<ArticleMeta article={featured} />
 							</div>
-							<h3 className={`${outfit} text-xl font-extrabold md:text-[28px] xl:text-4xl`}>
+							<h3
+								className={`${outfit} wv-pc-name text-xl font-extrabold transition-colors group-hover:text-[var(--accent)] md:text-[28px] xl:text-4xl`}
+							>
 								{featured.title}
 							</h3>
-							<p className="text-sm leading-[1.6] md:text-base">{featured.excerpt}</p>
-							<span className="w-fit text-base font-bold text-[var(--wv-cyan-soft)]">Read More →</span>
+							<p className="wv-neon-card-text text-sm leading-[1.6] md:text-base">{featured.excerpt}</p>
+							<span className="wv-neon-card-link flex w-fit items-center gap-1 text-base font-bold">
+								Read More
+								<span aria-hidden className="transition-transform group-hover:translate-x-1">
+									→
+								</span>
+							</span>
 						</div>
 					</Link>
 				</section>
 			)}
 
-			{/* Latest / results */}
-			<section className="flex flex-col gap-5 bg-[var(--wv-control)] px-5 py-8 md:px-8 md:py-10 xl:gap-8 xl:px-20 xl:py-16">
-				<h2 className={`${outfit} text-lg font-extrabold md:text-xl xl:text-2xl`} role="status">
-					{filtering ? `RESULTS (${results.length})` : "LATEST ARTICLES"}
-				</h2>
+			{/* Latest / results, on a lit glass band (`.wv-band`): neon cards in their categories' colours (wv-learn-card.tsx). */}
+			<section className="wv-band flex flex-col gap-5 px-5 py-8 md:px-8 md:py-10 xl:gap-8 xl:px-20 xl:py-16">
+				<SectionTitle status>{filtering ? `RESULTS (${results.length})` : "LATEST ARTICLES"}</SectionTitle>
 				{latest.length > 0 ? (
 					<div
 						key={latest.map((a) => a.slug).join("|")}
