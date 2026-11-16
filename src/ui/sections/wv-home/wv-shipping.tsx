@@ -128,15 +128,15 @@ export function WvShipping() {
 			{/* Hero */}
 			{/* The hero's text has depth, as on the home hero (`.wv-hero-*`): a neon badge with a glowing truck, a 3D title
 			    over a glowing pink-to-cyan bar, brighter copy with its key phrases lit, and the neon outline button; behind
-			    it a pink and cyan glow (`.wv-ship-hero*` in wv-home.css). */}
-			<section className="wv-ship-hero relative overflow-hidden">
+			    it a pink and cyan glow (`.wv-hero-backdrop`, `.wv-hero-badge` and `.wv-hero-bar` in wv-home.css). */}
+			<section className="wv-hero-backdrop relative overflow-hidden">
 				<span className="absolute left-[120px] top-[90px] hidden size-[5px] rounded-full bg-[var(--wv-cyan-soft)] xl:block" />
 				<span className="absolute left-[450px] top-[320px] hidden size-[3px] rounded-full bg-[var(--wv-pink)] xl:block" />
 				<span className="absolute left-[600px] top-20 hidden size-1 rounded-full bg-[var(--wv-cyan-soft)] xl:block" />
 				<div className="relative flex flex-col gap-6 px-5 py-8 md:gap-6 md:px-10 md:py-10 xl:flex-row xl:items-center xl:gap-12 xl:px-20 xl:py-12">
 					<div className="flex min-w-0 flex-1 flex-col items-start gap-4 xl:gap-6">
 						<span
-							className={`${heyComic} wv-ship-badge flex items-center gap-2 rounded-full px-3 py-1 text-[10px] tracking-[1.5px] md:px-4 md:py-[6px] md:text-[11px]`}
+							className={`${heyComic} wv-hero-badge flex items-center gap-2 rounded-full px-3 py-1 text-[10px] tracking-[1.5px] md:px-4 md:py-[6px] md:text-[11px]`}
 						>
 							<Truck aria-hidden className="size-3.5 md:size-4" strokeWidth={2.25} />
 							<span className="md:hidden">DISPATCHED IN 24H</span>
@@ -148,7 +148,7 @@ export function WvShipping() {
 							>
 								<span>FAST &amp; RELIABLE</span> <span className="text-[var(--wv-cyan-soft)]">SHIPPING</span>
 							</h1>
-							<div className="wv-ship-hero-bar h-1 w-20 rounded-full md:w-[120px]" />
+							<div className="wv-hero-bar h-1 w-20 rounded-full md:w-[120px]" />
 						</div>
 						<p className={`${orbitron} wv-hero-copy max-w-[692px] text-sm leading-[1.6] xl:text-base`}>
 							We deliver your favorite vaping products{" "}

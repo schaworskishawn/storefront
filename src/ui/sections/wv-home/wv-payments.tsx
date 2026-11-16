@@ -1,3 +1,4 @@
+import { ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { WvFooter, WvHeader } from "./wv-chrome";
 import { CardNewsletterForm } from "./wv-newsletter-client";
@@ -82,13 +83,14 @@ const FAQS = [
 const PENDING_ANSWER =
 	"Details for this answer are coming soon. Contact support@worldwidevapor.com in the meantime.";
 
+/** The site's neon outline button (`.wv-btn-neon`, as in OutlineButton): a glassy cyan tint, glow and solid lettering. */
 function OutlineLink({ href, children }: { href: string; children: string }) {
 	return (
 		<Link
 			href={href}
-			className={`${heyComic} flex h-[45px] items-center justify-center rounded-xl border border-[var(--wv-cyan-soft)] px-8 text-base text-[var(--wv-cyan-soft)] md:h-[46px] xl:h-[49px]`}
+			className={`${heyComic} wv-btn wv-btn-outline wv-btn-neon flex h-[45px] items-center justify-center whitespace-nowrap rounded-xl border-[1.5px] border-[var(--wv-cyan-soft)] px-6 text-base text-[var(--wv-cyan-soft)] md:h-[46px] xl:h-[49px] xl:px-8`}
 		>
-			{children}
+			<span className="wv-btn-label">{children}</span>
 		</Link>
 	);
 }
@@ -100,8 +102,11 @@ export function WvPayments() {
 		<div className="min-h-dvh overflow-x-clip bg-[var(--wv-bg)] text-white">
 			<WvHeader />
 
-			{/* Hero */}
-			<section className="relative overflow-hidden">
+			{/* Hero. The text has depth, as on the home and shipping heroes (`.wv-hero-*`): a neon badge led by a glowing
+			    shield, a 3D title over a glowing pink-to-cyan bar, brighter copy with its key phrases lit, a glossy filled
+			    button (`.wv-pc-cta`) and the neon outline button; behind it a pink and cyan glow. The buttons never break
+			    their labels across lines; when they don't fit side by side, the second moves to its own row. */}
+			<section className="wv-hero-backdrop relative overflow-hidden">
 				<span className="absolute left-[120px] top-[90px] hidden size-[5px] rounded-full bg-[var(--wv-cyan-soft)] xl:block" />
 				<span className="absolute left-[450px] top-[320px] hidden size-[3px] rounded-full bg-[var(--wv-pink)] xl:block" />
 				<span className="absolute left-[600px] top-20 hidden size-1 rounded-full bg-[var(--wv-cyan-soft)] xl:block" />
@@ -116,28 +121,32 @@ export function WvPayments() {
 					</div>
 					<div className="flex min-w-0 flex-1 flex-col items-center gap-4 text-center md:items-start md:text-left xl:gap-6">
 						<span
-							className={`${heyComic} rounded-full border border-[var(--wv-cyan-soft)] bg-[var(--wv-control)] px-4 py-[6px] text-xs tracking-[1.5px] text-[var(--wv-cyan-soft)]`}
+							className={`${heyComic} wv-hero-badge flex items-center gap-2 rounded-full px-4 py-[6px] text-xs tracking-[1.5px]`}
 						>
+							<ShieldCheck aria-hidden className="size-4" strokeWidth={2.25} />
 							FAST &amp; ENCRYPTED TRANSACTIONS
 						</span>
 						<div className="flex w-full flex-col items-center gap-3 md:items-start">
 							<h1
-								className={`${heyComic} text-[28px] leading-[1.1] md:text-[40px] md:leading-tight xl:text-[54px] xl:leading-[60px]`}
+								className={`${heyComic} wv-title-glow wv-hero-title text-[28px] leading-[1.1] md:text-[40px] md:leading-tight xl:text-[54px] xl:leading-[60px]`}
 							>
-								SECURE &amp; EASY PAYMENTS
+								<span>SECURE &amp; EASY</span> <span className="text-[var(--wv-cyan-soft)]">PAYMENTS</span>
 							</h1>
-							<div className="h-1 w-[120px] rounded-full bg-[var(--wv-pink)]" />
+							<div className="wv-hero-bar h-1 w-[120px] rounded-full" />
 						</div>
-						<p className={`${orbitron} text-sm leading-[1.6] text-[var(--wv-text-dim)] xl:text-base`}>
-							Fast-track your inventory procurement. Whether wholesale, retail, or custom global distribution
-							rates, our fully compliant, encrypted checkout system processes your purchase instantly.
+						<p className={`${orbitron} wv-hero-copy text-sm leading-[1.6] xl:text-base`}>
+							Fast-track your inventory procurement. Whether{" "}
+							<strong className="wv-hero-key">wholesale, retail, or custom global distribution rates</strong>,
+							our{" "}
+							<strong className="wv-hero-key wv-hero-key--pink">fully compliant, encrypted checkout</strong>{" "}
+							system processes your purchase <strong className="wv-hero-key">instantly</strong>.
 						</p>
-						<div className="flex flex-col items-center gap-3 md:flex-row md:gap-4">
+						<div className="flex flex-wrap items-center justify-center gap-3 md:justify-start md:gap-4">
 							<Link
 								href="/shop"
-								className={`${heyComic} flex h-[45px] items-center justify-center rounded-xl bg-[var(--wv-cyan-soft)] px-8 text-base text-[var(--wv-ink)] md:h-[46px] xl:h-[49px]`}
+								className={`${heyComic} wv-pc-cta flex h-[45px] items-center justify-center whitespace-nowrap rounded-xl bg-[var(--wv-cyan-soft)] px-6 text-base text-[var(--wv-ink)] md:h-[46px] xl:h-[49px] xl:px-8`}
 							>
-								Shop Best Sellers
+								<span className="wv-pc-cta-label">Shop Best Sellers</span>
 							</Link>
 							<OutlineLink href="#faqs">View Payment FAQs</OutlineLink>
 						</div>
