@@ -1,11 +1,13 @@
 "use client";
 
+import { ChevronDown, ChevronLeft, ChevronRight, Search, SlidersHorizontal, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import type { HomeProduct } from "@/lib/catalog/get-home-products";
 import { type SearchSort, sortSearchResults } from "@/lib/catalog/search-sort";
+import { pageWindow } from "@/lib/catalog/page-window";
 import { activeFilterChips, categoryNames } from "@/lib/catalog/shop-filter-options";
 import { useShopFilters } from "@/lib/catalog/use-shop-filters";
 import { useShuffleSeed } from "@/lib/catalog/use-shuffle-seed";
@@ -162,33 +164,46 @@ export function SearchExperience({
 		window.history.replaceState(null, "", url);
 	};
 
-	const pill = `${heyComic} flex items-center gap-[6px] rounded-lg border border-[var(--wv-cyan)] bg-[var(--wv-cyan)]/10 px-[14px] py-2 text-xs text-[var(--wv-cyan)]`;
-
 	return (
 		<>
-			{/* Hero */}
-			<section className="flex flex-col items-center gap-6 bg-[var(--wv-surface)] px-4 pb-8 pt-8 md:px-6 md:pt-12 xl:px-16 xl:pb-12 xl:pt-16">
-				<div className="flex flex-col items-center gap-3 text-center">
-					<p className={`${bungee} flex items-center gap-2 text-xs uppercase text-[var(--wv-cyan)]`}>
-						<span className="size-[6px] rounded-[3px] bg-[var(--wv-cyan)] shadow-[0_0_6px_rgba(0,229,255,0.4)]" />
+			{/* Hero, in the neon style of the site's other heroes (`.wv-hero-*` in wv-home.css): a pink and cyan glow behind
+			    it, a neon badge with a glowing magnifier, a 3D two-tone title over a glowing bar, brighter copy with its key
+			    phrases lit; a big neon glass search bar (`.wv-search-bar`) whose edge glows brighter while you type; and the
+			    popular searches as the payments strip's glowing chips, alternating cyan and pink, the one being searched lit
+			    up. A neon divider runs under it, as on the other pages. */}
+			<section className="wv-hero-backdrop flex flex-col items-center gap-6 px-4 pb-8 pt-8 md:px-6 md:pt-12 xl:px-16 xl:pb-12 xl:pt-16">
+				<div className="flex flex-col items-center gap-4 text-center">
+					<span
+						className={`${heyComic} wv-hero-badge flex items-center gap-2 rounded-full px-3 py-1 text-[10px] tracking-[1.5px] md:px-4 md:py-[6px] md:text-[11px]`}
+					>
+						<Search aria-hidden className="size-3.5 md:size-4" strokeWidth={2.5} />
 						SEARCH WORLDWIDE VAPOR
-					</p>
-					<h1 className={`${heyComic} text-[24px] uppercase md:text-[30px] xl:text-[36px]`}>
-						FIND YOUR PERFECT PRODUCT
-					</h1>
-					<p className={`${orbitron} hidden max-w-[600px] text-base text-[var(--wv-text-dim)] md:block`}>
-						Access high-performance mods, premium pods, and intense disposable vapes with secure
-						military-grade shipping.
+					</span>
+					<div className="flex flex-col items-center gap-3">
+						<h1
+							className={`${heyComic} wv-title-glow wv-hero-title text-[28px] uppercase leading-[1.1] md:text-[38px] xl:text-[46px]`}
+						>
+							<span>FIND YOUR PERFECT</span> <span className="text-[var(--wv-cyan-soft)]">PRODUCT</span>
+						</h1>
+						<div className="wv-hero-bar h-1 w-20 rounded-full md:w-[120px]" />
+					</div>
+					<p className={`${orbitron} wv-hero-copy hidden max-w-[600px] text-base leading-[1.6] md:block`}>
+						Access <strong className="wv-hero-key">high-performance mods</strong>,{" "}
+						<strong className="wv-hero-key wv-hero-key--pink">premium pods</strong>, and intense{" "}
+						<strong className="wv-hero-key">disposable vapes</strong> with secure military-grade shipping.
 					</p>
 				</div>
 				<div className="flex w-full max-w-[800px] flex-col gap-4">
 					<form
 						role="search"
 						onSubmit={(e) => e.preventDefault()}
-						className="flex h-12 items-center gap-3 rounded-xl bg-[var(--wv-section)] px-4 md:h-14 md:px-5"
+						className="wv-search-bar flex h-12 items-center gap-3 rounded-xl pl-2 pr-3 md:h-14 md:pl-[10px] md:pr-4"
 					>
-						<span aria-hidden className="text-lg text-[var(--wv-cyan)]">
-							⌕
+						<span
+							aria-hidden
+							className="wv-search-bar-icon flex size-8 shrink-0 items-center justify-center rounded-lg md:size-9"
+						>
+							<Search className="size-4 md:size-[18px]" strokeWidth={2.5} />
 						</span>
 						<label htmlFor="site-search" className="sr-only">
 							Search products
@@ -207,22 +222,23 @@ export function SearchExperience({
 								type="button"
 								aria-label="Clear search"
 								onClick={() => updateQuery("")}
-								className="flex size-[26px] items-center justify-center rounded-full text-[var(--wv-text-dim)]"
+								className="wv-search-clear flex size-[26px] items-center justify-center rounded-full"
 							>
-								✕
+								<X aria-hidden className="size-4" strokeWidth={2.5} />
 							</button>
 						)}
 					</form>
-					<div className="flex flex-wrap items-center gap-2">
-						<span className={`${heyComic} text-xs text-[var(--wv-muted)]`}>POPULAR:</span>
+					<div className="flex flex-wrap items-center justify-center gap-2">
+						<span className={`${heyComic} wv-search-label text-xs`}>POPULAR:</span>
 						{popular.map((t) => {
 							const on = query.toLowerCase() === t.toLowerCase();
 							return (
 								<button
 									key={t}
 									type="button"
+									aria-pressed={on}
 									onClick={() => updateQuery(on ? "" : t)}
-									className={`${heyComic} rounded-md border px-3 py-[6px] text-xs ${on ? "bg-[var(--wv-pink)]/10 border-[var(--wv-pink)] text-[var(--wv-pink)]" : "border-[var(--wv-section)] bg-[var(--wv-section)] text-[var(--wv-text-dim)]"}`}
+									className={`${heyComic} wv-pay-chip wv-search-chip rounded-md px-3 py-[6px] text-xs text-white`}
 								>
 									{t}
 								</button>
@@ -231,23 +247,32 @@ export function SearchExperience({
 					</div>
 				</div>
 			</section>
+			<div className="wv-glow-line mx-auto !h-[2px] w-[calc(100%-32px)] max-w-[1280px] md:w-[calc(100%-48px)]" />
 
-			{/* Status bar */}
+			{/* Results bar: the count lifted, its number lit cyan and the search words pink; the filters button (below the
+			    desktop layout) and the sort as neon glass controls with glowing icons that glow brighter under the pointer,
+			    while open or while choosing; the active filters as the payments strip's glowing chips with a remove icon, and
+			    "Clear all" a pink neon link (`.wv-results-*`, `.wv-ctrl*` in wv-home.css). */}
 			<section className="flex flex-col gap-4 px-4 py-6 md:px-6 xl:px-16">
 				<div className="flex flex-wrap items-center justify-between gap-3">
 					<p
 						role="status"
 						aria-live="polite"
-						className={`${heyComic} flex flex-wrap items-center gap-2 text-base xl:text-lg`}
+						className={`${heyComic} wv-results-count flex flex-wrap items-center gap-2 text-base xl:text-lg`}
 					>
 						<span>
-							{results.length === 0
-								? "No results"
-								: `Showing ${results.length} result${results.length === 1 ? "" : "s"}`}
+							{results.length === 0 ? (
+								"No results"
+							) : (
+								<>
+									Showing <strong className="wv-results-num font-normal">{results.length}</strong> result
+									{results.length === 1 ? "" : "s"}
+								</>
+							)}
 							{terms.length ? " for" : ""}
 						</span>
 						{terms.length > 0 && (
-							<span className={`${bungee} text-[var(--wv-cyan)]`}>&ldquo;{query.trim()}&rdquo;</span>
+							<span className={`${bungee} wv-results-terms`}>&ldquo;{query.trim()}&rdquo;</span>
 						)}
 					</p>
 					<div className="flex items-center gap-3">
@@ -255,11 +280,20 @@ export function SearchExperience({
 							type="button"
 							onClick={() => setFiltersOpen((v) => !v)}
 							aria-expanded={filtersOpen}
-							className={`${heyComic} rounded-lg border border-[var(--wv-section)] bg-[var(--wv-surface)] px-4 py-[10px] text-xs xl:hidden`}
+							className={`${heyComic} wv-ctrl flex items-center gap-2 rounded-lg px-4 py-[10px] text-xs xl:hidden`}
 						>
-							FILTERS{chips.length > 0 ? ` (${chips.length})` : ""}
+							<SlidersHorizontal aria-hidden className="size-4" strokeWidth={2.25} />
+							FILTERS
+							{chips.length > 0 && (
+								<span className="wv-ctrl-count rounded-full px-[7px] py-px text-[10px]">
+									{chips.length}
+									<span className="sr-only"> active</span>
+								</span>
+							)}
 						</button>
-						<label className="flex items-center gap-2 rounded-lg border border-[var(--wv-section)] bg-[var(--wv-surface)] px-4 py-[10px] font-mono text-[13px] text-[var(--wv-text-dim)]">
+						<label
+							className={`${heyComic} wv-ctrl relative flex items-center gap-2 rounded-lg py-[10px] pl-4 pr-3 text-xs text-[var(--wv-text-dim)]`}
+						>
 							Sort by:
 							<select
 								value={sort}
@@ -268,38 +302,38 @@ export function SearchExperience({
 									setReshuffles((n) => n + 1);
 									setPage(1);
 								}}
-								className="bg-transparent font-bold text-[var(--wv-cyan)] focus:outline-none"
+								className={`${heyComic} wv-sort-select cursor-pointer appearance-none border-0 bg-transparent bg-none py-0 pl-0 pr-6 text-xs focus:outline-none focus:ring-0`}
 							>
 								{SORTS.map((s) => (
-									<option key={s.value} value={s.value} className="bg-[var(--wv-surface)]">
+									<option key={s.value} value={s.value} className="bg-[var(--wv-surface)] text-white">
 										{s.label}
 									</option>
 								))}
 							</select>
+							<ChevronDown
+								aria-hidden
+								className="pointer-events-none absolute right-3 size-4"
+								strokeWidth={2.5}
+							/>
 						</label>
 					</div>
 				</div>
 				{chips.length > 0 && (
 					<div className="flex flex-wrap items-center gap-3">
-						<span className={`${orbitron} text-[11px] font-bold text-[var(--wv-muted)]`}>
-							ACTIVE FILTERS:
-						</span>
+						<span className={`${heyComic} wv-search-label text-[11px]`}>ACTIVE FILTERS:</span>
 						{chips.map((chip) => (
 							<button
 								key={chip.id}
 								type="button"
 								onClick={() => filters.remove(chip.filter)}
-								className={pill}
+								className={`${heyComic} wv-pay-chip wv-search-chip flex items-center gap-[6px] rounded-lg px-3 py-[6px] text-xs text-white`}
 								aria-label={`Remove filter ${chip.label}`}
 							>
-								{chip.label} <span aria-hidden>⊗</span>
+								{chip.label}
+								<X aria-hidden className="wv-chip-x size-3.5" strokeWidth={2.5} />
 							</button>
 						))}
-						<button
-							type="button"
-							onClick={filters.clearAll}
-							className={`${heyComic} text-xs text-[var(--wv-pink)]`}
-						>
+						<button type="button" onClick={filters.clearAll} className={`${heyComic} wv-clear-all text-xs`}>
 							Clear All
 						</button>
 					</div>
@@ -348,37 +382,53 @@ export function SearchExperience({
 				</div>
 			</section>
 
-			{/* Pagination */}
+			{/* Pagination: the first and last pages, the ones around the current page and an ellipsis between
+			    (page-window.ts), so the row fits a phone however many pages there are. Neon glass buttons that lift and glow
+			    under the pointer, glowing arrows, and the current page lit up in solid neon (`.wv-page-*` in wv-home.css). */}
 			{pageCount > 1 && (
-				<nav aria-label="Pagination" className="flex items-center justify-center gap-2 px-4 py-10 xl:py-12">
+				<nav
+					aria-label="Pagination"
+					className="flex items-center justify-center gap-1.5 px-4 py-10 md:gap-2 xl:py-12"
+				>
 					<button
 						type="button"
 						aria-label="Previous page"
 						disabled={current === 1}
 						onClick={() => setPage(current - 1)}
-						className="flex size-9 items-center justify-center rounded-lg border border-[var(--wv-section)] disabled:opacity-40 xl:size-10"
+						className="wv-page-btn wv-page-arrow flex size-8 items-center justify-center rounded-lg md:size-9 xl:size-10"
 					>
-						‹
+						<ChevronLeft aria-hidden className="size-4 md:size-5" strokeWidth={2.5} />
 					</button>
-					{Array.from({ length: pageCount }, (_, i) => i + 1).map((n) => (
-						<button
-							key={n}
-							type="button"
-							aria-current={n === current ? "page" : undefined}
-							onClick={() => setPage(n)}
-							className={`${heyComic} flex size-9 items-center justify-center rounded-lg text-sm xl:size-10 ${n === current ? "bg-[var(--wv-cyan)] text-[var(--wv-ink)]" : "border border-[var(--wv-section)] text-[var(--wv-text-dim)]"}`}
-						>
-							{n}
-						</button>
-					))}
+					{pageWindow(current, pageCount).map((n, i) =>
+						n === "gap" ? (
+							<span
+								key={`gap-${i}`}
+								aria-hidden
+								className={`${heyComic} wv-page-gap flex w-5 items-end justify-center text-sm md:w-6`}
+							>
+								…
+							</span>
+						) : (
+							<button
+								key={n}
+								type="button"
+								aria-label={`Page ${n}`}
+								aria-current={n === current ? "page" : undefined}
+								onClick={() => setPage(n)}
+								className={`${heyComic} wv-page-btn flex size-8 items-center justify-center rounded-lg text-sm md:size-9 xl:size-10`}
+							>
+								{n}
+							</button>
+						),
+					)}
 					<button
 						type="button"
 						aria-label="Next page"
 						disabled={current === pageCount}
 						onClick={() => setPage(current + 1)}
-						className="flex size-9 items-center justify-center rounded-lg border border-[var(--wv-section)] disabled:opacity-40 xl:size-10"
+						className="wv-page-btn wv-page-arrow flex size-8 items-center justify-center rounded-lg md:size-9 xl:size-10"
 					>
-						›
+						<ChevronRight aria-hidden className="size-4 md:size-5" strokeWidth={2.5} />
 					</button>
 				</nav>
 			)}

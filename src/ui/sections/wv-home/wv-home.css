@@ -1195,3 +1195,262 @@ body.wv-motion .wv-nav-link[aria-current="page"]:is(:hover, :focus-visible) {
 			box-shadow 180ms ease;
 	}
 }
+
+/* The search page's hero (wv-search-client.tsx) uses the heroes' text styles, badge and bar (above). Its search bar is a
+ * big neon glass bar: dark glass set into the page (an inner shadow) inside a cyan-through-purple-to-pink edge that glows
+ * cyan and pink, the magnifier a lit neon tile; while typing, the edge glows brighter with a soft ring. The clear button
+ * glows pink under the pointer. The popular searches are the payments strip's glowing chips (.wv-pay-chip, alternating
+ * cyan and pink), led by a glowing label (.wv-search-label, also before the active filters); the one being searched
+ * lights up, filled with its colour under a white-hot edge. */
+.wv-search-bar {
+	border: 1.5px solid transparent;
+	background:
+		linear-gradient(180deg, var(--wv-ink), color-mix(in srgb, var(--wv-purple) 16%, var(--wv-ink)))
+			padding-box,
+		linear-gradient(90deg, var(--wv-cyan), var(--wv-purple) 50%, var(--wv-pink)) border-box;
+	box-shadow:
+		inset 0 2px 8px var(--wv-bg),
+		0 0 14px color-mix(in srgb, var(--wv-cyan) 25%, transparent),
+		0 0 30px -8px color-mix(in srgb, var(--wv-pink) 35%, transparent);
+	transition: box-shadow 200ms ease;
+}
+.wv-search-bar:focus-within {
+	box-shadow:
+		inset 0 2px 8px var(--wv-bg),
+		0 0 0 3px color-mix(in srgb, var(--wv-cyan) 22%, transparent),
+		0 0 20px color-mix(in srgb, var(--wv-cyan) 45%, transparent),
+		0 0 36px -6px color-mix(in srgb, var(--wv-pink) 50%, transparent);
+}
+.wv-search-bar-icon {
+	color: var(--wv-cyan-soft);
+	border: 1px solid transparent;
+	background:
+		linear-gradient(180deg, color-mix(in srgb, var(--wv-cyan) 22%, var(--wv-control)), var(--wv-bg))
+			padding-box,
+		linear-gradient(135deg, var(--wv-cyan), color-mix(in srgb, var(--wv-purple) 70%, var(--wv-cyan)))
+			border-box;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 22%, transparent),
+		0 0 10px color-mix(in srgb, var(--wv-cyan) 40%, transparent);
+}
+.wv-search-bar-icon svg {
+	filter: drop-shadow(0 0 4px color-mix(in srgb, var(--wv-cyan) 90%, transparent));
+}
+.wv-search-clear {
+	color: var(--wv-text-dim);
+	transition:
+		color 150ms ease,
+		filter 150ms ease;
+}
+.wv-search-clear:hover,
+.wv-search-clear:focus-visible {
+	color: var(--wv-pink);
+	filter: drop-shadow(0 0 4px var(--wv-pink));
+}
+.wv-search-label {
+	color: var(--wv-cyan-soft);
+	letter-spacing: 1px;
+	text-shadow:
+		0 1px 1px var(--wv-ink),
+		0 0 8px color-mix(in srgb, var(--wv-cyan) 60%, transparent);
+}
+.wv-search-chip {
+	text-shadow: 0 1px 1px var(--wv-ink);
+}
+.wv-search-chip[aria-pressed="true"] {
+	background:
+		radial-gradient(90% 120% at 50% 0%, color-mix(in srgb, var(--accent) 60%, transparent), transparent 75%)
+			padding-box,
+		linear-gradient(
+				180deg,
+				color-mix(in srgb, var(--accent) 42%, var(--wv-control)),
+				color-mix(in srgb, var(--wv-purple) 35%, var(--wv-ink))
+			)
+			padding-box,
+		linear-gradient(135deg, white, var(--accent) 40%, var(--wv-purple)) border-box;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 30%, transparent),
+		0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent),
+		0 0 20px color-mix(in srgb, var(--accent) 75%, transparent),
+		0 0 36px -8px color-mix(in srgb, var(--accent) 50%, transparent);
+}
+
+/* The search page's results bar (wv-search-client.tsx). The count is lifted off the page (a dark edge and a purple glow),
+ * its number lit cyan and the search words pink. The filters button and the sort are neon glass controls: a glass fill
+ * inside a cyan-through-purple-to-pink edge that glows, a highlight along the top and glowing icons; they glow brighter
+ * under the pointer, while the filters are open and while choosing a sort, and the sort's choice glows cyan. The filters
+ * button counts the active filters in a glowing pink badge. The active filters are glowing chips (.wv-pay-chip) whose
+ * remove icon turns pink under the pointer, and "Clear all" is a pink neon link. */
+.wv-results-count {
+	text-shadow:
+		0 1px 0 var(--wv-ink),
+		0 2px 0 color-mix(in srgb, var(--wv-purple) 75%, transparent),
+		0 0 10px color-mix(in srgb, var(--wv-purple) 60%, transparent);
+}
+.wv-results-num {
+	color: var(--wv-cyan-soft);
+	text-shadow:
+		0 1px 1px var(--wv-ink),
+		0 0 10px color-mix(in srgb, var(--wv-cyan) 70%, transparent);
+}
+.wv-results-terms {
+	color: var(--wv-pink);
+	text-shadow:
+		0 1px 1px var(--wv-ink),
+		0 0 10px color-mix(in srgb, var(--wv-pink) 70%, transparent);
+}
+.wv-ctrl {
+	color: white;
+	border: 1.5px solid transparent;
+	background:
+		linear-gradient(180deg, color-mix(in srgb, var(--wv-purple) 20%, var(--wv-ink)), var(--wv-ink))
+			padding-box,
+		linear-gradient(
+				135deg,
+				var(--wv-cyan),
+				color-mix(in srgb, var(--wv-purple) 70%, transparent) 55%,
+				var(--wv-pink)
+			)
+			border-box;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 12%, transparent),
+		0 0 12px color-mix(in srgb, var(--wv-cyan) 22%, transparent),
+		0 0 22px -8px color-mix(in srgb, var(--wv-pink) 40%, transparent);
+	transition: box-shadow 200ms ease;
+}
+.wv-ctrl svg {
+	color: var(--wv-cyan-soft);
+	filter: drop-shadow(0 0 4px color-mix(in srgb, var(--wv-cyan) 80%, transparent));
+}
+.wv-ctrl:hover,
+.wv-ctrl:focus-within,
+.wv-ctrl[aria-expanded="true"] {
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 18%, transparent),
+		0 0 18px color-mix(in srgb, var(--wv-cyan) 45%, transparent),
+		0 0 30px -6px color-mix(in srgb, var(--wv-pink) 55%, transparent);
+}
+.wv-ctrl:focus-visible {
+	outline: 2px solid var(--wv-cyan-soft);
+	outline-offset: 2px;
+}
+.wv-ctrl-count {
+	color: white;
+	background: linear-gradient(
+		180deg,
+		var(--wv-pink),
+		color-mix(in srgb, var(--wv-pink) 55%, var(--wv-purple))
+	);
+	box-shadow: 0 0 8px color-mix(in srgb, var(--wv-pink) 70%, transparent);
+	text-shadow: 0 1px 1px var(--wv-ink);
+}
+.wv-sort-select {
+	color: var(--wv-cyan-soft);
+	text-shadow: 0 0 8px color-mix(in srgb, var(--wv-cyan) 65%, transparent);
+}
+.wv-chip-x {
+	transition:
+		color 150ms ease,
+		filter 150ms ease;
+}
+.wv-search-chip:hover .wv-chip-x,
+.wv-search-chip:focus-visible .wv-chip-x {
+	color: var(--wv-pink);
+	filter: drop-shadow(0 0 4px var(--wv-pink));
+}
+.wv-clear-all {
+	color: var(--wv-pink);
+	text-shadow:
+		0 1px 1px var(--wv-ink),
+		0 0 8px color-mix(in srgb, var(--wv-pink) 60%, transparent);
+	transition: text-shadow 200ms ease;
+}
+.wv-clear-all:hover,
+.wv-clear-all:focus-visible {
+	text-shadow:
+		0 1px 1px var(--wv-ink),
+		0 0 12px var(--wv-pink);
+}
+
+/* The search page's pagination (wv-search-client.tsx): neon glass buttons (a glass fill inside a cyan-through-purple-to-
+ * pink edge that glows softly, a highlight along the top, the numbers lifted) that lift and glow brighter under the
+ * pointer; the arrows glow cyan, and dim when there's no page that way. The current page is lit in solid neon, cyan
+ * under a white-hot edge, raised a little, with a strong glow. The ellipsis between pages glows faintly. No movement for
+ * reduced motion. */
+.wv-page-btn {
+	color: color-mix(in srgb, white 85%, var(--wv-text-dim));
+	border: 1px solid transparent;
+	background:
+		linear-gradient(180deg, color-mix(in srgb, var(--wv-purple) 22%, var(--wv-ink)), var(--wv-ink))
+			padding-box,
+		linear-gradient(
+				135deg,
+				color-mix(in srgb, var(--wv-cyan) 70%, transparent),
+				color-mix(in srgb, var(--wv-purple) 70%, transparent) 55%,
+				color-mix(in srgb, var(--wv-pink) 70%, transparent)
+			)
+			border-box;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 10%, transparent),
+		0 0 10px color-mix(in srgb, var(--wv-purple) 40%, transparent);
+	text-shadow:
+		0 1px 0 var(--wv-ink),
+		0 0 8px color-mix(in srgb, var(--wv-purple) 70%, transparent);
+	transition:
+		transform 180ms ease,
+		box-shadow 180ms ease,
+		color 180ms ease;
+}
+.wv-page-arrow {
+	color: var(--wv-cyan-soft);
+}
+.wv-page-arrow svg {
+	filter: drop-shadow(0 0 4px color-mix(in srgb, var(--wv-cyan) 85%, transparent));
+}
+@media (hover: hover) {
+	.wv-page-btn:not(:disabled, [aria-current="page"]):hover {
+		color: white;
+		transform: translateY(-2px);
+		box-shadow:
+			inset 0 1px 0 color-mix(in srgb, white 16%, transparent),
+			0 0 14px color-mix(in srgb, var(--wv-cyan) 45%, transparent),
+			0 0 24px -6px color-mix(in srgb, var(--wv-pink) 55%, transparent);
+	}
+}
+.wv-page-btn:focus-visible {
+	outline: 2px solid var(--wv-cyan-soft);
+	outline-offset: 2px;
+}
+.wv-page-btn:disabled {
+	cursor: not-allowed;
+	opacity: 0.35;
+	box-shadow: none;
+}
+.wv-page-btn:disabled svg {
+	filter: none;
+}
+.wv-page-btn[aria-current="page"] {
+	color: var(--wv-ink);
+	background:
+		linear-gradient(180deg, var(--wv-cyan-soft), color-mix(in srgb, var(--wv-cyan) 70%, var(--wv-purple)))
+			padding-box,
+		linear-gradient(135deg, white, var(--wv-cyan-soft) 45%, var(--wv-pink)) border-box;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 55%, transparent),
+		0 0 0 1px color-mix(in srgb, var(--wv-cyan) 45%, transparent),
+		0 0 16px color-mix(in srgb, var(--wv-cyan) 75%, transparent),
+		0 0 32px -6px color-mix(in srgb, var(--wv-pink) 60%, transparent);
+	text-shadow: 0 1px 0 color-mix(in srgb, white 45%, transparent);
+	transform: translateY(-2px);
+}
+.wv-page-gap {
+	color: var(--wv-cyan-soft);
+	letter-spacing: 1px;
+	text-shadow: 0 0 8px color-mix(in srgb, var(--wv-cyan) 70%, transparent);
+}
+@media (prefers-reduced-motion: reduce) {
+	.wv-page-btn:hover,
+	.wv-page-btn[aria-current="page"] {
+		transform: none;
+	}
+}
