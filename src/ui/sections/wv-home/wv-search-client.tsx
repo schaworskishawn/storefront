@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, X } from "lucide-react";
+import { ChevronDown, Search, SlidersHorizontal, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -163,8 +163,6 @@ export function SearchExperience({
 		window.history.replaceState(null, "", url);
 	};
 
-	const pill = `${heyComic} flex items-center gap-[6px] rounded-lg border border-[var(--wv-cyan)] bg-[var(--wv-cyan)]/10 px-[14px] py-2 text-xs text-[var(--wv-cyan)]`;
-
 	return (
 		<>
 			{/* Hero, in the neon style of the site's other heroes (`.wv-hero-*` in wv-home.css): a pink and cyan glow behind
@@ -230,7 +228,7 @@ export function SearchExperience({
 						)}
 					</form>
 					<div className="flex flex-wrap items-center justify-center gap-2">
-						<span className={`${heyComic} wv-search-popular text-xs`}>POPULAR:</span>
+						<span className={`${heyComic} wv-search-label text-xs`}>POPULAR:</span>
 						{popular.map((t) => {
 							const on = query.toLowerCase() === t.toLowerCase();
 							return (
@@ -250,22 +248,30 @@ export function SearchExperience({
 			</section>
 			<div className="wv-glow-line mx-auto !h-[2px] w-[calc(100%-32px)] max-w-[1280px] md:w-[calc(100%-48px)]" />
 
-			{/* Status bar */}
+			{/* Results bar: the count lifted, its number lit cyan and the search words pink; the filters button (below the
+			    desktop layout) and the sort as neon glass controls with glowing icons that glow brighter under the pointer,
+			    while open or while choosing; the active filters as the payments strip's glowing chips with a remove icon, and
+			    "Clear all" a pink neon link (`.wv-results-*`, `.wv-ctrl*` in wv-home.css). */}
 			<section className="flex flex-col gap-4 px-4 py-6 md:px-6 xl:px-16">
 				<div className="flex flex-wrap items-center justify-between gap-3">
 					<p
 						role="status"
 						aria-live="polite"
-						className={`${heyComic} flex flex-wrap items-center gap-2 text-base xl:text-lg`}
+						className={`${heyComic} wv-results-count flex flex-wrap items-center gap-2 text-base xl:text-lg`}
 					>
 						<span>
-							{results.length === 0
-								? "No results"
-								: `Showing ${results.length} result${results.length === 1 ? "" : "s"}`}
+							{results.length === 0 ? (
+								"No results"
+							) : (
+								<>
+									Showing <strong className="wv-results-num font-normal">{results.length}</strong> result
+									{results.length === 1 ? "" : "s"}
+								</>
+							)}
 							{terms.length ? " for" : ""}
 						</span>
 						{terms.length > 0 && (
-							<span className={`${bungee} text-[var(--wv-cyan)]`}>&ldquo;{query.trim()}&rdquo;</span>
+							<span className={`${bungee} wv-results-terms`}>&ldquo;{query.trim()}&rdquo;</span>
 						)}
 					</p>
 					<div className="flex items-center gap-3">
@@ -273,11 +279,20 @@ export function SearchExperience({
 							type="button"
 							onClick={() => setFiltersOpen((v) => !v)}
 							aria-expanded={filtersOpen}
-							className={`${heyComic} rounded-lg border border-[var(--wv-section)] bg-[var(--wv-surface)] px-4 py-[10px] text-xs xl:hidden`}
+							className={`${heyComic} wv-ctrl flex items-center gap-2 rounded-lg px-4 py-[10px] text-xs xl:hidden`}
 						>
-							FILTERS{chips.length > 0 ? ` (${chips.length})` : ""}
+							<SlidersHorizontal aria-hidden className="size-4" strokeWidth={2.25} />
+							FILTERS
+							{chips.length > 0 && (
+								<span className="wv-ctrl-count rounded-full px-[7px] py-px text-[10px]">
+									{chips.length}
+									<span className="sr-only"> active</span>
+								</span>
+							)}
 						</button>
-						<label className="flex items-center gap-2 rounded-lg border border-[var(--wv-section)] bg-[var(--wv-surface)] px-4 py-[10px] font-mono text-[13px] text-[var(--wv-text-dim)]">
+						<label
+							className={`${heyComic} wv-ctrl relative flex items-center gap-2 rounded-lg py-[10px] pl-4 pr-3 text-xs text-[var(--wv-text-dim)]`}
+						>
 							Sort by:
 							<select
 								value={sort}
@@ -286,38 +301,38 @@ export function SearchExperience({
 									setReshuffles((n) => n + 1);
 									setPage(1);
 								}}
-								className="bg-transparent font-bold text-[var(--wv-cyan)] focus:outline-none"
+								className={`${heyComic} wv-sort-select cursor-pointer appearance-none border-0 bg-transparent bg-none py-0 pl-0 pr-6 text-xs focus:outline-none focus:ring-0`}
 							>
 								{SORTS.map((s) => (
-									<option key={s.value} value={s.value} className="bg-[var(--wv-surface)]">
+									<option key={s.value} value={s.value} className="bg-[var(--wv-surface)] text-white">
 										{s.label}
 									</option>
 								))}
 							</select>
+							<ChevronDown
+								aria-hidden
+								className="pointer-events-none absolute right-3 size-4"
+								strokeWidth={2.5}
+							/>
 						</label>
 					</div>
 				</div>
 				{chips.length > 0 && (
 					<div className="flex flex-wrap items-center gap-3">
-						<span className={`${orbitron} text-[11px] font-bold text-[var(--wv-muted)]`}>
-							ACTIVE FILTERS:
-						</span>
+						<span className={`${heyComic} wv-search-label text-[11px]`}>ACTIVE FILTERS:</span>
 						{chips.map((chip) => (
 							<button
 								key={chip.id}
 								type="button"
 								onClick={() => filters.remove(chip.filter)}
-								className={pill}
+								className={`${heyComic} wv-pay-chip wv-search-chip flex items-center gap-[6px] rounded-lg px-3 py-[6px] text-xs text-white`}
 								aria-label={`Remove filter ${chip.label}`}
 							>
-								{chip.label} <span aria-hidden>⊗</span>
+								{chip.label}
+								<X aria-hidden className="wv-chip-x size-3.5" strokeWidth={2.5} />
 							</button>
 						))}
-						<button
-							type="button"
-							onClick={filters.clearAll}
-							className={`${heyComic} text-xs text-[var(--wv-pink)]`}
-						>
+						<button type="button" onClick={filters.clearAll} className={`${heyComic} wv-clear-all text-xs`}>
 							Clear All
 						</button>
 					</div>

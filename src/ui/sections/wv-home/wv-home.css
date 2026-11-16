@@ -1200,8 +1200,8 @@ body.wv-motion .wv-nav-link[aria-current="page"]:is(:hover, :focus-visible) {
  * big neon glass bar: dark glass set into the page (an inner shadow) inside a cyan-through-purple-to-pink edge that glows
  * cyan and pink, the magnifier a lit neon tile; while typing, the edge glows brighter with a soft ring. The clear button
  * glows pink under the pointer. The popular searches are the payments strip's glowing chips (.wv-pay-chip, alternating
- * cyan and pink), led by a glowing label; the one being searched lights up, filled with its colour under a white-hot
- * edge. */
+ * cyan and pink), led by a glowing label (.wv-search-label, also before the active filters); the one being searched
+ * lights up, filled with its colour under a white-hot edge. */
 .wv-search-bar {
 	border: 1.5px solid transparent;
 	background:
@@ -1247,7 +1247,7 @@ body.wv-motion .wv-nav-link[aria-current="page"]:is(:hover, :focus-visible) {
 	color: var(--wv-pink);
 	filter: drop-shadow(0 0 4px var(--wv-pink));
 }
-.wv-search-popular {
+.wv-search-label {
 	color: var(--wv-cyan-soft);
 	letter-spacing: 1px;
 	text-shadow:
@@ -1273,4 +1273,101 @@ body.wv-motion .wv-nav-link[aria-current="page"]:is(:hover, :focus-visible) {
 		0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent),
 		0 0 20px color-mix(in srgb, var(--accent) 75%, transparent),
 		0 0 36px -8px color-mix(in srgb, var(--accent) 50%, transparent);
+}
+
+/* The search page's results bar (wv-search-client.tsx). The count is lifted off the page (a dark edge and a purple glow),
+ * its number lit cyan and the search words pink. The filters button and the sort are neon glass controls: a glass fill
+ * inside a cyan-through-purple-to-pink edge that glows, a highlight along the top and glowing icons; they glow brighter
+ * under the pointer, while the filters are open and while choosing a sort, and the sort's choice glows cyan. The filters
+ * button counts the active filters in a glowing pink badge. The active filters are glowing chips (.wv-pay-chip) whose
+ * remove icon turns pink under the pointer, and "Clear all" is a pink neon link. */
+.wv-results-count {
+	text-shadow:
+		0 1px 0 var(--wv-ink),
+		0 2px 0 color-mix(in srgb, var(--wv-purple) 75%, transparent),
+		0 0 10px color-mix(in srgb, var(--wv-purple) 60%, transparent);
+}
+.wv-results-num {
+	color: var(--wv-cyan-soft);
+	text-shadow:
+		0 1px 1px var(--wv-ink),
+		0 0 10px color-mix(in srgb, var(--wv-cyan) 70%, transparent);
+}
+.wv-results-terms {
+	color: var(--wv-pink);
+	text-shadow:
+		0 1px 1px var(--wv-ink),
+		0 0 10px color-mix(in srgb, var(--wv-pink) 70%, transparent);
+}
+.wv-ctrl {
+	color: white;
+	border: 1.5px solid transparent;
+	background:
+		linear-gradient(180deg, color-mix(in srgb, var(--wv-purple) 20%, var(--wv-ink)), var(--wv-ink))
+			padding-box,
+		linear-gradient(
+				135deg,
+				var(--wv-cyan),
+				color-mix(in srgb, var(--wv-purple) 70%, transparent) 55%,
+				var(--wv-pink)
+			)
+			border-box;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 12%, transparent),
+		0 0 12px color-mix(in srgb, var(--wv-cyan) 22%, transparent),
+		0 0 22px -8px color-mix(in srgb, var(--wv-pink) 40%, transparent);
+	transition: box-shadow 200ms ease;
+}
+.wv-ctrl svg {
+	color: var(--wv-cyan-soft);
+	filter: drop-shadow(0 0 4px color-mix(in srgb, var(--wv-cyan) 80%, transparent));
+}
+.wv-ctrl:hover,
+.wv-ctrl:focus-within,
+.wv-ctrl[aria-expanded="true"] {
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 18%, transparent),
+		0 0 18px color-mix(in srgb, var(--wv-cyan) 45%, transparent),
+		0 0 30px -6px color-mix(in srgb, var(--wv-pink) 55%, transparent);
+}
+.wv-ctrl:focus-visible {
+	outline: 2px solid var(--wv-cyan-soft);
+	outline-offset: 2px;
+}
+.wv-ctrl-count {
+	color: white;
+	background: linear-gradient(
+		180deg,
+		var(--wv-pink),
+		color-mix(in srgb, var(--wv-pink) 55%, var(--wv-purple))
+	);
+	box-shadow: 0 0 8px color-mix(in srgb, var(--wv-pink) 70%, transparent);
+	text-shadow: 0 1px 1px var(--wv-ink);
+}
+.wv-sort-select {
+	color: var(--wv-cyan-soft);
+	text-shadow: 0 0 8px color-mix(in srgb, var(--wv-cyan) 65%, transparent);
+}
+.wv-chip-x {
+	transition:
+		color 150ms ease,
+		filter 150ms ease;
+}
+.wv-search-chip:hover .wv-chip-x,
+.wv-search-chip:focus-visible .wv-chip-x {
+	color: var(--wv-pink);
+	filter: drop-shadow(0 0 4px var(--wv-pink));
+}
+.wv-clear-all {
+	color: var(--wv-pink);
+	text-shadow:
+		0 1px 1px var(--wv-ink),
+		0 0 8px color-mix(in srgb, var(--wv-pink) 60%, transparent);
+	transition: text-shadow 200ms ease;
+}
+.wv-clear-all:hover,
+.wv-clear-all:focus-visible {
+	text-shadow:
+		0 1px 1px var(--wv-ink),
+		0 0 12px var(--wv-pink);
 }
