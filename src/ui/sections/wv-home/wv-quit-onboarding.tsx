@@ -1,5 +1,6 @@
 "use client";
 
+import { FlaskConical, Heart, Sparkles, SlidersHorizontal } from "lucide-react";
 import { useMemo, useState } from "react";
 import {
 	PACES,
@@ -17,6 +18,7 @@ import {
 } from "./wv-quit-model";
 import { DEFAULT_SWITCH_STRENGTH, SWITCH_BANDS } from "./wv-quit-switch";
 import { fieldClass, ghostBtn, primaryBtn, stageFrame } from "./wv-quit-ui";
+import { QuitWelcomeArt } from "./wv-quit-welcome-art";
 
 const PRODUCTS = [
 	{ id: "Vape", icon: "▯", label: "Vape", sub: "E-liquids / pods" },
@@ -130,28 +132,43 @@ export function Onboarding({ today, onDone }: { today: string; onDone: (d: QuitD
 	if (step === 1) {
 		return (
 			<div key="step-1" className="wv-fade flex flex-col gap-6">
+				{/* The welcome, in the site's neon style: the stage card lit (`.wv-quit-stage`), a neon badge, a 3D title
+				    whose words glow in their own colour (`.wv-hero-title`), brighter copy with its key phrases lit, each
+				    promise led by its icon in a neon ring, the glossy neon button, and beside it on desktop the plan drawn
+				    as a neon staircase stepping down to a glowing heart (wv-quit-welcome-art.tsx) in a glowing frame. */}
 				<section className={`${stageFrame} grid gap-8 p-6 md:p-9 xl:grid-cols-[1.1fr_0.9fr] xl:items-center`}>
 					<div className="flex flex-col gap-5">
-						<p className="text-lg font-extrabold text-[var(--qp-primary)]">Welcome</p>
-						<h1 className="text-[38px] font-black leading-[0.98] tracking-[-0.045em] md:text-[54px]">
-							Build Your <span className="text-[var(--qp-secondary)]">Quit Plan</span>
+						<p className="wv-hero-badge flex w-fit items-center gap-2 rounded-full px-3 py-1 text-xs font-extrabold uppercase tracking-[0.14em]">
+							<Sparkles aria-hidden className="size-3.5" strokeWidth={2.5} />
+							Welcome
+						</p>
+						<h1 className="wv-title-glow wv-hero-title text-[38px] font-black leading-[0.98] tracking-[-0.045em] md:text-[54px]">
+							<span>Build Your</span> <span className="text-[var(--qp-secondary)]">Quit Plan</span>
 						</h1>
-						<p className="max-w-[560px] text-lg leading-[1.55] text-[var(--qp-muted)]">
-							A personalized, step-by-step plan to help you reduce nicotine and take back control.
+						<p className="wv-hero-copy max-w-[560px] text-lg leading-[1.55]">
+							A <strong className="wv-hero-key">personalized, step-by-step plan</strong> to help you reduce
+							nicotine and <strong className="wv-hero-key wv-hero-key--pink">take back control</strong>.
 						</p>
 						<ul className="flex flex-col gap-4">
 							{[
-								{ icon: "✦", title: "Science-backed approach", text: "Small steps. Real progress." },
-								{ icon: "▥", title: "Personalized to you", text: "Based on your habits and goals." },
-								{ icon: "♡", title: "A healthier, brighter future", text: "You've got this." },
-							].map((b) => (
-								<li key={b.title} className="grid grid-cols-[34px_1fr] items-start gap-3">
-									<span className="flex size-[30px] items-center justify-center rounded-[10px] border-2 border-[var(--qp-secondary)] text-sm font-black text-[var(--qp-secondary)]">
-										{b.icon}
+								{ Icon: FlaskConical, title: "Science-backed approach", text: "Small steps. Real progress." },
+								{
+									Icon: SlidersHorizontal,
+									title: "Personalized to you",
+									text: "Based on your habits and goals.",
+								},
+								{ Icon: Heart, title: "A healthier, brighter future", text: "You've got this." },
+							].map(({ Icon, title, text }) => (
+								<li key={title} className="grid grid-cols-[40px_1fr] items-center gap-3">
+									<span
+										aria-hidden
+										className="wv-quit-mark flex size-9 items-center justify-center rounded-[11px]"
+									>
+										<Icon className="size-[18px]" strokeWidth={2.25} />
 									</span>
 									<span>
-										<b className="block text-[var(--qp-text)]">{b.title}</b>
-										<small className="text-[var(--qp-dim)]">{b.text}</small>
+										<b className="wv-pc-name block text-[var(--qp-text)]">{title}</b>
+										<small className="text-[13px] text-[var(--qp-muted)]">{text}</small>
 									</span>
 								</li>
 							))}
@@ -162,22 +179,8 @@ export function Onboarding({ today, onDone }: { today: string; onDone: (d: QuitD
 							</button>
 						</div>
 					</div>
-					<div className="relative hidden min-h-[320px] overflow-hidden rounded-2xl border border-[var(--qp-border)] bg-gradient-to-b from-[var(--qp-field)] via-[var(--qp-surface)] to-[var(--qp-bg)] xl:block">
-						<div
-							aria-hidden
-							className="bg-[var(--qp-secondary)]/40 absolute left-1/2 top-[22%] size-40 -translate-x-1/2 rounded-full blur-3xl"
-						/>
-						<div
-							aria-hidden
-							className="bg-[var(--qp-border-strong)]/50 absolute left-[58%] top-[35%] size-28 -translate-x-1/2 rounded-full blur-2xl"
-						/>
-						<p className="absolute right-7 top-28 text-right text-sm font-extrabold leading-[1.5] tracking-[0.12em] text-[var(--qp-secondary)]">
-							CLEANER
-							<br />
-							BRIGHTER
-							<br />
-							YOU
-						</p>
+					<div className="wv-art relative hidden min-h-[320px] overflow-hidden rounded-2xl xl:block">
+						<QuitWelcomeArt idPrefix="quit-welcome-art" />
 					</div>
 				</section>
 				<p className="text-xs text-[var(--qp-dim)]">

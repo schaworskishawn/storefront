@@ -935,7 +935,7 @@ body.wv-motion .wv-nav-link[aria-current="page"]:is(:hover, :focus-visible) {
 	text-shadow: 0 1px 1px var(--wv-ink);
 }
 .wv-quit-link:is(:hover, :focus-visible),
-.wv-quit-ghost:is(:hover, :focus-visible) {
+.wv-quit-ghost:not(:disabled):is(:hover, :focus-visible) {
 	color: white;
 	box-shadow:
 		inset 0 1px 0 color-mix(in srgb, white 16%, transparent),
@@ -944,6 +944,66 @@ body.wv-motion .wv-nav-link[aria-current="page"]:is(:hover, :focus-visible) {
 	text-shadow:
 		0 1px 1px var(--wv-ink),
 		0 0 8px color-mix(in srgb, var(--wv-cyan) 60%, transparent);
+}
+/* The quit program's stage (`stageFrame` in wv-quit-ui.tsx: the welcome card, each setup step and the dashboard's top
+ * card): lit glass, a pink glow in its top corner and a cyan one in the bottom over a hint of purple, inside a cyan-
+ * through-purple-to-pink edge that glows cyan and pink and casts a shadow. Its main button (`primaryBtn`) is glossy pink
+ * neon (a highlight along the top, an edge beneath, a pink glow) that lifts and glows brighter under the pointer; its
+ * other buttons (`ghostBtn`) are the bar's glass with a soft neon edge (.wv-quit-ghost, above). No movement for reduced
+ * motion. */
+.wv-quit-stage {
+	border: 2px solid transparent;
+	background:
+		radial-gradient(60% 50% at 100% 0%, color-mix(in srgb, var(--wv-pink) 12%, transparent), transparent 70%)
+			padding-box,
+		radial-gradient(55% 45% at 0% 100%, color-mix(in srgb, var(--wv-cyan) 9%, transparent), transparent 70%)
+			padding-box,
+		linear-gradient(180deg, color-mix(in srgb, var(--wv-purple) 12%, var(--qp-surface)), var(--qp-surface))
+			padding-box,
+		linear-gradient(150deg, var(--wv-cyan), var(--wv-purple) 50%, var(--wv-pink)) border-box;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 10%, transparent),
+		0 0 24px color-mix(in srgb, var(--wv-cyan) 22%, transparent),
+		0 0 50px -12px color-mix(in srgb, var(--wv-pink) 40%, transparent),
+		0 24px 36px -20px var(--wv-ink);
+}
+.wv-quit-primary {
+	border: 1px solid color-mix(in srgb, var(--wv-pink) 70%, white);
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, white 28%, var(--wv-pink)),
+		var(--wv-pink) 55%,
+		color-mix(in srgb, var(--wv-pink) 70%, var(--wv-purple))
+	);
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 55%, transparent),
+		inset 0 -2px 0 color-mix(in srgb, var(--wv-ink) 30%, transparent),
+		0 0 16px color-mix(in srgb, var(--wv-pink) 50%, transparent),
+		0 0 30px -6px color-mix(in srgb, var(--wv-pink) 60%, transparent);
+	text-shadow: 0 1px 1px color-mix(in srgb, var(--wv-ink) 55%, transparent);
+	transition:
+		transform 180ms ease,
+		box-shadow 180ms ease;
+}
+@media (hover: hover) {
+	.wv-quit-primary:not(:disabled):hover {
+		transform: translateY(-2px);
+		box-shadow:
+			inset 0 1px 0 color-mix(in srgb, white 60%, transparent),
+			inset 0 -2px 0 color-mix(in srgb, var(--wv-ink) 30%, transparent),
+			0 0 22px color-mix(in srgb, var(--wv-pink) 70%, transparent),
+			0 0 40px -6px color-mix(in srgb, var(--wv-pink) 70%, transparent);
+	}
+}
+.wv-quit-primary:focus-visible,
+.wv-quit-ghost:focus-visible {
+	outline: 2px solid var(--qp-focus);
+	outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+	.wv-quit-primary:hover {
+		transform: none;
+	}
 }
 @media (prefers-reduced-motion: no-preference) {
 	body.wv-motion .wv-quit-mark svg {

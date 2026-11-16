@@ -37,7 +37,10 @@ function AccountNote({ account, sync }: { account: QuitAccountState; sync: SyncS
 		return (
 			<p className="text-xs text-[var(--qp-muted)]">
 				Your plan is saved in this browser.{" "}
-				<Link href="/login?next=/quit" className="font-bold text-[var(--qp-primary)] underline">
+				<Link
+					href="/login?next=/quit"
+					className="font-bold text-[var(--qp-primary)] underline [text-shadow:0_0_8px_var(--qp-primary)]"
+				>
 					Sign in
 				</Link>{" "}
 				to keep it on your account too, so it follows you to any device.
@@ -214,7 +217,7 @@ export function WvQuit({ account }: { account: QuitAccountState }) {
 					)}
 					{data?.setup && (
 						<div className="flex gap-2">
-							<button type="button" onClick={restart} className={`${ghostBtn} wv-quit-ghost`}>
+							<button type="button" onClick={restart} className={ghostBtn}>
 								Start Over
 							</button>
 							<a href="#quick-log" className={primaryBtn}>
