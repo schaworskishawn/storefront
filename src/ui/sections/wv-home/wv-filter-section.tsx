@@ -25,22 +25,21 @@ export function FilterSection({
 	return (
 		<details
 			open={defaultOpen}
-			className={
-				nested ? "group" : "group border-t border-[var(--wv-purple)] pt-4 first:border-t-0 first:pt-0"
-			}
+			// A top-level group sits under a neon divider (`.wv-filter-section`, wv-home.css) and has a glowing title.
+			className={nested ? "group" : "wv-filter-section group relative pt-4 first:pt-0"}
 		>
 			<summary
 				className={`flex cursor-pointer list-none items-center justify-between gap-2 [&::-webkit-details-marker]:hidden ${
 					nested
 						? `${orbitron} text-[10px] uppercase tracking-[1px] text-[var(--wv-text-dim)]`
-						: `${bungee} text-xs text-[var(--wv-cyan-soft)]`
+						: `${bungee} wv-filter-title text-xs`
 				}`}
 			>
 				<span>
 					{title}
 					{badge && <span className="ml-2 text-[var(--wv-cyan-soft)]">{badge}</span>}
 				</span>
-				<span aria-hidden className="transition-transform group-open:rotate-180">
+				<span aria-hidden className="wv-filter-chevron transition-transform group-open:rotate-180">
 					▾
 				</span>
 			</summary>
