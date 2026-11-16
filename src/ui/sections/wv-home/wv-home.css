@@ -84,6 +84,52 @@ body.wv-motion h1.wv-hero-title {
 		0 0 9px color-mix(in srgb, var(--wv-pink) 65%, transparent);
 }
 
+/* The shop hero (wv-shop.tsx) uses the home hero's text styles above. Around them: a pink glow behind the title and a
+ * cyan one behind the art, a neon edge along the foot that fades out at both ends, a neon underline under the title, and
+ * the art in a cyan-to-pink frame that glows and casts a shadow. */
+.wv-shop-hero {
+	background:
+		radial-gradient(55% 95% at 10% 35%, color-mix(in srgb, var(--wv-pink) 14%, transparent), transparent 70%),
+		radial-gradient(40% 85% at 90% 55%, color-mix(in srgb, var(--wv-cyan) 11%, transparent), transparent 70%);
+}
+.wv-shop-hero::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	height: 1px;
+	background: linear-gradient(90deg, transparent, var(--wv-cyan) 25%, var(--wv-pink) 75%, transparent);
+	box-shadow: 0 0 8px color-mix(in srgb, var(--wv-pink) 55%, transparent);
+}
+.wv-shop-hero-title::after {
+	content: "";
+	display: block;
+	width: 72px;
+	height: 3px;
+	margin-top: 10px;
+	border-radius: 2px;
+	background: linear-gradient(90deg, var(--wv-pink), var(--wv-cyan));
+	box-shadow:
+		0 0 8px color-mix(in srgb, var(--wv-pink) 70%, transparent),
+		0 0 14px color-mix(in srgb, var(--wv-cyan) 40%, transparent);
+}
+@media (min-width: 768px) {
+	.wv-shop-hero-title::after {
+		width: 96px;
+	}
+}
+.wv-shop-hero-art {
+	border: 1.5px solid transparent;
+	background:
+		linear-gradient(var(--wv-bg), var(--wv-bg)) padding-box,
+		linear-gradient(135deg, var(--wv-cyan), var(--wv-pink)) border-box;
+	box-shadow:
+		0 0 16px color-mix(in srgb, var(--wv-cyan) 40%, transparent),
+		0 0 34px -4px color-mix(in srgb, var(--wv-pink) 45%, transparent),
+		0 16px 26px -12px var(--wv-ink);
+}
+
 .wv-hide-scrollbar {
 	scrollbar-width: none;
 }
