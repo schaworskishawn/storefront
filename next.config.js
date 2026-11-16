@@ -36,6 +36,9 @@ const config = {
 	images: {
 		// WebP only: AVIF cold-encodes add ~500ms+ to first /_next/image hit on Vercel (hurts LCP).
 		formats: ["image/webp"],
+		// Next 16 allows only the listed qualities (others are rounded to the nearest). 75 is the default for every image;
+		// 90 is for the category badges (wv-category-badge-image.tsx), whose soft neon glows band visibly at 75.
+		qualities: [75, 90],
 		remotePatterns: [
 			{
 				// Saleor Cloud CDN
