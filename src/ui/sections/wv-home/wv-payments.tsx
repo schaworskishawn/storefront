@@ -1,4 +1,5 @@
 import { ShieldCheck } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { WvFooter, WvHeader } from "./wv-chrome";
 import { CardNewsletterForm } from "./wv-newsletter-client";
@@ -111,12 +112,17 @@ export function WvPayments() {
 				<span className="absolute left-[450px] top-[320px] hidden size-[3px] rounded-full bg-[var(--wv-pink)] xl:block" />
 				<span className="absolute left-[600px] top-20 hidden size-1 rounded-full bg-[var(--wv-cyan-soft)] xl:block" />
 				<div className="relative flex flex-col items-center gap-6 px-5 py-5 md:flex-row md:gap-6 md:px-6 md:py-6 xl:gap-12 xl:px-20 xl:py-12">
-					<div className="relative h-40 w-40 shrink-0 overflow-hidden rounded-xl shadow-[0_0_32px_4px_rgba(0,229,255,0.12)] md:h-[307px] md:w-[320px] xl:h-[444px] xl:w-[540px]">
-						{/* eslint-disable-next-line @next/next/no-img-element -- cropped artwork positioned by percentage */}
-						<img
-							src="/home/imgPaymentsHero.png"
+					{/* The emblem, as on the home hero: the same cut-out badge (876:839, shown whole in a box of its own shape,
+					    straight on the page's glow) that floats gently and glitches under the pointer (`.wv-float`, motion.css;
+					    `.wv-glitch`, pointer-fx.css; neither runs for reduced motion). */}
+					<div className="wv-float wv-glitch relative aspect-[876/839] w-[180px] shrink-0 md:w-[320px] xl:w-[460px]">
+						<Image
+							src="/home/logo-emblem.webp"
 							alt="Worldwide Vapor"
-							className="absolute left-[-8.82%] top-[-0.34%] h-[100.69%] w-[117.65%] max-w-none"
+							fill
+							loading="eager"
+							sizes="(min-width: 1280px) 460px, (min-width: 768px) 320px, 180px"
+							className="object-contain"
 						/>
 					</div>
 					<div className="flex min-w-0 flex-1 flex-col items-center gap-4 text-center md:items-start md:text-left xl:gap-6">
