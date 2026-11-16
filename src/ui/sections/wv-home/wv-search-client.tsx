@@ -1,12 +1,13 @@
 "use client";
 
-import { ChevronDown, Search, SlidersHorizontal, X } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, Search, SlidersHorizontal, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import type { HomeProduct } from "@/lib/catalog/get-home-products";
 import { type SearchSort, sortSearchResults } from "@/lib/catalog/search-sort";
+import { pageWindow } from "@/lib/catalog/page-window";
 import { activeFilterChips, categoryNames } from "@/lib/catalog/shop-filter-options";
 import { useShopFilters } from "@/lib/catalog/use-shop-filters";
 import { useShuffleSeed } from "@/lib/catalog/use-shuffle-seed";
@@ -381,37 +382,53 @@ export function SearchExperience({
 				</div>
 			</section>
 
-			{/* Pagination */}
+			{/* Pagination: the first and last pages, the ones around the current page and an ellipsis between
+			    (page-window.ts), so the row fits a phone however many pages there are. Neon glass buttons that lift and glow
+			    under the pointer, glowing arrows, and the current page lit up in solid neon (`.wv-page-*` in wv-home.css). */}
 			{pageCount > 1 && (
-				<nav aria-label="Pagination" className="flex items-center justify-center gap-2 px-4 py-10 xl:py-12">
+				<nav
+					aria-label="Pagination"
+					className="flex items-center justify-center gap-1.5 px-4 py-10 md:gap-2 xl:py-12"
+				>
 					<button
 						type="button"
 						aria-label="Previous page"
 						disabled={current === 1}
 						onClick={() => setPage(current - 1)}
-						className="flex size-9 items-center justify-center rounded-lg border border-[var(--wv-section)] disabled:opacity-40 xl:size-10"
+						className="wv-page-btn wv-page-arrow flex size-8 items-center justify-center rounded-lg md:size-9 xl:size-10"
 					>
-						‹
+						<ChevronLeft aria-hidden className="size-4 md:size-5" strokeWidth={2.5} />
 					</button>
-					{Array.from({ length: pageCount }, (_, i) => i + 1).map((n) => (
-						<button
-							key={n}
-							type="button"
-							aria-current={n === current ? "page" : undefined}
-							onClick={() => setPage(n)}
-							className={`${heyComic} flex size-9 items-center justify-center rounded-lg text-sm xl:size-10 ${n === current ? "bg-[var(--wv-cyan)] text-[var(--wv-ink)]" : "border border-[var(--wv-section)] text-[var(--wv-text-dim)]"}`}
-						>
-							{n}
-						</button>
-					))}
+					{pageWindow(current, pageCount).map((n, i) =>
+						n === "gap" ? (
+							<span
+								key={`gap-${i}`}
+								aria-hidden
+								className={`${heyComic} wv-page-gap flex w-5 items-end justify-center text-sm md:w-6`}
+							>
+								…
+							</span>
+						) : (
+							<button
+								key={n}
+								type="button"
+								aria-label={`Page ${n}`}
+								aria-current={n === current ? "page" : undefined}
+								onClick={() => setPage(n)}
+								className={`${heyComic} wv-page-btn flex size-8 items-center justify-center rounded-lg text-sm md:size-9 xl:size-10`}
+							>
+								{n}
+							</button>
+						),
+					)}
 					<button
 						type="button"
 						aria-label="Next page"
 						disabled={current === pageCount}
 						onClick={() => setPage(current + 1)}
-						className="flex size-9 items-center justify-center rounded-lg border border-[var(--wv-section)] disabled:opacity-40 xl:size-10"
+						className="wv-page-btn wv-page-arrow flex size-8 items-center justify-center rounded-lg md:size-9 xl:size-10"
 					>
-						›
+						<ChevronRight aria-hidden className="size-4 md:size-5" strokeWidth={2.5} />
 					</button>
 				</nav>
 			)}
