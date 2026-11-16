@@ -248,7 +248,7 @@ export function WvPayments() {
 			</section>
 
 			{/* Trust */}
-			<section className="grid grid-cols-1 gap-5 border-y border-[var(--wv-purple)] bg-[var(--wv-surface)] px-5 py-6 md:grid-cols-2 md:gap-x-6 md:gap-y-6 md:px-8 xl:flex xl:items-start xl:justify-between xl:px-20 xl:py-10">
+			<section className="wv-band grid grid-cols-1 gap-5 px-5 py-6 md:grid-cols-2 md:gap-x-6 md:gap-y-6 md:px-8 xl:flex xl:items-start xl:justify-between xl:px-20 xl:py-10">
 				{TRUST.map((t) => (
 					<div key={t.title} className="wv-trust-item flex items-center gap-4 xl:w-[280px]">
 						<span className="wv-trust-icon text-[28px] xl:text-[32px]">{t.icon}</span>

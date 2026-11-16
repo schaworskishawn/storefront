@@ -288,10 +288,10 @@ body.wv-motion h1.wv-hero-title {
 	text-shadow: 0 1px 1px var(--wv-ink);
 }
 
-/* Lit glass bands: the shipping page's perks (its items styled as a trust strip, above) and the payments page's "proudly
- * accepting" strip. A cyan glow at the left end and a pink one at the right over a hint of purple, top and bottom edges
- * that are neon lines running cyan into pink and glowing inward; the title (chrome, .wv-hero-tagline) set between two
- * glowing neon dashes. */
+/* Lit glass bands: the trust strips (home, shop, payments), the shipping page's perks (its items styled as a trust strip,
+ * above) and the payments page's "proudly accepting" strip. A cyan glow at the left end and a pink one at the right over
+ * a hint of purple, top and bottom edges that are neon lines running cyan into pink and glowing inward; a title, where
+ * there is one, chrome (.wv-hero-tagline) between two glowing neon dashes. */
 .wv-band {
 	background:
 		radial-gradient(40% 130% at 0% 50%, color-mix(in srgb, var(--wv-cyan) 11%, transparent), transparent 70%),
