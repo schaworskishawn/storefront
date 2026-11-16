@@ -547,9 +547,9 @@ body.wv-motion .wv-nav-link[aria-current="page"]:is(:hover, :focus-visible) {
 		0 0 16px color-mix(in srgb, var(--wv-cyan) 35%, transparent);
 }
 /* Hero art as a lit neon screen: a cyan-through-purple-to-pink edge glowing cyan and pink, with a shadow beneath (.wv-art,
- * also the frame around the shop hero's drawn art). The shipping hero's photo also gets its neon lifted a touch, glass over
- * it (a sheen from the top-left, a fine highlight along the top, an inner cyan glow and edges falling away into the page)
- * and HUD corner brackets, cyan on the left and pink on the right. */
+ * the frame around the heroes' drawn art). The shipping hero's art also gets glass over it (a sheen from the
+ * top-left, a fine highlight along the top, an inner cyan glow and edges falling away into the page) and HUD corner
+ * brackets, cyan on the left and pink on the right. */
 .wv-art {
 	border: 1.5px solid transparent;
 	background:
@@ -559,9 +559,6 @@ body.wv-motion .wv-nav-link[aria-current="page"]:is(:hover, :focus-visible) {
 		0 0 18px color-mix(in srgb, var(--wv-cyan) 35%, transparent),
 		0 0 40px -6px color-mix(in srgb, var(--wv-pink) 45%, transparent),
 		0 22px 34px -16px var(--wv-ink);
-}
-.wv-art-img {
-	filter: saturate(1.18) contrast(1.06) brightness(1.04);
 }
 .wv-art-glass {
 	pointer-events: none;
