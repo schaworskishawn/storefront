@@ -16,7 +16,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { LearnArticleSummary } from "@/lib/learn/articles";
 import { ArticleImage, ArticleMeta, LearnCard, learnHref } from "./wv-learn-card";
-import { ShopHeroArt } from "./wv-shop-hero-art";
+import { LearnHeroArt } from "./wv-learn-hero-art";
 
 const outfit = "font-[family-name:var(--font-outfit)]";
 
@@ -76,9 +76,10 @@ export function LearnBrowser({ articles }: { articles: LearnArticleSummary[] }) 
 	return (
 		<>
 			{/* Hero, in the neon style of the site's other heroes: a pink and cyan glow behind it (`.wv-hero-backdrop`), a 3D
-			    two-tone title over a glowing bar and brighter copy with its key words lit (`.wv-hero-*`), the store's range
-			    as a neon lineup on a synthwave grid in a glowing frame (in place of the "vape tech mockup" placeholder), and a
-			    neon glass search field (`.wv-search-field`). */}
+			    two-tone title over a glowing bar and brighter copy with its key words lit (`.wv-hero-*`), the Learn categories
+			    as a neon lineup on a synthwave grid in a glowing frame (wv-learn-hero-art.tsx, in place of the "vape tech
+			    mockup" placeholder), and a neon glass search field (`.wv-search-field`). The frame keeps a set shape at each
+			    size (a wide banner up to the desktop layout, then 3:2) so the lineup is never cropped. */}
 			<section className="wv-hero-backdrop grid gap-5 px-5 py-8 md:gap-6 md:px-8 md:py-10 xl:grid-cols-[680px_420px] xl:justify-between xl:gap-x-12 xl:gap-y-6 xl:px-20 xl:py-16">
 				<div className="flex flex-col gap-4 xl:col-start-1 xl:row-start-1 xl:gap-6">
 					<div className="flex flex-col gap-3">
@@ -102,8 +103,8 @@ export function LearnBrowser({ articles }: { articles: LearnArticleSummary[] }) 
 						</span>
 					</p>
 				</div>
-				<div className="wv-art relative h-[140px] overflow-hidden rounded-3xl md:h-[264px] xl:col-start-2 xl:row-span-2 xl:row-start-1 xl:h-[320px]">
-					<ShopHeroArt idPrefix="learn-hero-art" />
+				<div className="wv-art relative aspect-[12/5] overflow-hidden rounded-3xl md:aspect-[3/1] md:max-h-[300px] xl:col-start-2 xl:row-span-2 xl:row-start-1 xl:aspect-[3/2] xl:max-h-none xl:self-center">
+					<LearnHeroArt idPrefix="learn-hero-art" />
 				</div>
 				<form
 					role="search"
