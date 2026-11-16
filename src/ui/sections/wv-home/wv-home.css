@@ -141,8 +141,8 @@ body.wv-motion h1.wv-hero-title {
 }
 
 /* The shop hero (wv-shop.tsx) uses the home hero's text styles above. Around them: a pink glow behind the title and a
- * cyan one behind the art, a neon edge along the foot that fades out at both ends, a neon underline under the title, and
- * the art in a cyan-to-pink frame that glows and casts a shadow. */
+ * cyan one behind the art, a neon edge along the foot that fades out at both ends, and a neon underline under the title.
+ * Its art is a lit neon screen, like the shipping hero's (.wv-art, below). */
 .wv-shop-hero {
 	background:
 		radial-gradient(55% 95% at 10% 35%, color-mix(in srgb, var(--wv-pink) 14%, transparent), transparent 70%),
@@ -174,16 +174,6 @@ body.wv-motion h1.wv-hero-title {
 	.wv-shop-hero-title::after {
 		width: 96px;
 	}
-}
-.wv-shop-hero-art {
-	border: 1.5px solid transparent;
-	background:
-		linear-gradient(var(--wv-bg), var(--wv-bg)) padding-box,
-		linear-gradient(135deg, var(--wv-cyan), var(--wv-pink)) border-box;
-	box-shadow:
-		0 0 16px color-mix(in srgb, var(--wv-cyan) 40%, transparent),
-		0 0 34px -4px color-mix(in srgb, var(--wv-pink) 45%, transparent),
-		0 16px 26px -12px var(--wv-ink);
 }
 
 .wv-hide-scrollbar {
@@ -556,10 +546,11 @@ body.wv-motion .wv-nav-link[aria-current="page"]:is(:hover, :focus-visible) {
 		0 0 10px color-mix(in srgb, var(--wv-pink) 70%, transparent),
 		0 0 16px color-mix(in srgb, var(--wv-cyan) 35%, transparent);
 }
-/* The hero art as a lit neon screen: a cyan-through-purple-to-pink edge glowing cyan and pink, with a shadow beneath; the
- * art's neon lifted a touch; glass over it (a sheen from the top-left, a fine highlight along the top, an inner cyan glow
- * and edges falling away into the page); and HUD corner brackets, cyan on the left and pink on the right. */
-.wv-ship-art {
+/* Hero art as a lit neon screen: a cyan-through-purple-to-pink edge glowing cyan and pink, with a shadow beneath (.wv-art,
+ * also the frame around the shop hero's drawn art). The shipping hero's photo also gets its neon lifted a touch, glass over
+ * it (a sheen from the top-left, a fine highlight along the top, an inner cyan glow and edges falling away into the page)
+ * and HUD corner brackets, cyan on the left and pink on the right. */
+.wv-art {
 	border: 1.5px solid transparent;
 	background:
 		linear-gradient(var(--wv-bg), var(--wv-bg)) padding-box,
@@ -569,10 +560,10 @@ body.wv-motion .wv-nav-link[aria-current="page"]:is(:hover, :focus-visible) {
 		0 0 40px -6px color-mix(in srgb, var(--wv-pink) 45%, transparent),
 		0 22px 34px -16px var(--wv-ink);
 }
-.wv-ship-art-img {
+.wv-art-img {
 	filter: saturate(1.18) contrast(1.06) brightness(1.04);
 }
-.wv-ship-art-glass {
+.wv-art-glass {
 	pointer-events: none;
 	background:
 		linear-gradient(155deg, color-mix(in srgb, white 9%, transparent), transparent 26%),
@@ -585,7 +576,7 @@ body.wv-motion .wv-nav-link[aria-current="page"]:is(:hover, :focus-visible) {
 		inset 0 1px 0 color-mix(in srgb, white 18%, transparent),
 		inset 0 0 26px color-mix(in srgb, var(--wv-cyan) 16%, transparent);
 }
-.wv-ship-art-hud {
+.wv-art-hud {
 	--hud-len: 18px;
 	--hud-w: 2px;
 	pointer-events: none;
@@ -603,7 +594,7 @@ body.wv-motion .wv-nav-link[aria-current="page"]:is(:hover, :focus-visible) {
 		drop-shadow(0 0 3px color-mix(in srgb, var(--wv-cyan) 70%, transparent));
 }
 @media (min-width: 1280px) {
-	.wv-ship-art-hud {
+	.wv-art-hud {
 		--hud-len: 24px;
 	}
 }
