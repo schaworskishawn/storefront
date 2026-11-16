@@ -771,12 +771,14 @@ body.wv-motion .wv-nav-link[aria-current="page"]:is(:hover, :focus-visible) {
 	}
 }
 
-/* Shipping options (wv-shipping.tsx): each a glassy neon card in its own colour, cyan, or pink for the popular one. A
- * glow in its colour in the top corner, a gradient edge (its colour into purple into the other neon) that glows, a
- * highlight along the top and a shadow beneath; the icon a lit tile; the title lifted (.wv-pc-name), the delivery time
- * glowing in the card's colour, the copy brighter with its prices lit; the popular pill glows and gently pulses. Under the
- * pointer the card lifts and glows brighter (no movement for reduced motion). */
-.wv-ship-card {
+/* Neon cards: the shipping options (wv-shipping.tsx) and the payment options (wv-payments.tsx). Each is a glassy card in
+ * its own colour: cyan; pink (--pink, the payment cards alternate); or pink and brighter for the popular shipping option
+ * (--featured). A glow in its colour in the top corner, a gradient edge (its colour into purple into the other neon) that
+ * glows, a highlight along the top and a shadow beneath; the icon a lit tile; the title lifted (.wv-pc-name), the delivery
+ * time glowing in the card's colour, the copy brighter with its key words lit (.wv-neon-key) and a link in the card's
+ * colour; the popular pill glows and gently pulses. Under the pointer the card lifts and glows brighter (no movement for
+ * reduced motion). */
+.wv-neon-card {
 	--accent: var(--wv-cyan-soft);
 	--edge: linear-gradient(
 		150deg,
@@ -800,7 +802,16 @@ body.wv-motion .wv-nav-link[aria-current="page"]:is(:hover, :focus-visible) {
 		transform 200ms ease,
 		box-shadow 200ms ease;
 }
-.wv-ship-card--featured {
+.wv-neon-card--pink {
+	--accent: var(--wv-pink);
+}
+.wv-neon-card-link {
+	color: var(--accent);
+	text-shadow:
+		0 1px 1px var(--wv-ink),
+		0 0 8px color-mix(in srgb, var(--accent) 70%, transparent);
+}
+.wv-neon-card--featured {
 	--accent: var(--wv-pink);
 	--edge: linear-gradient(150deg, var(--wv-pink), var(--wv-purple) 50%, var(--wv-cyan));
 	--glow:
@@ -808,7 +819,7 @@ body.wv-motion .wv-nav-link[aria-current="page"]:is(:hover, :focus-visible) {
 		0 0 46px -10px color-mix(in srgb, var(--wv-pink) 45%, transparent);
 }
 @media (hover: hover) {
-	.wv-ship-card:hover {
+	.wv-neon-card:hover {
 		transform: translateY(-3px);
 		box-shadow:
 			inset 0 1px 0 color-mix(in srgb, white 18%, transparent),
@@ -817,11 +828,11 @@ body.wv-motion .wv-nav-link[aria-current="page"]:is(:hover, :focus-visible) {
 	}
 }
 @media (prefers-reduced-motion: reduce) {
-	.wv-ship-card:hover {
+	.wv-neon-card:hover {
 		transform: none;
 	}
 }
-.wv-ship-card-icon {
+.wv-neon-card-icon {
 	border: 1.5px solid transparent;
 	background:
 		radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--accent) 26%, transparent), transparent 70%)
@@ -835,17 +846,17 @@ body.wv-motion .wv-nav-link[aria-current="page"]:is(:hover, :focus-visible) {
 		0 0 12px color-mix(in srgb, var(--accent) 40%, transparent);
 	text-shadow: 0 0 10px color-mix(in srgb, var(--accent) 85%, transparent);
 }
-.wv-ship-card-timing {
+.wv-neon-card-timing {
 	color: var(--accent);
 	text-shadow:
 		0 1px 0 var(--wv-ink),
 		0 0 8px color-mix(in srgb, var(--accent) 70%, transparent);
 }
-.wv-ship-card-text {
+.wv-neon-card-text {
 	color: color-mix(in srgb, white 70%, var(--wv-muted));
 	text-shadow: 0 1px 1px var(--wv-ink);
 }
-.wv-ship-key {
+.wv-neon-key {
 	font-weight: inherit;
 	color: white;
 	text-shadow:

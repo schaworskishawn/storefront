@@ -15,9 +15,9 @@ const bungee = "font-[family-name:var(--font-bungee)]";
 const orbitron = "font-[family-name:var(--font-orbitron)]";
 const marker = "font-[family-name:var(--font-permanent-marker)]";
 
-/** A price or cut-off in an option's copy, lit in the card's colour (`.wv-ship-key`). */
+/** A price or cut-off in an option's copy, lit in the card's colour (`.wv-neon-key`). */
 function Key({ children }: { children: React.ReactNode }) {
-	return <strong className="wv-ship-key">{children}</strong>;
+	return <strong className="wv-neon-key">{children}</strong>;
 }
 
 const OPTIONS = [
@@ -216,16 +216,16 @@ export function WvShipping() {
 				<div className="grid w-full max-w-[1280px] grid-cols-1 gap-4 md:gap-5 xl:grid-cols-3 xl:gap-6">
 					{/* Each option is a glassy neon card in its own colour (cyan, or pink for the popular one): a glowing
 					    gradient edge, a lit icon tile, a glowing pill on the popular one, lifted lettering and its prices
-					    lit; under the pointer it lifts and glows brighter (`.wv-ship-card*` in wv-home.css). */}
+					    lit; under the pointer it lifts and glows brighter (`.wv-neon-card*` in wv-home.css). */}
 					{OPTIONS.map((o) => (
 						<article
 							key={o.title}
-							className={`wv-ship-card ${o.featured ? "wv-ship-card--featured" : ""} flex flex-col gap-4 rounded-2xl p-5 md:flex-row md:items-start md:gap-5 md:p-6 xl:flex-col xl:p-7`}
+							className={`wv-neon-card ${o.featured ? "wv-neon-card--featured" : ""} flex flex-col gap-4 rounded-2xl p-5 md:flex-row md:items-start md:gap-5 md:p-6 xl:flex-col xl:p-7`}
 						>
 							<div className="flex items-center justify-between md:block xl:flex">
 								<span
 									aria-hidden
-									className="wv-ship-card-icon flex size-11 shrink-0 items-center justify-center rounded-xl text-[22px]"
+									className="wv-neon-card-icon flex size-11 shrink-0 items-center justify-center rounded-xl text-[22px]"
 								>
 									{o.icon}
 								</span>
@@ -245,9 +245,9 @@ export function WvShipping() {
 											</span>
 										)}
 									</div>
-									<p className={`${bungee} wv-ship-card-timing text-sm`}>{o.timing}</p>
+									<p className={`${bungee} wv-neon-card-timing text-sm`}>{o.timing}</p>
 								</div>
-								<p className={`${orbitron} wv-ship-card-text text-[13px] leading-[1.5]`}>{o.text}</p>
+								<p className={`${orbitron} wv-neon-card-text text-[13px] leading-[1.5]`}>{o.text}</p>
 							</div>
 						</article>
 					))}

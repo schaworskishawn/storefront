@@ -197,33 +197,41 @@ export function WvPayments() {
 			</section>
 
 			{/* Payment options */}
+			{/* The heading is solid 3D lettering over a glowing bar (`.wv-heading-*`), like the site's other section
+			    headings; each way to pay is a glassy neon card (`.wv-neon-card*`, as the shipping options), alternating
+			    cyan and pink, with its icon in a lit tile, its title lifted, its copy brighter and its link glowing. */}
 			<section className="flex flex-col items-center gap-8 px-5 py-8 md:px-8 md:py-10 xl:gap-12 xl:p-20">
 				<div className="flex flex-col items-center gap-2 text-center">
 					<p
-						className={`${marker} text-[18px] uppercase tracking-[2px] text-[var(--wv-pink)] md:text-[22px] xl:text-2xl`}
+						className={`${marker} wv-heading-eyebrow text-[18px] uppercase tracking-[2px] text-[var(--wv-pink)] md:text-[22px] xl:text-2xl`}
 					>
 						Worldwide <span className="text-[var(--wv-cyan)]">vapor</span>
 					</p>
-					<h2 className={`${bungee} text-[22px] tracking-[1px] md:text-[26px] xl:text-[32px]`}>
+					<h2
+						className={`${bungee} wv-heading-title text-[22px] tracking-[1px] text-white md:text-[26px] xl:text-[32px]`}
+					>
 						Payment Options
 					</h2>
-					<div className="wv-bar h-[3px] w-[60px] rounded-full bg-[var(--wv-cyan-soft)] xl:w-20" />
+					<div className="wv-bar wv-heading-bar h-[3px] w-[60px] rounded-full bg-[var(--wv-cyan-soft)] xl:w-20" />
 				</div>
 				<div className="grid w-full max-w-[1280px] grid-cols-1 gap-3 md:grid-cols-2 md:gap-4 xl:grid-cols-4 xl:gap-6">
-					{methods.map((m) => (
+					{methods.map((m, i) => (
 						<article
 							key={m.title}
-							className="flex flex-col gap-3 rounded-2xl border border-[var(--wv-cyan-soft)] bg-[var(--wv-control)] p-5 xl:p-6"
+							className={`wv-neon-card ${i % 2 ? "wv-neon-card--pink" : ""} flex flex-col gap-3 rounded-2xl p-5 xl:p-6`}
 						>
-							<span className="flex size-10 items-center justify-center rounded-lg border border-[var(--wv-cyan-soft)] bg-[var(--wv-bg)] text-xl">
+							<span
+								aria-hidden
+								className="wv-neon-card-icon flex size-10 items-center justify-center rounded-lg text-xl"
+							>
 								{m.icon}
 							</span>
-							<h3 className={`${heyComic} text-base`}>{m.title}</h3>
-							<p className={`${orbitron} text-[13px] leading-[1.5] text-[var(--wv-text-dim)]`}>{m.text}</p>
+							<h3 className={`${heyComic} wv-pc-name text-base`}>{m.title}</h3>
+							<p className={`${orbitron} wv-neon-card-text text-[13px] leading-[1.5]`}>{m.text}</p>
 							{m.more ? (
 								<Link
 									href={m.more.href}
-									className={`${orbitron} wv-link mt-auto self-start text-[13px] text-[var(--wv-cyan-soft)]`}
+									className={`${orbitron} wv-link wv-neon-card-link mt-auto self-start text-[13px]`}
 								>
 									{m.more.label} →
 								</Link>
