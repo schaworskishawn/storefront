@@ -1,3 +1,5 @@
+import { ShieldCheck } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { WvFooter, WvHeader } from "./wv-chrome";
 import { CardNewsletterForm } from "./wv-newsletter-client";
@@ -15,9 +17,17 @@ const bungee = "font-[family-name:var(--font-bungee)]";
 const orbitron = "font-[family-name:var(--font-orbitron)]";
 const marker = "font-[family-name:var(--font-permanent-marker)]";
 
-const BADGES = ["Visa", "Mastercard", "Amex", "Discover", "Interac e-Transfer", "⚡ Bitcoin"];
-
-type Method = { icon: string; title: string; text: string; more?: { href: string; label: string } };
+/**
+ * A way to pay. Each one is a card under "Payment options" and a chip in the "proudly accepting" strip, so the two always
+ * list the same ways; `chip` is the strip's shorter label where the card's title is long.
+ */
+type Method = {
+	icon: string;
+	title: string;
+	chip?: string;
+	text: string;
+	more?: { href: string; label: string };
+};
 
 const METHODS: Method[] = [
 	{
@@ -31,8 +41,10 @@ const METHODS: Method[] = [
 		text: "Place your order, then send an Interac e-Transfer from your Canadian bank. We email the details and ship once it arrives.",
 	},
 	{
-		icon: "🪙",
+		// The Bitcoin sign, not 🪙: that emoji is too new for Windows 10's emoji font, which shows an empty box instead.
+		icon: "₿",
 		title: "Crypto Payments",
+		chip: "Crypto",
 		text: "Decentralized privacy using standard Bitcoin (BTC), Ethereum (ETH), and major stablecoins.",
 	},
 	{
@@ -82,13 +94,14 @@ const FAQS = [
 const PENDING_ANSWER =
 	"Details for this answer are coming soon. Contact support@worldwidevapor.com in the meantime.";
 
+/** The site's neon outline button (`.wv-btn-neon`, as in OutlineButton): a glassy cyan tint, glow and solid lettering. */
 function OutlineLink({ href, children }: { href: string; children: string }) {
 	return (
 		<Link
 			href={href}
-			className={`${heyComic} flex h-[45px] items-center justify-center rounded-xl border border-[var(--wv-cyan-soft)] px-8 text-base text-[var(--wv-cyan-soft)] md:h-[46px] xl:h-[49px]`}
+			className={`${heyComic} wv-btn wv-btn-outline wv-btn-neon flex h-[45px] items-center justify-center whitespace-nowrap rounded-xl border-[1.5px] border-[var(--wv-cyan-soft)] px-6 text-base text-[var(--wv-cyan-soft)] md:h-[46px] xl:h-[49px] xl:px-8`}
 		>
-			{children}
+			<span className="wv-btn-label">{children}</span>
 		</Link>
 	);
 }
@@ -100,44 +113,56 @@ export function WvPayments() {
 		<div className="min-h-dvh overflow-x-clip bg-[var(--wv-bg)] text-white">
 			<WvHeader />
 
-			{/* Hero */}
-			<section className="relative overflow-hidden">
+			{/* Hero. The text has depth, as on the home and shipping heroes (`.wv-hero-*`): a neon badge led by a glowing
+			    shield, a 3D title over a glowing pink-to-cyan bar, brighter copy with its key phrases lit, a glossy filled
+			    button (`.wv-pc-cta`) and the neon outline button; behind it a pink and cyan glow. The buttons never break
+			    their labels across lines; when they don't fit side by side, the second moves to its own row. */}
+			<section className="wv-hero-backdrop relative overflow-hidden">
 				<span className="absolute left-[120px] top-[90px] hidden size-[5px] rounded-full bg-[var(--wv-cyan-soft)] xl:block" />
 				<span className="absolute left-[450px] top-[320px] hidden size-[3px] rounded-full bg-[var(--wv-pink)] xl:block" />
 				<span className="absolute left-[600px] top-20 hidden size-1 rounded-full bg-[var(--wv-cyan-soft)] xl:block" />
 				<div className="relative flex flex-col items-center gap-6 px-5 py-5 md:flex-row md:gap-6 md:px-6 md:py-6 xl:gap-12 xl:px-20 xl:py-12">
-					<div className="relative h-40 w-40 shrink-0 overflow-hidden rounded-xl shadow-[0_0_32px_4px_rgba(0,229,255,0.12)] md:h-[307px] md:w-[320px] xl:h-[444px] xl:w-[540px]">
-						{/* eslint-disable-next-line @next/next/no-img-element -- cropped artwork positioned by percentage */}
-						<img
-							src="/home/imgPaymentsHero.png"
+					{/* The emblem, as on the home hero: the same cut-out badge (876:839, shown whole in a box of its own shape,
+					    straight on the page's glow) that floats gently and glitches under the pointer (`.wv-float`, motion.css;
+					    `.wv-glitch`, pointer-fx.css; neither runs for reduced motion). */}
+					<div className="wv-float wv-glitch relative aspect-[876/839] w-[180px] shrink-0 md:w-[320px] xl:w-[460px]">
+						<Image
+							src="/home/logo-emblem.webp"
 							alt="Worldwide Vapor"
-							className="absolute left-[-8.82%] top-[-0.34%] h-[100.69%] w-[117.65%] max-w-none"
+							fill
+							loading="eager"
+							sizes="(min-width: 1280px) 460px, (min-width: 768px) 320px, 180px"
+							className="object-contain"
 						/>
 					</div>
 					<div className="flex min-w-0 flex-1 flex-col items-center gap-4 text-center md:items-start md:text-left xl:gap-6">
 						<span
-							className={`${heyComic} rounded-full border border-[var(--wv-cyan-soft)] bg-[var(--wv-control)] px-4 py-[6px] text-xs tracking-[1.5px] text-[var(--wv-cyan-soft)]`}
+							className={`${heyComic} wv-hero-badge flex items-center gap-2 rounded-full px-4 py-[6px] text-xs tracking-[1.5px]`}
 						>
+							<ShieldCheck aria-hidden className="size-4" strokeWidth={2.25} />
 							FAST &amp; ENCRYPTED TRANSACTIONS
 						</span>
 						<div className="flex w-full flex-col items-center gap-3 md:items-start">
 							<h1
-								className={`${heyComic} text-[28px] leading-[1.1] md:text-[40px] md:leading-tight xl:text-[54px] xl:leading-[60px]`}
+								className={`${heyComic} wv-title-glow wv-hero-title text-[28px] leading-[1.1] md:text-[40px] md:leading-tight xl:text-[54px] xl:leading-[60px]`}
 							>
-								SECURE &amp; EASY PAYMENTS
+								<span>SECURE &amp; EASY</span> <span className="text-[var(--wv-cyan-soft)]">PAYMENTS</span>
 							</h1>
-							<div className="h-1 w-[120px] rounded-full bg-[var(--wv-pink)]" />
+							<div className="wv-hero-bar h-1 w-[120px] rounded-full" />
 						</div>
-						<p className={`${orbitron} text-sm leading-[1.6] text-[var(--wv-text-dim)] xl:text-base`}>
-							Fast-track your inventory procurement. Whether wholesale, retail, or custom global distribution
-							rates, our fully compliant, encrypted checkout system processes your purchase instantly.
+						<p className={`${orbitron} wv-hero-copy text-sm leading-[1.6] xl:text-base`}>
+							Fast-track your inventory procurement. Whether{" "}
+							<strong className="wv-hero-key">wholesale, retail, or custom global distribution rates</strong>,
+							our{" "}
+							<strong className="wv-hero-key wv-hero-key--pink">fully compliant, encrypted checkout</strong>{" "}
+							system processes your purchase <strong className="wv-hero-key">instantly</strong>.
 						</p>
-						<div className="flex flex-col items-center gap-3 md:flex-row md:gap-4">
+						<div className="flex flex-wrap items-center justify-center gap-3 md:justify-start md:gap-4">
 							<Link
 								href="/shop"
-								className={`${heyComic} flex h-[45px] items-center justify-center rounded-xl bg-[var(--wv-cyan-soft)] px-8 text-base text-[var(--wv-ink)] md:h-[46px] xl:h-[49px]`}
+								className={`${heyComic} wv-pc-cta flex h-[45px] items-center justify-center whitespace-nowrap rounded-xl bg-[var(--wv-cyan-soft)] px-6 text-base text-[var(--wv-ink)] md:h-[46px] xl:h-[49px] xl:px-8`}
 							>
-								Shop Best Sellers
+								<span className="wv-pc-cta-label">Shop Best Sellers</span>
 							</Link>
 							<OutlineLink href="#faqs">View Payment FAQs</OutlineLink>
 						</div>
@@ -145,23 +170,30 @@ export function WvPayments() {
 				</div>
 			</section>
 
-			{/* We accept */}
-			<section className="flex flex-col items-center gap-5 border-y border-[var(--wv-cyan-soft)] bg-[var(--wv-ink)] px-5 py-5 md:px-8 md:py-7 xl:px-20 xl:py-8">
-				<p
-					className={`${heyComic} text-center text-xs uppercase tracking-[2px] text-[var(--wv-text-dim)] md:text-sm`}
-				>
-					PROUDLY ACCEPTING SECURED PAYMENTS FROM
+			{/* We accept: a lit glass band (`.wv-band*`) with a chrome title between neon dashes, and a chip for each way to
+			    pay, the same list as the cards below (Vapor Tokens only while the program is on): glass pills alternating
+			    cyan and pink, each icon in a glowing neon ring (`.wv-pay-chip`, `.wv-trust-*`). */}
+			<section className="wv-band flex flex-col items-center gap-5 px-5 py-6 md:px-8 md:py-7 xl:px-20 xl:py-8">
+				<p className="flex items-center gap-3 text-center">
+					<span aria-hidden className="wv-band-dash hidden md:block" />
+					<span className={`${heyComic} wv-hero-tagline text-xs uppercase tracking-[2px] md:text-sm`}>
+						PROUDLY ACCEPTING SECURED PAYMENTS FROM
+					</span>
+					<span aria-hidden className="wv-band-dash wv-band-dash--end hidden md:block" />
 				</p>
-				<div className="flex flex-wrap justify-center gap-3 xl:gap-4">
-					{BADGES.map((b) => (
-						<span
-							key={b}
-							className={`${heyComic} rounded-lg border border-[var(--wv-cyan-soft)] bg-[var(--wv-control)] px-4 py-[6px] text-[13px] xl:px-5 xl:py-2 xl:text-sm`}
+				<ul className="flex flex-wrap justify-center gap-3 xl:gap-4">
+					{methods.map((m) => (
+						<li
+							key={m.title}
+							className="wv-pay-chip flex items-center gap-2 rounded-full py-[5px] pl-[5px] pr-4 xl:gap-[10px] xl:pr-5"
 						>
-							{b}
-						</span>
+							<span aria-hidden className="wv-trust-icon text-sm xl:text-base">
+								{m.icon}
+							</span>
+							<span className={`${heyComic} wv-trust-title text-[13px] xl:text-sm`}>{m.chip ?? m.title}</span>
+						</li>
 					))}
-				</div>
+				</ul>
 			</section>
 
 			{/* Payment options */}

@@ -1,3 +1,4 @@
+import { Truck } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { WvFooter, WvHeader } from "./wv-chrome";
@@ -120,15 +121,21 @@ function Heading({
 	title: string;
 	bar?: string;
 }) {
+	// Solid 3D lettering, as on the site's other section headings (SectionHeading): a shaded pink eyebrow (its cyan word
+	// stays solid cyan), a chrome title with an edge beneath, and a glowing bar (`.wv-heading-*` in wv-home.css).
 	return (
 		<div className="flex flex-col items-center gap-2 text-center">
 			<p
-				className={`${marker} text-lg uppercase tracking-[2px] text-[var(--wv-pink)] md:text-xl xl:text-2xl`}
+				className={`${marker} wv-heading-eyebrow text-lg uppercase tracking-[2px] text-[var(--wv-pink)] md:text-xl xl:text-2xl`}
 			>
 				{eyebrow}
 			</p>
-			<h2 className={`${bungee} text-[22px] tracking-[1px] md:text-[26px] xl:text-[32px]`}>{title}</h2>
-			<div className={`wv-bar h-[3px] rounded-full bg-[var(--wv-cyan-soft)] ${bar}`} />
+			<h2
+				className={`${bungee} wv-heading-title text-[22px] tracking-[1px] text-white md:text-[26px] xl:text-[32px]`}
+			>
+				{title}
+			</h2>
+			<div className={`wv-bar wv-heading-bar h-[3px] rounded-full bg-[var(--wv-cyan-soft)] ${bar}`} />
 		</div>
 	);
 }
@@ -139,48 +146,57 @@ export function WvShipping() {
 			<WvHeader />
 
 			{/* Hero */}
-			<section className="relative overflow-hidden">
+			{/* The hero's text has depth, as on the home hero (`.wv-hero-*`): a neon badge with a glowing truck, a 3D title
+			    over a glowing pink-to-cyan bar, brighter copy with its key phrases lit, and the neon outline button; behind
+			    it a pink and cyan glow (`.wv-hero-backdrop`, `.wv-hero-badge` and `.wv-hero-bar` in wv-home.css). */}
+			<section className="wv-hero-backdrop relative overflow-hidden">
 				<span className="absolute left-[120px] top-[90px] hidden size-[5px] rounded-full bg-[var(--wv-cyan-soft)] xl:block" />
 				<span className="absolute left-[450px] top-[320px] hidden size-[3px] rounded-full bg-[var(--wv-pink)] xl:block" />
 				<span className="absolute left-[600px] top-20 hidden size-1 rounded-full bg-[var(--wv-cyan-soft)] xl:block" />
 				<div className="relative flex flex-col gap-6 px-5 py-8 md:gap-6 md:px-10 md:py-10 xl:flex-row xl:items-center xl:gap-12 xl:px-20 xl:py-12">
 					<div className="flex min-w-0 flex-1 flex-col items-start gap-4 xl:gap-6">
 						<span
-							className={`${heyComic} rounded-full border border-[var(--wv-cyan-soft)] bg-[var(--wv-control)] px-3 py-1 text-[10px] tracking-[1.5px] text-[var(--wv-cyan-soft)] md:px-4 md:py-[6px] md:text-[11px]`}
+							className={`${heyComic} wv-hero-badge flex items-center gap-2 rounded-full px-3 py-1 text-[10px] tracking-[1.5px] md:px-4 md:py-[6px] md:text-[11px]`}
 						>
+							<Truck aria-hidden className="size-3.5 md:size-4" strokeWidth={2.25} />
 							<span className="md:hidden">DISPATCHED IN 24H</span>
 							<span className="hidden md:inline">DISCREET &amp; DISPATCHED WITHIN 24 HOURS</span>
 						</span>
 						<div className="flex w-full flex-col gap-3">
 							<h1
-								className={`${heyComic} text-[30px] leading-[34px] md:text-[44px] md:leading-[44px] xl:text-[54px] xl:leading-[60px]`}
+								className={`${heyComic} wv-title-glow wv-hero-title text-[30px] leading-[34px] md:text-[44px] md:leading-[44px] xl:text-[54px] xl:leading-[60px]`}
 							>
-								FAST &amp; RELIABLE SHIPPING
+								<span>FAST &amp; RELIABLE</span> <span className="text-[var(--wv-cyan-soft)]">SHIPPING</span>
 							</h1>
-							<div className="h-1 w-20 rounded-full bg-[var(--wv-pink)] md:w-[120px]" />
+							<div className="wv-hero-bar h-1 w-20 rounded-full md:w-[120px]" />
 						</div>
-						<p
-							className={`${orbitron} max-w-[692px] text-sm leading-[1.6] text-[var(--wv-text-dim)] xl:text-base`}
-						>
-							We deliver your favorite vaping products safely, swiftly, and discreetly right to your doorstep.
-							Explore our flexible delivery speeds and reliable carriers.
+						<p className={`${orbitron} wv-hero-copy max-w-[692px] text-sm leading-[1.6] xl:text-base`}>
+							We deliver your favorite vaping products{" "}
+							<strong className="wv-hero-key">safely, swiftly, and discreetly</strong> right to your doorstep.
+							Explore our <strong className="wv-hero-key wv-hero-key--pink">flexible delivery speeds</strong>{" "}
+							and <strong className="wv-hero-key">reliable carriers</strong>.
 						</p>
 						<Link
 							href="#faqs"
-							className={`${heyComic} flex h-[41px] w-full items-center justify-center rounded-xl border border-[var(--wv-cyan-soft)] px-8 text-base text-[var(--wv-cyan-soft)] md:h-9 md:w-auto xl:h-[49px]`}
+							className={`${heyComic} wv-btn wv-btn-outline wv-btn-neon flex h-[41px] w-full items-center justify-center rounded-xl border-[1.5px] border-[var(--wv-cyan-soft)] px-8 text-base text-[var(--wv-cyan-soft)] md:h-9 md:w-auto xl:h-[49px]`}
 						>
-							View Shipping FAQs
+							<span className="wv-btn-label">View Shipping FAQs</span>
 						</Link>
 					</div>
-					<div className="relative aspect-[320/200] w-full shrink-0 overflow-hidden rounded-[20px] shadow-[0_0_32px_4px_rgba(0,229,255,0.12)] md:aspect-[688/320] xl:aspect-auto xl:h-[444px] xl:w-[540px]">
+					{/* The art as a lit neon screen, like the page's other neon pieces: a cyan-to-pink edge that glows, its
+					    colours lifted, glass over it (a sheen, an inner glow, edges falling into the page) and HUD corner
+					    brackets. On the wide tablet crop it sits a little low so the whole parcel stays in view. */}
+					<div className="wv-ship-art relative aspect-[320/200] w-full shrink-0 overflow-hidden rounded-[20px] md:aspect-[688/320] xl:aspect-auto xl:h-[444px] xl:w-[540px]">
 						<Image
 							src="/home/imgShippingHero.png"
 							alt="Shipping box orbited by a glowing network"
 							fill
 							sizes="(min-width: 1280px) 540px, 100vw"
-							className="object-cover"
+							className="wv-ship-art-img object-cover object-[50%_62%]"
 							priority
 						/>
+						<span aria-hidden className="wv-ship-art-glass absolute inset-0" />
+						<span aria-hidden className="wv-ship-art-hud absolute inset-[10px] md:inset-[14px]" />
 					</div>
 				</div>
 			</section>
@@ -239,20 +255,26 @@ export function WvShipping() {
 			</section>
 			<Divider />
 
-			{/* Perks */}
-			<section className="flex flex-col items-center gap-5 border-y border-[var(--wv-cyan-soft)] bg-[var(--wv-ink)] px-5 py-8 md:gap-6 md:px-10 xl:px-20 xl:py-10">
-				<p
-					className={`${heyComic} text-center text-xs uppercase tracking-[2px] text-[var(--wv-text-dim)] md:text-sm`}
-				>
-					EXPERIENCE PREMIUM WORLDWIDE LOGISTICS
+			{/* Perks: a lit glass band (`.wv-band*` in wv-home.css) with a chrome title between neon dashes, and the items
+			    styled like the home page's trust strip (`.wv-trust-*`): each icon in a glowing neon ring, alternating cyan
+			    and pink, its title lifted and its text brighter. */}
+			<section className="wv-band flex flex-col items-center gap-5 px-5 py-8 md:gap-6 md:px-10 xl:px-20 xl:py-10">
+				<p className="flex items-center gap-3 text-center">
+					<span aria-hidden className="wv-band-dash hidden md:block" />
+					<span className={`${heyComic} wv-hero-tagline text-xs uppercase tracking-[2px] md:text-sm`}>
+						EXPERIENCE PREMIUM WORLDWIDE LOGISTICS
+					</span>
+					<span aria-hidden className="wv-band-dash wv-band-dash--end hidden md:block" />
 				</p>
 				<div className="grid w-full grid-cols-1 gap-4 md:grid-cols-2 md:gap-x-4 md:gap-y-4 xl:flex xl:flex-wrap xl:justify-center xl:gap-6">
 					{PERKS.map((p) => (
-						<div key={p.title} className="flex items-center gap-4 xl:w-[280px]">
-							<span className="text-2xl md:text-[32px]">{p.icon}</span>
+						<div key={p.title} className="wv-trust-item flex items-center gap-4 xl:w-[280px]">
+							<span aria-hidden className="wv-trust-icon text-xl md:text-2xl">
+								{p.icon}
+							</span>
 							<div className="flex min-w-0 flex-1 flex-col gap-[2px]">
-								<p className={`${heyComic} text-sm`}>{p.title}</p>
-								<p className={`${orbitron} text-[11px] text-[var(--wv-text-dim)]`}>{p.text}</p>
+								<p className={`${heyComic} wv-trust-title text-sm`}>{p.title}</p>
+								<p className={`${orbitron} wv-trust-text text-[11px]`}>{p.text}</p>
 							</div>
 						</div>
 					))}
