@@ -159,7 +159,7 @@ export function WvShop({
 
 			{/* Trust badges */}
 			<section
-				className={`${heyComic} flex grid grid-cols-1 items-center justify-between gap-4 border-y border-[var(--wv-cyan)] bg-[var(--wv-surface)] px-4 py-6 md:grid-cols-2 md:gap-6 md:px-8 xl:flex xl:items-center xl:justify-between xl:px-20 xl:py-8`}
+				className={`${heyComic} wv-band grid grid-cols-1 items-center justify-between gap-4 px-4 py-6 md:grid-cols-2 md:gap-6 md:px-8 xl:flex xl:items-center xl:justify-between xl:px-20 xl:py-8`}
 			>
 				{TRUST.map((t) => (
 					<div key={t.title} className="wv-trust-item flex items-center gap-4">

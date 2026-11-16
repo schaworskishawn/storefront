@@ -190,7 +190,7 @@ export function WvHome({
 			<HomeCollections products={products} membership={membership} ctx={ctx} />
 
 			{/* Trust badges */}
-			<section className="grid grid-cols-1 gap-4 border-y border-[var(--wv-purple)] bg-[var(--wv-surface)] px-4 py-6 md:grid-cols-2 md:gap-6 md:px-8 xl:flex xl:items-center xl:justify-between xl:px-20 xl:py-4">
+			<section className="wv-band grid grid-cols-1 gap-4 px-4 py-6 md:grid-cols-2 md:gap-6 md:px-8 xl:flex xl:items-center xl:justify-between xl:px-20 xl:py-4">
 				{TRUST.map((t) => (
 					<div key={t.title} className="wv-trust-item flex items-center gap-4">
 						<span className="wv-trust-icon text-2xl">{t.icon}</span>
