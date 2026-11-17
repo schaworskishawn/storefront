@@ -1,6 +1,6 @@
 "use client";
 
-import { Heart } from "lucide-react";
+import { ChevronRight, Heart, Home } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -342,22 +342,47 @@ export function WishlistExperience({
 
 	return (
 		<>
-			<section className="flex flex-col gap-4 px-4 pb-5 pt-6 md:px-8 md:pt-8 xl:px-20 xl:pt-8">
-				<nav aria-label="Breadcrumb" className={`${orbitron} text-xs text-[var(--q-text-dim)]`}>
-					<Link href="/home">Home</Link> &gt; <span aria-current="page">Wishlist</span>
-				</nav>
+			{/* Breadcrumb: the shop's neon strip under the header (`.wv-crumb*` in wv-home.css): Home glowing cyan behind a
+			    house icon, a pink chevron, and the page you're on in a neon pill. Then the header over the heroes' soft pink
+			    and cyan glows: a 3D title with the count lit cyan over a glowing bar, brighter copy with its key words lit,
+			    the neon outline and glossy buttons, and a neon divider in place of the grey rule. */}
+			<nav
+				aria-label="Breadcrumb"
+				className={`${heyComic} wv-crumbs flex items-center gap-2 px-4 py-2 text-xs tracking-[0.5px] md:px-8 xl:px-20 xl:py-3`}
+			>
+				<Link href="/home" className="wv-link wv-crumb-link">
+					<Home aria-hidden className="size-3.5" strokeWidth={2.25} />
+					Home
+				</Link>
+				<ChevronRight aria-hidden className="wv-crumb-sep size-3.5" strokeWidth={2.5} />
+				<span aria-current="page" className="wv-crumb-current">
+					{shared ? "Shared Wishlist" : "Wishlist"}
+				</span>
+			</nav>
+			<section className="wv-hero-backdrop flex flex-col gap-4 px-4 pb-5 pt-6 md:px-8 md:pt-8 xl:px-20 xl:pt-8">
 				<div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
 					<div className="flex flex-col gap-2">
-						<h1 className={`${heyComic} text-2xl uppercase xl:text-[32px] xl:leading-10`}>
-							{shared ? "SHARED WISHLIST" : "MY WISHLIST"}{" "}
+						<h1
+							className={`${heyComic} wv-title-glow wv-hero-title text-2xl uppercase xl:text-[32px] xl:leading-10`}
+						>
+							<span>{shared ? "SHARED WISHLIST" : "MY WISHLIST"}</span>{" "}
 							<span className="text-[var(--wv-cyan-soft)]">
 								({saved.length} {saved.length === 1 ? "ITEM" : "ITEMS"})
 							</span>
 						</h1>
-						<p className={`${orbitron} text-sm text-[var(--q-text-dim)]`}>
-							{shared
-								? "Someone shared these favourites with you."
-								: "Save your favorite products and shop them anytime."}
+						<div className="wv-hero-bar h-1 w-20 rounded-full md:w-[120px]" />
+						<p className={`${orbitron} wv-hero-copy text-sm`}>
+							{shared ? (
+								<>
+									Someone shared these <strong className="wv-hero-key wv-hero-key--pink">favourites</strong>{" "}
+									with you.
+								</>
+							) : (
+								<>
+									Save your <strong className="wv-hero-key">favorite products</strong> and{" "}
+									<strong className="wv-hero-key wv-hero-key--pink">shop them anytime</strong>.
+								</>
+							)}
 						</p>
 					</div>
 					{saved.length > 0 && (
@@ -366,26 +391,26 @@ export function WishlistExperience({
 								<button
 									type="button"
 									onClick={() => add(sharedSlugs)}
-									className={`${bungee} rounded-md border border-[var(--wv-cyan-soft)] px-4 py-3 text-[11px] tracking-[1px] text-[var(--wv-cyan-soft)]`}
+									className={`${bungee} wv-btn wv-btn-outline wv-btn-neon rounded-md border border-[var(--wv-cyan-soft)] px-4 py-3 text-[11px] tracking-[1px] text-[var(--wv-cyan-soft)]`}
 								>
-									SAVE TO MY WISHLIST
+									<span className="wv-btn-label">SAVE TO MY WISHLIST</span>
 								</button>
 							) : (
 								<button
 									type="button"
 									onClick={share}
-									className={`${bungee} rounded-md border border-[var(--wv-cyan-soft)] px-4 py-3 text-[11px] tracking-[1px] text-[var(--wv-cyan-soft)]`}
+									className={`${bungee} wv-btn wv-btn-outline wv-btn-neon rounded-md border border-[var(--wv-cyan-soft)] px-4 py-3 text-[11px] tracking-[1px] text-[var(--wv-cyan-soft)]`}
 								>
-									SHARE WISHLIST
+									<span className="wv-btn-label">SHARE WISHLIST</span>
 								</button>
 							)}
 							<button
 								type="button"
 								disabled={moving || visible.length === 0}
 								onClick={moveAll}
-								className={`${bungee} rounded-md bg-[var(--wv-cyan)] px-4 py-3 text-[11px] tracking-[1px] text-[var(--wv-ink)] disabled:opacity-60`}
+								className={`${bungee} wv-pc-cta rounded-md bg-[var(--wv-cyan-soft)] px-4 py-3 text-[11px] tracking-[1px] text-[var(--wv-ink)] disabled:opacity-60`}
 							>
-								{moving ? "MOVING…" : "MOVE ALL TO CART"}
+								<span className="wv-pc-cta-label">{moving ? "MOVING…" : "MOVE ALL TO CART"}</span>
 							</button>
 						</div>
 					)}
@@ -393,12 +418,12 @@ export function WishlistExperience({
 				{notice && (
 					<p
 						role="status"
-						className="border-[var(--wv-cyan-soft)]/40 rounded-lg border bg-[var(--wv-deep)] px-4 py-3 text-sm"
+						className="border-[var(--wv-cyan-soft)]/60 rounded-lg border bg-[var(--wv-deep)] px-4 py-3 text-sm shadow-[0_0_14px_color-mix(in_srgb,var(--wv-cyan)_30%,transparent)]"
 					>
 						{notice}
 					</p>
 				)}
-				<hr className="border-[var(--wv-control)]" />
+				<div aria-hidden className="wv-glow-line !h-[2px] w-full" />
 			</section>
 
 			{saved.length === 0 ? (
