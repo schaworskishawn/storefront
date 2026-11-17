@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronRight, Heart, Home } from "lucide-react";
+import { ChevronRight, Heart, Home, ShoppingBag } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -427,20 +427,30 @@ export function WishlistExperience({
 			</section>
 
 			{saved.length === 0 ? (
-				<section className="flex flex-col items-center gap-5 px-4 py-20 text-center">
-					<p aria-hidden className="text-5xl text-[var(--wv-pink)]">
-						♡
-					</p>
-					<h2 className={`${heyComic} text-2xl`}>YOUR WISHLIST IS EMPTY</h2>
-					<p className={`${orbitron} max-w-md text-sm text-[var(--q-text-dim)]`}>
-						Tap the heart on any product to save it here for later.
-					</p>
-					<Link
-						href="/shop"
-						className="flex min-h-12 items-center rounded-md bg-[var(--wv-cyan-soft)] px-8 font-[family-name:var(--font-inter)] text-[13px] font-bold tracking-[1.5px] text-[var(--wv-ink)]"
-					>
-						BROWSE PRODUCTS
-					</Link>
+				// The empty state as a lit glass card (`.wv-news-card`) over a soft pink and cyan glow: a heart in a neon
+				// ring that beats gently with a ring pulsing out of it (`.wv-empty-heart`), a chrome 3D title, brighter
+				// copy with "heart" lit pink, and the glossy cyan button.
+				<section className="wv-faq-glow flex flex-col items-center px-4 py-14 md:py-20">
+					<div className="wv-news-card flex w-full max-w-[560px] flex-col items-center gap-5 rounded-[20px] px-6 py-10 text-center md:px-10 md:py-12">
+						<span
+							aria-hidden
+							className="wv-empty-heart flex size-20 items-center justify-center rounded-full md:size-24"
+						>
+							<Heart className="size-9 md:size-11" strokeWidth={2} />
+						</span>
+						<h2 className={`${heyComic} wv-heading-title text-2xl md:text-[28px]`}>YOUR WISHLIST IS EMPTY</h2>
+						<p className={`${orbitron} wv-hero-copy max-w-md text-sm leading-[1.6]`}>
+							Tap the <strong className="wv-hero-key wv-hero-key--pink">heart</strong> on any product to save
+							it here for later.
+						</p>
+						<Link
+							href="/shop"
+							className={`${heyComic} wv-pc-cta flex min-h-12 items-center gap-2 rounded-xl bg-[var(--wv-cyan-soft)] px-8 text-base tracking-[1px] text-[var(--wv-ink)]`}
+						>
+							<ShoppingBag aria-hidden className="size-4" strokeWidth={2.5} />
+							<span className="wv-pc-cta-label">BROWSE PRODUCTS</span>
+						</Link>
+					</div>
 				</section>
 			) : (
 				<>
