@@ -2171,12 +2171,141 @@ li:nth-child(even) > .wv-cat-chip {
 		linear-gradient(135deg, var(--wv-cyan), var(--wv-pink)) border-box;
 	box-shadow: 0 0 10px color-mix(in srgb, var(--wv-cyan) 30%, transparent);
 }
+.wv-order-thumb-icon {
+	color: color-mix(in srgb, var(--wv-cyan-soft) 55%, transparent);
+	filter: drop-shadow(0 0 4px color-mix(in srgb, var(--wv-cyan) 50%, transparent));
+}
 .wv-order-total {
 	color: white;
 	text-shadow:
 		0 1px 0 var(--wv-ink),
 		0 2px 0 color-mix(in srgb, var(--wv-purple) 75%, transparent),
 		0 0 14px color-mix(in srgb, var(--wv-cyan) 60%, transparent);
+}
+
+/* An order's page (WvOrderDetail, wv-orders.tsx). The tracker's steps are glass tiles with their icon in a ring: done in
+ * green with a check, the current one lit cyan (a ring pulsing out of it when motion is allowed), the rest dim. Short
+ * lines join them, below each on phones and beside each from tablets up, glowing green after a step that's done. Each
+ * item is a glass row inside a soft neon edge, its quantity a glowing cyan pill. */
+.wv-order-step {
+	--tone: var(--ac-grey);
+	color: var(--ac-muted);
+	border: 1px solid transparent;
+	background:
+		linear-gradient(180deg, color-mix(in srgb, var(--wv-purple) 14%, var(--wv-surface)), var(--wv-surface))
+			padding-box,
+		linear-gradient(
+				135deg,
+				color-mix(in srgb, var(--wv-purple) 80%, transparent),
+				color-mix(in srgb, var(--wv-purple) 40%, transparent)
+			)
+			border-box;
+}
+.wv-order-step[data-state="complete"] {
+	--tone: var(--ac-green);
+	color: white;
+	background:
+		linear-gradient(180deg, color-mix(in srgb, var(--ac-green) 8%, var(--wv-surface)), var(--wv-surface))
+			padding-box,
+		linear-gradient(135deg, var(--ac-green), color-mix(in srgb, var(--wv-purple) 60%, transparent)) border-box;
+	box-shadow: 0 0 12px color-mix(in srgb, var(--ac-green) 22%, transparent);
+}
+.wv-order-step[data-state="current"] {
+	--tone: var(--wv-cyan-soft);
+	color: white;
+	background:
+		radial-gradient(80% 120% at 0% 50%, color-mix(in srgb, var(--wv-cyan) 16%, transparent), transparent 70%)
+			padding-box,
+		linear-gradient(180deg, color-mix(in srgb, var(--wv-cyan) 8%, var(--wv-surface)), var(--wv-surface))
+			padding-box,
+		linear-gradient(135deg, white, var(--wv-cyan-soft) 35%, var(--wv-pink)) border-box;
+	box-shadow:
+		0 0 0 1px color-mix(in srgb, var(--wv-cyan) 30%, transparent),
+		0 0 20px color-mix(in srgb, var(--wv-cyan) 40%, transparent);
+	text-shadow: 0 0 8px color-mix(in srgb, var(--wv-cyan) 60%, transparent);
+}
+.wv-order-step-ring {
+	color: var(--tone);
+	border: 1.5px solid color-mix(in srgb, var(--tone) 75%, transparent);
+	background: radial-gradient(
+		circle at 50% 40%,
+		color-mix(in srgb, var(--tone) 22%, transparent),
+		var(--wv-bg) 75%
+	);
+	box-shadow: 0 0 10px color-mix(in srgb, var(--tone) 40%, transparent);
+}
+.wv-order-step-ring svg {
+	filter: drop-shadow(0 0 4px color-mix(in srgb, var(--tone) 85%, transparent));
+}
+.wv-order-step[data-state="upcoming"] .wv-order-step-ring {
+	box-shadow: none;
+	opacity: 0.75;
+}
+.wv-order-step:not(:last-child)::after {
+	content: "";
+	position: absolute;
+	top: 100%;
+	left: 29px;
+	width: 2px;
+	height: 12px;
+	background: color-mix(in srgb, var(--wv-purple) 70%, transparent);
+}
+.wv-order-step[data-state="complete"]:not(:last-child)::after {
+	background: var(--ac-green);
+	box-shadow: 0 0 8px color-mix(in srgb, var(--ac-green) 80%, transparent);
+}
+@media (min-width: 768px) {
+	.wv-order-step:not(:last-child)::after {
+		top: 50%;
+		left: 100%;
+		width: 12px;
+		height: 2px;
+		transform: translateY(-50%);
+	}
+}
+@media (prefers-reduced-motion: no-preference) {
+	body.wv-motion .wv-order-step[data-state="current"] .wv-order-step-ring::after {
+		content: "";
+		position: absolute;
+		inset: -2px;
+		border-radius: 9999px;
+		border: 1.5px solid var(--wv-cyan-soft);
+		animation: wv-order-ping 2s ease-out infinite;
+	}
+}
+@keyframes wv-order-ping {
+	0% {
+		transform: scale(1);
+		opacity: 0.85;
+	}
+	75%,
+	100% {
+		transform: scale(1.55);
+		opacity: 0;
+	}
+}
+.wv-order-line {
+	border: 1px solid transparent;
+	background:
+		linear-gradient(180deg, color-mix(in srgb, var(--wv-purple) 14%, var(--wv-surface)), var(--wv-surface))
+			padding-box,
+		linear-gradient(
+				135deg,
+				color-mix(in srgb, var(--wv-cyan) 55%, transparent),
+				color-mix(in srgb, var(--wv-purple) 60%, transparent) 55%,
+				color-mix(in srgb, var(--wv-pink) 55%, transparent)
+			)
+			border-box;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 8%, transparent),
+		0 0 14px color-mix(in srgb, var(--wv-purple) 40%, transparent);
+}
+.wv-order-qty {
+	color: var(--wv-cyan-soft);
+	border: 1px solid color-mix(in srgb, var(--wv-cyan) 55%, transparent);
+	background: color-mix(in srgb, var(--wv-cyan) 10%, transparent);
+	box-shadow: 0 0 10px color-mix(in srgb, var(--wv-cyan) 30%, transparent);
+	text-shadow: 0 0 8px color-mix(in srgb, var(--wv-cyan) 65%, transparent);
 }
 
 /* Footer link columns (WvFooter in wv-chrome.tsx): each heading is lifted with a dark edge, a purple one beneath and a

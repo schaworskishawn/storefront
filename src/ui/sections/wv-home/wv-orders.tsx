@@ -1,4 +1,13 @@
-import { Calendar, Package, Truck } from "lucide-react";
+import {
+	ArrowLeft,
+	Calendar,
+	Check,
+	ClipboardCheck,
+	Package,
+	TriangleAlert,
+	Truck,
+	type LucideIcon,
+} from "lucide-react";
 import { type ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -163,15 +172,12 @@ export type OrderDetailData = {
 	lines: OrderLineData[];
 };
 
-const STEP_STYLE = {
-	complete: { box: "border-[var(--ac-card-border)]", dot: "bg-[var(--ac-green)]", text: "text-white" },
-	current: { box: "border-[var(--ac-cyan)]", dot: "bg-[var(--ac-cyan)]", text: "text-white" },
-	upcoming: {
-		box: "border-[var(--ac-card-border)]",
-		dot: "bg-[var(--ac-grey)]",
-		text: "text-[var(--ac-muted)]",
-	},
-} as const;
+/** Each step's icon in the tracker (a check once it's done). */
+const STEP_ICON: Record<string, LucideIcon> = {
+	"ORDER PLACED": ClipboardCheck,
+	PROCESSING: Package,
+	SHIPPED: Truck,
+};
 
 export function WvOrderDetail({
 	user,
@@ -190,46 +196,90 @@ export function WvOrderDetail({
 			{!user ? (
 				<SignInPrompt />
 			) : failed || !order ? (
-				<div className="flex flex-col items-start gap-4 rounded-xl border border-dashed border-[var(--ac-card-border)] p-8">
-					<p role="alert" className={`${orbitron} text-sm text-[var(--ac-muted)]`}>
+				<div className="wv-news-card flex flex-col items-start gap-4 rounded-[20px] p-6 md:p-8">
+					<span aria-hidden className="wv-acct-icon flex size-12 items-center justify-center rounded-xl">
+						<TriangleAlert className="size-5" strokeWidth={2.25} />
+					</span>
+					<p role="alert" className={`${orbitron} wv-hero-copy text-sm`}>
 						{failed
 							? "We couldn't load this order right now. Please try again in a moment."
 							: "We couldn't find that order on your account."}
 					</p>
-					<Link href="/orders" className={`${heyComic} text-sm text-[var(--ac-cyan)] underline`}>
-						BACK TO MY ORDERS
+					<Link
+						href="/orders"
+						className={`${heyComic} wv-btn wv-btn-outline wv-btn-neon flex h-11 items-center justify-center gap-2 rounded-xl border-[1.5px] border-[var(--ac-cyan)] px-5 text-sm text-[var(--ac-cyan)]`}
+					>
+						<ArrowLeft aria-hidden className="size-4" strokeWidth={2.5} />
+						<span className="wv-btn-label">BACK TO MY ORDERS</span>
 					</Link>
 				</div>
 			) : (
 				<>
-					<p className={`${orbitron} flex flex-wrap gap-x-4 text-[11px] uppercase text-[var(--ac-muted)]`}>
-						<span className="text-[var(--ac-cyan)]">#{order.number}</span>
-						<span>{order.date}</span>
-						<span>{order.statusLabel}</span>
-						<span>Total {order.total}</span>
-					</p>
+					{/* The order at a glance, a neon card like My Orders': the number by a parcel in a lit tile, the date by a
+					    glowing calendar, the status a glowing pill in its colour and the total glowing. */}
+					<div className="wv-neon-card wv-order-card flex flex-wrap items-center justify-between gap-4 rounded-xl p-4 md:p-5">
+						<div className="flex items-center gap-3">
+							<span
+								aria-hidden
+								className="wv-neon-card-icon flex size-11 shrink-0 items-center justify-center rounded-xl"
+							>
+								<Package className="size-5" strokeWidth={2.25} />
+							</span>
+							<div className="flex flex-col gap-1">
+								<p className={`${bungee} wv-pc-name text-[19px] leading-none text-white`}>#{order.number}</p>
+								<p className={`${orbitron} wv-order-date flex items-center gap-1.5 text-[11px] uppercase`}>
+									<Calendar aria-hidden className="size-3.5" strokeWidth={2.25} />
+									{order.date}
+								</p>
+							</div>
+						</div>
+						<span
+							data-tone={statusTone(order.statusLabel)}
+							className={`${orbitron} wv-order-status rounded-full px-2.5 py-1 text-[10px] uppercase tracking-[1px]`}
+						>
+							{order.statusLabel}
+						</span>
+						<div className="flex flex-col items-end gap-0.5">
+							<span className={`${orbitron} text-[10px] uppercase tracking-[1px] text-[var(--ac-muted)]`}>
+								Total
+							</span>
+							<span className={`${bungee} wv-order-total text-xl md:text-2xl`}>{order.total}</span>
+						</div>
+					</div>
+
+					{/* The tracker: each step a glass tile with its icon in a ring, done green with a check, the current one lit
+					    cyan with a ring pulsing out of it, the rest dim; glowing lines join them (`.wv-order-step*`). */}
 					<ol className="grid gap-3 md:grid-cols-3">
 						{order.steps.map((st) => {
-							const c = STEP_STYLE[st.state];
+							const Icon = st.state === "complete" ? Check : (STEP_ICON[st.label] ?? Package);
 							return (
 								<li
 									key={st.label}
+									data-state={st.state}
 									aria-current={st.state === "current" ? "step" : undefined}
-									className={`${orbitron} flex h-16 items-center gap-3 rounded-[10px] border bg-[var(--wv-surface)] p-3 text-xs md:text-[13px] ${c.box} ${c.text}`}
+									className={`${orbitron} wv-order-step relative flex h-16 items-center gap-3 rounded-xl p-3 text-xs md:text-[13px]`}
 								>
-									<span aria-hidden className={`size-7 shrink-0 rounded-full ${c.dot}`} />
+									<span
+										aria-hidden
+										className="wv-order-step-ring relative flex size-9 shrink-0 items-center justify-center rounded-full"
+									>
+										<Icon className="size-4" strokeWidth={2.5} />
+									</span>
 									<span>{st.label}</span>
 								</li>
 							);
 						})}
 					</ol>
+
+					{/* Each item: a glass row, its picture in a neon frame, the name lifted, the quantity a glowing pill and the
+					    price glowing. */}
 					{order.lines.map((l) => (
 						<div
 							key={l.id}
-							className="flex flex-col gap-2 rounded-xl border border-[var(--ac-card-border)] bg-[var(--wv-surface)] p-4 md:flex-row md:items-center md:gap-[18px] md:p-5"
+							className="wv-order-line flex flex-col gap-2 rounded-xl p-4 md:flex-row md:items-center md:gap-[18px] md:p-5"
 						>
-							<div className="relative size-16 shrink-0 overflow-hidden rounded-lg border border-[var(--ac-card-border)] bg-[var(--ac-subtle)] md:size-[72px]">
-								{l.image && (
+							<div className="wv-order-thumb relative flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-lg md:size-[72px]">
+								{l.image ? (
 									<Image
 										src={l.image.url}
 										alt={l.image.alt}
@@ -238,10 +288,12 @@ export function WvOrderDetail({
 										sizes="72px"
 										className="object-cover"
 									/>
+								) : (
+									<Package aria-hidden className="wv-order-thumb-icon size-6" strokeWidth={1.75} />
 								)}
 							</div>
 							<p
-								className={`${bungee} min-w-0 flex-1 break-words text-[13px] uppercase text-white md:text-[15px]`}
+								className={`${bungee} wv-pc-name min-w-0 flex-1 break-words text-[13px] uppercase text-white md:text-[15px]`}
 							>
 								{l.name}
 							</p>
@@ -252,8 +304,12 @@ export function WvOrderDetail({
 									{l.option}
 								</p>
 							)}
-							<p className={`${orbitron} text-[11px] text-[var(--ac-cyan)]`}>QTY {l.quantity}</p>
-							<p className={`${bungee} whitespace-nowrap text-base text-white md:text-lg`}>{l.price}</p>
+							<p
+								className={`${orbitron} wv-order-qty w-fit rounded-full px-2.5 py-0.5 text-[11px] tracking-[0.5px]`}
+							>
+								QTY {l.quantity}
+							</p>
+							<p className={`${bungee} wv-order-total whitespace-nowrap text-base md:text-lg`}>{l.price}</p>
 						</div>
 					))}
 				</>
