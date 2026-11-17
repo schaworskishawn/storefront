@@ -510,6 +510,63 @@ button[aria-pressed="true"] > .wv-filter-dot {
 		background: linear-gradient(180deg, transparent, var(--wv-cyan) 30%, var(--wv-pink) 70%, transparent);
 	}
 }
+/* The rewards page's account panels (wv-rewards-account-view.tsx): neon cards that glow under the pointer but don't lift
+ * (they aren't links), each icon glowing in its lit tile in the card's colour; tokens about to expire in a pink glass
+ * strip; the history's header glowing cyan over neon-ruled rows, the tokens left glowing, and each status a neon pill
+ * (cyan while active, pink once taken back, dimmed once used up or expired). */
+.wv-neon-card.wv-rw-card:hover {
+	transform: none;
+}
+.wv-rw-card .wv-neon-card-icon svg {
+	color: var(--accent);
+	filter: drop-shadow(0 0 5px color-mix(in srgb, var(--accent) 85%, transparent));
+}
+.wv-rw-expiring {
+	color: color-mix(in srgb, white 75%, var(--wv-pink));
+	border: 1px solid color-mix(in srgb, var(--wv-pink) 55%, transparent);
+	background: color-mix(in srgb, var(--wv-pink) 10%, transparent);
+	box-shadow: 0 0 12px color-mix(in srgb, var(--wv-pink) 28%, transparent);
+}
+.wv-rw-expiring svg {
+	color: var(--wv-pink);
+	filter: drop-shadow(0 0 4px var(--wv-pink));
+}
+/* The history scrolls sideways on phones: a thin purple scrollbar on the dark, not the browser's white one. */
+.wv-rw-scroll {
+	scrollbar-width: thin;
+	scrollbar-color: color-mix(in srgb, var(--wv-purple) 85%, var(--wv-pink)) transparent;
+}
+.wv-rw-table thead {
+	color: var(--wv-cyan-soft);
+	text-shadow: 0 0 8px color-mix(in srgb, var(--wv-cyan) 60%, transparent);
+}
+.wv-rw-row {
+	border-top: 1px solid color-mix(in srgb, var(--wv-purple) 75%, transparent);
+	transition: background-color 150ms ease;
+}
+.wv-rw-row:hover {
+	background-color: color-mix(in srgb, var(--wv-cyan) 5%, transparent);
+}
+.wv-rw-left {
+	color: var(--wv-cyan-soft);
+	text-shadow: 0 0 8px color-mix(in srgb, var(--wv-cyan) 55%, transparent);
+}
+.wv-rw-status {
+	--tone: var(--wv-cyan-soft);
+	color: var(--tone);
+	border: 1px solid color-mix(in srgb, var(--tone) 60%, transparent);
+	background: color-mix(in srgb, var(--tone) 12%, transparent);
+	box-shadow: 0 0 10px color-mix(in srgb, var(--tone) 35%, transparent);
+	text-shadow: 0 0 8px color-mix(in srgb, var(--tone) 70%, transparent);
+}
+.wv-rw-status[data-tone="pink"] {
+	--tone: var(--wv-pink);
+}
+.wv-rw-status[data-tone="muted"] {
+	--tone: var(--wv-muted);
+	box-shadow: none;
+	text-shadow: none;
+}
 /* The payments strip's chips, one for each way to pay, alternating cyan and pink: a glass pill inside a gradient edge that
  * glows, its icon in a glowing neon ring (.wv-trust-icon) and its label lifted (.wv-trust-title). Under the pointer a
  * chip lifts and glows brighter (no movement for reduced motion). */
