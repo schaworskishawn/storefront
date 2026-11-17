@@ -1,9 +1,16 @@
 import {
 	ArrowLeft,
+	ArrowRight,
 	Calendar,
 	Check,
 	ClipboardCheck,
+	CreditCard,
+	MapPin,
+	MessageCircle,
 	Package,
+	RotateCcw,
+	ShieldCheck,
+	Star,
 	TriangleAlert,
 	Truck,
 	type LucideIcon,
@@ -320,13 +327,58 @@ export function WvOrderDetail({
 
 export type SavedCardData = { id: string; title: string; expiry: string | null };
 
-function InfoCard({ title, children, action }: { title: string; children?: ReactNode; action?: ReactNode }) {
+/**
+ * An account page's information card (payment methods, addresses, reviews, settings, help topics), like the account
+ * summaries: a neon card in cyan or pink (`.wv-neon-card`) with its icon in a lit tile and its title lifted; with an
+ * action, a neon line runs above it and it is a neon pill whose arrow slides on under the pointer (`.wv-acct-card*`).
+ * Without one, the card is only as tall as its content.
+ */
+function InfoCard({
+	title,
+	children,
+	action,
+	icon: Icon,
+	pink = false,
+}: {
+	title: string;
+	children?: ReactNode;
+	action?: { href: string; label: string };
+	icon?: LucideIcon;
+	pink?: boolean;
+}) {
 	return (
-		<div className="flex min-h-[180px] flex-col gap-3 rounded-xl border border-[var(--ac-card-border)] bg-[var(--wv-surface)] p-4 md:p-5">
-			<h2 className={`${bungee} text-base text-white md:text-[19px]`}>{title}</h2>
+		<div
+			className={`wv-neon-card wv-acct-card ${pink ? "wv-neon-card--pink" : ""} flex flex-col gap-3 rounded-xl p-4 md:p-5 ${action ? "min-h-[180px]" : ""}`}
+		>
+			<div className="flex items-center gap-3">
+				{Icon && (
+					<span
+						aria-hidden
+						className="wv-neon-card-icon flex size-11 shrink-0 items-center justify-center rounded-xl"
+					>
+						<Icon className="size-5" strokeWidth={2.25} />
+					</span>
+				)}
+				<h2 className={`${bungee} wv-pc-name text-base text-white md:text-[19px]`}>{title}</h2>
+			</div>
 			{children}
-			<div className="flex-1" />
-			{action}
+			{action && (
+				<>
+					<div className="flex-1" />
+					<span aria-hidden className="wv-acct-card-rule h-px w-full" />
+					<Link
+						href={action.href}
+						className={`${orbitron} wv-acct-card-action group/act flex items-center gap-2 self-end rounded-full px-3.5 py-1.5 text-[11px] tracking-[0.5px]`}
+					>
+						{action.label}
+						<ArrowRight
+							aria-hidden
+							className="size-3.5 transition-transform group-hover/act:translate-x-1"
+							strokeWidth={2.5}
+						/>
+					</Link>
+				</>
+			)}
 		</div>
 	);
 }
@@ -355,26 +407,24 @@ export function WvPaymentMethods({
 						</p>
 					)}
 					{!failed && cards.length === 0 && (
-						<InfoCard title="NO SAVED CARDS YET">
+						<InfoCard icon={CreditCard} title="NO SAVED CARDS YET">
 							<p className={`${orbitron} text-xs text-[var(--ac-muted)]`}>
 								Cards you choose to save at checkout will appear here.
 							</p>
 						</InfoCard>
 					)}
 					{cards.map((c) => (
-						<InfoCard key={c.id} title={c.title}>
+						<InfoCard key={c.id} icon={CreditCard} title={c.title}>
 							{c.expiry && (
 								<p className={`${orbitron} text-xs uppercase text-[var(--ac-muted)]`}>Expires {c.expiry}</p>
 							)}
 						</InfoCard>
 					))}
 					<InfoCard
+						icon={ShieldCheck}
+						pink
 						title="YOUR INFORMATION IS SECURE"
-						action={
-							<Link href="/privacy-policy" className={`${orbitron} text-[11px] text-[var(--ac-pink)]`}>
-								LEARN MORE
-							</Link>
-						}
+						action={{ href: "/privacy-policy", label: "LEARN MORE" }}
 					>
 						<p className={`${orbitron} text-xs text-[var(--ac-muted)]`}>
 							Payment and account data are encrypted and processed securely.
@@ -412,14 +462,9 @@ export function WvMyReviews({
 						</p>
 					)}
 					<InfoCard
+						icon={Star}
 						title={reviews.length ? `${avg.toFixed(1)} / 5` : "NO REVIEWS YET"}
-						action={
-							pending.length > 0 ? (
-								<a href="#pending" className={`${orbitron} text-[11px] text-[var(--ac-pink)]`}>
-									VIEW PENDING REVIEWS
-								</a>
-							) : undefined
-						}
+						action={pending.length > 0 ? { href: "#pending", label: "VIEW PENDING REVIEWS" } : undefined}
 					>
 						{reviews.length ? (
 							<>
@@ -482,7 +527,7 @@ export function WvAddresses({
 						</p>
 					)}
 					{!failed && addresses.length === 0 && (
-						<InfoCard title="NO SAVED ADDRESSES YET">
+						<InfoCard icon={MapPin} title="NO SAVED ADDRESSES YET">
 							<p className={`${orbitron} text-xs text-[var(--ac-muted)]`}>
 								Add an address to speed up checkout.
 							</p>
@@ -518,12 +563,10 @@ export function WvAccountSettings({
 					<ProfileForm firstName={profile.firstName} lastName={profile.lastName} email={profile.email} />
 					<PasswordForm />
 					<InfoCard
+						icon={ShieldCheck}
+						pink
 						title="SECURITY & PRIVACY"
-						action={
-							<Link href="/privacy-policy" className={`${orbitron} text-[11px] text-[var(--ac-pink)]`}>
-								LEARN MORE
-							</Link>
-						}
+						action={{ href: "/privacy-policy", label: "LEARN MORE" }}
 					>
 						<p className={`${orbitron} text-xs text-[var(--ac-muted)]`}>
 							Use a strong password and keep your contact details current.
@@ -541,24 +584,28 @@ const HELP_TOPICS = [
 		body: "Tracking, delivery timing, order changes, and returns.",
 		href: "/shipping",
 		action: "VIEW HELP TOPIC",
+		icon: Truck,
 	},
 	{
 		title: "PAYMENTS & ACCOUNT",
 		body: "Billing methods, account access, and profile help.",
 		href: "/faqs",
 		action: "VIEW HELP TOPIC",
+		icon: CreditCard,
 	},
 	{
 		title: "RETURNS & REFUNDS",
 		body: "Return eligibility, timelines, and refund status.",
 		href: "/returns",
 		action: "VIEW HELP TOPIC",
+		icon: RotateCcw,
 	},
 	{
 		title: "STILL NEED HELP?",
 		body: "Chat with support or send us an email.",
 		href: "/contact-us",
 		action: "CONTACT SUPPORT",
+		icon: MessageCircle,
 	},
 ];
 
@@ -571,15 +618,13 @@ export function WvHelpCenter({ user, base }: AccountView) {
 			title="HELP CENTER"
 			subtitle="Find answers or contact Worldwide Vapor support."
 		>
-			{HELP_TOPICS.map((t) => (
+			{HELP_TOPICS.map((t, i) => (
 				<InfoCard
 					key={t.title}
+					icon={t.icon}
+					pink={i % 2 === 1}
 					title={t.title}
-					action={
-						<Link href={t.href} className={`${orbitron} text-[11px] text-[var(--ac-pink)]`}>
-							{t.action}
-						</Link>
-					}
+					action={{ href: t.href, label: t.action }}
 				>
 					<p className={`${orbitron} text-xs text-[var(--ac-muted)]`}>{t.body}</p>
 				</InfoCard>
