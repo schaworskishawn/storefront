@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useState, useTransition } from "react";
 import { deleteReview, saveReview } from "@/lib/wv-review-actions";
 import { type Review, type ReviewableProduct } from "@/lib/reviews";
+import { ConfirmDelete } from "./wv-confirm-delete";
 
 const bungee = "font-[family-name:var(--font-bungee)]";
 const orbitron = "font-[family-name:var(--font-orbitron)]";
@@ -110,16 +111,18 @@ const card = "wv-order-line flex flex-col gap-3 rounded-xl p-4 md:p-5";
 
 export function ReviewCard({ review }: { review: Review }) {
 	const [editing, setEditing] = useState(false);
+	const [confirming, setConfirming] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [pending, start] = useTransition();
 
-	const remove = () => {
-		if (!window.confirm("Delete this review?")) return;
+	const remove = () =>
 		start(async () => {
 			const r = await deleteReview(review.id);
-			if (!r.ok) setError(r.error);
+			if (!r.ok) {
+				setError(r.error);
+				setConfirming(false);
+			}
 		});
-	};
 
 	return (
 		<article className={card}>
@@ -142,25 +145,38 @@ export function ReviewCard({ review }: { review: Review }) {
 							{error}
 						</p>
 					)}
-					{/* Edit and delete as small neon pills, delete in pink. */}
-					<div className={`${orbitron} mt-1 flex gap-2 text-[11px]`}>
-						<button
-							type="button"
-							onClick={() => setEditing(true)}
-							className="wv-review-btn flex items-center gap-1.5 rounded-full px-3 py-1"
-						>
-							<Pencil aria-hidden className="size-3" strokeWidth={2.5} />
-							EDIT
-						</button>
-						<button
-							type="button"
-							onClick={remove}
-							disabled={pending}
-							className="wv-review-btn wv-review-btn--pink flex items-center gap-1.5 rounded-full px-3 py-1 disabled:opacity-60"
-						>
-							<Trash2 aria-hidden className="size-3" strokeWidth={2.5} />
-							{pending ? "DELETING…" : "DELETE"}
-						</button>
+					{/* Edit and delete as small neon pills, delete in pink; delete asks first, in the card. */}
+					<div className={`${orbitron} mt-1 flex flex-wrap gap-2 text-[11px]`}>
+						{confirming ? (
+							<ConfirmDelete
+								question="DELETE THIS REVIEW?"
+								pending={pending}
+								onConfirm={remove}
+								onCancel={() => setConfirming(false)}
+							/>
+						) : (
+							<>
+								<button
+									type="button"
+									onClick={() => setEditing(true)}
+									className="wv-review-btn flex items-center gap-1.5 rounded-full px-3 py-1"
+								>
+									<Pencil aria-hidden className="size-3" strokeWidth={2.5} />
+									EDIT
+								</button>
+								<button
+									type="button"
+									onClick={() => {
+										setError(null);
+										setConfirming(true);
+									}}
+									className="wv-review-btn wv-review-btn--pink flex items-center gap-1.5 rounded-full px-3 py-1"
+								>
+									<Trash2 aria-hidden className="size-3" strokeWidth={2.5} />
+									DELETE
+								</button>
+							</>
+						)}
 					</div>
 				</>
 			)}

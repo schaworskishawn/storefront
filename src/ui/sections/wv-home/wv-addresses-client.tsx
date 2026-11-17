@@ -20,6 +20,7 @@ import {
 	setDefaultAddressAction,
 	updateAddressAction,
 } from "@/lib/wv-address-actions";
+import { ConfirmDelete } from "./wv-confirm-delete";
 
 const bungee = "font-[family-name:var(--font-bungee)]";
 const orbitron = "font-[family-name:var(--font-orbitron)]";
@@ -283,6 +284,7 @@ function Action({
  */
 export function AddressCard({ a }: { a: AddressData }) {
 	const [editing, setEditing] = useState(false);
+	const [confirming, setConfirming] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [pending, start] = useTransition();
 
@@ -293,7 +295,10 @@ export function AddressCard({ a }: { a: AddressData }) {
 			fd.set("id", a.id);
 			for (const [k, v] of Object.entries(extra)) fd.set(k, v);
 			const r = await fn(fd);
-			if (!r.ok) setError(r.error);
+			if (!r.ok) {
+				setError(r.error);
+				setConfirming(false);
+			}
 		});
 
 	const label =
@@ -342,32 +347,44 @@ export function AddressCard({ a }: { a: AddressData }) {
 						</p>
 					)}
 					<div className={`${orbitron} mt-1 flex flex-wrap gap-2 text-[11px]`}>
-						{!a.isDefaultShipping && (
-							<Action
-								Icon={Truck}
-								label="MAKE DEFAULT SHIPPING"
-								disabled={pending}
-								onClick={() => run(setDefaultAddressAction, { type: "SHIPPING" })}
+						{confirming ? (
+							<ConfirmDelete
+								question="DELETE THIS ADDRESS?"
+								pending={pending}
+								onConfirm={() => run(deleteAddressAction)}
+								onCancel={() => setConfirming(false)}
 							/>
+						) : (
+							<>
+								{!a.isDefaultShipping && (
+									<Action
+										Icon={Truck}
+										label="MAKE DEFAULT SHIPPING"
+										disabled={pending}
+										onClick={() => run(setDefaultAddressAction, { type: "SHIPPING" })}
+									/>
+								)}
+								{!a.isDefaultBilling && (
+									<Action
+										Icon={CreditCard}
+										label="MAKE DEFAULT BILLING"
+										disabled={pending}
+										onClick={() => run(setDefaultAddressAction, { type: "BILLING" })}
+									/>
+								)}
+								<Action Icon={Pencil} label="EDIT" onClick={() => setEditing(true)} />
+								<Action
+									Icon={Trash2}
+									label="DELETE"
+									pink
+									disabled={pending}
+									onClick={() => {
+										setError(null);
+										setConfirming(true);
+									}}
+								/>
+							</>
 						)}
-						{!a.isDefaultBilling && (
-							<Action
-								Icon={CreditCard}
-								label="MAKE DEFAULT BILLING"
-								disabled={pending}
-								onClick={() => run(setDefaultAddressAction, { type: "BILLING" })}
-							/>
-						)}
-						<Action Icon={Pencil} label="EDIT" onClick={() => setEditing(true)} />
-						<Action
-							Icon={Trash2}
-							label="DELETE"
-							pink
-							disabled={pending}
-							onClick={() => {
-								if (window.confirm("Delete this address?")) run(deleteAddressAction);
-							}}
-						/>
 					</div>
 				</>
 			)}

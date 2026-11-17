@@ -2328,6 +2328,14 @@ li:nth-child(even) > .wv-cat-chip {
 	color: white;
 	background-color: var(--ac-input);
 }
+/* The question asked in the card before deleting an address or a review (wv-confirm-delete.tsx), glowing pink. */
+.wv-confirm-ask {
+	color: var(--wv-pink);
+	letter-spacing: 0.5px;
+	text-shadow:
+		0 1px 1px var(--wv-ink),
+		0 0 8px color-mix(in srgb, var(--wv-pink) 70%, transparent);
+}
 
 /* My Reviews (wv-reviews-client.tsx): each review and each product to review is a glass row (.wv-order-line). Stars
  * earned glow cyan, filled; the rest are dim outlines; when picking a rating, each star lifts under the pointer. A
