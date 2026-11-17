@@ -5,6 +5,7 @@ import type { RewardsConfig } from "@/lib/rewards/tokens";
 import { WvFooter, WvHeader } from "./wv-chrome";
 import { SectionHeading } from "./wv-product-section";
 import { RewardsCalculator } from "./wv-rewards-calculator";
+import { RewardsHeroArt } from "./wv-rewards-hero-art";
 import "./wv-home.css";
 
 /**
@@ -86,31 +87,17 @@ const DOES_NOT_EARN = [
 	"Orders placed as a guest",
 ];
 
-/** Decorative token art: one large coin and two small ones, floating. */
-function Coins() {
-	const coin =
-		"flex items-center justify-center rounded-full border-4 border-[var(--wv-cyan-soft)] bg-gradient-to-br from-[var(--wv-pink)] via-[var(--wv-purple)] to-[var(--wv-control)] shadow-[0_0_40px_color-mix(in_srgb,var(--wv-cyan)_35%,transparent)]";
+/**
+ * The hero's art: the program's idea drawn in the site's style (wv-rewards-hero-art.tsx), a shopping bag throwing
+ * tokens onto a glowing stack that pays down a price tag, framed as a lit neon screen like the other heroes' art: a
+ * cyan-to-pink edge that glows (`.wv-art`), glass over it and HUD corner brackets.
+ */
+function HeroArt() {
 	return (
-		<div aria-hidden className="relative mx-auto size-[220px] shrink-0 md:size-[260px] xl:size-[340px]">
-			<div
-				className={`${coin} wv-float absolute left-1/2 top-1/2 size-[150px] -translate-x-1/2 -translate-y-1/2 md:size-[180px] xl:size-[230px]`}
-			>
-				<div className="flex size-[78%] items-center justify-center rounded-full border-2 border-dashed border-[var(--wv-cyan-soft)]">
-					<span className={`${bungee} text-4xl text-white md:text-5xl xl:text-6xl`}>VT</span>
-				</div>
-			</div>
-			<div
-				className={`${coin} wv-float absolute left-0 top-2 size-[56px] opacity-90 md:size-[68px] xl:size-[84px]`}
-				style={{ animationDelay: "-2s" }}
-			>
-				<span className={`${bungee} text-sm text-white md:text-base xl:text-xl`}>VT</span>
-			</div>
-			<div
-				className={`${coin} wv-float absolute bottom-3 right-0 size-[44px] opacity-80 md:size-[54px] xl:size-[66px]`}
-				style={{ animationDelay: "-4s" }}
-			>
-				<span className={`${bungee} text-xs text-white md:text-sm xl:text-lg`}>VT</span>
-			</div>
+		<div className="wv-art relative aspect-[16/10] w-full shrink-0 overflow-hidden rounded-[20px] md:aspect-[4/3] md:w-[320px] xl:w-[500px]">
+			<RewardsHeroArt idPrefix="rewards-hero-art" />
+			<span aria-hidden className="wv-art-glass absolute inset-0" />
+			<span aria-hidden className="wv-art-hud absolute inset-[10px] md:inset-[14px]" />
 		</div>
 	);
 }
@@ -144,7 +131,7 @@ export function WvRewards({ config, account }: { config: RewardsConfig; account:
 			{/* Hero */}
 			<section className="wv-nebula relative overflow-hidden">
 				<div className="relative flex flex-col items-center gap-6 px-5 py-8 md:flex-row-reverse md:gap-8 md:px-8 md:py-12 xl:gap-16 xl:px-20 xl:py-16">
-					<Coins />
+					<HeroArt />
 					<div className="flex min-w-0 flex-1 flex-col items-start gap-4 md:gap-5">
 						<p
 							className={`${marker} text-[18px] uppercase tracking-[2px] text-[var(--wv-pink)] md:text-[22px]`}
@@ -163,7 +150,8 @@ export function WvRewards({ config, account }: { config: RewardsConfig; account:
 							spend on products, then spend them at checkout: 100 tokens take {hundredTokensWorth()} off your
 							order.
 						</p>
-						<div className="flex w-full flex-col gap-3 md:w-auto md:flex-row md:gap-4">
+						{/* Stacked beside the art on tablets, where the column is too narrow for both in a row. */}
+						<div className="flex w-full flex-col gap-3 xl:w-auto xl:flex-row xl:gap-4">
 							<Link href="/shop" className={primaryButton}>
 								START SHOPPING
 							</Link>
