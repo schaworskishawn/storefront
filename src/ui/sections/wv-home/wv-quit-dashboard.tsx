@@ -1,5 +1,6 @@
 "use client";
 
+import { Lightbulb } from "lucide-react";
 import Link from "next/link";
 import {
 	PUFF_BUMP,
@@ -28,11 +29,12 @@ import {
 } from "./wv-quit-copy";
 import { cardClass, eyebrowClass, primaryBtn, stageFrame } from "./wv-quit-ui";
 
+/** The puff meter's fill in the status colour, glowing (`.wv-quit-fill--*`). */
 const TONE_BAR: Record<PuffStatus["tone"], string> = {
-	ok: "bg-[var(--qp-success)]",
-	near: "bg-[var(--qp-warning)]",
-	over: "bg-[var(--qp-error)]",
-	none: "bg-[var(--qp-border)]",
+	ok: "wv-quit-fill--ok",
+	near: "wv-quit-fill--near",
+	over: "wv-quit-fill--over",
+	none: "wv-quit-fill--none",
 };
 const TONE_TEXT: Record<PuffStatus["tone"], string> = {
 	ok: "text-[var(--qp-success)]",
@@ -41,19 +43,12 @@ const TONE_TEXT: Record<PuffStatus["tone"], string> = {
 	none: "text-[var(--qp-muted)]",
 };
 
+/** A log button: neon glass that lifts and glows under the pointer (`.wv-quit-log`; `--pink` for Reset). */
 const logButton =
-	"hover:border-[var(--qp-primary)]/60 flex min-h-[60px] flex-col items-start justify-center gap-0.5 rounded-xl border border-[var(--qp-border)] bg-[var(--qp-field)] px-4 py-3 text-left";
+	"wv-quit-log flex min-h-[60px] flex-col items-start justify-center gap-0.5 rounded-xl px-4 py-3 text-left";
 
-/** A thin progress bar. */
-function Bar({
-	pct,
-	className = "bg-[var(--qp-primary)]",
-	label,
-}: {
-	pct: number;
-	className?: string;
-	label: string;
-}) {
+/** A progress bar: a track set into the glass, its fill glowing (cyan into pink unless a status colour is given). */
+function Bar({ pct, className = "", label }: { pct: number; className?: string; label: string }) {
 	return (
 		<div
 			role="progressbar"
@@ -61,18 +56,32 @@ function Bar({
 			aria-valuemin={0}
 			aria-valuemax={100}
 			aria-valuenow={Math.round(pct)}
-			className="h-3 overflow-hidden rounded-full bg-[var(--qp-border)]"
+			className="wv-quit-track h-3 overflow-hidden rounded-full"
 		>
-			<div className={`h-full rounded-full transition-all ${className}`} style={{ width: `${pct}%` }} />
+			<div
+				className={`wv-quit-fill h-full rounded-full transition-all ${className}`}
+				style={{ width: `${pct}%` }}
+			/>
 		</div>
 	);
 }
 
-function Fact({ label, value, hint }: { label: string; value: string; hint: string }) {
+/** A fact tile: glass inside a glowing edge, its value glowing in the tile's colour (`.wv-quit-fact`). */
+function Fact({
+	label,
+	value,
+	hint,
+	pink = false,
+}: {
+	label: string;
+	value: string;
+	hint: string;
+	pink?: boolean;
+}) {
 	return (
-		<div className="rounded-xl border border-[var(--qp-border)] bg-[var(--qp-field)] p-4">
-			<span className="block text-xs text-[var(--qp-dim)]">{label}</span>
-			<strong className="mt-1 block text-3xl font-black leading-none">{value}</strong>
+		<div className={`wv-quit-fact rounded-xl p-4 ${pink ? "wv-quit-fact--pink" : ""}`}>
+			<span className="block text-xs text-[var(--qp-muted)]">{label}</span>
+			<strong className="wv-quit-fact-value mt-1 block text-3xl font-black leading-none">{value}</strong>
 			<span className="mt-2 block text-xs leading-snug text-[var(--qp-muted)]">{hint}</span>
 		</div>
 	);
@@ -86,14 +95,16 @@ function PuffMeter({ used, target }: { used: number; target: number | null }) {
 			<div className="flex items-baseline justify-between gap-3">
 				<span className="text-sm font-bold">Puffs so far today</span>
 				<span className="text-sm text-[var(--qp-muted)]">
-					<strong className="text-2xl text-[var(--qp-text)]">{used}</strong>
+					<strong className="wv-quit-big text-2xl text-[var(--qp-text)]">{used}</strong>
 					{target !== null ? ` of ${target}` : ""}
 				</span>
 			</div>
 			<div className="mt-2">
 				<Bar pct={status.pct} className={TONE_BAR[status.tone]} label="Puffs used today" />
 			</div>
-			<p className={`mt-2 text-sm font-semibold ${TONE_TEXT[status.tone]}`}>{status.text}</p>
+			<p className={`wv-quit-glow-text mt-2 text-sm font-semibold ${TONE_TEXT[status.tone]}`}>
+				{status.text}
+			</p>
 		</div>
 	);
 }
@@ -109,13 +120,8 @@ function StepChips({ stages, currentIndex }: { stages: Stage[]; currentIndex: nu
 					<li
 						key={i}
 						aria-current={now ? "step" : undefined}
-						className={`flex min-w-[58px] flex-col items-center rounded-lg border px-2.5 py-1.5 text-center ${
-							now
-								? "border-[var(--qp-primary)] bg-[var(--qp-field)] text-[var(--qp-primary)] shadow-[0_0_14px_color-mix(in_srgb,var(--qp-primary)_35%,transparent)]"
-								: done
-									? "border-[var(--qp-success)] text-[var(--qp-success)]"
-									: "border-[var(--qp-border)] text-[var(--qp-dim)]"
-						}`}
+						data-state={done ? "done" : now ? "now" : "next"}
+						className="wv-quit-chip flex min-w-[58px] flex-col items-center rounded-lg px-2.5 py-1.5 text-center"
 					>
 						<b className="text-sm">{st.strength}</b>
 						<span className="text-[10px]">{done ? "✓ done" : now ? "now" : "mg"}</span>
@@ -149,7 +155,7 @@ function PuffChart({ data, today, target }: { data: QuitData; today: string; tar
 	const y = (v: number) => Math.round(h - (v / max) * (h - 30) - 15);
 	const line = points.map((p, i) => `${Math.round(i * step)},${y(p.puffs)}`).join(" ");
 	return (
-		<div className={`${cardClass} relative h-[190px] overflow-hidden p-0`}>
+		<div className={`${cardClass} wv-quit-chart relative h-[190px] overflow-hidden p-0`}>
 			<svg
 				viewBox={`0 0 ${w} ${h}`}
 				preserveAspectRatio="none"
@@ -157,12 +163,17 @@ function PuffChart({ data, today, target }: { data: QuitData; today: string; tar
 				role="img"
 				aria-label="Puffs per day over the last two weeks"
 			>
-				<polyline
-					points={`${line} ${w},${h} 0,${h}`}
-					fill="var(--qp-primary)"
-					fillOpacity="0.08"
-					stroke="none"
-				/>
+				<defs>
+					<linearGradient id="quit-chart-fill" x1="0" y1="0" x2="0" y2="1">
+						<stop offset="0%" style={{ stopColor: "var(--wv-cyan)", stopOpacity: 0.3 }} />
+						<stop offset="100%" style={{ stopColor: "var(--wv-pink)", stopOpacity: 0 }} />
+					</linearGradient>
+					<linearGradient id="quit-chart-line" x1="0" y1="0" x2="1" y2="0">
+						<stop offset="0%" style={{ stopColor: "var(--wv-cyan-soft)" }} />
+						<stop offset="100%" style={{ stopColor: "var(--wv-pink)" }} />
+					</linearGradient>
+				</defs>
+				<polyline points={`${line} ${w},${h} 0,${h}`} fill="url(#quit-chart-fill)" stroke="none" />
 				{target !== null && (
 					<line
 						x1={0}
@@ -178,7 +189,7 @@ function PuffChart({ data, today, target }: { data: QuitData; today: string; tar
 				<polyline
 					points={line}
 					fill="none"
-					stroke="var(--qp-primary)"
+					stroke="url(#quit-chart-line)"
 					strokeWidth="4"
 					strokeLinecap="round"
 					strokeLinejoin="round"
@@ -252,7 +263,7 @@ export function Dashboard({
 			{data.sample && (
 				<p className={`${cardClass} px-4 py-3 text-sm`}>
 					You&apos;re viewing <strong>sample data</strong> from the design.{" "}
-					<button type="button" className="font-bold text-[var(--qp-primary)] underline" onClick={onRestart}>
+					<button type="button" className="wv-quit-textlink font-bold underline" onClick={onRestart}>
 						Start fresh
 					</button>
 				</p>
@@ -272,8 +283,18 @@ export function Dashboard({
 				{cur ? (
 					<>
 						<div>
-							<h1 className="text-[28px] font-black leading-[1.1] tracking-[-0.02em] md:text-[38px]">
-								{s.strength === 0 ? "Go nicotine-free today" : `Use ${s.strength} mg today`}
+							<h1 className="wv-title-glow wv-hero-title text-[28px] font-black leading-[1.1] tracking-[-0.02em] md:text-[38px]">
+								{s.strength === 0 ? (
+									<>
+										<span>Go</span> <span className="text-[var(--qp-secondary)]">nicotine-free</span>{" "}
+										<span>today</span>
+									</>
+								) : (
+									<>
+										<span>Use</span> <span className="text-[var(--qp-primary)]">{s.strength} mg</span>{" "}
+										<span>today</span>
+									</>
+								)}
 							</h1>
 							<p className="mt-2 max-w-[600px] text-[15px] leading-[1.55] text-[var(--qp-muted)]">
 								{STAGE_TEXT[cur.name] ?? `Hold at ${cur.strength} mg for ${cur.days} days.`}
@@ -287,7 +308,7 @@ export function Dashboard({
 									value={`${s.strength} mg`}
 									hint={prevStage ? `down from ${prevStage.strength} mg` : "where you're starting"}
 								/>
-								<Fact label="Puff target" value={puffFact.value} hint={puffFact.hint} />
+								<Fact label="Puff target" value={puffFact.value} hint={puffFact.hint} pink />
 							</div>
 
 							<div id="quick-log" className="flex scroll-mt-32 flex-col gap-4">
@@ -315,6 +336,7 @@ export function Dashboard({
 											type="button"
 											className={logButton}
 											onClick={() => update((d) => resetPuffsToday(d, today))}
+											data-tone="pink"
 										>
 											<b>Reset</b>
 											<span className="text-xs text-[var(--qp-dim)]">Clear today</span>
@@ -325,11 +347,8 @@ export function Dashboard({
 						</div>
 
 						<div
-							className={`flex flex-col gap-3 rounded-xl border p-4 ${
-								s.ready
-									? "border-[var(--qp-success)] bg-[var(--qp-field)]"
-									: "border-[var(--qp-border)] bg-[var(--qp-field)]"
-							}`}
+							data-ready={s.ready || undefined}
+							className="wv-quit-panel flex flex-col gap-3 rounded-xl p-4"
 						>
 							<div className="flex flex-wrap items-center justify-between gap-2 text-sm">
 								<span className="font-bold">
@@ -343,7 +362,7 @@ export function Dashboard({
 							</div>
 							<Bar
 								pct={s.ready ? 100 : stepPct}
-								className={s.ready ? "bg-[var(--qp-success)]" : "bg-[var(--qp-primary)]"}
+								className={s.ready ? "wv-quit-fill--ok" : ""}
 								label="Progress through this step"
 							/>
 							<p className="text-xs leading-snug text-[var(--qp-muted)]">{nextLine}</p>
@@ -360,7 +379,7 @@ export function Dashboard({
 								{p.currentIndex > 0 && (
 									<button
 										type="button"
-										className="text-xs font-bold text-[var(--qp-dim)] underline"
+										className="wv-quit-textlink text-xs font-bold underline"
 										onClick={() => update((d) => goBackStage(d, today))}
 									>
 										← Back a step
@@ -371,8 +390,8 @@ export function Dashboard({
 					</>
 				) : (
 					<div>
-						<h1 className="text-[28px] font-black leading-[1.1] tracking-[-0.02em] md:text-[38px]">
-							You made it. Nicotine-free!
+						<h1 className="wv-title-glow wv-hero-title text-[28px] font-black leading-[1.1] tracking-[-0.02em] md:text-[38px]">
+							<span>You made it.</span> <span className="text-[var(--qp-secondary)]">Nicotine-free!</span>
 						</h1>
 						<p className="mt-2 max-w-[600px] text-[15px] leading-[1.55] text-[var(--qp-muted)]">
 							Every step is done. Be proud of yourself, and keep taking it one day at a time. You can start
@@ -388,7 +407,7 @@ export function Dashboard({
 					How does this plan work?
 					<span
 						aria-hidden="true"
-						className="text-[var(--qp-primary)] transition-transform group-open:rotate-180"
+						className="wv-quit-textlink text-[var(--qp-primary)] transition-transform group-open:rotate-180"
 					>
 						▾
 					</span>
@@ -409,11 +428,11 @@ export function Dashboard({
 						},
 					].map((item, i) => (
 						<li key={item.title} className="grid grid-cols-[34px_1fr] items-start gap-3">
-							<span className="flex size-[30px] items-center justify-center rounded-full border-2 border-[var(--qp-secondary)] text-sm font-black text-[var(--qp-secondary)]">
+							<span className="wv-quit-stage-ring wv-quit-stage-ring--pink flex size-[30px] items-center justify-center rounded-full text-sm font-black">
 								{i + 1}
 							</span>
 							<span>
-								<b className="block text-[var(--qp-text)]">{item.title}</b>
+								<b className="wv-pc-name block text-[var(--qp-text)]">{item.title}</b>
 								<small className="text-[var(--qp-muted)]">{item.text}</small>
 							</span>
 						</li>
@@ -425,7 +444,7 @@ export function Dashboard({
 			<section id="plan" className="flex scroll-mt-28 flex-col gap-4">
 				<div>
 					<p className={eyebrowClass}>Your plan</p>
-					<h2 className="text-xl font-bold">
+					<h2 className="wv-quit-heading text-xl font-bold">
 						{s.complete
 							? "Every step is done"
 							: `${stepsToGo} ${stepsToGo === 1 ? "step" : "steps"} to go, about ${weeksLeft} ${weeksLeft === 1 ? "week" : "weeks"} left`}
@@ -441,7 +460,7 @@ export function Dashboard({
 					<Bar pct={s.pct} label="Progress through the whole plan" />
 					<StepChips stages={p.stages} currentIndex={p.currentIndex} />
 					<details className="group">
-						<summary className="flex cursor-pointer list-none items-center gap-2 text-sm font-bold text-[var(--qp-primary)] [&::-webkit-details-marker]:hidden">
+						<summary className="wv-quit-textlink flex cursor-pointer list-none items-center gap-2 text-sm font-bold [&::-webkit-details-marker]:hidden">
 							See the details of every step
 							<span aria-hidden="true" className="transition-transform group-open:rotate-180">
 								▾
@@ -462,23 +481,14 @@ export function Dashboard({
 								return (
 									<div
 										key={i}
-										className={`grid grid-cols-[42px_1fr_auto] items-center gap-3 rounded-xl border bg-[var(--qp-field)] p-3 ${
-											isCur ? "border-[var(--qp-secondary)]" : "border-[var(--qp-border)]"
-										}`}
+										data-state={done ? "done" : isCur ? "now" : "next"}
+										className="wv-quit-row grid grid-cols-[42px_1fr_auto] items-center gap-3 rounded-xl p-3"
 									>
-										<span
-											className={`flex size-[34px] items-center justify-center rounded-full border font-bold ${
-												isCur
-													? "border-[var(--qp-primary)] text-[var(--qp-primary)]"
-													: done
-														? "border-[var(--qp-success)] text-[var(--qp-success)]"
-														: "border-[var(--qp-border)] text-[var(--qp-dim)]"
-											}`}
-										>
+										<span className="wv-quit-row-num flex size-[34px] items-center justify-center rounded-full font-bold">
 											{i + 1}
 										</span>
 										<div>
-											<b className="block">{stageTitle(st)}</b>
+											<b className="wv-pc-name block">{stageTitle(st)}</b>
 											<small className="block text-[var(--qp-dim)]">
 												{STAGE_TEXT[st.name] ?? `Hold at ${st.strength} mg for ${st.days} days.`}
 											</small>
@@ -487,15 +497,7 @@ export function Dashboard({
 												{puffRange(st, data.baselinePuffs)}
 											</small>
 										</div>
-										<span
-											className={`whitespace-nowrap rounded-full border px-3 py-1 text-[11px] font-bold ${
-												isCur
-													? "border-[var(--qp-secondary)] text-[var(--qp-secondary)]"
-													: done
-														? "border-[var(--qp-success)] text-[var(--qp-success)]"
-														: "border-[var(--qp-border)] text-[var(--qp-dim)]"
-											}`}
-										>
+										<span className="wv-quit-pill whitespace-nowrap rounded-full px-3 py-1 text-[11px] font-bold">
 											{badge}
 										</span>
 									</div>
@@ -511,7 +513,7 @@ export function Dashboard({
 				<div id="progress" className="flex scroll-mt-28 flex-col gap-3">
 					<div>
 						<p className={eyebrowClass}>Your progress</p>
-						<h2 className="text-lg font-bold">Puffs per day, last two weeks</h2>
+						<h2 className="wv-quit-heading text-lg font-bold">Puffs per day, last two weeks</h2>
 					</div>
 					<PuffChart data={data} today={today} target={puffsLimit} />
 					<div className="grid grid-cols-3 gap-3">
@@ -520,12 +522,9 @@ export function Dashboard({
 							{ label: "Started", value: dayLabel(p.startedAt) },
 							{ label: "Days to go", value: s.complete ? "0" : String(s.remainingDays) },
 						].map((m) => (
-							<div
-								key={m.label}
-								className="rounded-xl border border-[var(--qp-border)] bg-[var(--qp-field)] p-3"
-							>
-								<span className="block text-[11px] text-[var(--qp-dim)]">{m.label}</span>
-								<strong className="mt-1 block text-base">{m.value}</strong>
+							<div key={m.label} className="wv-quit-fact rounded-xl p-3">
+								<span className="block text-[11px] text-[var(--qp-muted)]">{m.label}</span>
+								<strong className="wv-quit-fact-value mt-1 block text-base">{m.value}</strong>
 							</div>
 						))}
 					</div>
@@ -533,22 +532,31 @@ export function Dashboard({
 				<div id="tips" className="flex scroll-mt-28 flex-col gap-3">
 					<div>
 						<p className={eyebrowClass}>Tips</p>
-						<h2 className="text-lg font-bold">For this step</h2>
+						<h2 className="wv-quit-heading text-lg font-bold">For this step</h2>
 					</div>
 					<div className="grid gap-3">
 						{(TIPS_BY_STAGE[cur?.name ?? "Baseline"] ?? TIPS_BY_STAGE.Baseline).map((t) => (
-							<div key={t.title} className={`${cardClass} p-4`}>
-								<b className="block">{t.title}</b>
-								<span className="text-sm text-[var(--qp-dim)]">{t.text}</span>
+							<div key={t.title} className={`${cardClass} grid grid-cols-[40px_1fr] items-start gap-3 p-4`}>
+								<span
+									aria-hidden
+									className="wv-quit-mark flex size-9 items-center justify-center rounded-[11px]"
+								>
+									<Lightbulb className="size-[18px]" strokeWidth={2.25} />
+								</span>
+								<span>
+									<b className="wv-pc-name block">{t.title}</b>
+									<span className="text-sm text-[var(--qp-muted)]">{t.text}</span>
+								</span>
 							</div>
 						))}
 					</div>
 				</div>
 			</section>
 
-			<footer className="flex flex-col gap-2 border-t border-[var(--qp-border)] pt-4 text-xs text-[var(--qp-dim)] md:flex-row md:items-center md:justify-between">
+			<div aria-hidden className="wv-glow-line !h-[2px] w-full" />
+			<footer className="-mt-2 flex flex-col gap-2 text-xs text-[var(--qp-dim)] md:-mt-4 md:flex-row md:items-center md:justify-between">
 				<span>Quit Nicotine: Reduce. Stabilize. Quit.</span>
-				<Link href="/learn" className="text-[var(--qp-primary)] underline">
+				<Link href="/learn" className="wv-quit-textlink underline">
 					Read more in the Learning Library
 				</Link>
 			</footer>

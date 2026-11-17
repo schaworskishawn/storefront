@@ -1265,6 +1265,261 @@ body.wv-motion .wv-nav-link[aria-current="page"]:is(:hover, :focus-visible) {
 		0 0 0 3px color-mix(in srgb, var(--wv-cyan) 22%, transparent),
 		0 0 14px color-mix(in srgb, var(--wv-cyan) 45%, transparent);
 }
+/* The quit dashboard (wv-quit-dashboard.tsx), in the same neon. Its cards (`cardClass`) are glass inside a soft cyan-
+ * through-purple-to-pink edge that glows; the small labels glow cyan; the headline is 3D with today's strength lit. The
+ * fact tiles are glass inside a glowing edge in their colour (strength cyan, puff target pink), their values glowing. The
+ * progress bars are tracks set into the glass, their fill glowing (cyan into pink, or the status colour: green, amber,
+ * red), and the status line glows in its colour. The log buttons are neon glass that lift and glow (Reset in pink); the
+ * step's progress panel glows green once the step is done. The plan's chips glow: done green, now lit cyan, still to
+ * come dim; each step's row is glass, the current one edged pink, with its number in a ring and its badge a glowing pill.
+ * The trend chart's line runs cyan into pink and glows over a gradient fill. Links glow cyan. No movement for reduced
+ * motion. */
+.wv-quit-card {
+	border: 1.5px solid transparent;
+	background:
+		radial-gradient(70% 60% at 100% 0%, color-mix(in srgb, var(--wv-pink) 8%, transparent), transparent 70%)
+			padding-box,
+		linear-gradient(180deg, color-mix(in srgb, var(--wv-purple) 14%, var(--qp-surface)), var(--qp-surface))
+			padding-box,
+		linear-gradient(
+				135deg,
+				color-mix(in srgb, var(--wv-cyan) 55%, transparent),
+				color-mix(in srgb, var(--wv-purple) 60%, transparent) 55%,
+				color-mix(in srgb, var(--wv-pink) 55%, transparent)
+			)
+			border-box;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 8%, transparent),
+		0 0 14px color-mix(in srgb, var(--wv-purple) 40%, transparent),
+		0 16px 26px -16px var(--wv-ink);
+}
+.wv-quit-eyebrow {
+	text-shadow: 0 0 8px color-mix(in srgb, var(--wv-cyan) 60%, transparent);
+}
+.wv-quit-fact {
+	--accent: var(--wv-cyan-soft);
+	border: 1.5px solid transparent;
+	background:
+		radial-gradient(80% 80% at 100% 0%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 70%)
+			padding-box,
+		linear-gradient(180deg, color-mix(in srgb, var(--wv-purple) 16%, var(--qp-field)), var(--qp-surface))
+			padding-box,
+		linear-gradient(
+				135deg,
+				var(--accent),
+				color-mix(in srgb, var(--wv-purple) 65%, transparent) 60%,
+				color-mix(in srgb, var(--accent) 45%, transparent)
+			)
+			border-box;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 10%, transparent),
+		0 0 14px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+.wv-quit-fact--pink {
+	--accent: var(--wv-pink);
+}
+.wv-quit-fact-value {
+	color: var(--accent);
+	text-shadow:
+		0 1px 0 var(--wv-ink),
+		0 0 14px color-mix(in srgb, var(--accent) 70%, transparent);
+}
+.wv-quit-big {
+	text-shadow:
+		0 1px 0 var(--wv-ink),
+		0 0 12px color-mix(in srgb, var(--wv-cyan) 60%, transparent);
+}
+.wv-quit-track {
+	background: linear-gradient(
+		180deg,
+		var(--qp-bg),
+		color-mix(in srgb, var(--wv-purple) 18%, var(--qp-field))
+	);
+	box-shadow:
+		inset 0 1px 3px var(--wv-ink),
+		0 0 0 1px color-mix(in srgb, var(--wv-purple) 55%, transparent);
+}
+.wv-quit-fill {
+	background: linear-gradient(90deg, var(--wv-cyan-soft), var(--wv-pink));
+	box-shadow: 0 0 10px color-mix(in srgb, var(--wv-cyan) 60%, transparent);
+}
+.wv-quit-fill--ok {
+	background: linear-gradient(
+		90deg,
+		color-mix(in srgb, var(--qp-success) 60%, var(--wv-cyan-soft)),
+		var(--qp-success)
+	);
+	box-shadow: 0 0 10px color-mix(in srgb, var(--qp-success) 70%, transparent);
+}
+.wv-quit-fill--near {
+	background: linear-gradient(
+		90deg,
+		color-mix(in srgb, var(--qp-warning) 70%, var(--wv-pink)),
+		var(--qp-warning)
+	);
+	box-shadow: 0 0 10px color-mix(in srgb, var(--qp-warning) 70%, transparent);
+}
+.wv-quit-fill--over {
+	background: linear-gradient(
+		90deg,
+		color-mix(in srgb, var(--qp-error) 70%, var(--wv-pink)),
+		var(--qp-error)
+	);
+	box-shadow: 0 0 10px color-mix(in srgb, var(--qp-error) 70%, transparent);
+}
+.wv-quit-fill--none {
+	background: transparent;
+	box-shadow: none;
+}
+.wv-quit-glow-text {
+	text-shadow: 0 0 8px color-mix(in srgb, currentColor 65%, transparent);
+}
+.wv-quit-log {
+	--accent: var(--wv-cyan-soft);
+	border: 1.5px solid transparent;
+	background:
+		linear-gradient(180deg, color-mix(in srgb, var(--accent) 12%, var(--qp-field)), var(--qp-surface))
+			padding-box,
+		linear-gradient(
+				135deg,
+				var(--accent),
+				color-mix(in srgb, var(--wv-purple) 65%, transparent) 60%,
+				color-mix(in srgb, var(--accent) 45%, transparent)
+			)
+			border-box;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 10%, transparent),
+		0 0 12px color-mix(in srgb, var(--accent) 25%, transparent);
+	transition:
+		transform 150ms ease,
+		box-shadow 150ms ease;
+}
+.wv-quit-log[data-tone="pink"] {
+	--accent: var(--wv-pink);
+}
+.wv-quit-log b {
+	color: white;
+	text-shadow: 0 0 8px color-mix(in srgb, var(--accent) 65%, transparent);
+}
+@media (hover: hover) {
+	.wv-quit-log:hover {
+		transform: translateY(-2px);
+		box-shadow:
+			inset 0 1px 0 color-mix(in srgb, white 16%, transparent),
+			0 0 20px color-mix(in srgb, var(--accent) 50%, transparent);
+	}
+}
+.wv-quit-log:active {
+	transform: scale(0.97);
+}
+.wv-quit-log:focus-visible,
+.wv-quit-textlink:focus-visible {
+	outline: 2px solid var(--qp-focus);
+	outline-offset: 2px;
+}
+.wv-quit-panel {
+	border: 1.5px solid transparent;
+	background:
+		linear-gradient(180deg, color-mix(in srgb, var(--wv-purple) 14%, var(--qp-field)), var(--qp-surface))
+			padding-box,
+		linear-gradient(
+				135deg,
+				color-mix(in srgb, var(--wv-cyan) 60%, transparent),
+				color-mix(in srgb, var(--wv-pink) 55%, transparent)
+			)
+			border-box;
+	box-shadow: 0 0 14px color-mix(in srgb, var(--wv-purple) 40%, transparent);
+}
+.wv-quit-panel[data-ready] {
+	background:
+		radial-gradient(
+				80% 100% at 50% 0%,
+				color-mix(in srgb, var(--qp-success) 12%, transparent),
+				transparent 70%
+			)
+			padding-box,
+		linear-gradient(180deg, color-mix(in srgb, var(--wv-purple) 14%, var(--qp-field)), var(--qp-surface))
+			padding-box,
+		linear-gradient(135deg, var(--qp-success), color-mix(in srgb, var(--wv-cyan) 60%, var(--qp-success)))
+			border-box;
+	box-shadow: 0 0 18px color-mix(in srgb, var(--qp-success) 40%, transparent);
+}
+.wv-quit-textlink {
+	color: var(--wv-cyan-soft);
+	text-shadow: 0 0 8px color-mix(in srgb, var(--wv-cyan) 55%, transparent);
+	transition: text-shadow 150ms ease;
+}
+.wv-quit-textlink:hover {
+	text-shadow: 0 0 12px var(--wv-cyan);
+}
+.wv-quit-chip {
+	--accent: var(--qp-dim);
+	color: var(--accent);
+	border: 1px solid color-mix(in srgb, var(--accent) 60%, transparent);
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--wv-purple) 14%, var(--qp-field)),
+		var(--qp-surface)
+	);
+}
+.wv-quit-chip[data-state="done"] {
+	--accent: var(--qp-success);
+	box-shadow: 0 0 10px color-mix(in srgb, var(--qp-success) 35%, transparent);
+	text-shadow: 0 0 8px color-mix(in srgb, var(--qp-success) 60%, transparent);
+}
+.wv-quit-chip[data-state="now"] {
+	--accent: var(--wv-cyan-soft);
+	border-color: var(--wv-cyan-soft);
+	background:
+		radial-gradient(90% 120% at 50% 0%, color-mix(in srgb, var(--wv-cyan) 30%, transparent), transparent 70%),
+		linear-gradient(180deg, color-mix(in srgb, var(--wv-cyan) 14%, var(--qp-field)), var(--qp-surface));
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 20%, transparent),
+		0 0 16px color-mix(in srgb, var(--wv-cyan) 60%, transparent);
+	text-shadow: 0 0 8px color-mix(in srgb, var(--wv-cyan) 80%, transparent);
+}
+.wv-quit-row {
+	--accent: var(--qp-dim);
+	border: 1px solid color-mix(in srgb, var(--wv-purple) 70%, transparent);
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--wv-purple) 14%, var(--qp-field)),
+		var(--qp-surface)
+	);
+}
+.wv-quit-row[data-state="done"] {
+	--accent: var(--qp-success);
+}
+.wv-quit-row[data-state="now"] {
+	--accent: var(--wv-pink);
+	border-color: var(--wv-pink);
+	box-shadow: 0 0 16px color-mix(in srgb, var(--wv-pink) 40%, transparent);
+}
+.wv-quit-row-num {
+	color: var(--accent);
+	border: 1.5px solid var(--accent);
+	box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 40%, transparent);
+	text-shadow: 0 0 8px color-mix(in srgb, var(--accent) 70%, transparent);
+}
+.wv-quit-row[data-state="now"] .wv-quit-row-num {
+	--accent: var(--wv-cyan-soft);
+}
+.wv-quit-pill {
+	color: var(--accent);
+	border: 1px solid var(--accent);
+	background: color-mix(in srgb, var(--accent) 10%, transparent);
+	box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 35%, transparent);
+	text-shadow: 0 0 6px color-mix(in srgb, var(--accent) 70%, transparent);
+}
+.wv-quit-chart svg {
+	filter: drop-shadow(0 0 6px color-mix(in srgb, var(--wv-cyan) 55%, transparent));
+}
+@media (prefers-reduced-motion: reduce) {
+	.wv-quit-log:hover,
+	.wv-quit-log:active {
+		transform: none;
+	}
+}
 @media (prefers-reduced-motion: no-preference) {
 	body.wv-motion .wv-quit-dot[data-state="current"]::before {
 		content: "";
