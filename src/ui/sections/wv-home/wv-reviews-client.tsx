@@ -1,16 +1,29 @@
 "use client";
 
+import { Package, PenLine, Pencil, Star, Trash2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { deleteReview, saveReview } from "@/lib/wv-review-actions";
-import { stars, type Review, type ReviewableProduct } from "@/lib/reviews";
+import { type Review, type ReviewableProduct } from "@/lib/reviews";
 
 const bungee = "font-[family-name:var(--font-bungee)]";
 const orbitron = "font-[family-name:var(--font-orbitron)]";
 const heyComic = "font-[family-name:var(--font-hey-comic)]";
 
-const field = `${orbitron} w-full min-w-0 rounded-lg border border-[var(--ac-subtle)] bg-[var(--ac-input)] px-3 py-2.5 text-xs text-white placeholder:text-[var(--ac-muted)]/60 focus:border-[var(--ac-cyan)] focus:outline-none`;
+/** A text field set into the glass, glowing cyan while focused (`.wv-acct-field` in wv-home.css). */
+const field = `${orbitron} wv-acct-field w-full min-w-0 rounded-lg px-3 py-2.5 text-xs text-white placeholder:text-[var(--ac-muted)]/60 focus:outline-none`;
+
+/** A rating as five stars, those it earns lit and glowing cyan (`.wv-review-stars`). */
+function StarRow({ rating }: { rating: number }) {
+	return (
+		<span role="img" aria-label={`${rating} out of 5 stars`} className="wv-review-stars flex gap-1">
+			{[1, 2, 3, 4, 5].map((n) => (
+				<Star key={n} aria-hidden data-on={n <= rating || undefined} className="size-4" strokeWidth={2} />
+			))}
+		</span>
+	);
+}
 
 function Editor({ productId, initial, onDone }: { productId: string; initial?: Review; onDone: () => void }) {
 	const [rating, setRating] = useState(initial?.rating ?? 0);
@@ -29,7 +42,12 @@ function Editor({ productId, initial, onDone }: { productId: string; initial?: R
 
 	return (
 		<div className="flex flex-col gap-3">
-			<div role="radiogroup" aria-label="Rating" className="flex gap-1">
+			{/* The stars to pick: lit and glowing up to the one chosen, each lifting under the pointer. */}
+			<div
+				role="radiogroup"
+				aria-label="Rating"
+				className="wv-review-stars wv-review-stars--pick flex gap-1.5"
+			>
 				{[1, 2, 3, 4, 5].map((n) => (
 					<button
 						key={n}
@@ -38,9 +56,9 @@ function Editor({ productId, initial, onDone }: { productId: string; initial?: R
 						aria-checked={rating === n}
 						aria-label={`${n} star${n > 1 ? "s" : ""}`}
 						onClick={() => setRating(n)}
-						className={`text-2xl leading-none ${n <= rating ? "text-[var(--ac-cyan)]" : "text-[var(--ac-muted)]/40"}`}
+						className="rounded-md p-0.5"
 					>
-						★
+						<Star aria-hidden data-on={n <= rating || undefined} className="size-7" strokeWidth={1.75} />
 					</button>
 				))}
 			</div>
@@ -71,24 +89,24 @@ function Editor({ productId, initial, onDone }: { productId: string; initial?: R
 					type="button"
 					onClick={submit}
 					disabled={pending}
-					className={`${heyComic} h-10 rounded-[10px] bg-[var(--ac-cyan-bright)] px-6 text-xs text-[var(--ac-input)] disabled:opacity-60`}
+					className={`${heyComic} wv-pc-cta h-10 rounded-[10px] bg-[var(--ac-cyan-bright)] px-6 text-xs text-[var(--ac-input)] disabled:opacity-60`}
 				>
-					{pending ? "SAVING…" : "SAVE REVIEW"}
+					<span className="wv-pc-cta-label">{pending ? "SAVING…" : "SAVE REVIEW"}</span>
 				</button>
 				<button
 					type="button"
 					onClick={onDone}
-					className={`${heyComic} h-10 rounded-[10px] border border-[var(--ac-cyan)] px-6 text-xs text-[var(--ac-cyan)]`}
+					className={`${heyComic} wv-btn wv-btn-outline wv-btn-neon h-10 rounded-[10px] border border-[var(--ac-cyan)] px-6 text-xs text-[var(--ac-cyan)]`}
 				>
-					CANCEL
+					<span className="wv-btn-label">CANCEL</span>
 				</button>
 			</div>
 		</div>
 	);
 }
 
-const card =
-	"flex flex-col gap-3 rounded-xl border border-[var(--ac-card-border)] bg-[var(--wv-surface)] p-4 md:p-5";
+/** A review's (or a product to review's) row: glass inside a soft neon edge (`.wv-order-line`, as on an order's page). */
+const card = "wv-order-line flex flex-col gap-3 rounded-xl p-4 md:p-5";
 
 export function ReviewCard({ review }: { review: Review }) {
 	const [editing, setEditing] = useState(false);
@@ -105,20 +123,17 @@ export function ReviewCard({ review }: { review: Review }) {
 
 	return (
 		<article className={card}>
-			<h2 className={`${bungee} text-base uppercase text-white md:text-[19px]`}>
-				<Link href={`/product/${review.productSlug}`}>{review.productName}</Link>
+			<h2 className={`${bungee} wv-pc-name text-base uppercase text-white md:text-[19px]`}>
+				<Link href={`/product/${review.productSlug}`} className="wv-review-product">
+					{review.productName}
+				</Link>
 			</h2>
 			{editing ? (
 				<Editor productId={review.productId} initial={review} onDone={() => setEditing(false)} />
 			) : (
 				<>
-					<p
-						aria-label={`${review.rating} out of 5 stars`}
-						className={`${orbitron} text-xs text-[var(--ac-muted)]`}
-					>
-						{stars(review.rating)}
-					</p>
-					<p className={`${orbitron} text-xs uppercase text-[var(--ac-muted)]`}>{review.headline}</p>
+					<StarRow rating={review.rating} />
+					<p className={`${orbitron} wv-review-headline text-xs uppercase`}>{review.headline}</p>
 					<p className={`${orbitron} whitespace-pre-line break-words text-xs text-[var(--ac-muted)]`}>
 						{review.body}
 					</p>
@@ -127,12 +142,23 @@ export function ReviewCard({ review }: { review: Review }) {
 							{error}
 						</p>
 					)}
-					<div className={`${orbitron} mt-2 flex gap-2 text-[11px] text-[var(--ac-pink)]`}>
-						<button type="button" onClick={() => setEditing(true)}>
+					{/* Edit and delete as small neon pills, delete in pink. */}
+					<div className={`${orbitron} mt-1 flex gap-2 text-[11px]`}>
+						<button
+							type="button"
+							onClick={() => setEditing(true)}
+							className="wv-review-btn flex items-center gap-1.5 rounded-full px-3 py-1"
+						>
+							<Pencil aria-hidden className="size-3" strokeWidth={2.5} />
 							EDIT
 						</button>
-						<span aria-hidden>·</span>
-						<button type="button" onClick={remove} disabled={pending}>
+						<button
+							type="button"
+							onClick={remove}
+							disabled={pending}
+							className="wv-review-btn wv-review-btn--pink flex items-center gap-1.5 rounded-full px-3 py-1 disabled:opacity-60"
+						>
+							<Trash2 aria-hidden className="size-3" strokeWidth={2.5} />
 							{pending ? "DELETING…" : "DELETE"}
 						</button>
 					</div>
@@ -147,8 +173,8 @@ export function PendingReview({ product }: { product: ReviewableProduct }) {
 	return (
 		<article className={card}>
 			<div className="flex items-center gap-3">
-				<div className="relative size-12 shrink-0 overflow-hidden rounded-lg border border-[var(--ac-card-border)] bg-[var(--ac-subtle)]">
-					{product.image && (
+				<div className="wv-order-thumb relative flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-lg">
+					{product.image ? (
 						<Image
 							src={product.image.url}
 							alt={product.image.alt}
@@ -157,18 +183,21 @@ export function PendingReview({ product }: { product: ReviewableProduct }) {
 							sizes="48px"
 							className="object-cover"
 						/>
+					) : (
+						<Package aria-hidden className="wv-order-thumb-icon size-5" strokeWidth={1.75} />
 					)}
 				</div>
-				<h3 className={`${bungee} min-w-0 flex-1 break-words text-sm uppercase text-white`}>
+				<h3 className={`${bungee} wv-pc-name min-w-0 flex-1 break-words text-sm uppercase text-white`}>
 					{product.name}
 				</h3>
 				{!open && (
 					<button
 						type="button"
 						onClick={() => setOpen(true)}
-						className={`${heyComic} h-10 shrink-0 rounded-[10px] border border-[var(--ac-cyan)] px-4 text-xs text-[var(--ac-cyan)]`}
+						className={`${heyComic} wv-btn wv-btn-outline wv-btn-neon flex h-10 shrink-0 items-center gap-2 rounded-[10px] border border-[var(--ac-cyan)] px-4 text-xs text-[var(--ac-cyan)]`}
 					>
-						WRITE REVIEW
+						<PenLine aria-hidden className="size-3.5" strokeWidth={2.5} />
+						<span className="wv-btn-label">WRITE REVIEW</span>
 					</button>
 				)}
 			</div>

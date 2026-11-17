@@ -491,7 +491,10 @@ export function WvMyReviews({
 					))}
 					{pending.length > 0 && (
 						<section id="pending" className="flex scroll-mt-24 flex-col gap-3">
-							<h2 className={`${bungee} text-lg text-[var(--ac-cyan)]`}>READY TO REVIEW</h2>
+							<div className="flex flex-col gap-2">
+								<h2 className={`${bungee} wv-heading-title text-lg`}>READY TO REVIEW</h2>
+								<div className="wv-hero-bar h-[3px] w-12 rounded-full" />
+							</div>
 							{pending.map((p) => (
 								<PendingReview key={p.id} product={p} />
 							))}

@@ -2308,6 +2308,88 @@ li:nth-child(even) > .wv-cat-chip {
 	text-shadow: 0 0 8px color-mix(in srgb, var(--wv-cyan) 65%, transparent);
 }
 
+/* My Reviews (wv-reviews-client.tsx): each review and each product to review is a glass row (.wv-order-line). Stars
+ * earned glow cyan, filled; the rest are dim outlines; when picking a rating, each star lifts under the pointer. A
+ * review's headline is brighter and its product name glows cyan under the pointer; Edit and Delete are small neon pills
+ * (Delete pink). The editor's fields are set into the glass and glow cyan while focused. */
+.wv-review-stars svg {
+	color: color-mix(in srgb, var(--ac-muted) 45%, transparent);
+	transition:
+		color 150ms ease,
+		transform 150ms ease,
+		filter 150ms ease;
+}
+.wv-review-stars svg[data-on] {
+	color: var(--wv-cyan-soft);
+	fill: color-mix(in srgb, var(--wv-cyan-soft) 85%, transparent);
+	filter: drop-shadow(0 0 5px color-mix(in srgb, var(--wv-cyan) 85%, transparent));
+}
+@media (hover: hover) {
+	.wv-review-stars--pick button:hover svg {
+		color: var(--wv-cyan-soft);
+		transform: translateY(-2px) scale(1.08);
+	}
+}
+.wv-review-stars--pick button:focus-visible {
+	outline: 2px solid var(--wv-cyan-soft);
+	outline-offset: 2px;
+}
+.wv-review-headline {
+	color: color-mix(in srgb, white 85%, var(--ac-muted));
+	text-shadow: 0 0 8px color-mix(in srgb, var(--wv-purple) 70%, transparent);
+}
+.wv-review-product {
+	transition:
+		color 150ms ease,
+		text-shadow 150ms ease;
+}
+.wv-review-product:is(:hover, :focus-visible) {
+	color: var(--wv-cyan-soft);
+	text-shadow: 0 0 10px color-mix(in srgb, var(--wv-cyan) 70%, transparent);
+}
+.wv-review-btn {
+	--tone: var(--wv-cyan-soft);
+	color: var(--tone);
+	border: 1px solid color-mix(in srgb, var(--tone) 55%, transparent);
+	background: color-mix(in srgb, var(--tone) 10%, transparent);
+	box-shadow: 0 0 10px color-mix(in srgb, var(--tone) 25%, transparent);
+	text-shadow: 0 0 8px color-mix(in srgb, var(--tone) 60%, transparent);
+	transition: box-shadow 150ms ease;
+}
+.wv-review-btn--pink {
+	--tone: var(--wv-pink);
+}
+.wv-review-btn:not(:disabled):is(:hover, :focus-visible) {
+	box-shadow: 0 0 16px color-mix(in srgb, var(--tone) 55%, transparent);
+}
+.wv-acct-field {
+	border: 1px solid transparent;
+	background:
+		linear-gradient(180deg, var(--ac-input), color-mix(in srgb, var(--wv-purple) 12%, var(--ac-subtle)))
+			padding-box,
+		linear-gradient(
+				135deg,
+				color-mix(in srgb, var(--wv-cyan) 55%, transparent),
+				color-mix(in srgb, var(--wv-pink) 55%, transparent)
+			)
+			border-box;
+	box-shadow:
+		inset 0 2px 5px var(--wv-ink),
+		0 0 8px color-mix(in srgb, var(--wv-cyan) 15%, transparent);
+	transition: box-shadow 180ms ease;
+}
+.wv-acct-field:focus {
+	box-shadow:
+		inset 0 2px 5px var(--wv-ink),
+		0 0 0 3px color-mix(in srgb, var(--wv-cyan) 22%, transparent),
+		0 0 14px color-mix(in srgb, var(--wv-cyan) 45%, transparent);
+}
+@media (prefers-reduced-motion: reduce) {
+	.wv-review-stars--pick button:hover svg {
+		transform: none;
+	}
+}
+
 /* Footer link columns (WvFooter in wv-chrome.tsx): each heading is lifted with a dark edge, a purple one beneath and a
  * cyan glow, over a short glowing cyan-to-pink bar; the links are brighter than the old grey with a dark edge, and glow
  * cyan under the pointer (motion.css still turns them cyan and nudges them right). */
