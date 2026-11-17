@@ -2136,6 +2136,49 @@ li:nth-child(even) > .wv-cat-chip {
 	}
 }
 
+/* My Orders' cards (OrderCard, wv-orders.tsx): neon cards whose parcel glows in its lit tile, the date led by a glowing
+ * calendar, the status a glowing glass pill in its colour (cyan while open, green once fulfilled, pink if cancelled or
+ * expired), thumbnails in neon frames and the total glowing cyan. */
+.wv-order-card .wv-neon-card-icon svg {
+	color: var(--accent);
+	filter: drop-shadow(0 0 5px color-mix(in srgb, var(--accent) 85%, transparent));
+}
+.wv-order-date {
+	color: var(--ac-muted);
+}
+.wv-order-date svg {
+	color: var(--wv-cyan-soft);
+	filter: drop-shadow(0 0 3px color-mix(in srgb, var(--wv-cyan) 80%, transparent));
+}
+.wv-order-status {
+	--tone: var(--wv-cyan-soft);
+	color: var(--tone);
+	border: 1px solid color-mix(in srgb, var(--tone) 60%, transparent);
+	background: color-mix(in srgb, var(--tone) 12%, transparent);
+	box-shadow: 0 0 10px color-mix(in srgb, var(--tone) 35%, transparent);
+	text-shadow: 0 0 8px color-mix(in srgb, var(--tone) 70%, transparent);
+}
+.wv-order-status[data-tone="done"] {
+	--tone: var(--ac-green);
+}
+.wv-order-status[data-tone="stop"] {
+	--tone: var(--wv-pink);
+}
+.wv-order-thumb {
+	border: 1px solid transparent;
+	background:
+		linear-gradient(var(--ac-subtle), var(--ac-subtle)) padding-box,
+		linear-gradient(135deg, var(--wv-cyan), var(--wv-pink)) border-box;
+	box-shadow: 0 0 10px color-mix(in srgb, var(--wv-cyan) 30%, transparent);
+}
+.wv-order-total {
+	color: white;
+	text-shadow:
+		0 1px 0 var(--wv-ink),
+		0 2px 0 color-mix(in srgb, var(--wv-purple) 75%, transparent),
+		0 0 14px color-mix(in srgb, var(--wv-cyan) 60%, transparent);
+}
+
 /* Footer link columns (WvFooter in wv-chrome.tsx): each heading is lifted with a dark edge, a purple one beneath and a
  * cyan glow, over a short glowing cyan-to-pink bar; the links are brighter than the old grey with a dark edge, and glow
  * cyan under the pointer (motion.css still turns them cyan and nudges them right). */

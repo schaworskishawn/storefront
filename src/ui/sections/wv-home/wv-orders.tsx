@@ -1,3 +1,4 @@
+import { Calendar, Package, Truck } from "lucide-react";
 import { type ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -24,39 +25,79 @@ export type OrderCardData = {
 	thumbs: { url: string; alt: string }[];
 };
 
+/** The colour of an order's status pill: green once fulfilled, pink if it was cancelled or ran out, cyan otherwise. */
+function statusTone(status: string): "done" | "stop" | "open" {
+	const s = status.toLowerCase();
+	if (s === "fulfilled") return "done";
+	if (s.includes("cancel") || s.includes("expired") || s.includes("refund")) return "stop";
+	return "open";
+}
+
+/**
+ * One order, as a neon card (`.wv-neon-card`) that lifts and glows under the pointer: its number lifted beside a
+ * parcel in a lit tile, the date led by a glowing calendar, the status a glowing pill in its colour, the products'
+ * thumbnails in neon frames, a neon line, the item count and the total glowing, then the glossy "Track order" button
+ * and the neon outline "View details" (`.wv-order-*` in wv-home.css). The buttons stack on phones and sit side by side
+ * from tablets up.
+ */
 function OrderCard({ o }: { o: OrderCardData }) {
 	const details = `/orders/${o.number}`;
 	return (
-		<article className="flex flex-col gap-[10px] rounded-xl border border-[var(--ac-card-border)] bg-[var(--wv-surface)] p-4 md:gap-3 md:p-5">
-			<h2 className={`${bungee} text-[15px] text-white md:text-[17px]`}>#{o.number}</h2>
-			<p className={`${orbitron} text-[11px] uppercase text-[var(--ac-muted)]`}>{o.date}</p>
-			<div className="flex gap-2">
-				{o.thumbs.map((t, i) => (
-					<div
-						key={i}
-						className="relative size-12 overflow-hidden rounded-lg border border-[var(--ac-card-border)] bg-[var(--ac-subtle)] md:size-14"
+		<article className="wv-neon-card wv-order-card flex flex-col gap-4 rounded-xl p-4 md:p-5">
+			<div className="flex items-start justify-between gap-3">
+				<div className="flex items-center gap-3">
+					<span
+						aria-hidden
+						className="wv-neon-card-icon flex size-11 shrink-0 items-center justify-center rounded-xl"
 					>
-						<Image src={t.url} alt={t.alt} fill unoptimized sizes="56px" className="object-cover" />
+						<Package className="size-5" strokeWidth={2.25} />
+					</span>
+					<div className="flex flex-col gap-1">
+						<h2 className={`${bungee} wv-pc-name text-[17px] leading-none text-white md:text-[19px]`}>
+							#{o.number}
+						</h2>
+						<p className={`${orbitron} wv-order-date flex items-center gap-1.5 text-[11px] uppercase`}>
+							<Calendar aria-hidden className="size-3.5" strokeWidth={2.25} />
+							{o.date}
+						</p>
 					</div>
-				))}
+				</div>
+				<span
+					data-tone={statusTone(o.status)}
+					className={`${orbitron} wv-order-status shrink-0 rounded-full px-2.5 py-1 text-[10px] uppercase tracking-[1px]`}
+				>
+					{o.status}
+				</span>
 			</div>
-			<p className={`${orbitron} text-[11px] uppercase text-[var(--ac-cyan)]`}>{o.status}</p>
-			<p className={`${orbitron} text-[11px] text-[var(--ac-muted)]`}>
-				{o.itemCount} {o.itemCount === 1 ? "ITEM" : "ITEMS"}
-			</p>
-			<p className={`${bungee} text-lg text-white md:text-xl`}>{o.total}</p>
-			<div className="mt-3 flex flex-col gap-2 md:flex-row">
+			{o.thumbs.length > 0 && (
+				<div className="flex gap-2">
+					{o.thumbs.map((t, i) => (
+						<div key={i} className="wv-order-thumb relative size-12 overflow-hidden rounded-lg md:size-14">
+							<Image src={t.url} alt={t.alt} fill unoptimized sizes="56px" className="object-cover" />
+						</div>
+					))}
+				</div>
+			)}
+			<span aria-hidden className="wv-acct-card-rule h-px w-full" />
+			<div className="flex items-end justify-between gap-3">
+				<p className={`${orbitron} wv-neon-card-text text-[11px] uppercase`}>
+					{o.itemCount} {o.itemCount === 1 ? "ITEM" : "ITEMS"}
+				</p>
+				<p className={`${bungee} wv-order-total text-xl md:text-2xl`}>{o.total}</p>
+			</div>
+			<div className="flex flex-col gap-2 md:flex-row">
 				<Link
 					href={details}
-					className={`${orbitron} flex h-10 flex-1 items-center justify-center rounded-[10px] bg-[var(--ac-cyan-bright)] text-xs font-bold text-[var(--ac-input)] md:h-[42px] md:rounded-xl md:text-sm md:tracking-[1px]`}
+					className={`${heyComic} wv-pc-cta flex h-11 items-center justify-center gap-2 rounded-xl bg-[var(--ac-cyan-bright)] px-4 text-sm tracking-[0.5px] text-[var(--ac-input)] md:flex-1`}
 				>
-					TRACK ORDER
+					<Truck aria-hidden className="size-4" strokeWidth={2.5} />
+					<span className="wv-pc-cta-label">TRACK ORDER</span>
 				</Link>
 				<Link
 					href={details}
-					className={`${heyComic} flex h-10 flex-1 items-center justify-center rounded-[10px] border-[1.5px] border-[var(--ac-cyan)] text-xs text-[var(--ac-cyan)] md:h-[42px] md:rounded-xl md:border md:text-sm`}
+					className={`${heyComic} wv-btn wv-btn-outline wv-btn-neon flex h-11 items-center justify-center rounded-xl border-[1.5px] border-[var(--ac-cyan)] px-4 text-sm text-[var(--ac-cyan)] md:flex-1`}
 				>
-					VIEW DETAILS
+					<span className="wv-btn-label">VIEW DETAILS</span>
 				</Link>
 			</div>
 		</article>
