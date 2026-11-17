@@ -1172,8 +1172,9 @@ li:nth-child(even) > .wv-cat-chip {
 /* The newsletter card beside them: lit glass (a pink glow in its top corner and a cyan one in the bottom, over a hint
  * of purple) inside a cyan-through-purple-to-pink edge that glows cyan and pink and casts a shadow; the email field is
  * set into it and glows cyan when focused; the subscribe button is glossy (a highlight along the top, an edge beneath,
- * a cyan glow). */
-.wv-news-card {
+ * a cyan glow). The login card (wv-login-form.tsx) is the same lit glass. */
+.wv-news-card,
+.wv-auth-card {
 	border: 1.5px solid transparent;
 	background:
 		radial-gradient(70% 45% at 100% 0%, color-mix(in srgb, var(--wv-pink) 15%, transparent), transparent 70%)
@@ -2383,6 +2384,57 @@ li:nth-child(even) > .wv-cat-chip {
 		inset 0 2px 5px var(--wv-ink),
 		0 0 0 3px color-mix(in srgb, var(--wv-cyan) 22%, transparent),
 		0 0 14px color-mix(in srgb, var(--wv-cyan) 45%, transparent);
+}
+
+/* The login card (wv-login-form.tsx), lit glass like the newsletter card. Its labels are brighter with a dark edge and
+ * their asterisks glow cyan; each field's icon glows cyan, brighter while the field is focused; an error sits in a pink
+ * glass strip that glows; and the links glow pink, turning cyan under the pointer. */
+.wv-auth-label {
+	color: color-mix(in srgb, white 78%, var(--wv-cyan-soft));
+	text-shadow: 0 1px 2px var(--wv-ink);
+}
+.wv-auth-req {
+	color: var(--wv-cyan-soft);
+	text-shadow: 0 0 8px color-mix(in srgb, var(--wv-cyan) 80%, transparent);
+}
+.wv-auth-icon {
+	z-index: 1;
+	color: color-mix(in srgb, var(--wv-cyan-soft) 70%, transparent);
+	filter: drop-shadow(0 0 3px color-mix(in srgb, var(--wv-cyan) 60%, transparent));
+	transition:
+		color 180ms ease,
+		filter 180ms ease;
+}
+.wv-auth-input:focus-within .wv-auth-icon {
+	color: var(--wv-cyan-soft);
+	filter: drop-shadow(0 0 6px var(--wv-cyan));
+}
+.wv-auth-error {
+	color: color-mix(in srgb, white 72%, var(--wv-pink));
+	border: 1px solid transparent;
+	background:
+		linear-gradient(180deg, color-mix(in srgb, var(--wv-pink) 14%, var(--ac-input)), var(--ac-input))
+			padding-box,
+		linear-gradient(135deg, var(--wv-pink), color-mix(in srgb, var(--wv-purple) 60%, transparent)) border-box;
+	box-shadow: 0 0 14px color-mix(in srgb, var(--wv-pink) 30%, transparent);
+}
+.wv-auth-error svg {
+	color: var(--wv-pink);
+	filter: drop-shadow(0 0 4px var(--wv-pink));
+}
+.wv-auth-link {
+	color: var(--wv-pink);
+	text-shadow: 0 0 8px color-mix(in srgb, var(--wv-pink) 60%, transparent);
+	transition:
+		color 150ms ease,
+		text-shadow 150ms ease;
+}
+.wv-auth-link svg {
+	filter: drop-shadow(0 0 4px color-mix(in srgb, currentColor 80%, transparent));
+}
+.wv-auth-link:is(:hover, :focus-visible) {
+	color: var(--wv-cyan-soft);
+	text-shadow: 0 0 10px color-mix(in srgb, var(--wv-cyan) 80%, transparent);
 }
 @media (prefers-reduced-motion: reduce) {
 	.wv-review-stars--pick button:hover svg {
