@@ -1945,6 +1945,143 @@ li:nth-child(even) > .wv-cat-chip {
 	}
 }
 
+/* The account pages' frame (AccountShell, wv-account.tsx). The menu (a panel that opens below the desktop layout, a
+ * sidebar on desktop) is lit glass: a cyan glow in its top corner over a hint of purple, inside a cyan-through-purple-
+ * to-pink edge that glows and casts a shadow, brighter while open. Its icons sit in neon tiles and its chevron glows;
+ * the avatar is in a glowing ring, the email glows cyan and a neon line divides the sidebar. Each row glows under the
+ * pointer (its side bar lit cyan, its chevron nudging on); the page you're on is lit glass inside a cyan-to-pink edge,
+ * its bar glowing cyan into pink. No movement for reduced motion. */
+.wv-acct-menu,
+.wv-acct-side {
+	border: 1.5px solid transparent;
+	background:
+		radial-gradient(80% 60% at 0% 0%, color-mix(in srgb, var(--wv-cyan) 10%, transparent), transparent 70%)
+			padding-box,
+		linear-gradient(180deg, color-mix(in srgb, var(--wv-purple) 16%, var(--wv-surface)), var(--wv-surface))
+			padding-box,
+		linear-gradient(150deg, var(--wv-cyan), var(--wv-purple) 50%, var(--wv-pink)) border-box;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 10%, transparent),
+		0 0 18px color-mix(in srgb, var(--wv-cyan) 18%, transparent),
+		0 0 36px -10px color-mix(in srgb, var(--wv-pink) 35%, transparent),
+		0 18px 28px -16px var(--wv-ink);
+	transition: box-shadow 200ms ease;
+}
+.wv-acct-menu[open] {
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 14%, transparent),
+		0 0 24px color-mix(in srgb, var(--wv-cyan) 30%, transparent),
+		0 0 44px -10px color-mix(in srgb, var(--wv-pink) 45%, transparent),
+		0 18px 28px -16px var(--wv-ink);
+}
+.wv-acct-icon {
+	color: var(--wv-cyan-soft);
+	border: 1px solid transparent;
+	background:
+		linear-gradient(180deg, color-mix(in srgb, var(--wv-cyan) 22%, var(--wv-control)), var(--wv-bg))
+			padding-box,
+		linear-gradient(135deg, var(--wv-cyan), color-mix(in srgb, var(--wv-purple) 60%, var(--wv-pink)))
+			border-box;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 22%, transparent),
+		0 0 12px color-mix(in srgb, var(--wv-cyan) 40%, transparent);
+}
+.wv-acct-icon svg,
+.wv-acct-caret {
+	color: var(--wv-cyan-soft);
+	filter: drop-shadow(0 0 4px color-mix(in srgb, var(--wv-cyan) 85%, transparent));
+}
+.wv-acct-avatar {
+	color: var(--wv-cyan-soft);
+	border: 2px solid transparent;
+	background:
+		radial-gradient(circle at 50% 35%, color-mix(in srgb, var(--wv-cyan) 24%, transparent), transparent 70%)
+			padding-box,
+		linear-gradient(180deg, color-mix(in srgb, var(--wv-cyan) 12%, var(--wv-control)), var(--wv-bg))
+			padding-box,
+		linear-gradient(135deg, var(--wv-cyan), var(--wv-pink)) border-box;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 22%, transparent),
+		0 0 18px color-mix(in srgb, var(--wv-cyan) 45%, transparent),
+		0 0 30px -6px color-mix(in srgb, var(--wv-pink) 45%, transparent);
+	text-shadow: 0 0 10px color-mix(in srgb, var(--wv-cyan) 85%, transparent);
+}
+.wv-acct-avatar svg {
+	filter: drop-shadow(0 0 5px color-mix(in srgb, var(--wv-cyan) 85%, transparent));
+}
+.wv-acct-email {
+	color: var(--wv-cyan-soft);
+	text-shadow: 0 0 8px color-mix(in srgb, var(--wv-cyan) 60%, transparent);
+}
+.wv-acct-rule {
+	background: linear-gradient(90deg, transparent, var(--wv-cyan) 25%, var(--wv-pink) 75%, transparent);
+	box-shadow: 0 0 8px color-mix(in srgb, var(--wv-cyan) 55%, transparent);
+}
+.wv-acct-link {
+	color: var(--ac-muted);
+	border: 1px solid transparent;
+	transition:
+		color 160ms ease,
+		background-color 160ms ease,
+		box-shadow 160ms ease;
+}
+.wv-acct-bar {
+	background: var(--ac-subtle);
+	transition:
+		background-color 160ms ease,
+		box-shadow 160ms ease;
+}
+.wv-acct-chev {
+	flex: none;
+	color: var(--wv-text-dim);
+	opacity: 0.45;
+	transition:
+		transform 160ms ease,
+		color 160ms ease,
+		opacity 160ms ease;
+}
+.wv-acct-link:is(:hover, :focus-visible) {
+	color: white;
+	background-color: color-mix(in srgb, var(--wv-cyan) 8%, transparent);
+	text-shadow: 0 0 8px color-mix(in srgb, var(--wv-cyan) 45%, transparent);
+}
+.wv-acct-link:is(:hover, :focus-visible) .wv-acct-bar {
+	background: var(--wv-cyan-soft);
+	box-shadow: 0 0 8px color-mix(in srgb, var(--wv-cyan) 80%, transparent);
+}
+.wv-acct-link:is(:hover, :focus-visible) .wv-acct-chev {
+	color: var(--wv-cyan-soft);
+	opacity: 1;
+	transform: translateX(2px);
+}
+.wv-acct-link:focus-visible {
+	outline: 2px solid var(--wv-cyan-soft);
+	outline-offset: 2px;
+}
+.wv-acct-link[data-active] {
+	color: white;
+	background:
+		linear-gradient(90deg, color-mix(in srgb, var(--wv-cyan) 16%, var(--wv-control)), var(--wv-control))
+			padding-box,
+		linear-gradient(90deg, var(--wv-cyan), var(--wv-pink)) border-box;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 12%, transparent),
+		0 0 14px color-mix(in srgb, var(--wv-cyan) 35%, transparent);
+}
+.wv-acct-link[data-active] .wv-acct-bar {
+	background: linear-gradient(180deg, var(--wv-cyan-soft), var(--wv-pink));
+	box-shadow: 0 0 8px color-mix(in srgb, var(--wv-cyan) 80%, transparent);
+}
+.wv-acct-link[data-active] .wv-acct-chev {
+	color: var(--wv-cyan-soft);
+	opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+	.wv-acct-link:is(:hover, :focus-visible) .wv-acct-chev {
+		transform: none;
+	}
+}
+
 /* Footer link columns (WvFooter in wv-chrome.tsx): each heading is lifted with a dark edge, a purple one beneath and a
  * cyan glow, over a short glowing cyan-to-pink bar; the links are brighter than the old grey with a dark edge, and glow
  * cyan under the pointer (motion.css still turns them cyan and nudges them right). */
