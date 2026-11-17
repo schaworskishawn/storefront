@@ -1172,7 +1172,8 @@ li:nth-child(even) > .wv-cat-chip {
 /* The newsletter card beside them: lit glass (a pink glow in its top corner and a cyan one in the bottom, over a hint
  * of purple) inside a cyan-through-purple-to-pink edge that glows cyan and pink and casts a shadow; the email field is
  * set into it and glows cyan when focused; the subscribe button is glossy (a highlight along the top, an edge beneath,
- * a cyan glow). The login and register cards (wv-login-form.tsx, wv-register-form.tsx) are the same lit glass. */
+ * a cyan glow). The login, register and forgot-password cards (wv-login-form.tsx,
+ * wv-register-form.tsx, wv-forgot-form.tsx) are the same lit glass. */
 .wv-news-card,
 .wv-auth-card {
 	border: 1.5px solid transparent;
@@ -2386,10 +2387,10 @@ li:nth-child(even) > .wv-cat-chip {
 		0 0 14px color-mix(in srgb, var(--wv-cyan) 45%, transparent);
 }
 
-/* The login and register cards (wv-login-form.tsx, wv-register-form.tsx), lit glass like the newsletter card. Their
- * labels are brighter with a dark edge and their asterisks glow cyan; each field's icon glows cyan, brighter while the
- * field is focused; an error sits in a pink glass strip that glows; and the links glow pink, turning cyan under the
- * pointer. */
+/* The login, register and forgot-password cards (wv-login-form.tsx, wv-register-form.tsx, wv-forgot-form.tsx), lit
+ * glass like the newsletter card. Their labels are brighter with a dark edge and their asterisks glow cyan; each
+ * field's icon glows cyan, brighter while the field is focused; an error sits in a pink glass strip that glows; and the
+ * links glow pink, turning cyan under the pointer. */
 .wv-auth-label {
 	color: color-mix(in srgb, white 78%, var(--wv-cyan-soft));
 	text-shadow: 0 1px 2px var(--wv-ink);
