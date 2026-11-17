@@ -3066,3 +3066,124 @@ li:nth-child(even) > .wv-cat-chip {
 		opacity: 0;
 	}
 }
+
+/* The age gate (wv-age.tsx, wv-age-form.tsx). The card is lit glass (a pink glow in its top corner and a cyan one in the
+ * bottom, over a hint of purple) inside a frame that runs cyan through purple to pink and glows both. "18+" is chrome
+ * lettering in a big neon ring (glass inside a cyan-to-pink edge that glows), with a ring pulsing out of it when motion
+ * is allowed. The date boxes are set into the glass inside a soft neon edge, glowing cyan while focused and pink when the
+ * date is wrong. The exit link glows pink under the pointer. Below, each note is a glass tile led by its icon in a neon
+ * tile, in its colour (cyan, or pink for the ID note). */
+.wv-age-frame {
+	background: linear-gradient(135deg, var(--wv-cyan), var(--wv-purple) 50%, var(--wv-pink));
+	box-shadow:
+		0 0 24px color-mix(in srgb, var(--wv-cyan) 30%, transparent),
+		0 0 60px -10px color-mix(in srgb, var(--wv-pink) 45%, transparent);
+}
+.wv-age-card {
+	background:
+		radial-gradient(70% 40% at 100% 0%, color-mix(in srgb, var(--wv-pink) 14%, transparent), transparent 70%),
+		radial-gradient(70% 40% at 0% 100%, color-mix(in srgb, var(--wv-cyan) 11%, transparent), transparent 70%),
+		linear-gradient(180deg, color-mix(in srgb, var(--wv-purple) 14%, var(--ct-card)), var(--ct-card));
+	box-shadow: inset 0 1px 0 color-mix(in srgb, white 10%, transparent);
+}
+.wv-age-badge {
+	border: 2px solid transparent;
+	background:
+		radial-gradient(circle at 50% 35%, color-mix(in srgb, var(--wv-cyan) 24%, transparent), transparent 70%)
+			padding-box,
+		linear-gradient(180deg, color-mix(in srgb, var(--wv-cyan) 10%, var(--ct-field)), var(--wv-bg)) padding-box,
+		linear-gradient(135deg, var(--wv-cyan), var(--wv-pink)) border-box;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 22%, transparent),
+		0 0 20px color-mix(in srgb, var(--wv-cyan) 45%, transparent),
+		0 0 40px -6px color-mix(in srgb, var(--wv-pink) 50%, transparent);
+}
+@media (prefers-reduced-motion: no-preference) {
+	body .wv-age-badge::after {
+		content: "";
+		position: absolute;
+		inset: -2px;
+		border-radius: 9999px;
+		border: 1.5px solid var(--wv-cyan-soft);
+		animation: wv-empty-ping 2.6s ease-out infinite;
+	}
+}
+.wv-age-legend {
+	color: var(--wv-cyan-soft);
+	text-shadow: 0 0 8px color-mix(in srgb, var(--wv-cyan) 60%, transparent);
+}
+.wv-age-field {
+	border: 1px solid transparent;
+	background:
+		linear-gradient(180deg, var(--wv-bg), color-mix(in srgb, var(--wv-purple) 14%, var(--ct-field)))
+			padding-box,
+		linear-gradient(
+				135deg,
+				color-mix(in srgb, var(--wv-cyan) 60%, transparent),
+				color-mix(in srgb, var(--wv-pink) 60%, transparent)
+			)
+			border-box;
+	box-shadow:
+		inset 0 2px 6px var(--wv-ink),
+		0 0 10px color-mix(in srgb, var(--wv-cyan) 18%, transparent);
+	transition: box-shadow 180ms ease;
+}
+.wv-age-field:focus {
+	box-shadow:
+		inset 0 2px 6px var(--wv-ink),
+		0 0 0 3px color-mix(in srgb, var(--wv-cyan) 24%, transparent),
+		0 0 16px color-mix(in srgb, var(--wv-cyan) 50%, transparent);
+}
+.wv-age-field[aria-invalid="true"] {
+	background:
+		linear-gradient(180deg, var(--wv-bg), color-mix(in srgb, var(--wv-purple) 14%, var(--ct-field)))
+			padding-box,
+		linear-gradient(135deg, var(--wv-pink), color-mix(in srgb, var(--wv-pink) 50%, transparent)) border-box;
+	box-shadow:
+		inset 0 2px 6px var(--wv-ink),
+		0 0 14px color-mix(in srgb, var(--wv-pink) 45%, transparent);
+}
+.wv-age-exit {
+	color: var(--ct-text);
+	transition:
+		color 150ms ease,
+		text-shadow 150ms ease;
+}
+.wv-age-exit:is(:hover, :focus-visible) {
+	color: var(--wv-pink);
+	text-shadow: 0 0 8px color-mix(in srgb, var(--wv-pink) 70%, transparent);
+}
+.wv-age-notice {
+	--tone: var(--wv-cyan-soft);
+	border: 1px solid transparent;
+	background:
+		linear-gradient(180deg, color-mix(in srgb, var(--wv-purple) 14%, var(--ct-card)), var(--ct-card))
+			padding-box,
+		linear-gradient(
+				135deg,
+				color-mix(in srgb, var(--tone) 60%, transparent),
+				color-mix(in srgb, var(--wv-purple) 55%, transparent)
+			)
+			border-box;
+	box-shadow: 0 0 12px color-mix(in srgb, var(--tone) 18%, transparent);
+}
+.wv-age-notice[data-tone="magenta"] {
+	--tone: var(--wv-pink);
+}
+.wv-age-notice-icon {
+	color: var(--tone);
+	border: 1px solid transparent;
+	background:
+		linear-gradient(180deg, color-mix(in srgb, var(--tone) 18%, var(--ct-icon)), var(--wv-bg)) padding-box,
+		linear-gradient(135deg, var(--tone), color-mix(in srgb, var(--wv-purple) 60%, var(--tone))) border-box;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 18%, transparent),
+		0 0 10px color-mix(in srgb, var(--tone) 40%, transparent);
+}
+.wv-age-notice-icon svg {
+	filter: drop-shadow(0 0 4px color-mix(in srgb, var(--tone) 85%, transparent));
+}
+.wv-age-notice-title {
+	color: var(--tone);
+	text-shadow: 0 0 8px color-mix(in srgb, var(--tone) 65%, transparent);
+}

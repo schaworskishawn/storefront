@@ -1,3 +1,4 @@
+import { BadgeCheck, ShieldCheck, TriangleAlert } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { AgeGate } from "./wv-age-form";
@@ -8,21 +9,22 @@ import "./wv-home.css";
 const heyComic = "font-[family-name:var(--font-hey-comic)]";
 const orbitron = "font-[family-name:var(--font-orbitron)]";
 
+/** The notes under the gate, each led by its icon in a neon tile (`.wv-age-notice*` in wv-home.css). */
 const NOTICES = [
 	{
-		icon: "mail",
+		Icon: TriangleAlert,
 		tone: "cyan",
 		title: "Nicotine Warning",
 		text: "Nicotine is highly addictive. Use responsibly.",
 	},
 	{
-		icon: "chat",
+		Icon: ShieldCheck,
 		tone: "cyan",
 		title: "Privacy Assured",
 		text: "Your date of birth is never stored or sent.",
 	},
 	{
-		icon: "pin",
+		Icon: BadgeCheck,
 		tone: "magenta",
 		title: "Valid ID Required",
 		text: "Age may be confirmed with government ID at delivery.",
@@ -58,7 +60,7 @@ export function WvAgeVerification() {
 				<Link
 					href="/home"
 					aria-label="Worldwide Vapor home"
-					className="relative block h-[70px] w-[140px] md:h-[90px] md:w-[180px]"
+					className="wv-header-logo relative block h-[70px] w-[140px] md:h-[90px] md:w-[180px]"
 				>
 					<Image
 						src="/home/imgBrand.png"
@@ -70,31 +72,28 @@ export function WvAgeVerification() {
 					/>
 				</Link>
 
-				<div className="w-full max-w-[620px] rounded-[13px] p-px shadow-[0_0_60px_rgba(0,255,224,0.12)] [background:linear-gradient(135deg,var(--ct-cyan),transparent_35%,transparent_65%,var(--ct-magenta))]">
+				{/* The gate in a glowing cyan-through-purple-to-pink frame (`.wv-age-frame`). */}
+				<div className="wv-age-frame w-full max-w-[620px] rounded-[15px] p-[1.5px]">
 					<h1 className="sr-only">Age verification</h1>
 					<AgeGate />
 				</div>
 
 				<ul className="grid w-full gap-3 md:grid-cols-3">
-					{NOTICES.map((n) => (
+					{NOTICES.map(({ Icon, ...n }) => (
 						<li
 							key={n.title}
-							className="bg-[var(--ct-card)]/80 flex items-start gap-3 rounded-lg border border-[var(--ct-border)] p-3 backdrop-blur"
+							data-tone={n.tone}
+							className="wv-age-notice flex items-start gap-3 rounded-xl p-3 backdrop-blur"
 						>
 							<span
-								className={`flex size-8 shrink-0 items-center justify-center rounded-md border bg-[var(--ct-icon)] ${n.tone === "cyan" ? "border-[var(--ct-cyan)]" : "border-[var(--ct-magenta)]"}`}
+								aria-hidden
+								className="wv-age-notice-icon flex size-9 shrink-0 items-center justify-center rounded-lg"
 							>
-								<Image src={`/home/contact/${n.icon}.svg`} alt="" width={16} height={16} />
+								<Icon className="size-4" strokeWidth={2.25} />
 							</span>
 							<span className="flex min-w-0 flex-col gap-[2px]">
-								<span
-									className={`${heyComic} text-xs ${n.tone === "cyan" ? "text-[var(--ct-cyan)]" : "text-[var(--ct-magenta)]"}`}
-								>
-									{n.title}
-								</span>
-								<span className={`${orbitron} text-[11px] leading-[1.4] text-[var(--ct-text)]`}>
-									{n.text}
-								</span>
+								<span className={`${heyComic} wv-age-notice-title text-xs`}>{n.title}</span>
+								<span className={`${orbitron} wv-hero-copy text-[11px] leading-[1.4]`}>{n.text}</span>
 							</span>
 						</li>
 					))}
