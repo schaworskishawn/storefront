@@ -3003,3 +3003,66 @@ li:nth-child(even) > .wv-cat-chip {
 		transform: none;
 	}
 }
+
+/* The wishlist's empty state (wv-wishlist-client.tsx), a lit glass card (.wv-news-card) over a soft glow (.wv-faq-glow).
+ * Its heart sits in a neon ring: glass inside a cyan-to-pink edge that glows pink, the heart half-filled and glowing.
+ * When motion is allowed the heart beats gently and a ring pulses out of the ring. */
+.wv-empty-heart {
+	position: relative;
+	color: var(--wv-pink);
+	border: 2px solid transparent;
+	background:
+		radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--wv-pink) 30%, transparent), transparent 70%)
+			padding-box,
+		linear-gradient(180deg, color-mix(in srgb, var(--wv-pink) 16%, var(--wv-control)), var(--wv-bg))
+			padding-box,
+		linear-gradient(135deg, var(--wv-cyan), var(--wv-pink)) border-box;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 22%, transparent),
+		0 0 18px color-mix(in srgb, var(--wv-pink) 50%, transparent),
+		0 0 40px -6px color-mix(in srgb, var(--wv-pink) 45%, transparent);
+}
+.wv-empty-heart svg {
+	fill: color-mix(in srgb, var(--wv-pink) 25%, transparent);
+	filter: drop-shadow(0 0 6px color-mix(in srgb, var(--wv-pink) 90%, transparent));
+}
+@media (prefers-reduced-motion: no-preference) {
+	body.wv-motion .wv-empty-heart svg {
+		animation: wv-empty-beat 2.4s ease-in-out infinite;
+	}
+	body.wv-motion .wv-empty-heart::after {
+		content: "";
+		position: absolute;
+		inset: -2px;
+		border-radius: inherit;
+		border: 1.5px solid var(--wv-pink);
+		animation: wv-empty-ping 2.4s ease-out infinite;
+	}
+}
+@keyframes wv-empty-beat {
+	0%,
+	40%,
+	100% {
+		transform: scale(1);
+	}
+	12% {
+		transform: scale(1.14);
+	}
+	24% {
+		transform: scale(1.04);
+	}
+	32% {
+		transform: scale(1.1);
+	}
+}
+@keyframes wv-empty-ping {
+	0% {
+		transform: scale(1);
+		opacity: 0.8;
+	}
+	70%,
+	100% {
+		transform: scale(1.5);
+		opacity: 0;
+	}
+}
