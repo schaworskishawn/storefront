@@ -2082,6 +2082,60 @@ li:nth-child(even) > .wv-cat-chip {
 	}
 }
 
+/* The signed-in account summaries (SummaryCard, wv-account.tsx): neon cards in their colour (--accent), each a link.
+ * The icon glows in its lit tile; the label is a glowing glass pill; a neon line runs across under the hint; and the
+ * action is a glass pill edged in the card's colour, brighter with its arrow sliding on while the card is under the
+ * pointer or focused. */
+.wv-acct-card .wv-neon-card-icon svg {
+	color: var(--accent);
+	filter: drop-shadow(0 0 5px color-mix(in srgb, var(--accent) 85%, transparent));
+}
+.wv-acct-card-tag {
+	color: var(--accent);
+	border: 1px solid color-mix(in srgb, var(--accent) 55%, transparent);
+	background: color-mix(in srgb, var(--accent) 10%, transparent);
+	box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 30%, transparent);
+	text-shadow: 0 0 8px color-mix(in srgb, var(--accent) 70%, transparent);
+}
+.wv-acct-card-rule {
+	background: linear-gradient(
+		90deg,
+		var(--accent),
+		color-mix(in srgb, var(--wv-purple) 60%, transparent) 60%,
+		transparent
+	);
+	box-shadow: 0 0 6px color-mix(in srgb, var(--accent) 50%, transparent);
+}
+.wv-acct-card-action {
+	color: var(--accent);
+	border: 1px solid transparent;
+	background:
+		linear-gradient(180deg, color-mix(in srgb, var(--accent) 16%, var(--wv-control)), var(--wv-control))
+			padding-box,
+		linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 35%, transparent)) border-box;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 12%, transparent),
+		0 0 10px color-mix(in srgb, var(--accent) 30%, transparent);
+	text-shadow: 0 0 8px color-mix(in srgb, var(--accent) 65%, transparent);
+	transition: box-shadow 200ms ease;
+}
+.wv-acct-card:is(:hover, :focus-visible) .wv-acct-card-action {
+	color: white;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 20%, transparent),
+		0 0 18px color-mix(in srgb, var(--accent) 60%, transparent);
+}
+.wv-acct-card:focus-visible {
+	outline: 2px solid var(--accent);
+	outline-offset: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+	.wv-acct-card .wv-acct-card-action svg {
+		transition: none;
+		transform: none;
+	}
+}
+
 /* Footer link columns (WvFooter in wv-chrome.tsx): each heading is lifted with a dark edge, a purple one beneath and a
  * cyan glow, over a short glowing cyan-to-pink bar; the links are brighter than the old grey with a dark edge, and glow
  * cyan under the pointer (motion.css still turns them cyan and nudges them right). */

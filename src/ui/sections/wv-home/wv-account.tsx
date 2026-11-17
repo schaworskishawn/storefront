@@ -1,4 +1,16 @@
-import { ChevronDown, ChevronRight, Lock, LogIn, Menu, UserRound } from "lucide-react";
+import {
+	ArrowRight,
+	ChevronDown,
+	ChevronRight,
+	Lock,
+	LogIn,
+	Mail,
+	MapPin,
+	Menu,
+	Package,
+	UserRound,
+	type LucideIcon,
+} from "lucide-react";
 import Link from "next/link";
 import { type ReactNode } from "react";
 import { readRewardsConfig } from "@/lib/rewards/tokens";
@@ -84,8 +96,14 @@ function NavRows({ signedIn, active }: { signedIn: boolean; active: string }) {
 	);
 }
 
-/** One summary on the signed-in account page: a neon card (`.wv-neon-card`, pink for the middle one). */
+/**
+ * One summary on the signed-in account page, the whole card a link: a neon card (`.wv-neon-card`, pink for the middle
+ * one) that lifts and glows under the pointer. Its icon sits in a lit tile and its label in a glowing pill; the value is
+ * lifted; a neon line runs under the hint; and the action is a neon pill whose arrow slides on under the pointer
+ * (`.wv-acct-card*` in wv-home.css).
+ */
 function SummaryCard({
+	Icon,
 	label,
 	value,
 	hint,
@@ -93,6 +111,7 @@ function SummaryCard({
 	href,
 	pink = false,
 }: {
+	Icon: LucideIcon;
 	label: string;
 	value: string;
 	hint: string;
@@ -101,17 +120,49 @@ function SummaryCard({
 	pink?: boolean;
 }) {
 	return (
-		<div
-			className={`wv-neon-card ${pink ? "wv-neon-card--pink" : ""} flex min-h-[188px] flex-col gap-2 rounded-xl p-[18px] md:min-h-[208px] md:p-5 lg:min-h-[216px] lg:gap-[10px] lg:p-6`}
+		<Link
+			href={href}
+			className={`wv-neon-card wv-acct-card ${pink ? "wv-neon-card--pink" : ""} group flex min-h-[188px] flex-col gap-3 rounded-xl p-[18px] md:min-h-[208px] md:p-5 lg:min-h-[216px] lg:p-6`}
 		>
-			<p className={`${orbitron} wv-neon-card-timing text-xs`}>{label}</p>
-			<p className={`${bungee} wv-pc-name break-words text-[22px] text-white lg:text-[26px]`}>{value}</p>
-			<p className={`${orbitron} wv-neon-card-text text-xs lg:text-[13px]`}>{hint}</p>
+			<div className="flex items-start justify-between gap-3">
+				<span
+					aria-hidden
+					className="wv-neon-card-icon flex size-11 shrink-0 items-center justify-center rounded-xl"
+				>
+					<Icon className="size-5" strokeWidth={2.25} />
+				</span>
+				<span className={`${orbitron} wv-acct-card-tag rounded-full px-2.5 py-1 text-[10px] tracking-[1px]`}>
+					{label}
+				</span>
+			</div>
+			<div className="flex flex-col gap-1">
+				<p className={`${bungee} wv-pc-name break-words text-[22px] text-white lg:text-[26px]`}>{value}</p>
+				<p className={`${orbitron} wv-neon-card-text break-words text-xs lg:text-[13px]`}>
+					{/* An email may wrap after its "@" rather than mid-word. */}
+					{hint.includes("@") ? (
+						<>
+							{hint.slice(0, hint.indexOf("@") + 1)}
+							<wbr />
+							{hint.slice(hint.indexOf("@") + 1)}
+						</>
+					) : (
+						hint
+					)}
+				</p>
+			</div>
 			<div className="flex-1" />
-			<Link href={href} className={`${orbitron} wv-neon-card-link self-end text-[11px]`}>
-				{action} →
-			</Link>
-		</div>
+			<span aria-hidden className="wv-acct-card-rule h-px w-full" />
+			<span
+				className={`${orbitron} wv-acct-card-action flex items-center gap-2 self-end rounded-full px-3.5 py-1.5 text-[11px] tracking-[0.5px]`}
+			>
+				{action}
+				<ArrowRight
+					aria-hidden
+					className="size-3.5 transition-transform group-hover:translate-x-1"
+					strokeWidth={2.5}
+				/>
+			</span>
+		</Link>
 	);
 }
 
@@ -240,6 +291,7 @@ export function WvAccount({ user, base }: AccountView) {
 			{user ? (
 				<div className="grid gap-4 md:grid-cols-3">
 					<SummaryCard
+						Icon={Package}
 						label="RECENT ORDER"
 						value="MY ORDERS"
 						hint="Track and review your purchases"
@@ -247,6 +299,7 @@ export function WvAccount({ user, base }: AccountView) {
 						href="/orders"
 					/>
 					<SummaryCard
+						Icon={MapPin}
 						pink
 						label="DEFAULT ADDRESS"
 						value={user.city ? user.city.toUpperCase() : "NOT SET"}
@@ -255,6 +308,7 @@ export function WvAccount({ user, base }: AccountView) {
 						href="/addresses"
 					/>
 					<SummaryCard
+						Icon={Mail}
 						label="ACCOUNT EMAIL"
 						value={user.name.toUpperCase()}
 						hint={user.email}
