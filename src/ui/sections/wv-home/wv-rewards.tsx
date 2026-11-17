@@ -1,3 +1,4 @@
+import { ArrowDown, Coins, ShoppingBag } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { describeExpiry, formatRate, hundredTokensWorth, tokenCount } from "@/lib/rewards/program-copy";
@@ -18,10 +19,10 @@ import "./wv-home.css";
 const heyComic = "font-[family-name:var(--font-hey-comic)]";
 const bungee = "font-[family-name:var(--font-bungee)]";
 const orbitron = "font-[family-name:var(--font-orbitron)]";
-const marker = "font-[family-name:var(--font-permanent-marker)]";
-
-const primaryButton = `${heyComic} flex h-[45px] items-center justify-center rounded-xl bg-[var(--wv-cyan-soft)] px-8 text-base text-[var(--wv-ink)] md:h-[46px] xl:h-[49px]`;
-const outlineButton = `${heyComic} flex h-[45px] items-center justify-center rounded-xl border border-[var(--wv-cyan-soft)] px-8 text-base text-[var(--wv-cyan-soft)] md:h-[46px] xl:h-[49px]`;
+/** The glossy cyan button (`.wv-pc-cta`, its label in `.wv-pc-cta-label`) and the neon outline one (`.wv-btn-neon`, its
+ * label in `.wv-btn-label`), as on the other pages. */
+const primaryButton = `${heyComic} wv-pc-cta flex h-[45px] items-center justify-center gap-2 rounded-xl bg-[var(--wv-cyan-soft)] px-8 text-base text-[var(--wv-ink)] md:h-[46px] xl:h-[49px]`;
+const outlineButton = `${heyComic} wv-btn wv-btn-outline wv-btn-neon flex h-[45px] items-center justify-center gap-2 rounded-xl border-[1.5px] border-[var(--wv-cyan-soft)] px-8 text-base text-[var(--wv-cyan-soft)] md:h-[46px] xl:h-[49px]`;
 
 type Faq = { q: string; a: string };
 
@@ -129,34 +130,43 @@ export function WvRewards({ config, account }: { config: RewardsConfig; account:
 			<WvHeader />
 
 			{/* Hero */}
-			<section className="wv-nebula relative overflow-hidden">
+			{/* The hero's text has depth, as on the other heroes (`.wv-hero-*`): a neon badge with glowing coins, a 3D title
+			    over a glowing pink-to-cyan bar, brighter copy with the program's key facts lit, the glossy button and the
+			    neon outline one; behind it all a pink and cyan glow (`.wv-hero-backdrop`). */}
+			<section className="wv-hero-backdrop relative overflow-hidden">
 				<div className="relative flex flex-col items-center gap-6 px-5 py-8 md:flex-row-reverse md:gap-8 md:px-8 md:py-12 xl:gap-16 xl:px-20 xl:py-16">
 					<HeroArt />
 					<div className="flex min-w-0 flex-1 flex-col items-start gap-4 md:gap-5">
-						<p
-							className={`${marker} text-[18px] uppercase tracking-[2px] text-[var(--wv-pink)] md:text-[22px]`}
+						<span
+							className={`${heyComic} wv-hero-badge flex items-center gap-2 rounded-full px-3 py-1 text-[10px] tracking-[1.5px] md:px-4 md:py-[6px] md:text-[11px]`}
 						>
-							Worldwide <span className="text-[var(--wv-cyan)]">vapor</span> rewards
-						</p>
-						<h1
-							className={`${heyComic} wv-title-glow text-[34px] leading-[38px] md:text-[44px] md:leading-[50px] xl:text-[56px] xl:leading-[64px]`}
-						>
-							VAPOR <span className="text-[var(--wv-cyan-soft)]">TOKENS</span>
-						</h1>
-						<p
-							className={`${orbitron} max-w-[560px] text-[13px] leading-[1.6] text-[var(--wv-text-dim)] md:text-[15px]`}
-						>
-							Get rewarded for shopping with us. Earn {tokenCount(config.tokensPerDollar)} for every $1 you
-							spend on products, then spend them at checkout: 100 tokens take {hundredTokensWorth()} off your
-							order.
+							<Coins aria-hidden className="size-3.5 md:size-4" strokeWidth={2.25} />
+							WORLDWIDE VAPOR REWARDS
+						</span>
+						<div className="flex w-full flex-col gap-3">
+							<h1
+								className={`${heyComic} wv-title-glow wv-hero-title text-[34px] leading-[38px] md:text-[44px] md:leading-[50px] xl:text-[56px] xl:leading-[64px]`}
+							>
+								<span>VAPOR</span> <span className="text-[var(--wv-cyan-soft)]">TOKENS</span>
+							</h1>
+							<div className="wv-hero-bar h-1 w-20 rounded-full md:w-[120px]" />
+						</div>
+						<p className={`${orbitron} wv-hero-copy max-w-[560px] text-[13px] leading-[1.6] md:text-[15px]`}>
+							Get rewarded for shopping with us. Earn{" "}
+							<strong className="wv-hero-key">{tokenCount(config.tokensPerDollar)} for every $1</strong> you
+							spend on products, then{" "}
+							<strong className="wv-hero-key wv-hero-key--pink">spend them at checkout</strong>: 100 tokens
+							take <strong className="wv-hero-key">{hundredTokensWorth()} off</strong> your order.
 						</p>
 						{/* Stacked beside the art on tablets, where the column is too narrow for both in a row. */}
 						<div className="flex w-full flex-col gap-3 xl:w-auto xl:flex-row xl:gap-4">
 							<Link href="/shop" className={primaryButton}>
-								START SHOPPING
+								<ShoppingBag aria-hidden className="size-4" strokeWidth={2.5} />
+								<span className="wv-pc-cta-label">START SHOPPING</span>
 							</Link>
 							<a href="#how" className={outlineButton}>
-								HOW IT WORKS
+								<span className="wv-btn-label">HOW IT WORKS</span>
+								<ArrowDown aria-hidden className="size-4" strokeWidth={2.5} />
 							</a>
 						</div>
 					</div>
@@ -294,10 +304,10 @@ export function WvRewards({ config, account }: { config: RewardsConfig; account:
 				</p>
 				<div className="flex w-full flex-col gap-3 md:w-auto md:flex-row md:gap-4">
 					<Link href="/shop" className={primaryButton}>
-						SHOP NOW
+						<span className="wv-pc-cta-label">SHOP NOW</span>
 					</Link>
 					<Link href="/contact-us" className={outlineButton}>
-						CONTACT SUPPORT
+						<span className="wv-btn-label">CONTACT SUPPORT</span>
 					</Link>
 				</div>
 			</section>
