@@ -1,11 +1,15 @@
 import {
 	ArrowDown,
+	BadgeCheck,
 	BadgePercent,
+	Ban,
+	Check,
 	Coins,
 	Hourglass,
 	LogIn,
 	ShoppingBag,
 	Ticket,
+	X,
 	type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
@@ -117,6 +121,54 @@ function HeroArt() {
 			<RewardsHeroArt idPrefix="rewards-hero-art" />
 			<span aria-hidden className="wv-art-glass absolute inset-0" />
 			<span aria-hidden className="wv-art-hud absolute inset-[10px] md:inset-[14px]" />
+		</div>
+	);
+}
+
+/**
+ * One side of the fine print: a neon card (cyan for what earns, pink for what doesn't; `.wv-neon-card`) led by its icon in
+ * a lit tile and a glowing title over a neon line, each line marked by a small glowing neon badge (`.wv-rw-mark`).
+ */
+function FinePrint({
+	pink = false,
+	Icon,
+	Mark,
+	title,
+	items,
+}: {
+	pink?: boolean;
+	Icon: LucideIcon;
+	Mark: LucideIcon;
+	title: string;
+	items: readonly string[];
+}) {
+	return (
+		<div
+			className={`wv-neon-card wv-rw-card ${pink ? "wv-neon-card--pink" : ""} flex flex-col gap-4 rounded-2xl p-5 xl:p-6`}
+		>
+			<div className="flex items-center gap-3">
+				<span
+					aria-hidden
+					className="wv-neon-card-icon flex size-11 shrink-0 items-center justify-center rounded-xl"
+				>
+					<Icon className="size-5" strokeWidth={2.25} />
+				</span>
+				<h3 className={`${heyComic} wv-neon-card-timing text-base xl:text-lg`}>{title}</h3>
+			</div>
+			<span aria-hidden className="wv-acct-card-rule h-px w-full" />
+			<ul className={`${orbitron} wv-neon-card-text flex flex-col gap-2.5 text-[13px] leading-[1.5]`}>
+				{items.map((e) => (
+					<li key={e} className="flex items-start gap-2.5">
+						<span
+							aria-hidden
+							className="wv-rw-mark mt-px flex size-5 shrink-0 items-center justify-center rounded-full"
+						>
+							<Mark className="size-3" strokeWidth={3} />
+						</span>
+						{e}
+					</li>
+				))}
+			</ul>
 		</div>
 	);
 }
@@ -269,40 +321,12 @@ export function WvRewards({ config, account }: { config: RewardsConfig; account:
 				</ol>
 			</section>
 
-			{/* What earns and what doesn't */}
-			<section className="flex flex-col items-center gap-8 px-5 py-8 md:px-8 md:py-12 xl:gap-12 xl:px-20 xl:py-16">
+			{/* What earns and what doesn't, over a soft pink and cyan glow (`.wv-faq-glow`). */}
+			<section className="wv-faq-glow flex flex-col items-center gap-8 px-5 py-8 md:px-8 md:py-12 xl:gap-12 xl:px-20 xl:py-16">
 				<SectionHeading eyebrow="The fine print, in plain words" title="WHAT EARNS TOKENS" />
-				<div className="grid w-full max-w-[1100px] grid-cols-1 gap-3 md:grid-cols-2 md:gap-4 xl:gap-6">
-					<div className="flex flex-col gap-3 rounded-2xl border border-[var(--wv-cyan-soft)] bg-[var(--wv-control)] p-5 xl:p-6">
-						<h3 className={`${heyComic} text-base text-[var(--wv-cyan-soft)]`}>EARNS TOKENS</h3>
-						<ul
-							className={`${orbitron} flex flex-col gap-2 text-[13px] leading-[1.5] text-[var(--wv-text-dim)]`}
-						>
-							{EARNS.map((e) => (
-								<li key={e} className="flex gap-2">
-									<span aria-hidden className="text-[var(--wv-cyan-soft)]">
-										✓
-									</span>
-									{e}
-								</li>
-							))}
-						</ul>
-					</div>
-					<div className="flex flex-col gap-3 rounded-2xl border border-[var(--wv-pink)] bg-[var(--wv-control)] p-5 xl:p-6">
-						<h3 className={`${heyComic} text-base text-[var(--wv-pink)]`}>DOESN&apos;T EARN TOKENS</h3>
-						<ul
-							className={`${orbitron} flex flex-col gap-2 text-[13px] leading-[1.5] text-[var(--wv-text-dim)]`}
-						>
-							{DOES_NOT_EARN.map((e) => (
-								<li key={e} className="flex gap-2">
-									<span aria-hidden className="text-[var(--wv-pink)]">
-										✕
-									</span>
-									{e}
-								</li>
-							))}
-						</ul>
-					</div>
+				<div className="grid w-full max-w-[1100px] grid-cols-1 gap-4 md:grid-cols-2 xl:gap-6">
+					<FinePrint Icon={BadgeCheck} Mark={Check} title="EARNS TOKENS" items={EARNS} />
+					<FinePrint pink Icon={Ban} Mark={X} title="DOESN'T EARN TOKENS" items={DOES_NOT_EARN} />
 				</div>
 			</section>
 

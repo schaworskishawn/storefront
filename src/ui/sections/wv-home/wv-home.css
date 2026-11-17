@@ -573,6 +573,16 @@ button[aria-pressed="true"] > .wv-filter-dot {
 .wv-step {
 	position: relative;
 }
+/* The fine print's ticks and crosses (wv-rewards.tsx): each a small glowing neon badge in its card's colour. */
+.wv-rw-mark {
+	color: var(--accent);
+	border: 1px solid color-mix(in srgb, var(--accent) 60%, transparent);
+	background: radial-gradient(circle, color-mix(in srgb, var(--accent) 24%, transparent), transparent 75%);
+	box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 40%, transparent);
+}
+.wv-rw-mark svg {
+	filter: drop-shadow(0 0 3px color-mix(in srgb, var(--accent) 85%, transparent));
+}
 .wv-step-ghost {
 	color: transparent;
 	-webkit-text-stroke: 1.2px color-mix(in srgb, var(--accent) 45%, transparent);
