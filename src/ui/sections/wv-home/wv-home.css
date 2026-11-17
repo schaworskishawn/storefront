@@ -567,6 +567,45 @@ button[aria-pressed="true"] > .wv-filter-dot {
 	box-shadow: none;
 	text-shadow: none;
 }
+/* The rewards page's "how it works" steps (wv-rewards.tsx): neon cards (.wv-rw-card) with each step's number as a big
+ * neon outline in the corner, and a glowing line from each step to the next in the colours it joins (cyan into pink,
+ * then pink into cyan): down the 20px gap on phones and tablets, across the 24px gap on desktops. */
+.wv-step {
+	position: relative;
+}
+.wv-step-ghost {
+	color: transparent;
+	-webkit-text-stroke: 1.2px color-mix(in srgb, var(--accent) 45%, transparent);
+	filter: drop-shadow(0 0 6px color-mix(in srgb, var(--accent) 35%, transparent));
+}
+.wv-step:not(:last-child)::after {
+	content: "";
+	position: absolute;
+	left: 50%;
+	top: 100%;
+	width: 2px;
+	height: 20px;
+	transform: translateX(-50%);
+	border-radius: 1px;
+	background: linear-gradient(180deg, var(--wv-cyan), var(--wv-pink));
+	box-shadow: 0 0 8px color-mix(in srgb, var(--wv-purple) 90%, transparent);
+}
+.wv-step:nth-child(even):not(:last-child)::after {
+	background: linear-gradient(180deg, var(--wv-pink), var(--wv-cyan));
+}
+@media (min-width: 1280px) {
+	.wv-step:not(:last-child)::after {
+		left: 100%;
+		top: 50%;
+		width: 24px;
+		height: 2px;
+		transform: translateY(-50%);
+		background: linear-gradient(90deg, var(--wv-cyan), var(--wv-pink));
+	}
+	.wv-step:nth-child(even):not(:last-child)::after {
+		background: linear-gradient(90deg, var(--wv-pink), var(--wv-cyan));
+	}
+}
 /* The payments strip's chips, one for each way to pay, alternating cyan and pink: a glass pill inside a gradient edge that
  * glows, its icon in a glowing neon ring (.wv-trust-icon) and its label lifted (.wv-trust-title). Under the pointer a
  * chip lifts and glows brighter (no movement for reduced motion). */

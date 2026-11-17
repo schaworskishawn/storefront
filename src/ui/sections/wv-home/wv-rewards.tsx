@@ -1,4 +1,13 @@
-import { ArrowDown, BadgePercent, Coins, Hourglass, ShoppingBag, type LucideIcon } from "lucide-react";
+import {
+	ArrowDown,
+	BadgePercent,
+	Coins,
+	Hourglass,
+	LogIn,
+	ShoppingBag,
+	Ticket,
+	type LucideIcon,
+} from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { describeExpiry, formatRate, hundredTokensWorth, tokenCount } from "@/lib/rewards/program-copy";
@@ -116,19 +125,22 @@ export function WvRewards({ config, account }: { config: RewardsConfig; account:
 	const expiry = describeExpiry(config.expiryMonths);
 	const faqs = faqsFor(config);
 
-	const steps = [
+	const steps: { n: string; Icon: LucideIcon; title: string; text: string }[] = [
 		{
 			n: "1",
+			Icon: LogIn,
 			title: "Sign in and shop",
 			text: "Tokens go to signed-in customers, so log in or create a free account before you check out.",
 		},
 		{
 			n: "2",
+			Icon: Coins,
 			title: "Earn on every order",
 			text: `Every $1 you spend on products earns ${tokenCount(config.tokensPerDollar)}. They land in your account as soon as the order is fully paid.`,
 		},
 		{
 			n: "3",
+			Icon: Ticket,
 			title: "Spend them at checkout",
 			text: `On the payment step, tap “Use my tokens”. 100 tokens take ${hundredTokensWorth()} off your order. ${expiry.sentence}`,
 		},
@@ -221,19 +233,37 @@ export function WvRewards({ config, account }: { config: RewardsConfig; account:
 				className="wv-nebula flex scroll-mt-6 flex-col items-center gap-8 px-5 py-8 md:px-8 md:py-12 xl:gap-12 xl:px-20 xl:py-16"
 			>
 				<SectionHeading eyebrow="Simple as 1, 2, 3" title="HOW IT WORKS" />
-				<ol className="grid w-full max-w-[1100px] grid-cols-1 gap-3 md:gap-4 xl:grid-cols-3 xl:gap-6">
-					{steps.map((s) => (
+				{/* Each step a neon card (cyan, pink, cyan; `.wv-neon-card`), led by its icon in a lit tile and a glowing
+				    step tag, with its number as a big neon outline in the corner; glowing lines run from one step to the
+				    next, down on phones and tablets, across on desktops (`.wv-step*` in wv-home.css). */}
+				<ol className="grid w-full max-w-[1100px] grid-cols-1 gap-5 xl:grid-cols-3 xl:gap-6">
+					{steps.map((s, i) => (
 						<li
 							key={s.n}
-							className="flex flex-col gap-3 rounded-2xl border border-[var(--wv-cyan-soft)] bg-[var(--wv-control)] p-5 xl:p-6"
+							className={`wv-neon-card wv-rw-card wv-step ${i % 2 === 1 ? "wv-neon-card--pink" : ""} flex flex-col gap-3 rounded-2xl p-5 xl:p-6`}
 						>
 							<span
-								className={`${bungee} flex size-10 items-center justify-center rounded-full border border-[var(--wv-cyan-soft)] bg-[var(--wv-bg)] text-lg text-[var(--wv-cyan-soft)]`}
+								aria-hidden
+								className={`${bungee} wv-step-ghost pointer-events-none absolute right-4 top-2 text-[64px] leading-none xl:text-[72px]`}
 							>
 								{s.n}
 							</span>
-							<h3 className={`${heyComic} text-base`}>{s.title}</h3>
-							<p className={`${orbitron} text-[13px] leading-[1.6] text-[var(--wv-text-dim)]`}>{s.text}</p>
+							<div className="flex items-center gap-3">
+								<span
+									aria-hidden
+									className="wv-neon-card-icon flex size-11 shrink-0 items-center justify-center rounded-xl"
+								>
+									<s.Icon className="size-5" strokeWidth={2.25} />
+								</span>
+								<span
+									aria-hidden
+									className={`${orbitron} wv-acct-card-tag rounded-full px-2.5 py-1 text-[10px] tracking-[1px]`}
+								>
+									STEP {s.n}
+								</span>
+							</div>
+							<h3 className={`${heyComic} wv-pc-name text-base xl:text-lg`}>{s.title}</h3>
+							<p className={`${orbitron} wv-neon-card-text text-[13px] leading-[1.6]`}>{s.text}</p>
 						</li>
 					))}
 				</ol>
