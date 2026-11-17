@@ -1216,6 +1216,735 @@ li:nth-child(even) > .wv-cat-chip {
 	text-shadow: 0 1px 0 color-mix(in srgb, white 45%, transparent);
 }
 
+/* The Quit Nicotine page's own sticky bar (wv-quit.tsx), under the site header. Lit glass like the header: a cyan glow
+ * at its left end and a pink one at its right over a hint of purple (it also blurs what scrolls under it), and a neon
+ * edge along its foot running cyan into pink that glows. The program's mark leads it: a heart-pulse in a neon ring (glass
+ * inside a cyan-to-pink edge that glows), beating gently when motion is allowed; then the title in cyan-to-pink neon
+ * lettering, lifted with a dark edge and a glow. Once there's a plan, its quick links are glass pills inside a soft
+ * neon edge that glow under the pointer, and "Start Over" gets the same neon edge. */
+.wv-quit-bar {
+	background:
+		radial-gradient(40% 180% at 0% 50%, color-mix(in srgb, var(--wv-cyan) 12%, transparent), transparent 70%),
+		radial-gradient(
+			40% 180% at 100% 50%,
+			color-mix(in srgb, var(--wv-pink) 14%, transparent),
+			transparent 70%
+		),
+		linear-gradient(
+			180deg,
+			color-mix(in srgb, var(--wv-purple) 16%, var(--qp-bg)),
+			color-mix(in srgb, var(--qp-bg) 88%, transparent)
+		);
+	box-shadow: 0 12px 24px -12px var(--wv-bg);
+}
+.wv-quit-bar::after {
+	content: "";
+	position: absolute;
+	inset: auto 0 -1px;
+	height: 1.5px;
+	pointer-events: none;
+	background: linear-gradient(
+		90deg,
+		transparent,
+		var(--wv-cyan) 18%,
+		var(--wv-purple) 50%,
+		var(--wv-pink) 82%,
+		transparent
+	);
+	box-shadow:
+		0 0 10px color-mix(in srgb, var(--wv-cyan) 55%, transparent),
+		0 0 16px color-mix(in srgb, var(--wv-pink) 40%, transparent);
+}
+.wv-quit-mark {
+	color: var(--wv-pink);
+	border: 1.5px solid transparent;
+	background:
+		radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--wv-pink) 26%, transparent), transparent 70%)
+			padding-box,
+		linear-gradient(180deg, color-mix(in srgb, var(--wv-pink) 14%, var(--wv-control)), var(--wv-bg))
+			padding-box,
+		linear-gradient(135deg, var(--wv-cyan), var(--wv-pink)) border-box;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 22%, transparent),
+		0 0 12px color-mix(in srgb, var(--wv-pink) 45%, transparent);
+}
+.wv-quit-mark svg {
+	filter: drop-shadow(0 0 4px color-mix(in srgb, var(--wv-pink) 90%, transparent));
+}
+.wv-quit-title {
+	background: linear-gradient(
+		90deg,
+		var(--wv-cyan-soft),
+		color-mix(in srgb, var(--wv-cyan-soft) 45%, var(--wv-pink)),
+		var(--wv-pink)
+	);
+	-webkit-background-clip: text;
+	background-clip: text;
+	color: transparent;
+	filter: drop-shadow(0 1.5px 0 var(--wv-ink))
+		drop-shadow(0 0 8px color-mix(in srgb, var(--wv-cyan) 40%, transparent))
+		drop-shadow(0 0 10px color-mix(in srgb, var(--wv-pink) 30%, transparent));
+}
+.wv-quit-link,
+.wv-quit-ghost {
+	border: 1px solid transparent;
+	background:
+		linear-gradient(180deg, color-mix(in srgb, var(--wv-purple) 20%, var(--qp-field)), var(--qp-field))
+			padding-box,
+		linear-gradient(
+				135deg,
+				color-mix(in srgb, var(--wv-cyan) 70%, transparent),
+				color-mix(in srgb, var(--wv-purple) 70%, transparent) 55%,
+				color-mix(in srgb, var(--wv-pink) 70%, transparent)
+			)
+			border-box;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 10%, transparent),
+		0 0 10px color-mix(in srgb, var(--wv-purple) 45%, transparent);
+	transition:
+		box-shadow 180ms ease,
+		color 180ms ease;
+}
+.wv-quit-link {
+	color: color-mix(in srgb, white 80%, var(--qp-muted));
+	text-shadow: 0 1px 1px var(--wv-ink);
+}
+.wv-quit-link:is(:hover, :focus-visible),
+.wv-quit-ghost:not(:disabled):is(:hover, :focus-visible) {
+	color: white;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 16%, transparent),
+		0 0 14px color-mix(in srgb, var(--wv-cyan) 45%, transparent),
+		0 0 22px -6px color-mix(in srgb, var(--wv-pink) 50%, transparent);
+	text-shadow:
+		0 1px 1px var(--wv-ink),
+		0 0 8px color-mix(in srgb, var(--wv-cyan) 60%, transparent);
+}
+/* The quit program's stage (`stageFrame` in wv-quit-ui.tsx: the welcome card, each setup step and the dashboard's top
+ * card): lit glass, a pink glow in its top corner and a cyan one in the bottom over a hint of purple, inside a cyan-
+ * through-purple-to-pink edge that glows cyan and pink and casts a shadow. Its main button (`primaryBtn`) is glossy pink
+ * neon (a highlight along the top, an edge beneath, a pink glow) that lifts and glows brighter under the pointer; its
+ * other buttons (`ghostBtn`) are the bar's glass with a soft neon edge (.wv-quit-ghost, above). No movement for reduced
+ * motion. */
+.wv-quit-stage {
+	border: 2px solid transparent;
+	background:
+		radial-gradient(60% 50% at 100% 0%, color-mix(in srgb, var(--wv-pink) 12%, transparent), transparent 70%)
+			padding-box,
+		radial-gradient(55% 45% at 0% 100%, color-mix(in srgb, var(--wv-cyan) 9%, transparent), transparent 70%)
+			padding-box,
+		linear-gradient(180deg, color-mix(in srgb, var(--wv-purple) 12%, var(--qp-surface)), var(--qp-surface))
+			padding-box,
+		linear-gradient(150deg, var(--wv-cyan), var(--wv-purple) 50%, var(--wv-pink)) border-box;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 10%, transparent),
+		0 0 24px color-mix(in srgb, var(--wv-cyan) 22%, transparent),
+		0 0 50px -12px color-mix(in srgb, var(--wv-pink) 40%, transparent),
+		0 24px 36px -20px var(--wv-ink);
+}
+.wv-quit-primary {
+	border: 1px solid color-mix(in srgb, var(--wv-pink) 70%, white);
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, white 28%, var(--wv-pink)),
+		var(--wv-pink) 55%,
+		color-mix(in srgb, var(--wv-pink) 70%, var(--wv-purple))
+	);
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 55%, transparent),
+		inset 0 -2px 0 color-mix(in srgb, var(--wv-ink) 30%, transparent),
+		0 0 16px color-mix(in srgb, var(--wv-pink) 50%, transparent),
+		0 0 30px -6px color-mix(in srgb, var(--wv-pink) 60%, transparent);
+	text-shadow: 0 1px 1px color-mix(in srgb, var(--wv-ink) 55%, transparent);
+	transition:
+		transform 180ms ease,
+		box-shadow 180ms ease;
+}
+@media (hover: hover) {
+	.wv-quit-primary:not(:disabled):hover {
+		transform: translateY(-2px);
+		box-shadow:
+			inset 0 1px 0 color-mix(in srgb, white 60%, transparent),
+			inset 0 -2px 0 color-mix(in srgb, var(--wv-ink) 30%, transparent),
+			0 0 22px color-mix(in srgb, var(--wv-pink) 70%, transparent),
+			0 0 40px -6px color-mix(in srgb, var(--wv-pink) 70%, transparent);
+	}
+}
+.wv-quit-primary:focus-visible,
+.wv-quit-ghost:focus-visible {
+	outline: 2px solid var(--qp-focus);
+	outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+	.wv-quit-primary:hover {
+		transform: none;
+	}
+}
+/* The setup wizard's steps (wv-quit-onboarding.tsx). Each step's number sits in a glowing neon ring, "Step n of N" is
+ * lit cyan, and the progress dots glow along the way: steps done cyan, the line after them cyan into pink, the step
+ * you're on pink with a ring pulsing out of it (when motion is allowed). Each title is lifted with a dark edge and a
+ * purple glow. A choice card (product, strength, pace) is neon glass that lifts and glows under the pointer and lights
+ * up cyan when chosen, a white-hot edge and its radio a glowing dot; its icon sits in a neon ring. The daily-use counter
+ * is a glass panel with neon round buttons, its number glowing cyan, and its presets glow, the chosen one lit. The plan
+ * summary's stages sit in neon rings (the first cyan, the rest pink) and its three facts on glass tiles. Text fields are
+ * set into the glass and glow cyan while focused. No movement for reduced motion. */
+.wv-quit-step-num {
+	color: var(--wv-cyan-soft);
+	border: 2px solid transparent;
+	background:
+		radial-gradient(circle at 50% 35%, color-mix(in srgb, var(--wv-cyan) 24%, transparent), transparent 70%)
+			padding-box,
+		linear-gradient(180deg, color-mix(in srgb, var(--wv-cyan) 12%, var(--qp-field)), var(--qp-bg)) padding-box,
+		linear-gradient(135deg, var(--wv-cyan), var(--wv-pink)) border-box;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 22%, transparent),
+		0 0 16px color-mix(in srgb, var(--wv-cyan) 45%, transparent);
+	text-shadow: 0 0 10px color-mix(in srgb, var(--wv-cyan) 85%, transparent);
+}
+.wv-quit-step-count {
+	color: var(--wv-cyan-soft);
+	text-shadow: 0 0 8px color-mix(in srgb, var(--wv-cyan) 60%, transparent);
+}
+.wv-quit-dot {
+	border: 1px solid var(--qp-border);
+	background: var(--qp-field);
+}
+.wv-quit-dot[data-state="done"] {
+	border-color: var(--wv-cyan-soft);
+	background: var(--wv-cyan-soft);
+	box-shadow: 0 0 10px color-mix(in srgb, var(--wv-cyan) 85%, transparent);
+}
+.wv-quit-dot[data-state="current"] {
+	border-color: color-mix(in srgb, white 40%, var(--wv-pink));
+	background: var(--wv-pink);
+	box-shadow: 0 0 12px color-mix(in srgb, var(--wv-pink) 90%, transparent);
+}
+.wv-quit-dot-link::after {
+	content: "";
+	position: absolute;
+	left: 12px;
+	top: 50%;
+	width: 12px;
+	height: 1px;
+	transform: translateY(-50%);
+	background: var(--qp-border);
+}
+.wv-quit-dot-link[data-state="done"]::after {
+	height: 2px;
+	background: linear-gradient(90deg, var(--wv-cyan-soft), var(--wv-pink));
+	box-shadow: 0 0 6px color-mix(in srgb, var(--wv-cyan) 70%, transparent);
+}
+.wv-quit-heading {
+	text-shadow:
+		0 1px 0 var(--wv-ink),
+		0 2px 0 color-mix(in srgb, var(--wv-purple) 75%, transparent),
+		0 0 14px color-mix(in srgb, var(--wv-purple) 70%, transparent);
+}
+.wv-quit-choice {
+	border: 1.5px solid transparent;
+	background:
+		linear-gradient(180deg, color-mix(in srgb, var(--wv-purple) 16%, var(--qp-surface)), var(--qp-surface))
+			padding-box,
+		linear-gradient(
+				135deg,
+				color-mix(in srgb, var(--wv-cyan) 55%, transparent),
+				color-mix(in srgb, var(--wv-purple) 60%, transparent) 55%,
+				color-mix(in srgb, var(--wv-pink) 55%, transparent)
+			)
+			border-box;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 8%, transparent),
+		0 0 12px color-mix(in srgb, var(--wv-purple) 40%, transparent);
+	transition:
+		transform 180ms ease,
+		box-shadow 180ms ease;
+}
+@media (hover: hover) {
+	.wv-quit-choice:not([aria-checked="true"]):hover {
+		transform: translateY(-2px);
+		box-shadow:
+			inset 0 1px 0 color-mix(in srgb, white 12%, transparent),
+			0 0 16px color-mix(in srgb, var(--wv-cyan) 35%, transparent),
+			0 0 26px -8px color-mix(in srgb, var(--wv-pink) 50%, transparent);
+	}
+}
+.wv-quit-choice[aria-checked="true"] {
+	background:
+		radial-gradient(80% 90% at 50% 0%, color-mix(in srgb, var(--wv-cyan) 18%, transparent), transparent 70%)
+			padding-box,
+		linear-gradient(180deg, color-mix(in srgb, var(--wv-cyan) 10%, var(--qp-field)), var(--qp-surface))
+			padding-box,
+		linear-gradient(135deg, white, var(--wv-cyan-soft) 35%, var(--wv-cyan) 70%, var(--wv-pink)) border-box;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 18%, transparent),
+		0 0 0 1px color-mix(in srgb, var(--wv-cyan) 35%, transparent),
+		0 0 22px color-mix(in srgb, var(--wv-cyan) 45%, transparent),
+		0 0 40px -10px color-mix(in srgb, var(--wv-pink) 45%, transparent);
+}
+.wv-quit-choice:focus-visible,
+.wv-quit-round:focus-visible,
+.wv-quit-preset:focus-visible {
+	outline: 2px solid var(--qp-focus);
+	outline-offset: 2px;
+}
+.wv-quit-choice-icon {
+	color: var(--wv-cyan-soft);
+	border: 1px solid transparent;
+	background:
+		radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--wv-cyan) 22%, transparent), transparent 70%)
+			padding-box,
+		linear-gradient(180deg, color-mix(in srgb, var(--wv-cyan) 12%, var(--qp-field)), var(--qp-bg)) padding-box,
+		linear-gradient(135deg, var(--wv-cyan), color-mix(in srgb, var(--wv-purple) 70%, var(--wv-pink)))
+			border-box;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 20%, transparent),
+		0 0 10px color-mix(in srgb, var(--wv-cyan) 35%, transparent);
+}
+.wv-quit-choice-icon svg {
+	filter: drop-shadow(0 0 4px color-mix(in srgb, var(--wv-cyan) 85%, transparent));
+}
+.wv-quit-choice[aria-checked="true"] .wv-quit-choice-icon {
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 30%, transparent),
+		0 0 16px color-mix(in srgb, var(--wv-cyan) 65%, transparent);
+}
+.wv-quit-radio {
+	border: 1.5px solid var(--qp-dim);
+}
+.wv-quit-radio[data-on] {
+	border-color: var(--wv-cyan-soft);
+	background: var(--wv-cyan-soft);
+	box-shadow:
+		inset 0 0 0 4px var(--qp-surface),
+		0 0 10px color-mix(in srgb, var(--wv-cyan) 85%, transparent);
+}
+.wv-quit-counter,
+.wv-quit-tile {
+	border: 1.5px solid transparent;
+	background:
+		radial-gradient(70% 90% at 50% 0%, color-mix(in srgb, var(--wv-cyan) 10%, transparent), transparent 70%)
+			padding-box,
+		linear-gradient(180deg, color-mix(in srgb, var(--wv-purple) 18%, var(--qp-field)), var(--qp-surface))
+			padding-box,
+		linear-gradient(135deg, var(--wv-cyan), var(--wv-purple) 55%, var(--wv-pink)) border-box;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 10%, transparent),
+		0 0 16px color-mix(in srgb, var(--wv-cyan) 22%, transparent),
+		0 0 30px -10px color-mix(in srgb, var(--wv-pink) 40%, transparent);
+}
+.wv-quit-round {
+	color: var(--wv-cyan-soft);
+	border: 1.5px solid transparent;
+	background:
+		linear-gradient(180deg, color-mix(in srgb, var(--wv-cyan) 14%, var(--qp-field)), var(--qp-bg)) padding-box,
+		linear-gradient(135deg, var(--wv-cyan), var(--wv-pink)) border-box;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 22%, transparent),
+		0 0 12px color-mix(in srgb, var(--wv-cyan) 40%, transparent);
+	transition:
+		transform 150ms ease,
+		box-shadow 150ms ease;
+}
+.wv-quit-round svg {
+	filter: drop-shadow(0 0 4px color-mix(in srgb, var(--wv-cyan) 90%, transparent));
+}
+@media (hover: hover) {
+	.wv-quit-round:hover {
+		transform: scale(1.06);
+		box-shadow:
+			inset 0 1px 0 color-mix(in srgb, white 28%, transparent),
+			0 0 18px color-mix(in srgb, var(--wv-cyan) 65%, transparent);
+	}
+}
+.wv-quit-round:active {
+	transform: scale(0.96);
+}
+.wv-quit-count {
+	color: var(--wv-cyan-soft);
+	text-shadow:
+		0 1px 0 var(--wv-ink),
+		0 0 14px color-mix(in srgb, var(--wv-cyan) 75%, transparent);
+}
+.wv-quit-preset {
+	color: color-mix(in srgb, white 80%, var(--qp-muted));
+	border: 1px solid transparent;
+	background:
+		linear-gradient(180deg, color-mix(in srgb, var(--wv-purple) 18%, var(--qp-field)), var(--qp-surface))
+			padding-box,
+		linear-gradient(
+				135deg,
+				color-mix(in srgb, var(--wv-cyan) 60%, transparent),
+				color-mix(in srgb, var(--wv-pink) 60%, transparent)
+			)
+			border-box;
+	box-shadow: 0 0 8px color-mix(in srgb, var(--wv-purple) 45%, transparent);
+	transition: box-shadow 150ms ease;
+}
+.wv-quit-preset:hover {
+	box-shadow: 0 0 14px color-mix(in srgb, var(--wv-cyan) 45%, transparent);
+}
+.wv-quit-preset[aria-pressed="true"] {
+	color: var(--qp-ink);
+	background:
+		linear-gradient(180deg, var(--wv-cyan-soft), color-mix(in srgb, var(--wv-cyan) 70%, var(--wv-purple)))
+			padding-box,
+		linear-gradient(135deg, white, var(--wv-cyan-soft) 45%, var(--wv-pink)) border-box;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 55%, transparent),
+		0 0 16px color-mix(in srgb, var(--wv-cyan) 70%, transparent);
+}
+.wv-quit-stage-ring {
+	--ring: var(--wv-cyan-soft);
+	color: var(--ring);
+	border: 2px solid transparent;
+	background:
+		radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--ring) 24%, transparent), transparent 70%)
+			padding-box,
+		linear-gradient(180deg, color-mix(in srgb, var(--ring) 12%, var(--qp-field)), var(--qp-bg)) padding-box,
+		linear-gradient(135deg, var(--ring), color-mix(in srgb, var(--wv-purple) 60%, var(--ring))) border-box;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 22%, transparent),
+		0 0 14px color-mix(in srgb, var(--ring) 50%, transparent);
+}
+.wv-quit-stage-ring--pink {
+	--ring: var(--wv-pink);
+}
+.wv-quit-stage-ring svg {
+	filter: drop-shadow(0 0 4px color-mix(in srgb, var(--ring) 90%, transparent));
+}
+.wv-quit-tile-label {
+	color: var(--wv-cyan-soft);
+	text-shadow:
+		0 1px 0 var(--wv-ink),
+		0 0 8px color-mix(in srgb, var(--wv-cyan) 60%, transparent);
+}
+.wv-quit-field {
+	border: 1px solid transparent;
+	background:
+		linear-gradient(180deg, var(--qp-bg), color-mix(in srgb, var(--wv-purple) 12%, var(--qp-field)))
+			padding-box,
+		linear-gradient(
+				135deg,
+				color-mix(in srgb, var(--wv-cyan) 55%, transparent),
+				color-mix(in srgb, var(--wv-pink) 55%, transparent)
+			)
+			border-box;
+	box-shadow:
+		inset 0 2px 5px var(--wv-ink),
+		0 0 8px color-mix(in srgb, var(--wv-cyan) 15%, transparent);
+	transition: box-shadow 180ms ease;
+}
+.wv-quit-field:focus {
+	box-shadow:
+		inset 0 2px 5px var(--wv-ink),
+		0 0 0 3px color-mix(in srgb, var(--wv-cyan) 22%, transparent),
+		0 0 14px color-mix(in srgb, var(--wv-cyan) 45%, transparent);
+}
+/* The quit dashboard (wv-quit-dashboard.tsx), in the same neon. Its cards (`cardClass`) are glass inside a soft cyan-
+ * through-purple-to-pink edge that glows; the small labels glow cyan; the headline is 3D with today's strength lit. The
+ * fact tiles are glass inside a glowing edge in their colour (strength cyan, puff target pink), their values glowing. The
+ * progress bars are tracks set into the glass, their fill glowing (cyan into pink, or the status colour: green, amber,
+ * red), and the status line glows in its colour. The log buttons are neon glass that lift and glow (Reset in pink); the
+ * step's progress panel glows green once the step is done. The plan's chips glow: done green, now lit cyan, still to
+ * come dim; each step's row is glass, the current one edged pink, with its number in a ring and its badge a glowing pill.
+ * The trend chart's line runs cyan into pink and glows over a gradient fill. Links glow cyan. No movement for reduced
+ * motion. */
+.wv-quit-card {
+	border: 1.5px solid transparent;
+	background:
+		radial-gradient(70% 60% at 100% 0%, color-mix(in srgb, var(--wv-pink) 8%, transparent), transparent 70%)
+			padding-box,
+		linear-gradient(180deg, color-mix(in srgb, var(--wv-purple) 14%, var(--qp-surface)), var(--qp-surface))
+			padding-box,
+		linear-gradient(
+				135deg,
+				color-mix(in srgb, var(--wv-cyan) 55%, transparent),
+				color-mix(in srgb, var(--wv-purple) 60%, transparent) 55%,
+				color-mix(in srgb, var(--wv-pink) 55%, transparent)
+			)
+			border-box;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 8%, transparent),
+		0 0 14px color-mix(in srgb, var(--wv-purple) 40%, transparent),
+		0 16px 26px -16px var(--wv-ink);
+}
+.wv-quit-eyebrow {
+	text-shadow: 0 0 8px color-mix(in srgb, var(--wv-cyan) 60%, transparent);
+}
+.wv-quit-fact {
+	--accent: var(--wv-cyan-soft);
+	border: 1.5px solid transparent;
+	background:
+		radial-gradient(80% 80% at 100% 0%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 70%)
+			padding-box,
+		linear-gradient(180deg, color-mix(in srgb, var(--wv-purple) 16%, var(--qp-field)), var(--qp-surface))
+			padding-box,
+		linear-gradient(
+				135deg,
+				var(--accent),
+				color-mix(in srgb, var(--wv-purple) 65%, transparent) 60%,
+				color-mix(in srgb, var(--accent) 45%, transparent)
+			)
+			border-box;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 10%, transparent),
+		0 0 14px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+.wv-quit-fact--pink {
+	--accent: var(--wv-pink);
+}
+.wv-quit-fact-value {
+	color: var(--accent);
+	text-shadow:
+		0 1px 0 var(--wv-ink),
+		0 0 14px color-mix(in srgb, var(--accent) 70%, transparent);
+}
+.wv-quit-big {
+	text-shadow:
+		0 1px 0 var(--wv-ink),
+		0 0 12px color-mix(in srgb, var(--wv-cyan) 60%, transparent);
+}
+.wv-quit-track {
+	background: linear-gradient(
+		180deg,
+		var(--qp-bg),
+		color-mix(in srgb, var(--wv-purple) 18%, var(--qp-field))
+	);
+	box-shadow:
+		inset 0 1px 3px var(--wv-ink),
+		0 0 0 1px color-mix(in srgb, var(--wv-purple) 55%, transparent);
+}
+.wv-quit-fill {
+	background: linear-gradient(90deg, var(--wv-cyan-soft), var(--wv-pink));
+	box-shadow: 0 0 10px color-mix(in srgb, var(--wv-cyan) 60%, transparent);
+}
+.wv-quit-fill--ok {
+	background: linear-gradient(
+		90deg,
+		color-mix(in srgb, var(--qp-success) 60%, var(--wv-cyan-soft)),
+		var(--qp-success)
+	);
+	box-shadow: 0 0 10px color-mix(in srgb, var(--qp-success) 70%, transparent);
+}
+.wv-quit-fill--near {
+	background: linear-gradient(
+		90deg,
+		color-mix(in srgb, var(--qp-warning) 70%, var(--wv-pink)),
+		var(--qp-warning)
+	);
+	box-shadow: 0 0 10px color-mix(in srgb, var(--qp-warning) 70%, transparent);
+}
+.wv-quit-fill--over {
+	background: linear-gradient(
+		90deg,
+		color-mix(in srgb, var(--qp-error) 70%, var(--wv-pink)),
+		var(--qp-error)
+	);
+	box-shadow: 0 0 10px color-mix(in srgb, var(--qp-error) 70%, transparent);
+}
+.wv-quit-fill--none {
+	background: transparent;
+	box-shadow: none;
+}
+.wv-quit-glow-text {
+	text-shadow: 0 0 8px color-mix(in srgb, currentColor 65%, transparent);
+}
+.wv-quit-log {
+	--accent: var(--wv-cyan-soft);
+	border: 1.5px solid transparent;
+	background:
+		linear-gradient(180deg, color-mix(in srgb, var(--accent) 12%, var(--qp-field)), var(--qp-surface))
+			padding-box,
+		linear-gradient(
+				135deg,
+				var(--accent),
+				color-mix(in srgb, var(--wv-purple) 65%, transparent) 60%,
+				color-mix(in srgb, var(--accent) 45%, transparent)
+			)
+			border-box;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 10%, transparent),
+		0 0 12px color-mix(in srgb, var(--accent) 25%, transparent);
+	transition:
+		transform 150ms ease,
+		box-shadow 150ms ease;
+}
+.wv-quit-log[data-tone="pink"] {
+	--accent: var(--wv-pink);
+}
+.wv-quit-log b {
+	color: white;
+	text-shadow: 0 0 8px color-mix(in srgb, var(--accent) 65%, transparent);
+}
+@media (hover: hover) {
+	.wv-quit-log:hover {
+		transform: translateY(-2px);
+		box-shadow:
+			inset 0 1px 0 color-mix(in srgb, white 16%, transparent),
+			0 0 20px color-mix(in srgb, var(--accent) 50%, transparent);
+	}
+}
+.wv-quit-log:active {
+	transform: scale(0.97);
+}
+.wv-quit-log:focus-visible,
+.wv-quit-textlink:focus-visible {
+	outline: 2px solid var(--qp-focus);
+	outline-offset: 2px;
+}
+.wv-quit-panel {
+	border: 1.5px solid transparent;
+	background:
+		linear-gradient(180deg, color-mix(in srgb, var(--wv-purple) 14%, var(--qp-field)), var(--qp-surface))
+			padding-box,
+		linear-gradient(
+				135deg,
+				color-mix(in srgb, var(--wv-cyan) 60%, transparent),
+				color-mix(in srgb, var(--wv-pink) 55%, transparent)
+			)
+			border-box;
+	box-shadow: 0 0 14px color-mix(in srgb, var(--wv-purple) 40%, transparent);
+}
+.wv-quit-panel[data-ready] {
+	background:
+		radial-gradient(
+				80% 100% at 50% 0%,
+				color-mix(in srgb, var(--qp-success) 12%, transparent),
+				transparent 70%
+			)
+			padding-box,
+		linear-gradient(180deg, color-mix(in srgb, var(--wv-purple) 14%, var(--qp-field)), var(--qp-surface))
+			padding-box,
+		linear-gradient(135deg, var(--qp-success), color-mix(in srgb, var(--wv-cyan) 60%, var(--qp-success)))
+			border-box;
+	box-shadow: 0 0 18px color-mix(in srgb, var(--qp-success) 40%, transparent);
+}
+.wv-quit-textlink {
+	color: var(--wv-cyan-soft);
+	text-shadow: 0 0 8px color-mix(in srgb, var(--wv-cyan) 55%, transparent);
+	transition: text-shadow 150ms ease;
+}
+.wv-quit-textlink:hover {
+	text-shadow: 0 0 12px var(--wv-cyan);
+}
+.wv-quit-chip {
+	--accent: var(--qp-dim);
+	color: var(--accent);
+	border: 1px solid color-mix(in srgb, var(--accent) 60%, transparent);
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--wv-purple) 14%, var(--qp-field)),
+		var(--qp-surface)
+	);
+}
+.wv-quit-chip[data-state="done"] {
+	--accent: var(--qp-success);
+	box-shadow: 0 0 10px color-mix(in srgb, var(--qp-success) 35%, transparent);
+	text-shadow: 0 0 8px color-mix(in srgb, var(--qp-success) 60%, transparent);
+}
+.wv-quit-chip[data-state="now"] {
+	--accent: var(--wv-cyan-soft);
+	border-color: var(--wv-cyan-soft);
+	background:
+		radial-gradient(90% 120% at 50% 0%, color-mix(in srgb, var(--wv-cyan) 30%, transparent), transparent 70%),
+		linear-gradient(180deg, color-mix(in srgb, var(--wv-cyan) 14%, var(--qp-field)), var(--qp-surface));
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 20%, transparent),
+		0 0 16px color-mix(in srgb, var(--wv-cyan) 60%, transparent);
+	text-shadow: 0 0 8px color-mix(in srgb, var(--wv-cyan) 80%, transparent);
+}
+.wv-quit-row {
+	--accent: var(--qp-dim);
+	border: 1px solid color-mix(in srgb, var(--wv-purple) 70%, transparent);
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--wv-purple) 14%, var(--qp-field)),
+		var(--qp-surface)
+	);
+}
+.wv-quit-row[data-state="done"] {
+	--accent: var(--qp-success);
+}
+.wv-quit-row[data-state="now"] {
+	--accent: var(--wv-pink);
+	border-color: var(--wv-pink);
+	box-shadow: 0 0 16px color-mix(in srgb, var(--wv-pink) 40%, transparent);
+}
+.wv-quit-row-num {
+	color: var(--accent);
+	border: 1.5px solid var(--accent);
+	box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 40%, transparent);
+	text-shadow: 0 0 8px color-mix(in srgb, var(--accent) 70%, transparent);
+}
+.wv-quit-row[data-state="now"] .wv-quit-row-num {
+	--accent: var(--wv-cyan-soft);
+}
+.wv-quit-pill {
+	color: var(--accent);
+	border: 1px solid var(--accent);
+	background: color-mix(in srgb, var(--accent) 10%, transparent);
+	box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 35%, transparent);
+	text-shadow: 0 0 6px color-mix(in srgb, var(--accent) 70%, transparent);
+}
+.wv-quit-chart svg {
+	filter: drop-shadow(0 0 6px color-mix(in srgb, var(--wv-cyan) 55%, transparent));
+}
+@media (prefers-reduced-motion: reduce) {
+	.wv-quit-log:hover,
+	.wv-quit-log:active {
+		transform: none;
+	}
+}
+@media (prefers-reduced-motion: no-preference) {
+	body.wv-motion .wv-quit-dot[data-state="current"]::before {
+		content: "";
+		position: absolute;
+		inset: -1px;
+		border-radius: 9999px;
+		border: 1.5px solid var(--wv-pink);
+		animation: wv-quit-ping 1.8s ease-out infinite;
+	}
+}
+@keyframes wv-quit-ping {
+	0% {
+		transform: scale(1);
+		opacity: 0.9;
+	}
+	80%,
+	100% {
+		transform: scale(2.1);
+		opacity: 0;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.wv-quit-choice:hover,
+	.wv-quit-round:hover,
+	.wv-quit-round:active {
+		transform: none;
+	}
+}
+@media (prefers-reduced-motion: no-preference) {
+	body.wv-motion .wv-quit-mark svg {
+		animation: wv-quit-beat 2.4s ease-in-out infinite;
+	}
+}
+@keyframes wv-quit-beat {
+	0%,
+	40%,
+	100% {
+		transform: scale(1);
+	}
+	12% {
+		transform: scale(1.14);
+	}
+	24% {
+		transform: scale(1.04);
+	}
+	32% {
+		transform: scale(1.1);
+	}
+}
+
 /* Footer link columns (WvFooter in wv-chrome.tsx): each heading is lifted with a dark edge, a purple one beneath and a
  * cyan glow, over a short glowing cyan-to-pink bar; the links are brighter than the old grey with a dark edge, and glow
  * cyan under the pointer (motion.css still turns them cyan and nudges them right). */

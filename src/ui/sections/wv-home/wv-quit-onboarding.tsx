@@ -1,5 +1,23 @@
 "use client";
 
+import {
+	Activity,
+	Cigarette,
+	CloudFog,
+	Droplet,
+	Feather,
+	Flag,
+	FlaskConical,
+	Gauge,
+	Heart,
+	Minus,
+	Plus,
+	Sparkles,
+	SlidersHorizontal,
+	TrendingDown,
+	Zap,
+	type LucideIcon,
+} from "lucide-react";
 import { useMemo, useState } from "react";
 import {
 	PACES,
@@ -17,10 +35,11 @@ import {
 } from "./wv-quit-model";
 import { DEFAULT_SWITCH_STRENGTH, SWITCH_BANDS } from "./wv-quit-switch";
 import { fieldClass, ghostBtn, primaryBtn, stageFrame } from "./wv-quit-ui";
+import { QuitWelcomeArt } from "./wv-quit-welcome-art";
 
-const PRODUCTS = [
-	{ id: "Vape", icon: "▯", label: "Vape", sub: "E-liquids / pods" },
-	{ id: "Cigarettes", icon: "／", label: "Cigarettes", sub: "Switching to vape" },
+const PRODUCTS: { id: string; Icon: LucideIcon; label: string; sub: string }[] = [
+	{ id: "Vape", Icon: CloudFog, label: "Vape", sub: "E-liquids / pods" },
+	{ id: "Cigarettes", Icon: Cigarette, label: "Cigarettes", sub: "Switching to vape" },
 ];
 /** Most puffs per day the setup accepts (three digits). */
 const MAX_PUFFS = 999;
@@ -30,51 +49,64 @@ const PUFF_PRESETS = [
 	{ label: "50–100", value: 80 },
 	{ label: "100+", value: 120 },
 ];
-const PACE_ICON: Record<Pace["id"], string> = { gentle: "↗", steady: "⚡", faster: "◎" };
-const FLOW_ICON = ["▥", "↓", "⚙", "▥", "⚑"];
+const PACE_ICON: Record<Pace["id"], LucideIcon> = { gentle: Feather, steady: Activity, faster: Zap };
+/** Each stage of the plan summary: where you start, each step down, and the last one. */
+const stageIcon = (s: Stage, i: number): LucideIcon =>
+	i === 0 ? Gauge : s.name === "Final Taper" ? Flag : TrendingDown;
 
+/**
+ * The wizard's progress: a dot per step joined by short lines. Steps done glow cyan and the line after them glows cyan
+ * into pink; the step you're on glows pink, with a ring pulsing out of it when motion is allowed (`.wv-quit-dot`).
+ */
 function StepDots({ step, total }: { step: number; total: number }) {
 	return (
 		<div className="flex items-center gap-[10px]" aria-hidden>
 			{Array.from({ length: total }, (_, i) => i + 1).map((n) => (
 				<span
 					key={n}
-					className={`relative size-[13px] rounded-full border ${
-						n <= step
-							? "border-[var(--qp-primary)] bg-[var(--qp-primary)] shadow-[0_0_14px_rgba(105,235,255,0.85)]"
-							: "border-[var(--qp-border)] bg-[var(--qp-field)]"
-					} ${n !== total ? "after:absolute after:left-[12px] after:top-1/2 after:h-px after:w-[12px] after:-translate-y-1/2 after:bg-[var(--qp-border)]" : ""}`}
+					data-state={n < step ? "done" : n === step ? "current" : "next"}
+					className={`wv-quit-dot relative size-[13px] rounded-full ${n !== total ? "wv-quit-dot-link" : ""}`}
 				/>
 			))}
 		</div>
 	);
 }
 
+/** Each step's head: its number in a glowing neon ring, "Step n of N" lit cyan, and the progress dots. */
 function StepHead({ step, total, label }: { step: number; total: number; label: string }) {
 	return (
 		<div className="mb-6 flex flex-wrap items-center gap-4">
-			<span className="flex size-12 shrink-0 items-center justify-center rounded-full border-2 border-[var(--qp-primary)] text-xl font-black text-[var(--qp-primary)] shadow-[0_0_18px_rgba(105,235,255,0.22)]">
+			<span className="wv-quit-step-num flex size-12 shrink-0 items-center justify-center rounded-full text-xl font-black">
 				{step}
 			</span>
 			<span className="flex-1 font-bold text-[var(--qp-muted)]">
-				Step {step} of {total} · {label}
+				<span className="wv-quit-step-count">
+					Step {step} of {total}
+				</span>{" "}
+				· {label}
 			</span>
 			<StepDots step={step} total={total} />
 		</div>
 	);
 }
 
+/** A choice's radio: a ring, lit with a glowing cyan dot when chosen (`.wv-quit-radio`). */
 function Radio({ on }: { on: boolean }) {
 	return (
 		<span
 			aria-hidden
-			className={`absolute right-3 top-3 size-5 rounded-full border ${on ? "border-[var(--qp-primary)] bg-[var(--qp-primary)] shadow-[inset_0_0_0_5px_var(--qp-surface)]" : "border-[var(--qp-dim)]"}`}
+			data-on={on || undefined}
+			className="wv-quit-radio absolute right-3 top-3 size-5 rounded-full"
 		/>
 	);
 }
 
-const choiceCard = (on: boolean) =>
-	`relative flex flex-col gap-3 rounded-xl border p-5 text-left transition-colors ${on ? "border-2 border-[var(--qp-primary)] bg-[var(--qp-field)] shadow-[0_0_20px_rgba(105,235,255,0.18)]" : "border-[var(--qp-border)] bg-[var(--qp-surface)] hover:border-[var(--qp-primary)]/60"}`;
+/**
+ * A choice card: neon glass that lifts and glows under the pointer, and lights up cyan when chosen (`aria-checked`,
+ * `.wv-quit-choice`); its icon sits in a neon ring (`.wv-quit-choice-icon`).
+ */
+const choiceCard = "wv-quit-choice relative flex flex-col gap-3 rounded-xl p-5 text-left";
+const choiceIcon = "wv-quit-choice-icon flex size-11 items-center justify-center rounded-[11px]";
 
 /**
  * First-run setup wizard: 6 steps mirroring the reference design exactly — welcome, product,
@@ -130,28 +162,43 @@ export function Onboarding({ today, onDone }: { today: string; onDone: (d: QuitD
 	if (step === 1) {
 		return (
 			<div key="step-1" className="wv-fade flex flex-col gap-6">
+				{/* The welcome, in the site's neon style: the stage card lit (`.wv-quit-stage`), a neon badge, a 3D title
+				    whose words glow in their own colour (`.wv-hero-title`), brighter copy with its key phrases lit, each
+				    promise led by its icon in a neon ring, the glossy neon button, and beside it on desktop the plan drawn
+				    as a neon staircase stepping down to a glowing heart (wv-quit-welcome-art.tsx) in a glowing frame. */}
 				<section className={`${stageFrame} grid gap-8 p-6 md:p-9 xl:grid-cols-[1.1fr_0.9fr] xl:items-center`}>
 					<div className="flex flex-col gap-5">
-						<p className="text-lg font-extrabold text-[var(--qp-primary)]">Welcome</p>
-						<h1 className="text-[38px] font-black leading-[0.98] tracking-[-0.045em] md:text-[54px]">
-							Build Your <span className="text-[var(--qp-secondary)]">Quit Plan</span>
+						<p className="wv-hero-badge flex w-fit items-center gap-2 rounded-full px-3 py-1 text-xs font-extrabold uppercase tracking-[0.14em]">
+							<Sparkles aria-hidden className="size-3.5" strokeWidth={2.5} />
+							Welcome
+						</p>
+						<h1 className="wv-title-glow wv-hero-title text-[38px] font-black leading-[0.98] tracking-[-0.045em] md:text-[54px]">
+							<span>Build Your</span> <span className="text-[var(--qp-secondary)]">Quit Plan</span>
 						</h1>
-						<p className="max-w-[560px] text-lg leading-[1.55] text-[var(--qp-muted)]">
-							A personalized, step-by-step plan to help you reduce nicotine and take back control.
+						<p className="wv-hero-copy max-w-[560px] text-lg leading-[1.55]">
+							A <strong className="wv-hero-key">personalized, step-by-step plan</strong> to help you reduce
+							nicotine and <strong className="wv-hero-key wv-hero-key--pink">take back control</strong>.
 						</p>
 						<ul className="flex flex-col gap-4">
 							{[
-								{ icon: "✦", title: "Science-backed approach", text: "Small steps. Real progress." },
-								{ icon: "▥", title: "Personalized to you", text: "Based on your habits and goals." },
-								{ icon: "♡", title: "A healthier, brighter future", text: "You've got this." },
-							].map((b) => (
-								<li key={b.title} className="grid grid-cols-[34px_1fr] items-start gap-3">
-									<span className="flex size-[30px] items-center justify-center rounded-[10px] border-2 border-[var(--qp-secondary)] text-sm font-black text-[var(--qp-secondary)]">
-										{b.icon}
+								{ Icon: FlaskConical, title: "Science-backed approach", text: "Small steps. Real progress." },
+								{
+									Icon: SlidersHorizontal,
+									title: "Personalized to you",
+									text: "Based on your habits and goals.",
+								},
+								{ Icon: Heart, title: "A healthier, brighter future", text: "You've got this." },
+							].map(({ Icon, title, text }) => (
+								<li key={title} className="grid grid-cols-[40px_1fr] items-center gap-3">
+									<span
+										aria-hidden
+										className="wv-quit-mark flex size-9 items-center justify-center rounded-[11px]"
+									>
+										<Icon className="size-[18px]" strokeWidth={2.25} />
 									</span>
 									<span>
-										<b className="block text-[var(--qp-text)]">{b.title}</b>
-										<small className="text-[var(--qp-dim)]">{b.text}</small>
+										<b className="wv-pc-name block text-[var(--qp-text)]">{title}</b>
+										<small className="text-[13px] text-[var(--qp-muted)]">{text}</small>
 									</span>
 								</li>
 							))}
@@ -162,22 +209,8 @@ export function Onboarding({ today, onDone }: { today: string; onDone: (d: QuitD
 							</button>
 						</div>
 					</div>
-					<div className="relative hidden min-h-[320px] overflow-hidden rounded-2xl border border-[var(--qp-border)] bg-gradient-to-b from-[var(--qp-field)] via-[var(--qp-surface)] to-[var(--qp-bg)] xl:block">
-						<div
-							aria-hidden
-							className="bg-[var(--qp-secondary)]/40 absolute left-1/2 top-[22%] size-40 -translate-x-1/2 rounded-full blur-3xl"
-						/>
-						<div
-							aria-hidden
-							className="bg-[var(--qp-border-strong)]/50 absolute left-[58%] top-[35%] size-28 -translate-x-1/2 rounded-full blur-2xl"
-						/>
-						<p className="absolute right-7 top-28 text-right text-sm font-extrabold leading-[1.5] tracking-[0.12em] text-[var(--qp-secondary)]">
-							CLEANER
-							<br />
-							BRIGHTER
-							<br />
-							YOU
-						</p>
+					<div className="wv-art relative hidden min-h-[320px] overflow-hidden rounded-2xl xl:block">
+						<QuitWelcomeArt idPrefix="quit-welcome-art" />
 					</div>
 				</section>
 				<p className="text-xs text-[var(--qp-dim)]">
@@ -193,7 +226,7 @@ export function Onboarding({ today, onDone }: { today: string; onDone: (d: QuitD
 			<div key="step-2" className="wv-fade flex flex-col gap-6">
 				<section className={`${stageFrame} p-6 md:p-9`}>
 					{head("What do you use?")}
-					<h2 className="mb-1 text-[26px] font-black">What do you use?</h2>
+					<h2 className="wv-quit-heading mb-1 text-[26px] font-black">What do you use?</h2>
 					<p className="mb-5 text-[var(--qp-muted)]">Select the one you use most.</p>
 					<div role="radiogroup" aria-label="Product" className="grid gap-4 md:grid-cols-2">
 						{PRODUCTS.map((p) => {
@@ -205,11 +238,11 @@ export function Onboarding({ today, onDone }: { today: string; onDone: (d: QuitD
 									role="radio"
 									aria-checked={on}
 									onClick={() => chooseProduct(p.id)}
-									className={choiceCard(on)}
+									className={choiceCard}
 								>
 									<Radio on={on} />
-									<span className="flex size-11 items-center justify-center rounded-[11px] border border-[var(--qp-border)] text-lg font-black text-[var(--qp-primary)]">
-										{p.icon}
+									<span aria-hidden className={choiceIcon}>
+										<p.Icon className="size-5" strokeWidth={2.25} />
 									</span>
 									<span>
 										<b className="block text-base text-[var(--qp-text)]">{p.label}</b>
@@ -237,7 +270,7 @@ export function Onboarding({ today, onDone }: { today: string; onDone: (d: QuitD
 			<div key="step-3" className="wv-fade flex flex-col gap-6">
 				<section className={`${stageFrame} p-6 md:p-9`}>
 					{head(switching ? "Your smoking" : "Current nicotine strength")}
-					<h2 className="mb-1 text-[26px] font-black">
+					<h2 className="wv-quit-heading mb-1 text-[26px] font-black">
 						{switching
 							? "How many cigarettes do you smoke on a typical day?"
 							: "What nicotine strength do you use now?"}
@@ -264,11 +297,15 @@ export function Onboarding({ today, onDone }: { today: string; onDone: (d: QuitD
 										setStrength(o.value);
 										setCustom("");
 									}}
-									className={`relative flex min-h-[112px] flex-col items-center justify-center gap-2 rounded-xl border p-5 text-center transition-colors ${on ? "border-2 border-[var(--qp-primary)] bg-[var(--qp-field)] shadow-[0_0_20px_rgba(105,235,255,0.18)]" : "hover:border-[var(--qp-primary)]/60 border-[var(--qp-border)] bg-[var(--qp-surface)]"}`}
+									className="wv-quit-choice relative flex min-h-[112px] flex-col items-center justify-center gap-2 rounded-xl p-5 text-center"
 								>
 									<Radio on={on} />
-									<span className="flex size-11 items-center justify-center rounded-[11px] border border-[var(--qp-border)] text-lg font-black text-[var(--qp-primary)]">
-										▥
+									<span aria-hidden className={choiceIcon}>
+										{switching ? (
+											<Cigarette className="size-5" strokeWidth={2.25} />
+										) : (
+											<Droplet className="size-5" strokeWidth={2.25} />
+										)}
 									</span>
 									<b className="text-base text-[var(--qp-text)]">{o.label}</b>
 									{o.sub && <small className="text-[var(--qp-dim)]">{o.sub}</small>}
@@ -311,18 +348,20 @@ export function Onboarding({ today, onDone }: { today: string; onDone: (d: QuitD
 			<div key="step-4" className="wv-fade flex flex-col gap-6">
 				<section className={`${stageFrame} p-6 md:p-9`}>
 					{head("Daily use / baseline")}
-					<h2 className="mb-1 text-[26px] font-black">About how much do you use in a typical day?</h2>
+					<h2 className="wv-quit-heading mb-1 text-[26px] font-black">
+						About how much do you use in a typical day?
+					</h2>
 					<p className="mb-6 text-[var(--qp-muted)]">
 						This helps us set the right pace for you. You can always adjust this later.
 					</p>
-					<div className="mx-auto flex max-w-[420px] items-center gap-4 rounded-2xl border border-[var(--qp-border)] bg-[var(--qp-surface)] p-4">
+					<div className="wv-quit-counter mx-auto flex max-w-[420px] items-center gap-4 rounded-2xl p-4">
 						<button
 							type="button"
 							aria-label="Decrease"
 							onClick={() => adjustPuffs((v) => v - 5)}
-							className="flex size-[50px] shrink-0 items-center justify-center rounded-full border border-[var(--qp-border)] bg-[var(--qp-field)] text-2xl font-black text-white"
+							className="wv-quit-round flex size-[50px] shrink-0 items-center justify-center rounded-full"
 						>
-							−
+							<Minus aria-hidden className="size-5" strokeWidth={2.75} />
 						</button>
 						<div className="flex-1 text-center">
 							<input
@@ -338,7 +377,7 @@ export function Onboarding({ today, onDone }: { today: string; onDone: (d: QuitD
 									if (digits !== "") setPuffs(Number(digits));
 								}}
 								onBlur={() => setPuffsDraft(null)}
-								className="block w-full rounded-md bg-transparent text-center text-3xl font-black text-[var(--qp-text)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--qp-primary)]"
+								className="wv-quit-count block w-full rounded-md border-0 bg-transparent p-0 text-center text-3xl font-black shadow-none outline-none focus:ring-0 focus-visible:ring-2 focus-visible:ring-[var(--qp-primary)]"
 							/>
 							<span className="text-sm text-[var(--qp-muted)]">puffs per day</span>
 						</div>
@@ -346,9 +385,9 @@ export function Onboarding({ today, onDone }: { today: string; onDone: (d: QuitD
 							type="button"
 							aria-label="Increase"
 							onClick={() => adjustPuffs((v) => v + 5)}
-							className="flex size-[50px] shrink-0 items-center justify-center rounded-full border border-[var(--qp-border)] bg-[var(--qp-field)] text-2xl font-black text-white"
+							className="wv-quit-round flex size-[50px] shrink-0 items-center justify-center rounded-full"
 						>
-							+
+							<Plus aria-hidden className="size-5" strokeWidth={2.75} />
 						</button>
 					</div>
 					<div className="mx-auto mt-4 grid max-w-[420px] grid-cols-2 gap-3 md:grid-cols-4">
@@ -358,7 +397,7 @@ export function Onboarding({ today, onDone }: { today: string; onDone: (d: QuitD
 								type="button"
 								aria-pressed={puffs === p.value}
 								onClick={() => adjustPuffs(() => p.value)}
-								className={`rounded-lg border px-3 py-2 text-sm font-bold ${puffs === p.value ? "border-[var(--qp-primary)] bg-[var(--qp-primary)] text-[var(--qp-ink)]" : "border-[var(--qp-border)] bg-[var(--qp-surface)] text-[var(--qp-muted)]"}`}
+								className="wv-quit-preset rounded-lg px-3 py-2 text-sm font-bold"
 							>
 								{p.label}
 							</button>
@@ -382,7 +421,7 @@ export function Onboarding({ today, onDone }: { today: string; onDone: (d: QuitD
 			<div key="step-5" className="wv-fade flex flex-col gap-6">
 				<section className={`${stageFrame} p-6 md:p-9`}>
 					{head("Your goal and pace")}
-					<h2 className="mb-1 text-[26px] font-black">How would you like to quit?</h2>
+					<h2 className="wv-quit-heading mb-1 text-[26px] font-black">How would you like to quit?</h2>
 					<p className="mb-5 text-[var(--qp-muted)]">
 						You can adjust your pace anytime — this is your journey.
 					</p>
@@ -396,10 +435,15 @@ export function Onboarding({ today, onDone }: { today: string; onDone: (d: QuitD
 									role="radio"
 									aria-checked={on}
 									onClick={() => setPace(p.id)}
-									className={`${choiceCard(on)} min-h-[176px]`}
+									className={`${choiceCard} min-h-[176px]`}
 								>
 									<Radio on={on} />
-									<span className="text-2xl font-black text-[var(--qp-primary)]">{PACE_ICON[p.id]}</span>
+									<span aria-hidden className={choiceIcon}>
+										{(() => {
+											const Icon = PACE_ICON[p.id];
+											return <Icon className="size-5" strokeWidth={2.25} />;
+										})()}
+									</span>
 									<span>
 										<b className="block text-base text-[var(--qp-text)]">{p.label}</b>
 										<small className="text-[var(--qp-dim)]">
@@ -409,7 +453,7 @@ export function Onboarding({ today, onDone }: { today: string; onDone: (d: QuitD
 										</small>
 									</span>
 									{p.id === "steady" && (
-										<span className="mt-auto text-xs font-extrabold text-[var(--qp-primary)]">
+										<span className="wv-ship-popular mt-auto w-fit rounded-full px-3 py-1 text-[11px] font-extrabold uppercase">
 											Most popular
 										</span>
 									)}
@@ -434,19 +478,23 @@ export function Onboarding({ today, onDone }: { today: string; onDone: (d: QuitD
 		<div key="step-6" className="wv-fade flex flex-col gap-6">
 			<section className={`${stageFrame} p-6 md:p-9`}>
 				{head("Your starting plan")}
-				<h2 className="mb-1 text-[26px] font-black">Your starting plan</h2>
+				<h2 className="wv-quit-heading mb-1 text-[26px] font-black">Your starting plan</h2>
 				<p className="mb-6 text-[var(--qp-muted)]">Here&apos;s your personalized quit plan.</p>
 
 				<ol className="mb-8 grid gap-3 md:grid-cols-5">
 					{stages.slice(0, 5).map((s: Stage, i) => (
 						<li key={i} className="flex items-center gap-3 md:flex-col md:items-center md:text-center">
 							<span
-								className={`flex size-[52px] shrink-0 items-center justify-center rounded-full border-2 text-lg font-black ${i === 0 ? "border-[var(--qp-primary)] text-[var(--qp-primary)] shadow-[0_0_18px_rgba(105,235,255,0.18)]" : "border-[var(--qp-secondary)] text-[var(--qp-secondary)]"}`}
+								aria-hidden
+								className={`wv-quit-stage-ring flex size-[52px] shrink-0 items-center justify-center rounded-full ${i === 0 ? "" : "wv-quit-stage-ring--pink"}`}
 							>
-								{FLOW_ICON[i] ?? "▥"}
+								{(() => {
+									const Icon = stageIcon(s, i);
+									return <Icon className="size-5" strokeWidth={2.25} />;
+								})()}
 							</span>
 							<span className="md:mt-1">
-								<b className="block text-sm text-[var(--qp-text)]">
+								<b className="wv-pc-name block text-sm text-[var(--qp-text)]">
 									{i + 1}. {s.name}
 								</b>
 								<small className="text-[var(--qp-dim)]">
@@ -457,19 +505,19 @@ export function Onboarding({ today, onDone }: { today: string; onDone: (d: QuitD
 					))}
 				</ol>
 
-				<div className="grid gap-px overflow-hidden rounded-xl border border-[var(--qp-border)] bg-[var(--qp-border)] md:grid-cols-3">
-					<div className="bg-[var(--qp-field)] p-4 text-center">
-						<b className="block text-[var(--qp-text)]">Goal</b>
+				<div className="grid gap-3 md:grid-cols-3">
+					<div className="wv-quit-tile rounded-xl p-4 text-center">
+						<b className="wv-quit-tile-label block">Goal</b>
 						<small className="text-[var(--qp-muted)]">Be nicotine free</small>
 					</div>
-					<div className="bg-[var(--qp-field)] p-4 text-center">
-						<b className="block text-[var(--qp-text)]">Estimated timeline</b>
+					<div className="wv-quit-tile rounded-xl p-4 text-center">
+						<b className="wv-quit-tile-label block">Estimated timeline</b>
 						<small className="text-[var(--qp-muted)]">
 							about {Math.round(totalDays / 7)} weeks · around {dayLabel(finish)}
 						</small>
 					</div>
-					<div className="bg-[var(--qp-field)] p-4 text-center">
-						<b className="block text-[var(--qp-text)]">Starting point</b>
+					<div className="wv-quit-tile rounded-xl p-4 text-center">
+						<b className="wv-quit-tile-label block">Starting point</b>
 						<small className="text-[var(--qp-muted)]">
 							{strength} mg · {switching ? "switching from cigarettes" : `${puffs} puffs/day`}
 						</small>
