@@ -1945,6 +1945,451 @@ li:nth-child(even) > .wv-cat-chip {
 	}
 }
 
+/* The account pages' frame (AccountShell, wv-account.tsx). The menu (a panel that opens below the desktop layout, a
+ * sidebar on desktop) is lit glass: a cyan glow in its top corner over a hint of purple, inside a cyan-through-purple-
+ * to-pink edge that glows and casts a shadow, brighter while open. Its icons sit in neon tiles and its chevron glows;
+ * the avatar is in a glowing ring, the email glows cyan and a neon line divides the sidebar. Each row glows under the
+ * pointer (its side bar lit cyan, its chevron nudging on); the page you're on is lit glass inside a cyan-to-pink edge,
+ * its bar glowing cyan into pink. No movement for reduced motion. */
+.wv-acct-menu,
+.wv-acct-side {
+	border: 1.5px solid transparent;
+	background:
+		radial-gradient(80% 60% at 0% 0%, color-mix(in srgb, var(--wv-cyan) 10%, transparent), transparent 70%)
+			padding-box,
+		linear-gradient(180deg, color-mix(in srgb, var(--wv-purple) 16%, var(--wv-surface)), var(--wv-surface))
+			padding-box,
+		linear-gradient(150deg, var(--wv-cyan), var(--wv-purple) 50%, var(--wv-pink)) border-box;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 10%, transparent),
+		0 0 18px color-mix(in srgb, var(--wv-cyan) 18%, transparent),
+		0 0 36px -10px color-mix(in srgb, var(--wv-pink) 35%, transparent),
+		0 18px 28px -16px var(--wv-ink);
+	transition: box-shadow 200ms ease;
+}
+.wv-acct-menu[open] {
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 14%, transparent),
+		0 0 24px color-mix(in srgb, var(--wv-cyan) 30%, transparent),
+		0 0 44px -10px color-mix(in srgb, var(--wv-pink) 45%, transparent),
+		0 18px 28px -16px var(--wv-ink);
+}
+.wv-acct-icon {
+	color: var(--wv-cyan-soft);
+	border: 1px solid transparent;
+	background:
+		linear-gradient(180deg, color-mix(in srgb, var(--wv-cyan) 22%, var(--wv-control)), var(--wv-bg))
+			padding-box,
+		linear-gradient(135deg, var(--wv-cyan), color-mix(in srgb, var(--wv-purple) 60%, var(--wv-pink)))
+			border-box;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 22%, transparent),
+		0 0 12px color-mix(in srgb, var(--wv-cyan) 40%, transparent);
+}
+.wv-acct-icon svg,
+.wv-acct-caret {
+	color: var(--wv-cyan-soft);
+	filter: drop-shadow(0 0 4px color-mix(in srgb, var(--wv-cyan) 85%, transparent));
+}
+.wv-acct-avatar {
+	color: var(--wv-cyan-soft);
+	border: 2px solid transparent;
+	background:
+		radial-gradient(circle at 50% 35%, color-mix(in srgb, var(--wv-cyan) 24%, transparent), transparent 70%)
+			padding-box,
+		linear-gradient(180deg, color-mix(in srgb, var(--wv-cyan) 12%, var(--wv-control)), var(--wv-bg))
+			padding-box,
+		linear-gradient(135deg, var(--wv-cyan), var(--wv-pink)) border-box;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 22%, transparent),
+		0 0 18px color-mix(in srgb, var(--wv-cyan) 45%, transparent),
+		0 0 30px -6px color-mix(in srgb, var(--wv-pink) 45%, transparent);
+	text-shadow: 0 0 10px color-mix(in srgb, var(--wv-cyan) 85%, transparent);
+}
+.wv-acct-avatar svg {
+	filter: drop-shadow(0 0 5px color-mix(in srgb, var(--wv-cyan) 85%, transparent));
+}
+.wv-acct-email {
+	color: var(--wv-cyan-soft);
+	text-shadow: 0 0 8px color-mix(in srgb, var(--wv-cyan) 60%, transparent);
+}
+.wv-acct-rule {
+	background: linear-gradient(90deg, transparent, var(--wv-cyan) 25%, var(--wv-pink) 75%, transparent);
+	box-shadow: 0 0 8px color-mix(in srgb, var(--wv-cyan) 55%, transparent);
+}
+.wv-acct-link {
+	color: var(--ac-muted);
+	border: 1px solid transparent;
+	transition:
+		color 160ms ease,
+		background-color 160ms ease,
+		box-shadow 160ms ease;
+}
+.wv-acct-bar {
+	background: var(--ac-subtle);
+	transition:
+		background-color 160ms ease,
+		box-shadow 160ms ease;
+}
+.wv-acct-chev {
+	flex: none;
+	color: var(--wv-text-dim);
+	opacity: 0.45;
+	transition:
+		transform 160ms ease,
+		color 160ms ease,
+		opacity 160ms ease;
+}
+.wv-acct-link:is(:hover, :focus-visible) {
+	color: white;
+	background-color: color-mix(in srgb, var(--wv-cyan) 8%, transparent);
+	text-shadow: 0 0 8px color-mix(in srgb, var(--wv-cyan) 45%, transparent);
+}
+.wv-acct-link:is(:hover, :focus-visible) .wv-acct-bar {
+	background: var(--wv-cyan-soft);
+	box-shadow: 0 0 8px color-mix(in srgb, var(--wv-cyan) 80%, transparent);
+}
+.wv-acct-link:is(:hover, :focus-visible) .wv-acct-chev {
+	color: var(--wv-cyan-soft);
+	opacity: 1;
+	transform: translateX(2px);
+}
+.wv-acct-link:focus-visible {
+	outline: 2px solid var(--wv-cyan-soft);
+	outline-offset: 2px;
+}
+.wv-acct-link[data-active] {
+	color: white;
+	background:
+		linear-gradient(90deg, color-mix(in srgb, var(--wv-cyan) 16%, var(--wv-control)), var(--wv-control))
+			padding-box,
+		linear-gradient(90deg, var(--wv-cyan), var(--wv-pink)) border-box;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 12%, transparent),
+		0 0 14px color-mix(in srgb, var(--wv-cyan) 35%, transparent);
+}
+.wv-acct-link[data-active] .wv-acct-bar {
+	background: linear-gradient(180deg, var(--wv-cyan-soft), var(--wv-pink));
+	box-shadow: 0 0 8px color-mix(in srgb, var(--wv-cyan) 80%, transparent);
+}
+.wv-acct-link[data-active] .wv-acct-chev {
+	color: var(--wv-cyan-soft);
+	opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+	.wv-acct-link:is(:hover, :focus-visible) .wv-acct-chev {
+		transform: none;
+	}
+}
+
+/* The signed-in account summaries (SummaryCard, wv-account.tsx): neon cards in their colour (--accent), each a link.
+ * The icon glows in its lit tile; the label is a glowing glass pill; a neon line runs across under the hint; and the
+ * action is a glass pill edged in the card's colour, brighter with its arrow sliding on while the card is under the
+ * pointer or focused. */
+.wv-acct-card .wv-neon-card-icon svg {
+	color: var(--accent);
+	filter: drop-shadow(0 0 5px color-mix(in srgb, var(--accent) 85%, transparent));
+}
+.wv-acct-card-tag {
+	color: var(--accent);
+	border: 1px solid color-mix(in srgb, var(--accent) 55%, transparent);
+	background: color-mix(in srgb, var(--accent) 10%, transparent);
+	box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 30%, transparent);
+	text-shadow: 0 0 8px color-mix(in srgb, var(--accent) 70%, transparent);
+}
+.wv-acct-card-rule {
+	background: linear-gradient(
+		90deg,
+		var(--accent),
+		color-mix(in srgb, var(--wv-purple) 60%, transparent) 60%,
+		transparent
+	);
+	box-shadow: 0 0 6px color-mix(in srgb, var(--accent) 50%, transparent);
+}
+.wv-acct-card-action {
+	color: var(--accent);
+	border: 1px solid transparent;
+	background:
+		linear-gradient(180deg, color-mix(in srgb, var(--accent) 16%, var(--wv-control)), var(--wv-control))
+			padding-box,
+		linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 35%, transparent)) border-box;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 12%, transparent),
+		0 0 10px color-mix(in srgb, var(--accent) 30%, transparent);
+	text-shadow: 0 0 8px color-mix(in srgb, var(--accent) 65%, transparent);
+	transition: box-shadow 200ms ease;
+}
+.wv-acct-card:is(:hover, :focus-visible) .wv-acct-card-action {
+	color: white;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 20%, transparent),
+		0 0 18px color-mix(in srgb, var(--accent) 60%, transparent);
+}
+.wv-acct-card:focus-visible {
+	outline: 2px solid var(--accent);
+	outline-offset: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+	.wv-acct-card .wv-acct-card-action svg {
+		transition: none;
+		transform: none;
+	}
+}
+
+/* My Orders' cards (OrderCard, wv-orders.tsx): neon cards whose parcel glows in its lit tile, the date led by a glowing
+ * calendar, the status a glowing glass pill in its colour (cyan while open, green once fulfilled, pink if cancelled or
+ * expired), thumbnails in neon frames and the total glowing cyan. */
+.wv-order-card .wv-neon-card-icon svg {
+	color: var(--accent);
+	filter: drop-shadow(0 0 5px color-mix(in srgb, var(--accent) 85%, transparent));
+}
+.wv-order-date {
+	color: var(--ac-muted);
+}
+.wv-order-date svg {
+	color: var(--wv-cyan-soft);
+	filter: drop-shadow(0 0 3px color-mix(in srgb, var(--wv-cyan) 80%, transparent));
+}
+.wv-order-status {
+	--tone: var(--wv-cyan-soft);
+	color: var(--tone);
+	border: 1px solid color-mix(in srgb, var(--tone) 60%, transparent);
+	background: color-mix(in srgb, var(--tone) 12%, transparent);
+	box-shadow: 0 0 10px color-mix(in srgb, var(--tone) 35%, transparent);
+	text-shadow: 0 0 8px color-mix(in srgb, var(--tone) 70%, transparent);
+}
+.wv-order-status[data-tone="done"] {
+	--tone: var(--ac-green);
+}
+.wv-order-status[data-tone="stop"] {
+	--tone: var(--wv-pink);
+}
+.wv-order-thumb {
+	border: 1px solid transparent;
+	background:
+		linear-gradient(var(--ac-subtle), var(--ac-subtle)) padding-box,
+		linear-gradient(135deg, var(--wv-cyan), var(--wv-pink)) border-box;
+	box-shadow: 0 0 10px color-mix(in srgb, var(--wv-cyan) 30%, transparent);
+}
+.wv-order-thumb-icon {
+	color: color-mix(in srgb, var(--wv-cyan-soft) 55%, transparent);
+	filter: drop-shadow(0 0 4px color-mix(in srgb, var(--wv-cyan) 50%, transparent));
+}
+.wv-order-total {
+	color: white;
+	text-shadow:
+		0 1px 0 var(--wv-ink),
+		0 2px 0 color-mix(in srgb, var(--wv-purple) 75%, transparent),
+		0 0 14px color-mix(in srgb, var(--wv-cyan) 60%, transparent);
+}
+
+/* An order's page (WvOrderDetail, wv-orders.tsx). The tracker's steps are glass tiles with their icon in a ring: done in
+ * green with a check, the current one lit cyan (a ring pulsing out of it when motion is allowed), the rest dim. Short
+ * lines join them, below each on phones and beside each from tablets up, glowing green after a step that's done. Each
+ * item is a glass row inside a soft neon edge, its quantity a glowing cyan pill. */
+.wv-order-step {
+	--tone: var(--ac-grey);
+	color: var(--ac-muted);
+	border: 1px solid transparent;
+	background:
+		linear-gradient(180deg, color-mix(in srgb, var(--wv-purple) 14%, var(--wv-surface)), var(--wv-surface))
+			padding-box,
+		linear-gradient(
+				135deg,
+				color-mix(in srgb, var(--wv-purple) 80%, transparent),
+				color-mix(in srgb, var(--wv-purple) 40%, transparent)
+			)
+			border-box;
+}
+.wv-order-step[data-state="complete"] {
+	--tone: var(--ac-green);
+	color: white;
+	background:
+		linear-gradient(180deg, color-mix(in srgb, var(--ac-green) 8%, var(--wv-surface)), var(--wv-surface))
+			padding-box,
+		linear-gradient(135deg, var(--ac-green), color-mix(in srgb, var(--wv-purple) 60%, transparent)) border-box;
+	box-shadow: 0 0 12px color-mix(in srgb, var(--ac-green) 22%, transparent);
+}
+.wv-order-step[data-state="current"] {
+	--tone: var(--wv-cyan-soft);
+	color: white;
+	background:
+		radial-gradient(80% 120% at 0% 50%, color-mix(in srgb, var(--wv-cyan) 16%, transparent), transparent 70%)
+			padding-box,
+		linear-gradient(180deg, color-mix(in srgb, var(--wv-cyan) 8%, var(--wv-surface)), var(--wv-surface))
+			padding-box,
+		linear-gradient(135deg, white, var(--wv-cyan-soft) 35%, var(--wv-pink)) border-box;
+	box-shadow:
+		0 0 0 1px color-mix(in srgb, var(--wv-cyan) 30%, transparent),
+		0 0 20px color-mix(in srgb, var(--wv-cyan) 40%, transparent);
+	text-shadow: 0 0 8px color-mix(in srgb, var(--wv-cyan) 60%, transparent);
+}
+.wv-order-step-ring {
+	color: var(--tone);
+	border: 1.5px solid color-mix(in srgb, var(--tone) 75%, transparent);
+	background: radial-gradient(
+		circle at 50% 40%,
+		color-mix(in srgb, var(--tone) 22%, transparent),
+		var(--wv-bg) 75%
+	);
+	box-shadow: 0 0 10px color-mix(in srgb, var(--tone) 40%, transparent);
+}
+.wv-order-step-ring svg {
+	filter: drop-shadow(0 0 4px color-mix(in srgb, var(--tone) 85%, transparent));
+}
+.wv-order-step[data-state="upcoming"] .wv-order-step-ring {
+	box-shadow: none;
+	opacity: 0.75;
+}
+.wv-order-step:not(:last-child)::after {
+	content: "";
+	position: absolute;
+	top: 100%;
+	left: 29px;
+	width: 2px;
+	height: 12px;
+	background: color-mix(in srgb, var(--wv-purple) 70%, transparent);
+}
+.wv-order-step[data-state="complete"]:not(:last-child)::after {
+	background: var(--ac-green);
+	box-shadow: 0 0 8px color-mix(in srgb, var(--ac-green) 80%, transparent);
+}
+@media (min-width: 768px) {
+	.wv-order-step:not(:last-child)::after {
+		top: 50%;
+		left: 100%;
+		width: 12px;
+		height: 2px;
+		transform: translateY(-50%);
+	}
+}
+@media (prefers-reduced-motion: no-preference) {
+	body.wv-motion .wv-order-step[data-state="current"] .wv-order-step-ring::after {
+		content: "";
+		position: absolute;
+		inset: -2px;
+		border-radius: 9999px;
+		border: 1.5px solid var(--wv-cyan-soft);
+		animation: wv-order-ping 2s ease-out infinite;
+	}
+}
+@keyframes wv-order-ping {
+	0% {
+		transform: scale(1);
+		opacity: 0.85;
+	}
+	75%,
+	100% {
+		transform: scale(1.55);
+		opacity: 0;
+	}
+}
+.wv-order-line {
+	border: 1px solid transparent;
+	background:
+		linear-gradient(180deg, color-mix(in srgb, var(--wv-purple) 14%, var(--wv-surface)), var(--wv-surface))
+			padding-box,
+		linear-gradient(
+				135deg,
+				color-mix(in srgb, var(--wv-cyan) 55%, transparent),
+				color-mix(in srgb, var(--wv-purple) 60%, transparent) 55%,
+				color-mix(in srgb, var(--wv-pink) 55%, transparent)
+			)
+			border-box;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 8%, transparent),
+		0 0 14px color-mix(in srgb, var(--wv-purple) 40%, transparent);
+}
+.wv-order-qty {
+	color: var(--wv-cyan-soft);
+	border: 1px solid color-mix(in srgb, var(--wv-cyan) 55%, transparent);
+	background: color-mix(in srgb, var(--wv-cyan) 10%, transparent);
+	box-shadow: 0 0 10px color-mix(in srgb, var(--wv-cyan) 30%, transparent);
+	text-shadow: 0 0 8px color-mix(in srgb, var(--wv-cyan) 65%, transparent);
+}
+
+/* My Reviews (wv-reviews-client.tsx): each review and each product to review is a glass row (.wv-order-line). Stars
+ * earned glow cyan, filled; the rest are dim outlines; when picking a rating, each star lifts under the pointer. A
+ * review's headline is brighter and its product name glows cyan under the pointer; Edit and Delete are small neon pills
+ * (Delete pink). The editor's fields are set into the glass and glow cyan while focused. */
+.wv-review-stars svg {
+	color: color-mix(in srgb, var(--ac-muted) 45%, transparent);
+	transition:
+		color 150ms ease,
+		transform 150ms ease,
+		filter 150ms ease;
+}
+.wv-review-stars svg[data-on] {
+	color: var(--wv-cyan-soft);
+	fill: color-mix(in srgb, var(--wv-cyan-soft) 85%, transparent);
+	filter: drop-shadow(0 0 5px color-mix(in srgb, var(--wv-cyan) 85%, transparent));
+}
+@media (hover: hover) {
+	.wv-review-stars--pick button:hover svg {
+		color: var(--wv-cyan-soft);
+		transform: translateY(-2px) scale(1.08);
+	}
+}
+.wv-review-stars--pick button:focus-visible {
+	outline: 2px solid var(--wv-cyan-soft);
+	outline-offset: 2px;
+}
+.wv-review-headline {
+	color: color-mix(in srgb, white 85%, var(--ac-muted));
+	text-shadow: 0 0 8px color-mix(in srgb, var(--wv-purple) 70%, transparent);
+}
+.wv-review-product {
+	transition:
+		color 150ms ease,
+		text-shadow 150ms ease;
+}
+.wv-review-product:is(:hover, :focus-visible) {
+	color: var(--wv-cyan-soft);
+	text-shadow: 0 0 10px color-mix(in srgb, var(--wv-cyan) 70%, transparent);
+}
+.wv-review-btn {
+	--tone: var(--wv-cyan-soft);
+	color: var(--tone);
+	border: 1px solid color-mix(in srgb, var(--tone) 55%, transparent);
+	background: color-mix(in srgb, var(--tone) 10%, transparent);
+	box-shadow: 0 0 10px color-mix(in srgb, var(--tone) 25%, transparent);
+	text-shadow: 0 0 8px color-mix(in srgb, var(--tone) 60%, transparent);
+	transition: box-shadow 150ms ease;
+}
+.wv-review-btn--pink {
+	--tone: var(--wv-pink);
+}
+.wv-review-btn:not(:disabled):is(:hover, :focus-visible) {
+	box-shadow: 0 0 16px color-mix(in srgb, var(--tone) 55%, transparent);
+}
+.wv-acct-field {
+	border: 1px solid transparent;
+	background:
+		linear-gradient(180deg, var(--ac-input), color-mix(in srgb, var(--wv-purple) 12%, var(--ac-subtle)))
+			padding-box,
+		linear-gradient(
+				135deg,
+				color-mix(in srgb, var(--wv-cyan) 55%, transparent),
+				color-mix(in srgb, var(--wv-pink) 55%, transparent)
+			)
+			border-box;
+	box-shadow:
+		inset 0 2px 5px var(--wv-ink),
+		0 0 8px color-mix(in srgb, var(--wv-cyan) 15%, transparent);
+	transition: box-shadow 180ms ease;
+}
+.wv-acct-field:focus {
+	box-shadow:
+		inset 0 2px 5px var(--wv-ink),
+		0 0 0 3px color-mix(in srgb, var(--wv-cyan) 22%, transparent),
+		0 0 14px color-mix(in srgb, var(--wv-cyan) 45%, transparent);
+}
+@media (prefers-reduced-motion: reduce) {
+	.wv-review-stars--pick button:hover svg {
+		transform: none;
+	}
+}
+
 /* Footer link columns (WvFooter in wv-chrome.tsx): each heading is lifted with a dark edge, a purple one beneath and a
  * cyan glow, over a short glowing cyan-to-pink bar; the links are brighter than the old grey with a dark edge, and glow
  * cyan under the pointer (motion.css still turns them cyan and nudges them right). */

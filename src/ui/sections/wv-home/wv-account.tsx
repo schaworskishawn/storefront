@@ -1,3 +1,16 @@
+import {
+	ArrowRight,
+	ChevronDown,
+	ChevronRight,
+	Lock,
+	LogIn,
+	Mail,
+	MapPin,
+	Menu,
+	Package,
+	UserRound,
+	type LucideIcon,
+} from "lucide-react";
 import Link from "next/link";
 import { type ReactNode } from "react";
 import { readRewardsConfig } from "@/lib/rewards/tokens";
@@ -31,80 +44,145 @@ function navItems(active: string): NavItem[] {
 	].map((n): NavItem => ({ ...n, active: n.label === active }));
 }
 
+/**
+ * The account menu's rows (`.wv-acct-link` in wv-home.css): each glows under the pointer, its side bar lighting cyan and
+ * its chevron nudging on; the page you're on is lit glass inside a cyan-to-pink edge, its bar glowing cyan into pink.
+ */
 function NavRows({ signedIn, active }: { signedIn: boolean; active: string }) {
-	const row = "flex h-11 items-center gap-3 rounded-xl p-3 text-sm";
+	const row = "wv-acct-link flex h-11 items-center gap-3 rounded-xl p-3 text-sm";
+	const inner = (label: string) => (
+		<>
+			<span aria-hidden className="wv-acct-bar h-5 w-[3px] rounded-full" />
+			<span className="flex-1">{label}</span>
+			<ChevronRight aria-hidden className="wv-acct-chev size-4" strokeWidth={2.25} />
+		</>
+	);
 	return (
 		<>
-			{navItems(active).map((n) => {
-				const inner = (
-					<>
-						<span
-							aria-hidden
-							className={`h-5 w-[3px] rounded-full ${n.active ? "bg-[var(--ac-cyan)]" : "bg-[var(--ac-subtle)]"}`}
-						/>
-						<span className="flex-1">{n.label}</span>
-					</>
-				);
-				const style = n.active
-					? `${row} border border-[var(--ac-cyan)] bg-[var(--ac-input)] text-white`
-					: `${row} text-[var(--ac-muted)]`;
-				return n.href ? (
-					<Link key={n.label} href={n.href} aria-current={n.active ? "page" : undefined} className={style}>
-						{inner}
+			{navItems(active).map((n) =>
+				n.href ? (
+					<Link
+						key={n.label}
+						href={n.href}
+						aria-current={n.active ? "page" : undefined}
+						data-active={n.active || undefined}
+						className={row}
+					>
+						{inner(n.label)}
 					</Link>
 				) : (
-					<span key={n.label} aria-disabled="true" title="Coming soon" className={`${style} opacity-50`}>
-						{inner}
+					<span
+						key={n.label}
+						aria-disabled="true"
+						title="Coming soon"
+						data-active={n.active || undefined}
+						className={`${row} opacity-50`}
+					>
+						{inner(n.label)}
 					</span>
-				);
-			})}
+				),
+			)}
 			{signedIn && (
 				<Link
 					href="/logout"
 					aria-current={active === "Log Out" ? "page" : undefined}
-					className={
-						active === "Log Out"
-							? `${row} border border-[var(--ac-cyan)] bg-[var(--ac-input)] text-white`
-							: `${row} text-[var(--ac-muted)]`
-					}
+					data-active={active === "Log Out" || undefined}
+					className={row}
 				>
-					<span
-						aria-hidden
-						className={`h-5 w-[3px] rounded-full ${active === "Log Out" ? "bg-[var(--ac-cyan)]" : "bg-[var(--ac-subtle)]"}`}
-					/>
-					<span className="flex-1">Log Out</span>
+					{inner("Log Out")}
 				</Link>
 			)}
 		</>
 	);
 }
 
+/**
+ * One summary on the signed-in account page, the whole card a link: a neon card (`.wv-neon-card`, pink for the middle
+ * one) that lifts and glows under the pointer. Its icon sits in a lit tile and its label in a glowing pill; the value is
+ * lifted; a neon line runs under the hint; and the action is a neon pill whose arrow slides on under the pointer
+ * (`.wv-acct-card*` in wv-home.css).
+ */
 function SummaryCard({
+	Icon,
 	label,
 	value,
 	hint,
 	action,
 	href,
+	pink = false,
 }: {
+	Icon: LucideIcon;
 	label: string;
 	value: string;
 	hint: string;
 	action: string;
 	href: string;
+	pink?: boolean;
 }) {
 	return (
-		<div className="flex min-h-[188px] flex-col gap-2 rounded-xl border border-[var(--ac-card-border)] bg-[var(--wv-surface)] p-[18px] md:min-h-[208px] md:p-5 lg:min-h-[216px] lg:gap-[10px] lg:p-6">
-			<p className={`${orbitron} text-xs text-[var(--ac-cyan)]`}>{label}</p>
-			<p className={`${bungee} break-words text-[22px] text-white lg:text-[26px]`}>{value}</p>
-			<p className={`${orbitron} text-xs text-[var(--ac-muted)] lg:text-[13px]`}>{hint}</p>
+		<Link
+			href={href}
+			className={`wv-neon-card wv-acct-card ${pink ? "wv-neon-card--pink" : ""} group flex min-h-[188px] flex-col gap-3 rounded-xl p-[18px] md:min-h-[208px] md:p-5 lg:min-h-[216px] lg:p-6`}
+		>
+			<div className="flex items-start justify-between gap-3">
+				<span
+					aria-hidden
+					className="wv-neon-card-icon flex size-11 shrink-0 items-center justify-center rounded-xl"
+				>
+					<Icon className="size-5" strokeWidth={2.25} />
+				</span>
+				<span className={`${orbitron} wv-acct-card-tag rounded-full px-2.5 py-1 text-[10px] tracking-[1px]`}>
+					{label}
+				</span>
+			</div>
+			<div className="flex flex-col gap-1">
+				<p className={`${bungee} wv-pc-name break-words text-[22px] text-white lg:text-[26px]`}>{value}</p>
+				<p className={`${orbitron} wv-neon-card-text break-words text-xs lg:text-[13px]`}>
+					{/* An email may wrap after its "@" rather than mid-word. */}
+					{hint.includes("@") ? (
+						<>
+							{hint.slice(0, hint.indexOf("@") + 1)}
+							<wbr />
+							{hint.slice(hint.indexOf("@") + 1)}
+						</>
+					) : (
+						hint
+					)}
+				</p>
+			</div>
 			<div className="flex-1" />
-			<Link href={href} className={`${orbitron} self-end text-[11px] text-[var(--ac-pink)]`}>
+			<span aria-hidden className="wv-acct-card-rule h-px w-full" />
+			<span
+				className={`${orbitron} wv-acct-card-action flex items-center gap-2 self-end rounded-full px-3.5 py-1.5 text-[11px] tracking-[0.5px]`}
+			>
 				{action}
-			</Link>
-		</div>
+				<ArrowRight
+					aria-hidden
+					className="size-3.5 transition-transform group-hover:translate-x-1"
+					strokeWidth={2.5}
+				/>
+			</span>
+		</Link>
 	);
 }
 
+/** A page title with its last word lit cyan ("MY ACCOUNT" → "MY" "ACCOUNT"), as the site's other heroes do. */
+function TitleWords({ title }: { title: string }) {
+	const cut = title.lastIndexOf(" ");
+	if (cut < 0) return <span>{title}</span>;
+	return (
+		<>
+			<span>{title.slice(0, cut)}</span> <span className="text-[var(--ac-cyan)]">{title.slice(cut + 1)}</span>
+		</>
+	);
+}
+
+/**
+ * Every account page's frame, in the site's neon style (`.wv-acct-*` in wv-home.css). Below the desktop layout the menu
+ * is a lit glass panel that opens (an icon tile, a glowing chevron); on desktop it is a lit glass sidebar with the
+ * avatar in a glowing ring (a person icon for a guest), the email glowing cyan and a neon divider. The title is 3D with
+ * its last word lit cyan over a glowing bar, the subtitle brighter, all over the heroes' soft pink and cyan glows.
+ */
 export function AccountShell({
 	user,
 	active,
@@ -117,49 +195,56 @@ export function AccountShell({
 	return (
 		<div className="relative min-h-dvh overflow-x-clip bg-[var(--wv-bg)] text-white">
 			<WvHeader />
-			<main className="mx-auto flex max-w-[1440px] flex-col gap-5 px-4 pb-16 pt-12 md:px-8 lg:flex-row lg:items-start lg:gap-8 lg:px-16">
+			<main className="wv-hero-backdrop mx-auto flex max-w-[1440px] flex-col gap-5 px-4 pb-16 pt-12 md:px-8 lg:flex-row lg:items-start lg:gap-8 lg:px-16">
 				{/* Nav: collapsed menu below lg, full sidebar at lg */}
-				<details className="group rounded-xl border border-[var(--ac-subtle)] bg-[var(--wv-surface)] lg:hidden">
+				<details className="wv-acct-menu group rounded-xl lg:hidden">
 					<summary
 						className={`${orbitron} flex h-[52px] cursor-pointer list-none items-center justify-between px-4 text-sm [&::-webkit-details-marker]:hidden`}
 					>
 						<span className="flex items-center gap-3">
-							<span aria-hidden className="text-[var(--ac-cyan)]">
-								☰
+							<span aria-hidden className="wv-acct-icon flex size-8 items-center justify-center rounded-lg">
+								<Menu className="size-4" strokeWidth={2.5} />
 							</span>
 							Account Menu
 						</span>
-						<span aria-hidden className="text-[var(--ac-muted)] transition-transform group-open:rotate-180">
-							⌄
-						</span>
+						<ChevronDown
+							aria-hidden
+							className="wv-acct-caret size-4 transition-transform group-open:rotate-180"
+							strokeWidth={2.5}
+						/>
 					</summary>
 					<nav aria-label="Account" className={`${orbitron} flex flex-col gap-2 px-3 pb-3`}>
 						<NavRows signedIn={!!user} active={active} />
 					</nav>
 				</details>
 
-				<aside className="hidden w-[320px] shrink-0 flex-col gap-2 rounded-xl border border-[var(--ac-subtle)] bg-[var(--wv-surface)] p-6 lg:flex">
+				<aside className="wv-acct-side hidden w-[320px] shrink-0 flex-col gap-2 rounded-xl p-6 lg:flex">
 					<div className="flex flex-col items-center gap-2">
 						<div
-							className={`${bungee} flex size-16 items-center justify-center rounded-full border border-[var(--ac-cyan)] text-2xl text-[var(--ac-cyan)]`}
+							className={`${bungee} wv-acct-avatar flex size-16 items-center justify-center rounded-full text-2xl`}
 						>
-							{initial}
+							{initial || <UserRound aria-hidden className="size-7" strokeWidth={2} />}
 						</div>
-						<p className={`${bungee} text-xl leading-7 tracking-[-0.2px]`}>{user?.name ?? "Guest"}</p>
-						<p className={`${orbitron} text-xs text-[var(--ac-cyan)]`}>
-							{user ? user.email : "Not signed in"}
+						<p className={`${bungee} wv-pc-name text-xl leading-7 tracking-[-0.2px]`}>
+							{user?.name ?? "Guest"}
 						</p>
+						<p className={`${orbitron} wv-acct-email text-xs`}>{user ? user.email : "Not signed in"}</p>
 					</div>
-					<div className="my-2 h-px bg-[var(--ac-subtle)]" />
+					<div aria-hidden className="wv-acct-rule my-2 h-px" />
 					<nav aria-label="Account" className={`${orbitron} flex flex-col gap-2`}>
 						<NavRows signedIn={!!user} active={active} />
 					</nav>
 				</aside>
 
 				<section className="flex min-w-0 flex-1 flex-col gap-6">
-					<div className="flex flex-col gap-2 py-2">
-						<h1 className={`${bungee} text-[40px] leading-[48px] tracking-[-0.4px]`}>{title}</h1>
-						<p className={`${orbitron} text-base leading-6 text-[var(--ac-muted)]`}>{subtitle}</p>
+					<div className="flex flex-col gap-3 py-2">
+						<h1
+							className={`${bungee} wv-title-glow wv-hero-title text-[40px] leading-[48px] tracking-[-0.4px]`}
+						>
+							<TitleWords title={title} />
+						</h1>
+						<div className="wv-hero-bar h-1 w-20 rounded-full md:w-[120px]" />
+						<p className={`${orbitron} wv-hero-copy text-base leading-6`}>{subtitle}</p>
 					</div>
 
 					{children}
@@ -170,18 +255,25 @@ export function AccountShell({
 	);
 }
 
+/** Signed out: a lit glass card (`.wv-news-card`) with a lock in a neon tile and the glossy sign-in button. */
 export function SignInPrompt() {
 	return (
-		<div className="flex flex-col items-start gap-4 rounded-xl border border-[var(--ac-card-border)] bg-[var(--wv-surface)] p-6">
-			<p className={`${bungee} text-2xl`}>SIGN IN TO CONTINUE</p>
-			<p className={`${orbitron} text-sm text-[var(--ac-muted)]`}>
-				Sign in to see your orders, saved addresses and account settings.
+		<div className="wv-news-card flex flex-col items-start gap-4 rounded-[20px] p-6 md:p-8">
+			<span aria-hidden className="wv-acct-icon flex size-12 items-center justify-center rounded-xl">
+				<Lock className="size-5" strokeWidth={2.25} />
+			</span>
+			<p className={`${bungee} wv-heading-title text-2xl`}>SIGN IN TO CONTINUE</p>
+			<p className={`${orbitron} wv-hero-copy text-sm leading-[1.6]`}>
+				Sign in to see your <strong className="wv-hero-key">orders</strong>,{" "}
+				<strong className="wv-hero-key wv-hero-key--pink">saved addresses</strong> and{" "}
+				<strong className="wv-hero-key">account settings</strong>.
 			</p>
 			<Link
 				href="/login"
-				className="flex h-12 items-center justify-center rounded-xl bg-[var(--ac-cyan-bright)] px-8 font-[family-name:var(--font-hey-comic)] text-base text-[var(--wv-bg)]"
+				className="wv-pc-cta flex h-12 items-center justify-center gap-2 rounded-xl bg-[var(--ac-cyan-bright)] px-8 font-[family-name:var(--font-hey-comic)] text-base text-[var(--wv-bg)]"
 			>
-				SIGN IN
+				<LogIn aria-hidden className="size-4" strokeWidth={2.5} />
+				<span className="wv-pc-cta-label">SIGN IN</span>
 			</Link>
 		</div>
 	);
@@ -199,6 +291,7 @@ export function WvAccount({ user, base }: AccountView) {
 			{user ? (
 				<div className="grid gap-4 md:grid-cols-3">
 					<SummaryCard
+						Icon={Package}
 						label="RECENT ORDER"
 						value="MY ORDERS"
 						hint="Track and review your purchases"
@@ -206,6 +299,8 @@ export function WvAccount({ user, base }: AccountView) {
 						href="/orders"
 					/>
 					<SummaryCard
+						Icon={MapPin}
+						pink
 						label="DEFAULT ADDRESS"
 						value={user.city ? user.city.toUpperCase() : "NOT SET"}
 						hint={user.city ? "Default shipping address" : "Add a shipping address"}
@@ -213,6 +308,7 @@ export function WvAccount({ user, base }: AccountView) {
 						href="/addresses"
 					/>
 					<SummaryCard
+						Icon={Mail}
 						label="ACCOUNT EMAIL"
 						value={user.name.toUpperCase()}
 						hint={user.email}
