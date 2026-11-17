@@ -1,4 +1,4 @@
-import { ArrowDown, Coins, ShoppingBag } from "lucide-react";
+import { ArrowDown, BadgePercent, Coins, Hourglass, ShoppingBag, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { describeExpiry, formatRate, hundredTokensWorth, tokenCount } from "@/lib/rewards/program-copy";
@@ -67,15 +67,24 @@ function faqsFor(config: RewardsConfig): Faq[] {
 	];
 }
 
-/** The program's three headline numbers, as stat cards. */
-function stats(config: RewardsConfig) {
+/** The program's three headline numbers, each with its icon. */
+function stats(config: RewardsConfig): { Icon: LucideIcon; value: string; label: string }[] {
 	return [
 		{
+			Icon: Coins,
 			value: formatRate(config.tokensPerDollar),
 			label: `${config.tokensPerDollar === 1 ? "Token" : "Tokens"} for every $1 spent on products`,
 		},
-		{ value: `100 = ${hundredTokensWorth()}`, label: "What your tokens are worth at checkout" },
-		{ value: describeExpiry(config.expiryMonths).short, label: "Before a batch of tokens expires" },
+		{
+			Icon: BadgePercent,
+			value: `100 = ${hundredTokensWorth()}`,
+			label: "What your tokens are worth at checkout",
+		},
+		{
+			Icon: Hourglass,
+			value: describeExpiry(config.expiryMonths).short,
+			label: "Before a batch of tokens expires",
+		},
 	];
 }
 
@@ -173,12 +182,26 @@ export function WvRewards({ config, account }: { config: RewardsConfig; account:
 				</div>
 			</section>
 
-			{/* The program in three numbers */}
-			<section className="grid grid-cols-1 gap-4 border-y border-[var(--wv-purple)] bg-[var(--wv-surface)] px-5 py-6 md:grid-cols-3 md:gap-6 md:px-8 xl:px-20 xl:py-8">
+			{/* The program in three numbers, in a lit glass band (`.wv-band`): each led by its icon in a glowing neon ring
+			    (`.wv-trust-icon`; cyan, pink, cyan), its value lifted and glowing in that colour (`.wv-stat-value`), its label
+			    brighter, with glowing neon lines between them. A row each on phones, side by side from tablets up. */}
+			<section className="wv-band grid grid-cols-1 gap-4 px-5 py-6 md:grid-cols-3 md:gap-6 md:px-8 xl:px-20 xl:py-8">
 				{stats(config).map((s) => (
-					<div key={s.label} className="flex flex-col items-center gap-1 text-center">
-						<p className={`${bungee} text-[28px] text-[var(--wv-cyan-soft)] xl:text-[34px]`}>{s.value}</p>
-						<p className={`${orbitron} text-xs text-[var(--wv-text-dim)]`}>{s.label}</p>
+					<div
+						key={s.label}
+						className="wv-trust-item wv-stat flex items-center gap-4 md:flex-col md:gap-2 md:text-center"
+					>
+						<span aria-hidden className="wv-trust-icon text-2xl xl:text-[28px]">
+							<s.Icon className="size-[0.75em]" strokeWidth={2} />
+						</span>
+						<div className="flex min-w-0 flex-col gap-1 md:items-center">
+							<p
+								className={`${bungee} wv-stat-value text-[26px] leading-tight md:text-[28px] xl:text-[34px]`}
+							>
+								{s.value}
+							</p>
+							<p className={`${orbitron} wv-trust-text text-xs`}>{s.label}</p>
+						</div>
 					</div>
 				))}
 			</section>
