@@ -8,6 +8,7 @@ import {
 	Globe,
 	Handshake,
 	Home,
+	Layers,
 	TrendingUp,
 	Wallet,
 	Wind,
@@ -52,6 +53,7 @@ const HIGHLIGHTS = [
 	},
 ];
 
+/** The tiers build on each other: each card lists what it adds to the tier below (all of whose benefits it keeps). */
 const TIERS = [
 	{
 		name: "CLOUD",
@@ -59,12 +61,7 @@ const TIERS = [
 		rate: "10%",
 		range: "$0 - $1,000 / mo",
 		color: "yellow",
-		benefits: [
-			"Basic marketing banners",
-			"Monthly payout schedule",
-			"Standard email support",
-			"30-day cookie life",
-		],
+		benefits: ["Basic marketing banners", "Monthly payouts", "Email support", "30-day cookie life"],
 	},
 	{
 		name: "VAPOR",
@@ -72,12 +69,7 @@ const TIERS = [
 		rate: "12%",
 		range: "$1,001 - $5,000 / mo",
 		color: "orange",
-		benefits: [
-			"Custom social templates",
-			"Priority email support",
-			"Early access to select drops",
-			"Co-branded landing page",
-		],
+		benefits: ["Custom social templates", "Early access to select drops", "Co-branded landing page"],
 	},
 	{
 		name: "SURGE",
@@ -86,7 +78,7 @@ const TIERS = [
 		range: "$5,001 - $15,000 / mo",
 		color: "pink",
 		benefits: [
-			"Bi-weekly payout option",
+			"Bi-weekly payouts",
 			"Dedicated account manager",
 			"Exclusive product samples",
 			"Custom discount codes",
@@ -98,14 +90,12 @@ const TIERS = [
 		rate: "20%",
 		range: "$15,000+ / mo",
 		color: "cyan",
-		benefits: [
-			"Weekly payout on-demand",
-			"Highest commission rate",
-			"Sponsorship & merch kit",
-			"Direct Slack line to execs",
-		],
+		benefits: ["Weekly payouts", "Highest commission rate", "Sponsorship & merch kit", "Direct Slack line"],
 	},
 ] as const;
+
+/** "CLOUD" as "Cloud", for the line that says what a tier builds on. */
+const tierTitle = (name: string) => name.charAt(0) + name.slice(1).toLowerCase();
 
 const STATS = [
 	{ label: "TOTAL EARNINGS", value: "$12,480.50", trend: "+14.2% this month", pink: false, mobile: true },
@@ -317,6 +307,15 @@ export function WvAffiliate() {
 								<div className={`${orbitron} flex flex-col gap-3 text-xs`}>
 									<p className="wv-pc-name font-bold text-white">BENEFITS INCLUDED:</p>
 									<span aria-hidden className="wv-acct-card-rule h-px w-full" />
+									{i > 0 && (
+										<p className="wv-af-includes wv-neon-card-text flex items-center gap-2 text-[11px]">
+											<Layers aria-hidden className="size-3.5 shrink-0" strokeWidth={2.25} />
+											<span>
+												Everything in <strong className="wv-neon-key">{tierTitle(TIERS[i - 1].name)}</strong>,
+												plus:
+											</span>
+										</p>
+									)}
 									<ul className="wv-neon-card-text flex flex-col gap-2.5">
 										{t.benefits.map((b) => (
 											<li key={b} className="flex items-start gap-2.5">

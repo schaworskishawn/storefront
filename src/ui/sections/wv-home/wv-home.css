@@ -392,7 +392,8 @@ button[aria-pressed="true"] > .wv-filter-dot {
 /* The affiliate page's commission tiers (wv-affiliate.tsx): neon cards (.wv-neon-card) each in its tier's colour, set by
  * data-tone. The edge runs the tier's colour through purple and back, the glow is the tier's colour, and the tiles, tags,
  * rate and ticks inside take it from --accent. The sales volume sits in dark glass set into the card. The cards don't
- * lift under the pointer, as they aren't links; they only glow brighter. */
+ * lift under the pointer, as they aren't links; they only glow brighter. Above the higher tiers' benefits, the line
+ * saying which tier they build on has its icon lit too. */
 .wv-neon-card.wv-af-tier {
 	--edge: linear-gradient(
 		150deg,
@@ -430,7 +431,8 @@ button[aria-pressed="true"] > .wv-filter-dot {
 		inset 0 2px 8px var(--wv-ink),
 		0 0 10px color-mix(in srgb, var(--accent) 18%, transparent);
 }
-.wv-af-range svg {
+.wv-af-range svg,
+.wv-af-includes svg {
 	color: var(--accent);
 	filter: drop-shadow(0 0 4px color-mix(in srgb, var(--accent) 85%, transparent));
 }
