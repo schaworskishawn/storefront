@@ -1,4 +1,15 @@
-import { ArrowDown, ChevronRight, Handshake, Home } from "lucide-react";
+import {
+	ArrowDown,
+	Check,
+	ChevronRight,
+	Cloud,
+	Globe,
+	Handshake,
+	Home,
+	TrendingUp,
+	Wind,
+	Zap,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { AffiliateApplyForm } from "./wv-affiliate-form";
@@ -41,6 +52,7 @@ const HIGHLIGHTS = [
 const TIERS = [
 	{
 		name: "CLOUD",
+		Icon: Cloud,
 		rate: "10%",
 		range: "$0 - $1,000 / mo",
 		color: "yellow",
@@ -53,6 +65,7 @@ const TIERS = [
 	},
 	{
 		name: "VAPOR",
+		Icon: Wind,
 		rate: "12%",
 		range: "$1,001 - $5,000 / mo",
 		color: "orange",
@@ -65,6 +78,7 @@ const TIERS = [
 	},
 	{
 		name: "SURGE",
+		Icon: Zap,
 		rate: "15%",
 		range: "$5,001 - $15,000 / mo",
 		color: "pink",
@@ -77,6 +91,7 @@ const TIERS = [
 	},
 	{
 		name: "GLOBAL",
+		Icon: Globe,
 		rate: "20%",
 		range: "$15,000+ / mo",
 		color: "cyan",
@@ -88,33 +103,6 @@ const TIERS = [
 		],
 	},
 ] as const;
-
-const TIER_COLOR = {
-	yellow: {
-		text: "text-[var(--af-yellow)]",
-		border: "border-[var(--af-yellow)]",
-		glow: "[--glow:var(--af-yellow)]",
-		check: "text-[var(--wv-cyan-soft)]",
-	},
-	orange: {
-		text: "text-[var(--af-orange)]",
-		border: "border-[var(--af-orange)]",
-		glow: "[--glow:var(--af-orange)]",
-		check: "text-[var(--wv-cyan-soft)]",
-	},
-	pink: {
-		text: "text-[var(--af-pink)]",
-		border: "border-[var(--af-pink)]",
-		glow: "[--glow:var(--af-pink)]",
-		check: "text-[var(--wv-cyan-soft)]",
-	},
-	cyan: {
-		text: "text-[var(--af-cyan)]",
-		border: "border-[var(--af-cyan)]",
-		glow: "[--glow:var(--af-cyan)]",
-		check: "text-[var(--wv-pink)]",
-	},
-} as const;
 
 const STATS = [
 	{ label: "TOTAL EARNINGS", value: "$12,480.50", trend: "+14.2% this month", pink: false, mobile: true },
@@ -263,51 +251,81 @@ export function WvAffiliate() {
 					))}
 				</ul>
 
-				{/* Tiers */}
+				{/* Tiers, over a soft pink and cyan glow (`.wv-faq-glow`): a chrome 3D heading (`.wv-heading-title`) over its
+				    pink eyebrow-style line and the glowing hero bar; each tier a neon card in its own colour (`.wv-af-tier`, set by
+				    `data-tone`): its icon in a lit tile beside a glowing LEVEL tag and its name, the rate lifted and glowing, the sales
+				    volume in glass set into the card, and each benefit marked by a small glowing neon tick. */}
 				<section
 					id="tiers"
-					className="flex scroll-mt-6 flex-col items-center gap-8 px-4 py-12 md:gap-10 md:px-8 md:py-16 xl:gap-14 xl:px-20 xl:py-[100px]"
+					className="wv-faq-glow flex scroll-mt-6 flex-col items-center gap-8 px-4 py-12 md:gap-10 md:px-8 md:py-16 xl:gap-14 xl:px-20 xl:py-[100px]"
 				>
-					<div className="flex flex-col items-center gap-3">
-						<h2 className={`${bungee} text-[22px] text-[var(--wv-cyan-soft)] md:text-[26px] xl:text-[32px]`}>
+					<div className="flex flex-col items-center gap-3 text-center">
+						<h2 className={`${bungee} wv-heading-title text-[22px] text-white md:text-[26px] xl:text-[32px]`}>
 							COMMISSION TIERS
 						</h2>
-						<p className={`${heyComic} text-xs tracking-[2px] md:text-sm`}>AFFILIATE PARTNER LEVELS</p>
-						<span aria-hidden className="h-[2px] w-20 bg-[var(--wv-pink)] xl:w-[100px]" />
+						<p
+							className={`${heyComic} wv-heading-eyebrow text-xs tracking-[2px] text-[var(--wv-pink)] md:text-sm`}
+						>
+							AFFILIATE PARTNER LEVELS
+						</p>
+						<span aria-hidden className="wv-hero-bar h-1 w-20 rounded-full xl:w-[100px]" />
 					</div>
-					<ul className="grid w-full gap-8 md:grid-cols-2 md:gap-5 xl:grid-cols-4">
-						{TIERS.map((t) => {
-							const c = TIER_COLOR[t.color];
-							return (
-								<li
-									key={t.name}
-									className={`af-glow flex flex-col gap-5 rounded-2xl border-2 bg-[var(--wv-ink)] p-6 xl:gap-6 xl:p-8 ${c.border} ${c.glow}`}
-								>
-									<p className={`${bungee} text-base ${c.text}`}>{t.name}</p>
-									<div className="flex flex-col gap-1">
-										<p className={`${bungee} text-[40px] leading-none xl:text-[48px] ${c.text}`}>{t.rate}</p>
-										<p className={`${orbitron} text-xs text-[var(--lg-body)]`}>COMMISSION RATE</p>
+					<ul className="grid w-full gap-6 md:grid-cols-2 md:gap-5 xl:grid-cols-4 xl:gap-4 2xl:gap-5">
+						{TIERS.map((t, i) => (
+							<li
+								key={t.name}
+								data-tone={t.color}
+								className="wv-neon-card wv-af-tier flex flex-col gap-5 rounded-2xl p-6 xl:gap-6"
+							>
+								<div className="flex items-center gap-3">
+									<span
+										aria-hidden
+										className="wv-neon-card-icon flex size-11 shrink-0 items-center justify-center rounded-xl"
+									>
+										<t.Icon className="size-5" strokeWidth={2.25} />
+									</span>
+									<div className="flex min-w-0 flex-col items-start gap-1.5">
+										<span
+											aria-hidden
+											className={`${orbitron} wv-acct-card-tag rounded-full px-2.5 py-[3px] text-[10px] tracking-[1px]`}
+										>
+											LEVEL {i + 1}
+										</span>
+										<h3 className={`${bungee} wv-neon-card-timing text-base leading-none`}>{t.name}</h3>
 									</div>
-									<div className={`${orbitron} flex flex-col gap-1 rounded-lg bg-[var(--wv-surface)] p-3`}>
-										<p className="text-[11px] text-[var(--wv-disabled)]">MONTHLY SALES VOLUME</p>
-										<p className="text-[13px]">{t.range}</p>
-									</div>
-									<div className={`${orbitron} flex flex-col gap-3 text-xs`}>
-										<p className="font-bold">BENEFITS INCLUDED:</p>
-										<ul className="flex flex-col gap-3">
-											{t.benefits.map((b) => (
-												<li key={b} className="flex items-center gap-2 text-[var(--lg-body)]">
-													<span aria-hidden className={c.check}>
-														✓
-													</span>
-													{b}
-												</li>
-											))}
-										</ul>
-									</div>
-								</li>
-							);
-						})}
+								</div>
+								<div className="flex flex-col gap-1.5">
+									<p className={`${bungee} wv-stat-value text-[44px] leading-none xl:text-[48px]`}>
+										{t.rate}
+									</p>
+									<p className={`${orbitron} wv-neon-card-text text-xs tracking-[1px]`}>COMMISSION RATE</p>
+								</div>
+								<div className={`${orbitron} wv-af-range flex flex-col gap-1.5 rounded-xl p-3`}>
+									<p className="wv-af-range-label flex items-center gap-1 text-[11px]">
+										<TrendingUp aria-hidden className="size-3.5 shrink-0" strokeWidth={2.25} />
+										MONTHLY SALES VOLUME
+									</p>
+									<p className="text-[13px] text-white">{t.range}</p>
+								</div>
+								<div className={`${orbitron} flex flex-col gap-3 text-xs`}>
+									<p className="wv-pc-name font-bold text-white">BENEFITS INCLUDED:</p>
+									<span aria-hidden className="wv-acct-card-rule h-px w-full" />
+									<ul className="wv-neon-card-text flex flex-col gap-2.5">
+										{t.benefits.map((b) => (
+											<li key={b} className="flex items-start gap-2.5">
+												<span
+													aria-hidden
+													className="wv-rw-mark -mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full"
+												>
+													<Check className="size-3" strokeWidth={3} />
+												</span>
+												{b}
+											</li>
+										))}
+									</ul>
+								</div>
+							</li>
+						))}
 					</ul>
 				</section>
 

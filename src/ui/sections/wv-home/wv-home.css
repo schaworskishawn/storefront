@@ -389,12 +389,53 @@ button[aria-pressed="true"] > .wv-filter-dot {
 	max-width: 100%;
 }
 
-/* Affiliate tier neon glow — set --glow on the element */
-.af-glow {
+/* The affiliate page's commission tiers (wv-affiliate.tsx): neon cards (.wv-neon-card) each in its tier's colour, set by
+ * data-tone. The edge runs the tier's colour through purple and back, the glow is the tier's colour, and the tiles, tags,
+ * rate and ticks inside take it from --accent. The sales volume sits in dark glass set into the card. The cards don't
+ * lift under the pointer, as they aren't links; they only glow brighter. */
+.wv-neon-card.wv-af-tier {
+	--edge: linear-gradient(
+		150deg,
+		var(--accent),
+		color-mix(in srgb, var(--wv-purple) 75%, transparent) 55%,
+		color-mix(in srgb, var(--accent) 55%, transparent)
+	);
+	--glow:
+		0 0 18px color-mix(in srgb, var(--accent) 28%, transparent),
+		0 0 44px -12px color-mix(in srgb, var(--accent) 45%, transparent);
+}
+.wv-af-tier[data-tone="yellow"] {
+	--accent: var(--af-yellow);
+}
+.wv-af-tier[data-tone="orange"] {
+	--accent: var(--af-orange);
+}
+.wv-af-tier[data-tone="pink"] {
+	--accent: var(--af-pink);
+}
+.wv-af-tier[data-tone="cyan"] {
+	--accent: var(--af-cyan);
+}
+.wv-neon-card.wv-af-tier:hover {
+	transform: none;
+}
+.wv-af-tier .wv-neon-card-icon svg {
+	color: var(--accent);
+	filter: drop-shadow(0 0 4px color-mix(in srgb, var(--accent) 85%, transparent));
+}
+.wv-af-range {
+	border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+	background: linear-gradient(180deg, var(--wv-bg), color-mix(in srgb, var(--wv-purple) 14%, var(--wv-bg)));
 	box-shadow:
-		0 0 30px color-mix(in srgb, var(--glow) 15%, transparent),
-		0 0 15px color-mix(in srgb, var(--glow) 45%, transparent),
-		0 0 6px color-mix(in srgb, var(--glow) 75%, transparent);
+		inset 0 2px 8px var(--wv-ink),
+		0 0 10px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+.wv-af-range svg {
+	color: var(--accent);
+	filter: drop-shadow(0 0 4px color-mix(in srgb, var(--accent) 85%, transparent));
+}
+.wv-af-range-label {
+	color: color-mix(in srgb, white 55%, var(--wv-muted));
 }
 
 /* Trust strips (home, shop, payments, cart): each item's icon sits in a glowing neon ring, its title is lifted with a dark
