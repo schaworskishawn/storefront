@@ -1,5 +1,6 @@
 "use client";
 
+import { ArrowRight, ShieldCheck } from "lucide-react";
 import { AGE_VERIFIED_COOKIE, safeNextPath } from "@/lib/age-gate";
 import { useState, useSyncExternalStore, type ChangeEvent, type FormEvent } from "react";
 
@@ -10,7 +11,11 @@ const orbitron = "font-[family-name:var(--font-orbitron)]";
 const MIN_AGE = 18;
 const EXIT_URL = "https://www.google.com";
 
-const field = `${heyComic} h-12 w-full min-w-0 rounded bg-[var(--ct-field)] border border-[var(--ct-border)] px-[14px] text-center text-sm text-white placeholder:text-[var(--ct-placeholder)] focus:border-[var(--ct-cyan)] focus:outline-none`;
+/** A date-of-birth box set into the glass, glowing cyan while focused and pink when the date is wrong (`.wv-age-field`). */
+const field = `${heyComic} wv-age-field h-12 w-full min-w-0 rounded-lg px-[14px] text-center text-sm text-white placeholder:text-[var(--ct-placeholder)] focus:outline-none`;
+
+/** The glossy cyan button that enters the site (`.wv-pc-cta`). */
+const enterButton = `${heyComic} wv-pc-cta flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--wv-cyan-soft)] px-7 py-[14px] text-sm uppercase tracking-[1px] text-[var(--wv-ink)]`;
 
 function readVerified(): boolean {
 	return document.cookie.split("; ").some((c) => c === `${AGE_VERIFIED_COOKIE}=1`);
@@ -36,6 +41,10 @@ function check(m: string, d: string, y: string): string | null {
 /**
  * Date-of-birth age gate. The birth date is checked in the browser and never stored or sent; only a "verified" flag is
  * kept in this browser so the visitor isn't asked again.
+ *
+ * In the site's neon style (`.wv-age-*` in wv-home.css): a lit glass card, "18+" in chrome lettering inside a big neon
+ * ring (a ring pulses out of it when motion is allowed), a neon badge, a chrome 3D title over a glowing bar, brighter
+ * copy, the date boxes set into the glass, and the glossy button.
  */
 export function AgeGate() {
 	const verified = useSyncExternalStore(subscribe, readVerified, () => false);
@@ -67,40 +76,40 @@ export function AgeGate() {
 	const ok = done || verified;
 
 	return (
-		<div className="flex w-full flex-col items-center gap-5 rounded-xl border border-[var(--ct-border)] bg-[var(--ct-card)] px-5 py-8 md:gap-6 md:px-8 md:py-10">
-			<div className="flex size-[72px] items-center justify-center rounded-full border-2 border-[var(--ct-cyan)] bg-black/40">
-				<span className={`${bungee} text-[22px] text-[var(--ct-cyan)]`}>{MIN_AGE}+</span>
+		<div className="wv-age-card flex w-full flex-col items-center gap-5 rounded-[13px] px-5 py-8 md:gap-6 md:px-8 md:py-10">
+			<div className="wv-age-badge relative flex size-[84px] items-center justify-center rounded-full">
+				<span className={`${bungee} wv-heading-title text-[26px]`}>{MIN_AGE}+</span>
 			</div>
-			<p className={`${bungee} text-[11px] tracking-[2px] text-[var(--ct-cyan)]`}>
+			<p
+				className={`${bungee} wv-hero-badge flex items-center gap-2 rounded-full px-3 py-1 text-[10px] tracking-[2px]`}
+			>
+				<ShieldCheck aria-hidden className="size-3.5" strokeWidth={2.5} />
 				AGE VERIFICATION REQUIRED
 			</p>
-			<div className="flex flex-col items-center gap-[6px]">
-				<h2 className={`${bungee} text-base`}>AGE VERIFICATION</h2>
-				<span aria-hidden className="h-[2px] w-16 bg-[var(--ct-cyan)]" />
+			<div className="flex flex-col items-center gap-2">
+				<h2 className={`${bungee} wv-heading-title text-xl md:text-2xl`}>AGE VERIFICATION</h2>
+				<span aria-hidden className="wv-hero-bar h-1 w-16 rounded-full md:w-20" />
 			</div>
-			<p className={`${orbitron} max-w-[500px] text-center text-[13px] leading-[1.5] text-[var(--ct-text)]`}>
-				Please verify your age to access Worldwide Vapor. You must be of legal smoking age in your
-				jurisdiction.
+			<p className={`${orbitron} wv-hero-copy max-w-[500px] text-center text-[13px] leading-[1.6]`}>
+				Please verify your age to access Worldwide Vapor. You must be of{" "}
+				<strong className="wv-hero-key">legal smoking age</strong> in your jurisdiction.
 			</p>
 
 			{ok ? (
 				<div role="status" className="flex w-full flex-col items-center gap-4 text-center">
-					<p className={`${heyComic} text-lg text-[var(--ct-cyan)]`}>YOU&apos;RE VERIFIED ✓</p>
-					<p className={`${orbitron} text-xs text-[var(--ct-text)]`}>
+					<p className={`${heyComic} wv-hero-key text-lg`}>YOU&apos;RE VERIFIED ✓</p>
+					<p className={`${orbitron} wv-hero-copy text-xs`}>
 						Thanks. We&apos;ll remember this on this device.
 					</p>
-					<button
-						type="button"
-						onClick={enter}
-						className={`${heyComic} flex w-full items-center justify-center rounded bg-[var(--ct-cyan)] px-7 py-[14px] text-xs uppercase text-[var(--ct-ink)] shadow-[0_0_6px_rgba(0,255,224,0.4)]`}
-					>
-						Enter Site
+					<button type="button" onClick={enter} className={enterButton}>
+						<span className="wv-pc-cta-label">Enter Site</span>
+						<ArrowRight aria-hidden className="size-4" strokeWidth={2.5} />
 					</button>
 				</div>
 			) : (
 				<form onSubmit={submit} noValidate className="flex w-full flex-col items-center gap-4 md:gap-5">
 					<fieldset className="flex w-full flex-col items-center gap-4">
-						<legend className={`${bungee} mx-auto text-[11px] tracking-[1.5px] text-[var(--ct-text)]`}>
+						<legend className={`${bungee} wv-age-legend mx-auto text-[11px] tracking-[1.5px]`}>
 							ENTER DATE OF BIRTH
 						</legend>
 						<div className="mt-4 flex w-full items-center gap-3 md:gap-4">
@@ -151,13 +160,11 @@ export function AgeGate() {
 						</p>
 					)}
 					<div className="flex w-full flex-col items-center gap-3">
-						<button
-							type="submit"
-							className={`${heyComic} flex w-full items-center justify-center rounded bg-[var(--ct-cyan)] px-7 py-[14px] text-xs uppercase text-[var(--ct-ink)] shadow-[0_0_6px_rgba(0,255,224,0.4)]`}
-						>
-							Enter Site
+						<button type="submit" className={enterButton}>
+							<span className="wv-pc-cta-label">Enter Site</span>
+							<ArrowRight aria-hidden className="size-4" strokeWidth={2.5} />
 						</button>
-						<a href={EXIT_URL} className="text-[11px] text-[var(--ct-text)] underline">
+						<a href={EXIT_URL} className="wv-age-exit text-[11px] underline">
 							I am under {MIN_AGE} — Exit Site
 						</a>
 					</div>
