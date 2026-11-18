@@ -77,7 +77,6 @@ export function AffiliateApplyForm({ defaults }: { defaults?: { name: string; em
 			plan: f.get("plan"),
 			confirmAge: f.get("confirmAge") === "on",
 			agree: f.get("agree") === "on",
-			company: f.get("company"),
 		});
 		const errs = validate(app);
 		setErrors(errs);
@@ -146,12 +145,6 @@ export function AffiliateApplyForm({ defaults }: { defaults?: { name: string; em
 			noValidate
 			className="flex flex-col gap-5 rounded-2xl border border-[var(--ct-border)] bg-[var(--ct-card)] p-5 md:p-8"
 		>
-			{/* Honeypot: hidden from people */}
-			<div aria-hidden className="absolute -left-[9999px] h-0 w-0 overflow-hidden">
-				<label htmlFor="af-company">Company</label>
-				<input id="af-company" name="company" tabIndex={-1} autoComplete="off" />
-			</div>
-
 			<div className="grid gap-5 md:grid-cols-2">
 				<Field id="af-name" title="Full name" required error={errors.name}>
 					<input

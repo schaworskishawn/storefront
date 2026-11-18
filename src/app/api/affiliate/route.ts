@@ -7,6 +7,7 @@ import {
 	isAffiliateAppConfigured,
 	saveAffiliateRecord,
 } from "@/lib/affiliates/saleor-affiliates";
+import { isSignedInStaff } from "@/lib/affiliates/staff";
 import { isEmailConfigured, sendNotification } from "@/lib/email";
 import { rateLimited } from "@/lib/rate-limit";
 
@@ -28,7 +29,8 @@ export async function POST(request: Request) {
 		);
 
 	const app = normalize(await request.json().catch(() => null));
-	if (app.company) return NextResponse.json({ ok: true }); // honeypot
+	// No honeypot: applying needs a signed-in account (and is rate-limited), and a hidden "Company" field got filled in by
+	// browsers' autofill, which made real applications look like bots and quietly vanish.
 
 	const errors = validate(app);
 	if (Object.keys(errors).length)
@@ -43,6 +45,15 @@ export async function POST(request: Request) {
 	if (auth.status !== "authenticated")
 		return NextResponse.json({ message: "Please sign in to apply.", signIn: true }, { status: 401 });
 	const account = auth.user;
+	if (await isSignedInStaff())
+		return NextResponse.json(
+			{
+				message:
+					"Staff accounts can't join the affiliate program. Sign in with a customer account to apply, or run the program from /affiliate-admin.",
+				staff: true,
+			},
+			{ status: 403 },
+		);
 
 	const failed = NextResponse.json(
 		{ message: "We couldn't send your application. Please try again or email us." },
@@ -104,7 +115,6 @@ export async function POST(request: Request) {
 					type: "affiliate_application",
 					submittedAt: new Date().toISOString(),
 					...app,
-					company: undefined,
 					account: account.email,
 					text,
 				}),
