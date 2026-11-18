@@ -1,5 +1,15 @@
 "use client";
 
+import {
+	ArrowRight,
+	KeyRound,
+	LockKeyhole,
+	LogIn,
+	Mail,
+	TriangleAlert,
+	UserPlus,
+	UserRound,
+} from "lucide-react";
 import Link from "next/link";
 import { useState, type FormEvent } from "react";
 
@@ -8,12 +18,18 @@ const orbitron = "font-[family-name:var(--font-orbitron)]";
 const heyComic = "font-[family-name:var(--font-hey-comic)]";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const field = `${heyComic} h-12 w-full min-w-0 rounded bg-[var(--ct-field)] border border-[var(--ct-border)] px-[14px] text-sm text-white placeholder:text-[var(--ct-placeholder)] focus:border-[var(--ct-cyan)] focus:outline-none`;
-const label = `${bungee} flex gap-1 text-[11px] uppercase text-[var(--ct-text)]`;
-const card =
-	"flex w-full max-w-[520px] flex-col gap-[14px] rounded-2xl border border-[var(--ac-card-border)] bg-[var(--wv-surface)] p-5 md:p-7";
+/** A field set into the glass behind a glowing icon, lit cyan while focused (`.wv-acct-field`, `.wv-auth-input`). */
+const field = `${heyComic} wv-acct-field h-12 w-full min-w-0 rounded-lg pl-11 pr-[14px] text-sm text-white placeholder:text-[var(--ct-placeholder)] focus:outline-none`;
+const label = `${bungee} wv-auth-label flex gap-1 text-[11px] uppercase`;
+const fieldIcon = "wv-auth-icon pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2";
 
-/** Register card (Figma 6.30). Creates the Saleor account; Saleor emails a confirmation link. */
+/**
+ * Register card (Figma 6.30). Creates the Saleor account; Saleor emails a confirmation link.
+ *
+ * In the site's neon style, as the login card (`.wv-auth-*` in wv-home.css): lit glass inside a glowing cyan-to-pink
+ * edge, a new-account icon in a neon tile beside a chrome title over a glowing bar, the fields set into the glass behind
+ * glowing icons, the error in a pink glass strip, the glossy button, and the sign-in link glowing under a neon divider.
+ */
 export function RegisterForm({ channel }: { channel: string }) {
 	const [error, setError] = useState("");
 	const [busy, setBusy] = useState(false);
@@ -67,91 +83,130 @@ export function RegisterForm({ channel }: { channel: string }) {
 		}
 	};
 
-	const req = <span className="text-[var(--ct-cyan)]">*</span>;
+	const req = <span className="wv-auth-req">*</span>;
 	return (
-		<form onSubmit={submit} noValidate className={card}>
-			<h1 className={`${bungee} text-[30px] text-white`}>REGISTER</h1>
-			<p className={`${orbitron} text-xs text-[var(--ac-muted)]`}>Create your Worldwide Vapor account.</p>
+		<form
+			onSubmit={submit}
+			noValidate
+			className="wv-auth-card flex w-full max-w-[520px] flex-col gap-[14px] rounded-2xl p-5 md:p-7"
+		>
+			<div className="flex items-center gap-4">
+				<span
+					aria-hidden
+					className="wv-acct-icon flex size-12 shrink-0 items-center justify-center rounded-xl"
+				>
+					<UserPlus className="size-5" strokeWidth={2.25} />
+				</span>
+				<div className="flex flex-col gap-2">
+					<h1 className={`${bungee} wv-heading-title text-[30px] leading-none`}>REGISTER</h1>
+					<span aria-hidden className="wv-hero-bar h-1 w-14 rounded-full" />
+				</div>
+			</div>
+			<p className={`${orbitron} wv-hero-copy text-xs`}>
+				Create your <strong className="wv-hero-key">Worldwide Vapor</strong> account.
+			</p>
 			<div className="grid gap-[14px] md:grid-cols-2">
 				<div className="flex flex-col gap-2">
 					<label htmlFor="rg-first" className={label}>
 						First name {req}
 					</label>
-					<input
-						id="rg-first"
-						name="firstName"
-						autoComplete="given-name"
-						placeholder="e.g. Neo"
-						className={field}
-					/>
+					<div className="wv-auth-input relative">
+						<UserRound aria-hidden className={fieldIcon} strokeWidth={2.25} />
+						<input
+							id="rg-first"
+							name="firstName"
+							autoComplete="given-name"
+							placeholder="e.g. Neo"
+							className={field}
+						/>
+					</div>
 				</div>
 				<div className="flex flex-col gap-2">
 					<label htmlFor="rg-last" className={label}>
 						Last name {req}
 					</label>
-					<input
-						id="rg-last"
-						name="lastName"
-						autoComplete="family-name"
-						placeholder="e.g. Anderson"
-						className={field}
-					/>
+					<div className="wv-auth-input relative">
+						<UserRound aria-hidden className={fieldIcon} strokeWidth={2.25} />
+						<input
+							id="rg-last"
+							name="lastName"
+							autoComplete="family-name"
+							placeholder="e.g. Anderson"
+							className={field}
+						/>
+					</div>
 				</div>
 			</div>
 			<div className="flex flex-col gap-2">
 				<label htmlFor="rg-email" className={label}>
 					Email {req}
 				</label>
-				<input
-					id="rg-email"
-					name="email"
-					type="email"
-					autoComplete="email"
-					placeholder="you@example.com"
-					className={field}
-				/>
+				<div className="wv-auth-input relative">
+					<Mail aria-hidden className={fieldIcon} strokeWidth={2.25} />
+					<input
+						id="rg-email"
+						name="email"
+						type="email"
+						autoComplete="email"
+						placeholder="you@example.com"
+						className={field}
+					/>
+				</div>
 			</div>
 			<div className="grid gap-[14px] md:grid-cols-2">
 				<div className="flex flex-col gap-2">
 					<label htmlFor="rg-password" className={label}>
 						Password {req}
 					</label>
-					<input
-						id="rg-password"
-						name="password"
-						type="password"
-						autoComplete="new-password"
-						placeholder="At least 8 characters"
-						className={field}
-					/>
+					<div className="wv-auth-input relative">
+						<LockKeyhole aria-hidden className={fieldIcon} strokeWidth={2.25} />
+						<input
+							id="rg-password"
+							name="password"
+							type="password"
+							autoComplete="new-password"
+							placeholder="At least 8 characters"
+							className={field}
+						/>
+					</div>
 				</div>
 				<div className="flex flex-col gap-2">
 					<label htmlFor="rg-confirm" className={label}>
 						Confirm password {req}
 					</label>
-					<input
-						id="rg-confirm"
-						name="confirmPassword"
-						type="password"
-						autoComplete="new-password"
-						placeholder="Repeat password"
-						className={field}
-					/>
+					<div className="wv-auth-input relative">
+						<KeyRound aria-hidden className={fieldIcon} strokeWidth={2.25} />
+						<input
+							id="rg-confirm"
+							name="confirmPassword"
+							type="password"
+							autoComplete="new-password"
+							placeholder="Repeat password"
+							className={field}
+						/>
+					</div>
 				</div>
 			</div>
 			{error && (
-				<p role="alert" className="text-xs text-[var(--q-red)]">
+				<p
+					role="alert"
+					className={`${orbitron} wv-auth-error flex items-start gap-2 rounded-lg px-3 py-2.5 text-xs`}
+				>
+					<TriangleAlert aria-hidden className="mt-px size-4 shrink-0" strokeWidth={2.25} />
 					{error}
 				</p>
 			)}
 			<button
 				type="submit"
 				disabled={busy}
-				className={`${orbitron} mt-2 flex h-[45px] items-center justify-center rounded-xl bg-[var(--ac-cyan-bright)] px-6 text-sm font-bold tracking-[1px] text-[var(--ac-input)] disabled:opacity-60 md:w-fit`}
+				className={`${heyComic} wv-pc-cta mt-2 flex h-12 items-center justify-center gap-2 rounded-xl bg-[var(--ac-cyan-bright)] px-8 text-sm tracking-[1px] text-[var(--ac-input)] disabled:opacity-60 md:w-fit`}
 			>
-				{busy ? "CREATING…" : "CONTINUE"}
+				<span className="wv-pc-cta-label">{busy ? "CREATING…" : "CONTINUE"}</span>
+				<ArrowRight aria-hidden className="size-4" strokeWidth={2.5} />
 			</button>
-			<Link href="/login" className={`${orbitron} text-[11px] text-[var(--ac-pink)]`}>
+			<div aria-hidden className="wv-acct-rule mt-1 h-px" />
+			<Link href="/login" className={`${orbitron} wv-auth-link flex w-fit items-center gap-1.5 text-[11px]`}>
+				<LogIn aria-hidden className="size-3.5" strokeWidth={2.25} />
 				ALREADY HAVE AN ACCOUNT?
 			</Link>
 		</form>
