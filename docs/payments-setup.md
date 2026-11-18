@@ -15,6 +15,7 @@ off until its flag is set, so nothing here changes the live store by itself.
 | Crypto (hosted checkout)            | Built, untested against a live account | NOWPayments account, a Saleor app token, the payments app installed           |
 | Vapor Tokens (rewards)              | Built, untested against a live install | The rewards app installed, `REWARDS_APP_TOKEN`, `allowLegacyGiftCardUse`      |
 | Affiliate program (commissions)     | Built, untested against a live install | The affiliates app installed, `AFFILIATE_APP_TOKEN`                           |
+| Account emails (confirm, reset)     | Built, untested against a live install | The emails app installed, a verified sending domain in Resend                 |
 | Shop Pay                            | Not possible                           | Only works inside Shopify's checkout                                          |
 
 Before wiring any processor, confirm it accepts your business. Vape and nicotine products are restricted or prohibited at
@@ -275,6 +276,39 @@ hand.
 with fakes, and every request to Saleor has been checked against Saleor's schema, but a full run (install the app, approve a test
 affiliate, place an order through their link, see it credited, refund it) has not been done against a running Saleor. Do that on a
 small test order first.
+
+## Account emails (sign-up confirmation, password reset)
+
+Saleor only emails customers and staff itself when an email sender is connected to it, and none is. The **Worldwide Vapor
+Emails** app (`/api/emails-app/*`) is that sender for the three account emails, through Resend, the store's sender:
+
+| Saleor event                     | When                                                                          | Email                       |
+| -------------------------------- | ----------------------------------------------------------------------------- | --------------------------- |
+| `ACCOUNT_CONFIRMATION_REQUESTED` | A customer creates an account (skipped if their account is already confirmed) | "Confirm your … account"    |
+| `ACCOUNT_SET_PASSWORD_REQUESTED` | A customer uses "Forgot password"                                             | "Reset your … password"     |
+| `STAFF_SET_PASSWORD_REQUESTED`   | A staff member is invited, or a staff account's password is reset             | "Set your … staff password" |
+
+Each link is the page the request asked to come back to with the account's email and one-time token added, the same link
+Saleor's own emails would build. Every webhook is signature-checked, so only Saleor can make the store send one. A failed
+send answers 500 and Saleor retries; the token is never logged.
+
+**Set up.**
+
+1. Install the app: Dashboard, Apps, **Install external app**, `https://<your-domain>/api/emails-app/manifest`. Saleor shows the
+   permissions: `MANAGE_USERS` and `MANAGE_STAFF`, which Saleor requires before it delivers customer and staff account events.
+   The app never calls Saleor, so there is **no token to create**.
+2. Allow `/api/emails-app/*` through Vercel's firewall, like the other apps (Bot Protection is on Log today, so it already is).
+3. Verify the sending domain in Resend and set `AFFILIATE_FROM_EMAIL` to an address on it (for example
+   `Worldwide Vapor <hello@worldwidevapor.com>`). Until a domain is verified, Resend only delivers to its account owner's own
+   address, so customers get nothing. Resend's DNS records (DKIM at `resend._domainkey`, SPF and MX on its `send.`
+   subdomain) don't touch the apex SPF that Cloudflare Email Routing uses.
+
+**Things to know.**
+
+- If an email sender is ever connected to Saleor too (an SMTP app or plugin), people get two copies: remove one.
+- Accounts created while no email was sent are stuck unconfirmed. "Forgot password" fixes that: setting a password from
+  the emailed link also confirms the account (Saleor's `setPassword`).
+- Account deletion emails aren't sent: the shop has no page that completes a deletion from the link yet.
 
 ## Before any Canadian order can complete
 
