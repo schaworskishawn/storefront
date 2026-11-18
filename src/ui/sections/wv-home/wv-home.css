@@ -2614,6 +2614,35 @@ li:nth-child(even) > .wv-cat-chip {
 	text-shadow: 0 0 8px color-mix(in srgb, var(--wv-cyan) 65%, transparent);
 }
 
+/* Saved addresses (wv-addresses-client.tsx): neon cards (.wv-neon-card; pink for a billing-only default) that glow
+ * brighter under the pointer without lifting, their icon glowing in its lit tile in the card's colour. Each line of the
+ * address is led by a glowing icon in that colour, the name lit and the phone glowing; the country picker's arrow is a
+ * glowing chevron, its options on the dark field. */
+.wv-neon-card.wv-addr-card:hover {
+	transform: none;
+}
+.wv-addr-card .wv-neon-card-icon svg,
+.wv-addr-row svg {
+	color: var(--accent);
+	filter: drop-shadow(0 0 4px color-mix(in srgb, var(--accent) 85%, transparent));
+}
+.wv-addr-caret {
+	color: var(--wv-cyan-soft);
+	filter: drop-shadow(0 0 4px color-mix(in srgb, var(--wv-cyan) 85%, transparent));
+}
+.wv-addr-select option {
+	color: white;
+	background-color: var(--ac-input);
+}
+/* The question asked in the card before deleting an address or a review (wv-confirm-delete.tsx), glowing pink. */
+.wv-confirm-ask {
+	color: var(--wv-pink);
+	letter-spacing: 0.5px;
+	text-shadow:
+		0 1px 1px var(--wv-ink),
+		0 0 8px color-mix(in srgb, var(--wv-pink) 70%, transparent);
+}
+
 /* My Reviews (wv-reviews-client.tsx): each review and each product to review is a glass row (.wv-order-line). Stars
  * earned glow cyan, filled; the rest are dim outlines; when picking a rating, each star lifts under the pointer. A
  * review's headline is brighter and its product name glows cyan under the pointer; Edit and Delete are small neon pills
