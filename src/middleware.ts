@@ -3,6 +3,7 @@ import { DefaultChannelSlug } from "@/app/config";
 import { getStaticStorefrontChannelSlugs, isAllowedStorefrontChannel } from "@/config/channels";
 import { getDefaultLocaleSlug, isLocaleSlug, isStorefrontLocaleSlug } from "@/config/locale";
 import { BROWSE_LOCALE_COOKIE, getBrowseLocaleCookieOptions } from "@/lib/browse-locale";
+import { withReferralCookie } from "@/lib/affiliates/referral";
 import { AGE_GATE_PATH, AGE_VERIFIED_COOKIE } from "@/lib/age-gate";
 import { SITE_ACCESS_COOKIE, SITE_PASSWORD_PATH, getSitePassword, hasSiteAccess } from "@/lib/site-password";
 import { buildStorefrontPath } from "@/lib/storefront-path";
@@ -37,7 +38,15 @@ function withBrowseLocaleCookie(request: NextRequest, response: NextResponse, lo
 	return response;
 }
 
+/**
+ * Every answer also remembers an affiliate's referral link (`?aff=<code>`) in a cookie for 30 days, including the password
+ * and age-gate redirects a first visit usually gets, so following a link and then verifying age still counts.
+ */
 export async function middleware(request: NextRequest) {
+	return withReferralCookie(request, await route(request));
+}
+
+async function route(request: NextRequest): Promise<NextResponse> {
 	const { pathname } = request.nextUrl;
 
 	if (

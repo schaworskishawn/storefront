@@ -1,7 +1,8 @@
 import { ArrowDown, ChevronRight, Handshake, Home } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { AffiliateApplyForm } from "./wv-affiliate-form";
+import { Suspense } from "react";
+import { AffiliateApply, AffiliateApplySkeleton } from "./wv-affiliate-apply";
 import { WvFooter, WvHeader } from "./wv-chrome";
 import "./wv-home.css";
 
@@ -420,8 +421,11 @@ export function WvAffiliate() {
 						title="APPLY TO JOIN"
 						sub="Tell us about your audience. We review every application by hand."
 					/>
+					{/* Depends on who's looking (signed out, applying, under review, or already an affiliate). */}
 					<div className="w-full max-w-[820px]">
-						<AffiliateApplyForm />
+						<Suspense fallback={<AffiliateApplySkeleton />}>
+							<AffiliateApply />
+						</Suspense>
 					</div>
 				</section>
 

@@ -1,0 +1,11 @@
+# Who is signed in, and whether they may run the affiliate program (/affiliate-admin): staff with MANAGE_USERS.
+query AffiliateStaff {
+	me {
+		id
+		email
+		isStaff
+		userPermissions {
+			code
+		}
+	}
+}

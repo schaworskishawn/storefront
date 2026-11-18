@@ -14,6 +14,7 @@ off until its flag is set, so nothing here changes the live store by itself.
 | PayPal, Klarna/Afterpay/Affirm      | Built, untested against a live account | Adyen account (PayPal/lender methods enabled), the Saleor Adyen app installed |
 | Crypto (hosted checkout)            | Built, untested against a live account | NOWPayments account, a Saleor app token, the payments app installed           |
 | Vapor Tokens (rewards)              | Built, untested against a live install | The rewards app installed, `REWARDS_APP_TOKEN`, `allowLegacyGiftCardUse`      |
+| Affiliate program (commissions)     | Built, untested against a live install | The affiliates app installed, `AFFILIATE_APP_TOKEN`                           |
 | Shop Pay                            | Not possible                           | Only works inside Shopify's checkout                                          |
 
 Before wiring any processor, confirm it accepts your business. Vape and nicotine products are restricted or prohibited at
@@ -210,6 +211,70 @@ started with (`paper.vt.tokens`). Its private metadata holds the code the app ne
 request to Saleor has been checked against Saleor's schema, but a full run (install the app, pay an order, see the lot, spend it at
 checkout, cancel the order) has not been done against a running Saleor with the app installed. Do that on a test order before
 enabling it for customers.
+
+## Affiliate program
+
+Affiliates earn a commission on the orders they refer, at the tier their month's referred sales reach: **Cloud 10%** (up to
+$1,000), **Vapor 12%** (more than $1,000), **Surge 15%** (more than $5,000) and **Global 20%** (more than $15,000). A month's tier
+applies to every referred order that month. The tiers, rates and benefits live in `src/lib/affiliates/tiers.ts`, which the
+program page also reads.
+
+**What happens.**
+
+1. **Applying.** A customer applies on `/affiliate-program` while signed in (applying needs an account, because the dashboard
+   and payouts belong to it). The application is saved on their account as pending and emailed to `AFFILIATE_INBOX_EMAIL` as
+   before.
+2. **Approving.** You approve it on `/affiliate-admin` (signed in with your staff account) and choose their referral code. They are
+   emailed their link, `https://<your-domain>/home?aff=<code>`; `?aff=<code>` works on any page.
+3. **Referring.** Following the link sets a cookie for 30 days (the last link followed wins); it survives the age gate. When the
+   visitor checks out, the code is copied onto the order. Discount codes you link to an affiliate on the admin page count too,
+   and beat the link.
+4. **Crediting.** When the order is paid in full (`ORDER_FULLY_PAID`), the affiliates app credits it to the affiliate, if they are
+   approved and it isn't their own order (same account or email). The commission base is what was paid **in money** for products:
+   shipping, tax, gift cards and Vapor Tokens earn nothing. The order gets a note. Running the same event twice does nothing.
+5. **Holding.** Commission is pending for **15 days** after the order is paid (the return window), then payable. A cancellation
+   (`ORDER_CANCELLED`) or full refund (`ORDER_FULLY_REFUNDED`) reverses it; if it was already paid out, the amount comes off the
+   next payout.
+6. **Paying.** The admin page shows what each affiliate is owed in each currency and when a payout is due: monthly on the 1st
+   (Cloud, Vapor), every other Monday (Surge) or every Monday (Global), once at least $50 is owed. **You send the money yourself**
+   (e-Transfer, crypto, bank) and then press **Record a payout**; the affiliate is emailed and sees it on their dashboard.
+7. **The affiliate's dashboard** (`/account/affiliate`, in the account menu) shows their link and codes, this month's sales, tier and
+   progress to the next, pending, owed and paid amounts, the next payout date, referred orders (no customer details) and payouts.
+
+**Set up.**
+
+1. Install the app: Dashboard, Apps, **Install external app**, `https://<your-domain>/api/affiliate-app/manifest`. Saleor shows the
+   permissions before you approve: `MANAGE_ORDERS` (read orders, mark them, leave notes) and `MANAGE_USERS` (read customers and
+   keep each affiliate's record on their account). It is separate from the payments and rewards apps on purpose.
+2. Create a token for the app and set it as `AFFILIATE_APP_TOKEN` (server-only, never `NEXT_PUBLIC_`). As with the other apps, if
+   the Dashboard won't show the token, create it with the `appTokenCreate` mutation in the Playground.
+3. Allow `/api/affiliate-app/*` through Vercel's firewall, the same as `/api/rewards-app/*` (Bot Protection in challenge mode
+   answers Saleor with a 429).
+4. Sign in to the site with a staff account that has `MANAGE_USERS` and open `/affiliate-admin`.
+
+Until the token is set, applications are only emailed (as before), the dashboard says the program isn't open yet, and nothing is
+credited. Referral cookies are still set and copied onto orders, so orders placed meanwhile can be checked by hand.
+
+**Where things live.** On the affiliate's customer account, private metadata `wv_aff.record` holds their record (status, code,
+linked discount codes, application, payouts). Public `wv_aff.status` and `wv_aff.code` are copies Saleor can search on: they are
+never trusted, because customers can edit their own public metadata. On an order, public `wv_aff.ref` is the code from the
+cookie (a claim), public `wv_aff.code` is who it was credited to, and private `wv_aff.stamp` holds the credit. Don't edit these by
+hand.
+
+**Things to know.**
+
+- A tier counts USD and CAD sales at face value; commission is owed and paid in each order's own currency.
+- A **partial** refund doesn't reduce the commission; only a cancellation or a full refund does. Adjust a payout by hand if needed.
+- Referral codes can't be changed after approval, because the affiliate's orders are found by their code.
+- The people-run benefits (account manager, product samples, merch kit, Slack line, templates, landing pages, early access) are
+  yours to deliver; the dashboard lists them for the affiliate's current tier.
+- Affiliate marketing of vape products is restricted in many places: affiliates must follow the same advertising, age and
+  disclosure rules the store does. Have the program terms checked and published.
+
+**Not yet exercised against live services.** Crediting, reversal, tiers, the hold, payouts and the admin changes are unit-tested
+with fakes, and every request to Saleor has been checked against Saleor's schema, but a full run (install the app, approve a test
+affiliate, place an order through their link, see it credited, refund it) has not been done against a running Saleor. Do that on a
+small test order first.
 
 ## Before any Canadian order can complete
 

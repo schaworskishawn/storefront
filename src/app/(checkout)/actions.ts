@@ -1,5 +1,6 @@
 "use server";
 
+import { cookies } from "next/headers";
 import { after } from "next/server";
 import {
 	revalidateStorefrontBrowsePath,
@@ -95,6 +96,8 @@ import { getCheckoutServerTranslations } from "@/checkout/lib/server/get-checkou
 import { toCheckoutActionResult } from "@/checkout/lib/server/mutation-result";
 import { toTypedDocument } from "@/checkout/lib/server/to-typed-document";
 import { checkoutGraphqlLanguageCode } from "@/lib/checkout-locale";
+import { AFFILIATE_KEYS } from "@/lib/affiliates/records";
+import { REFERRAL_COOKIE, normalizeAffiliateCode } from "@/lib/affiliates/referral";
 import { getRequestOrigin, isAllowedRedirectUrl } from "@/lib/auth/validate-redirect-url";
 import { executeAuthenticatedGraphQL, executePublicGraphQL, executeRawGraphQL } from "@/lib/graphql";
 import * as Checkout from "@/lib/checkout";
@@ -591,7 +594,27 @@ export async function processCheckoutTransaction(
 	return { ok: true, data: payload };
 }
 
+/**
+ * Copies an affiliate's referral code (the `wv_aff` cookie their link set) onto the checkout, which Saleor copies onto the
+ * order; the affiliates app checks and credits it once the order is paid. Best effort: it never stands in an order's way.
+ */
+async function stampAffiliateReferral(checkoutId: string): Promise<void> {
+	try {
+		const code = normalizeAffiliateCode((await cookies()).get(REFERRAL_COOKIE)?.value);
+		if (!code) return;
+		const result = await executeAuthenticatedGraphQL(checkoutMetadataUpdateDocument, {
+			variables: { id: checkoutId, input: [{ key: AFFILIATE_KEYS.ref, value: code }] },
+			cache: "no-cache",
+		});
+		const error = result.ok ? result.data.updateMetadata?.errors?.[0]?.message : result.error.message;
+		if (error) console.warn(`[affiliates] couldn't copy the referral onto checkout ${checkoutId}: ${error}`);
+	} catch (error) {
+		console.warn(`[affiliates] couldn't copy the referral onto checkout ${checkoutId}`, error);
+	}
+}
+
 export async function runCheckoutComplete(checkoutId: string): Promise<CheckoutCompleteActionResult> {
+	await stampAffiliateReferral(checkoutId);
 	const result = await executeAuthenticatedGraphQL(checkoutCompleteDocument, {
 		variables: { checkoutId },
 		cache: "no-cache",
