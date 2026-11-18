@@ -15,6 +15,16 @@ export type { StaffCheck } from "./staff-check";
  * The session is read the way the account pages read it (`resolveSessionUser`): a session Saleor briefly answers with no
  * user (a token being refreshed) is retried, then reported as "can't check right now", never as signed out.
  */
+/**
+ * Whether the visitor is signed in with a staff account (any staff, whatever their permissions). Staff can't be
+ * affiliates: Saleor's customer list (which the admin page reads applications from) leaves staff accounts out, and the
+ * people running the program shouldn't earn from it. On any doubt it answers false, and applying carries on as usual.
+ */
+export async function isSignedInStaff(): Promise<boolean> {
+	const result = await executeAuthenticatedGraphQL(AffiliateStaffDocument, { cache: "no-cache" });
+	return result.ok && !!result.data.me?.isStaff;
+}
+
 export async function checkAffiliateStaff(): Promise<StaffCheck> {
 	return classifyStaff(
 		await resolveSessionUser(() =>

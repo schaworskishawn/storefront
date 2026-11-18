@@ -1,8 +1,18 @@
-import { BadgeCheck, Hourglass, LayoutDashboard, Lock, LogIn, UserPlus, type LucideIcon } from "lucide-react";
+import {
+	BadgeCheck,
+	Hourglass,
+	LayoutDashboard,
+	Lock,
+	LogIn,
+	ShieldCheck,
+	UserPlus,
+	type LucideIcon,
+} from "lucide-react";
 import Link from "next/link";
 import { type ReactNode } from "react";
 import { getAccountAuthState } from "@/app/(storefront)/[locale]/[channel]/(main)/account/get-current-user";
 import { getAffiliateAccount, isAffiliateAppConfigured } from "@/lib/affiliates/saleor-affiliates";
+import { isSignedInStaff } from "@/lib/affiliates/staff";
 import { AffiliateApplyForm } from "./wv-affiliate-form";
 
 const heyComic = "font-[family-name:var(--font-hey-comic)]";
@@ -74,6 +84,21 @@ export async function AffiliateApply() {
 	}
 
 	const user = auth.user;
+	if (await isSignedInStaff()) {
+		return (
+			<ApplyCard Icon={ShieldCheck} title="YOU'RE SIGNED IN AS STAFF">
+				<p className={copy}>
+					Affiliates apply from a customer account, so staff accounts can&apos;t join the program. You run it
+					from the <strong className="wv-hero-key">affiliate admin</strong>: applications, approvals and
+					payouts.
+				</p>
+				<Link href="/affiliate-admin" className={primary}>
+					<LayoutDashboard aria-hidden className="size-4" strokeWidth={2.5} />
+					<span className="wv-pc-cta-label">OPEN AFFILIATE ADMIN</span>
+				</Link>
+			</ApplyCard>
+		);
+	}
 	const defaults = { name: [user.firstName, user.lastName].filter(Boolean).join(" "), email: user.email };
 
 	if (isAffiliateAppConfigured()) {

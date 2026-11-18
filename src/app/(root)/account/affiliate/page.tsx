@@ -1,4 +1,4 @@
-import { Hourglass, UserPlus } from "lucide-react";
+import { Hourglass, ShieldCheck, UserPlus } from "lucide-react";
 import { type Metadata } from "next";
 import Link from "next/link";
 import { Suspense, type ReactNode } from "react";
@@ -13,6 +13,7 @@ import {
 	isAffiliateAppConfigured,
 	listCreditedOrders,
 } from "@/lib/affiliates/saleor-affiliates";
+import { isSignedInStaff } from "@/lib/affiliates/staff";
 import { buildStorefrontPath } from "@/lib/storefront-path";
 import { AccountShell, SignInPrompt, type AccountView } from "@/ui/sections/wv-home/wv-account";
 import { AffiliateDashboard, AffiliateNotice } from "@/ui/sections/wv-home/wv-affiliate-dashboard";
@@ -75,6 +76,20 @@ async function DashboardData() {
 		email: u.email,
 		city: addr?.city ?? null,
 	};
+
+	if (await isSignedInStaff())
+		return (
+			<Shell user={user}>
+				<AffiliateNotice Icon={ShieldCheck} title="STAFF ACCOUNTS AREN'T AFFILIATES">
+					You&apos;re signed in with a staff account, which runs the program rather than earning from it.
+					Manage applications, approvals and payouts on the{" "}
+					<Link href="/affiliate-admin" className="underline">
+						affiliate admin
+					</Link>
+					.
+				</AffiliateNotice>
+			</Shell>
+		);
 
 	if (!isAffiliateAppConfigured())
 		return (
