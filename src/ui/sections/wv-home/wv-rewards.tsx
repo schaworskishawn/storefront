@@ -1,3 +1,18 @@
+import {
+	ArrowDown,
+	BadgeCheck,
+	BadgePercent,
+	Ban,
+	Check,
+	Coins,
+	Headset,
+	Hourglass,
+	LogIn,
+	ShoppingBag,
+	Ticket,
+	X,
+	type LucideIcon,
+} from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { describeExpiry, formatRate, hundredTokensWorth, tokenCount } from "@/lib/rewards/program-copy";
@@ -5,6 +20,7 @@ import type { RewardsConfig } from "@/lib/rewards/tokens";
 import { WvFooter, WvHeader } from "./wv-chrome";
 import { SectionHeading } from "./wv-product-section";
 import { RewardsCalculator } from "./wv-rewards-calculator";
+import { RewardsHeroArt } from "./wv-rewards-hero-art";
 import "./wv-home.css";
 
 /**
@@ -17,10 +33,10 @@ import "./wv-home.css";
 const heyComic = "font-[family-name:var(--font-hey-comic)]";
 const bungee = "font-[family-name:var(--font-bungee)]";
 const orbitron = "font-[family-name:var(--font-orbitron)]";
-const marker = "font-[family-name:var(--font-permanent-marker)]";
-
-const primaryButton = `${heyComic} flex h-[45px] items-center justify-center rounded-xl bg-[var(--wv-cyan-soft)] px-8 text-base text-[var(--wv-ink)] md:h-[46px] xl:h-[49px]`;
-const outlineButton = `${heyComic} flex h-[45px] items-center justify-center rounded-xl border border-[var(--wv-cyan-soft)] px-8 text-base text-[var(--wv-cyan-soft)] md:h-[46px] xl:h-[49px]`;
+/** The glossy cyan button (`.wv-pc-cta`, its label in `.wv-pc-cta-label`) and the neon outline one (`.wv-btn-neon`, its
+ * label in `.wv-btn-label`), as on the other pages. */
+const primaryButton = `${heyComic} wv-pc-cta flex h-[45px] items-center justify-center gap-2 rounded-xl bg-[var(--wv-cyan-soft)] px-8 text-base text-[var(--wv-ink)] md:h-[46px] xl:h-[49px]`;
+const outlineButton = `${heyComic} wv-btn wv-btn-outline wv-btn-neon flex h-[45px] items-center justify-center gap-2 rounded-xl border-[1.5px] border-[var(--wv-cyan-soft)] px-8 text-base text-[var(--wv-cyan-soft)] md:h-[46px] xl:h-[49px]`;
 
 type Faq = { q: string; a: string };
 
@@ -65,15 +81,24 @@ function faqsFor(config: RewardsConfig): Faq[] {
 	];
 }
 
-/** The program's three headline numbers, as stat cards. */
-function stats(config: RewardsConfig) {
+/** The program's three headline numbers, each with its icon. */
+function stats(config: RewardsConfig): { Icon: LucideIcon; value: string; label: string }[] {
 	return [
 		{
+			Icon: Coins,
 			value: formatRate(config.tokensPerDollar),
 			label: `${config.tokensPerDollar === 1 ? "Token" : "Tokens"} for every $1 spent on products`,
 		},
-		{ value: `100 = ${hundredTokensWorth()}`, label: "What your tokens are worth at checkout" },
-		{ value: describeExpiry(config.expiryMonths).short, label: "Before a batch of tokens expires" },
+		{
+			Icon: BadgePercent,
+			value: `100 = ${hundredTokensWorth()}`,
+			label: "What your tokens are worth at checkout",
+		},
+		{
+			Icon: Hourglass,
+			value: describeExpiry(config.expiryMonths).short,
+			label: "Before a batch of tokens expires",
+		},
 	];
 }
 
@@ -86,31 +111,65 @@ const DOES_NOT_EARN = [
 	"Orders placed as a guest",
 ];
 
-/** Decorative token art: one large coin and two small ones, floating. */
-function Coins() {
-	const coin =
-		"flex items-center justify-center rounded-full border-4 border-[var(--wv-cyan-soft)] bg-gradient-to-br from-[var(--wv-pink)] via-[var(--wv-purple)] to-[var(--wv-control)] shadow-[0_0_40px_color-mix(in_srgb,var(--wv-cyan)_35%,transparent)]";
+/**
+ * The hero's art: the program's idea drawn in the site's style (wv-rewards-hero-art.tsx), a shopping bag throwing
+ * tokens onto a glowing stack that pays down a price tag, framed as a lit neon screen like the other heroes' art: a
+ * cyan-to-pink edge that glows (`.wv-art`), glass over it and HUD corner brackets.
+ */
+function HeroArt() {
 	return (
-		<div aria-hidden className="relative mx-auto size-[220px] shrink-0 md:size-[260px] xl:size-[340px]">
-			<div
-				className={`${coin} wv-float absolute left-1/2 top-1/2 size-[150px] -translate-x-1/2 -translate-y-1/2 md:size-[180px] xl:size-[230px]`}
-			>
-				<div className="flex size-[78%] items-center justify-center rounded-full border-2 border-dashed border-[var(--wv-cyan-soft)]">
-					<span className={`${bungee} text-4xl text-white md:text-5xl xl:text-6xl`}>VT</span>
-				</div>
+		<div className="wv-art relative aspect-[16/10] w-full shrink-0 overflow-hidden rounded-[20px] md:aspect-[4/3] md:w-[320px] xl:w-[500px]">
+			<RewardsHeroArt idPrefix="rewards-hero-art" />
+			<span aria-hidden className="wv-art-glass absolute inset-0" />
+			<span aria-hidden className="wv-art-hud absolute inset-[10px] md:inset-[14px]" />
+		</div>
+	);
+}
+
+/**
+ * One side of the fine print: a neon card (cyan for what earns, pink for what doesn't; `.wv-neon-card`) led by its icon in
+ * a lit tile and a glowing title over a neon line, each line marked by a small glowing neon badge (`.wv-rw-mark`).
+ */
+function FinePrint({
+	pink = false,
+	Icon,
+	Mark,
+	title,
+	items,
+}: {
+	pink?: boolean;
+	Icon: LucideIcon;
+	Mark: LucideIcon;
+	title: string;
+	items: readonly string[];
+}) {
+	return (
+		<div
+			className={`wv-neon-card wv-rw-card ${pink ? "wv-neon-card--pink" : ""} flex flex-col gap-4 rounded-2xl p-5 xl:p-6`}
+		>
+			<div className="flex items-center gap-3">
+				<span
+					aria-hidden
+					className="wv-neon-card-icon flex size-11 shrink-0 items-center justify-center rounded-xl"
+				>
+					<Icon className="size-5" strokeWidth={2.25} />
+				</span>
+				<h3 className={`${heyComic} wv-neon-card-timing text-base xl:text-lg`}>{title}</h3>
 			</div>
-			<div
-				className={`${coin} wv-float absolute left-0 top-2 size-[56px] opacity-90 md:size-[68px] xl:size-[84px]`}
-				style={{ animationDelay: "-2s" }}
-			>
-				<span className={`${bungee} text-sm text-white md:text-base xl:text-xl`}>VT</span>
-			</div>
-			<div
-				className={`${coin} wv-float absolute bottom-3 right-0 size-[44px] opacity-80 md:size-[54px] xl:size-[66px]`}
-				style={{ animationDelay: "-4s" }}
-			>
-				<span className={`${bungee} text-xs text-white md:text-sm xl:text-lg`}>VT</span>
-			</div>
+			<span aria-hidden className="wv-acct-card-rule h-px w-full" />
+			<ul className={`${orbitron} wv-neon-card-text flex flex-col gap-2.5 text-[13px] leading-[1.5]`}>
+				{items.map((e) => (
+					<li key={e} className="flex items-start gap-2.5">
+						<span
+							aria-hidden
+							className="wv-rw-mark mt-px flex size-5 shrink-0 items-center justify-center rounded-full"
+						>
+							<Mark className="size-3" strokeWidth={3} />
+						</span>
+						{e}
+					</li>
+				))}
+			</ul>
 		</div>
 	);
 }
@@ -119,19 +178,22 @@ export function WvRewards({ config, account }: { config: RewardsConfig; account:
 	const expiry = describeExpiry(config.expiryMonths);
 	const faqs = faqsFor(config);
 
-	const steps = [
+	const steps: { n: string; Icon: LucideIcon; title: string; text: string }[] = [
 		{
 			n: "1",
+			Icon: LogIn,
 			title: "Sign in and shop",
 			text: "Tokens go to signed-in customers, so log in or create a free account before you check out.",
 		},
 		{
 			n: "2",
+			Icon: Coins,
 			title: "Earn on every order",
 			text: `Every $1 you spend on products earns ${tokenCount(config.tokensPerDollar)}. They land in your account as soon as the order is fully paid.`,
 		},
 		{
 			n: "3",
+			Icon: Ticket,
 			title: "Spend them at checkout",
 			text: `On the payment step, tap “Use my tokens”. 100 tokens take ${hundredTokensWorth()} off your order. ${expiry.sentence}`,
 		},
@@ -142,45 +204,69 @@ export function WvRewards({ config, account }: { config: RewardsConfig; account:
 			<WvHeader />
 
 			{/* Hero */}
-			<section className="wv-nebula relative overflow-hidden">
+			{/* The hero's text has depth, as on the other heroes (`.wv-hero-*`): a neon badge with glowing coins, a 3D title
+			    over a glowing pink-to-cyan bar, brighter copy with the program's key facts lit, the glossy button and the
+			    neon outline one; behind it all a pink and cyan glow (`.wv-hero-backdrop`). */}
+			<section className="wv-hero-backdrop relative overflow-hidden">
 				<div className="relative flex flex-col items-center gap-6 px-5 py-8 md:flex-row-reverse md:gap-8 md:px-8 md:py-12 xl:gap-16 xl:px-20 xl:py-16">
-					<Coins />
+					<HeroArt />
 					<div className="flex min-w-0 flex-1 flex-col items-start gap-4 md:gap-5">
-						<p
-							className={`${marker} text-[18px] uppercase tracking-[2px] text-[var(--wv-pink)] md:text-[22px]`}
+						<span
+							className={`${heyComic} wv-hero-badge flex items-center gap-2 rounded-full px-3 py-1 text-[10px] tracking-[1.5px] md:px-4 md:py-[6px] md:text-[11px]`}
 						>
-							Worldwide <span className="text-[var(--wv-cyan)]">vapor</span> rewards
+							<Coins aria-hidden className="size-3.5 md:size-4" strokeWidth={2.25} />
+							WORLDWIDE VAPOR REWARDS
+						</span>
+						<div className="flex w-full flex-col gap-3">
+							<h1
+								className={`${heyComic} wv-title-glow wv-hero-title text-[34px] leading-[38px] md:text-[44px] md:leading-[50px] xl:text-[56px] xl:leading-[64px]`}
+							>
+								<span>VAPOR</span> <span className="text-[var(--wv-cyan-soft)]">TOKENS</span>
+							</h1>
+							<div className="wv-hero-bar h-1 w-20 rounded-full md:w-[120px]" />
+						</div>
+						<p className={`${orbitron} wv-hero-copy max-w-[560px] text-[13px] leading-[1.6] md:text-[15px]`}>
+							Get rewarded for shopping with us. Earn{" "}
+							<strong className="wv-hero-key">{tokenCount(config.tokensPerDollar)} for every $1</strong> you
+							spend on products, then{" "}
+							<strong className="wv-hero-key wv-hero-key--pink">spend them at checkout</strong>: 100 tokens
+							take <strong className="wv-hero-key">{hundredTokensWorth()} off</strong> your order.
 						</p>
-						<h1
-							className={`${heyComic} wv-title-glow text-[34px] leading-[38px] md:text-[44px] md:leading-[50px] xl:text-[56px] xl:leading-[64px]`}
-						>
-							VAPOR <span className="text-[var(--wv-cyan-soft)]">TOKENS</span>
-						</h1>
-						<p
-							className={`${orbitron} max-w-[560px] text-[13px] leading-[1.6] text-[var(--wv-text-dim)] md:text-[15px]`}
-						>
-							Get rewarded for shopping with us. Earn {tokenCount(config.tokensPerDollar)} for every $1 you
-							spend on products, then spend them at checkout: 100 tokens take {hundredTokensWorth()} off your
-							order.
-						</p>
-						<div className="flex w-full flex-col gap-3 md:w-auto md:flex-row md:gap-4">
+						{/* Stacked beside the art on tablets, where the column is too narrow for both in a row. */}
+						<div className="flex w-full flex-col gap-3 xl:w-auto xl:flex-row xl:gap-4">
 							<Link href="/shop" className={primaryButton}>
-								START SHOPPING
+								<ShoppingBag aria-hidden className="size-4" strokeWidth={2.5} />
+								<span className="wv-pc-cta-label">START SHOPPING</span>
 							</Link>
 							<a href="#how" className={outlineButton}>
-								HOW IT WORKS
+								<span className="wv-btn-label">HOW IT WORKS</span>
+								<ArrowDown aria-hidden className="size-4" strokeWidth={2.5} />
 							</a>
 						</div>
 					</div>
 				</div>
 			</section>
 
-			{/* The program in three numbers */}
-			<section className="grid grid-cols-1 gap-4 border-y border-[var(--wv-purple)] bg-[var(--wv-surface)] px-5 py-6 md:grid-cols-3 md:gap-6 md:px-8 xl:px-20 xl:py-8">
+			{/* The program in three numbers, in a lit glass band (`.wv-band`): each led by its icon in a glowing neon ring
+			    (`.wv-trust-icon`; cyan, pink, cyan), its value lifted and glowing in that colour (`.wv-stat-value`), its label
+			    brighter, with glowing neon lines between them. A row each on phones, side by side from tablets up. */}
+			<section className="wv-band grid grid-cols-1 gap-4 px-5 py-6 md:grid-cols-3 md:gap-6 md:px-8 xl:px-20 xl:py-8">
 				{stats(config).map((s) => (
-					<div key={s.label} className="flex flex-col items-center gap-1 text-center">
-						<p className={`${bungee} text-[28px] text-[var(--wv-cyan-soft)] xl:text-[34px]`}>{s.value}</p>
-						<p className={`${orbitron} text-xs text-[var(--wv-text-dim)]`}>{s.label}</p>
+					<div
+						key={s.label}
+						className="wv-trust-item wv-stat flex items-center gap-4 md:flex-col md:gap-2 md:text-center"
+					>
+						<span aria-hidden className="wv-trust-icon text-2xl xl:text-[28px]">
+							<s.Icon className="size-[0.75em]" strokeWidth={2} />
+						</span>
+						<div className="flex min-w-0 flex-col gap-1 md:items-center">
+							<p
+								className={`${bungee} wv-stat-value text-[26px] leading-tight md:text-[28px] xl:text-[34px]`}
+							>
+								{s.value}
+							</p>
+							<p className={`${orbitron} wv-trust-text text-xs`}>{s.label}</p>
+						</div>
 					</div>
 				))}
 			</section>
@@ -200,58 +286,48 @@ export function WvRewards({ config, account }: { config: RewardsConfig; account:
 				className="wv-nebula flex scroll-mt-6 flex-col items-center gap-8 px-5 py-8 md:px-8 md:py-12 xl:gap-12 xl:px-20 xl:py-16"
 			>
 				<SectionHeading eyebrow="Simple as 1, 2, 3" title="HOW IT WORKS" />
-				<ol className="grid w-full max-w-[1100px] grid-cols-1 gap-3 md:gap-4 xl:grid-cols-3 xl:gap-6">
-					{steps.map((s) => (
+				{/* Each step a neon card (cyan, pink, cyan; `.wv-neon-card`), led by its icon in a lit tile and a glowing
+				    step tag, with its number as a big neon outline in the corner; glowing lines run from one step to the
+				    next, down on phones and tablets, across on desktops (`.wv-step*` in wv-home.css). */}
+				<ol className="grid w-full max-w-[1100px] grid-cols-1 gap-5 xl:grid-cols-3 xl:gap-6">
+					{steps.map((s, i) => (
 						<li
 							key={s.n}
-							className="flex flex-col gap-3 rounded-2xl border border-[var(--wv-cyan-soft)] bg-[var(--wv-control)] p-5 xl:p-6"
+							className={`wv-neon-card wv-rw-card wv-step ${i % 2 === 1 ? "wv-neon-card--pink" : ""} flex flex-col gap-3 rounded-2xl p-5 xl:p-6`}
 						>
 							<span
-								className={`${bungee} flex size-10 items-center justify-center rounded-full border border-[var(--wv-cyan-soft)] bg-[var(--wv-bg)] text-lg text-[var(--wv-cyan-soft)]`}
+								aria-hidden
+								className={`${bungee} wv-step-ghost pointer-events-none absolute right-4 top-2 text-[64px] leading-none xl:text-[72px]`}
 							>
 								{s.n}
 							</span>
-							<h3 className={`${heyComic} text-base`}>{s.title}</h3>
-							<p className={`${orbitron} text-[13px] leading-[1.6] text-[var(--wv-text-dim)]`}>{s.text}</p>
+							<div className="flex items-center gap-3">
+								<span
+									aria-hidden
+									className="wv-neon-card-icon flex size-11 shrink-0 items-center justify-center rounded-xl"
+								>
+									<s.Icon className="size-5" strokeWidth={2.25} />
+								</span>
+								<span
+									aria-hidden
+									className={`${orbitron} wv-acct-card-tag rounded-full px-2.5 py-1 text-[10px] tracking-[1px]`}
+								>
+									STEP {s.n}
+								</span>
+							</div>
+							<h3 className={`${heyComic} wv-pc-name text-base xl:text-lg`}>{s.title}</h3>
+							<p className={`${orbitron} wv-neon-card-text text-[13px] leading-[1.6]`}>{s.text}</p>
 						</li>
 					))}
 				</ol>
 			</section>
 
-			{/* What earns and what doesn't */}
-			<section className="flex flex-col items-center gap-8 px-5 py-8 md:px-8 md:py-12 xl:gap-12 xl:px-20 xl:py-16">
+			{/* What earns and what doesn't, over a soft pink and cyan glow (`.wv-faq-glow`). */}
+			<section className="wv-faq-glow flex flex-col items-center gap-8 px-5 py-8 md:px-8 md:py-12 xl:gap-12 xl:px-20 xl:py-16">
 				<SectionHeading eyebrow="The fine print, in plain words" title="WHAT EARNS TOKENS" />
-				<div className="grid w-full max-w-[1100px] grid-cols-1 gap-3 md:grid-cols-2 md:gap-4 xl:gap-6">
-					<div className="flex flex-col gap-3 rounded-2xl border border-[var(--wv-cyan-soft)] bg-[var(--wv-control)] p-5 xl:p-6">
-						<h3 className={`${heyComic} text-base text-[var(--wv-cyan-soft)]`}>EARNS TOKENS</h3>
-						<ul
-							className={`${orbitron} flex flex-col gap-2 text-[13px] leading-[1.5] text-[var(--wv-text-dim)]`}
-						>
-							{EARNS.map((e) => (
-								<li key={e} className="flex gap-2">
-									<span aria-hidden className="text-[var(--wv-cyan-soft)]">
-										✓
-									</span>
-									{e}
-								</li>
-							))}
-						</ul>
-					</div>
-					<div className="flex flex-col gap-3 rounded-2xl border border-[var(--wv-pink)] bg-[var(--wv-control)] p-5 xl:p-6">
-						<h3 className={`${heyComic} text-base text-[var(--wv-pink)]`}>DOESN&apos;T EARN TOKENS</h3>
-						<ul
-							className={`${orbitron} flex flex-col gap-2 text-[13px] leading-[1.5] text-[var(--wv-text-dim)]`}
-						>
-							{DOES_NOT_EARN.map((e) => (
-								<li key={e} className="flex gap-2">
-									<span aria-hidden className="text-[var(--wv-pink)]">
-										✕
-									</span>
-									{e}
-								</li>
-							))}
-						</ul>
-					</div>
+				<div className="grid w-full max-w-[1100px] grid-cols-1 gap-4 md:grid-cols-2 xl:gap-6">
+					<FinePrint Icon={BadgeCheck} Mark={Check} title="EARNS TOKENS" items={EARNS} />
+					<FinePrint pink Icon={Ban} Mark={X} title="DOESN'T EARN TOKENS" items={DOES_NOT_EARN} />
 				</div>
 			</section>
 
@@ -261,56 +337,66 @@ export function WvRewards({ config, account }: { config: RewardsConfig; account:
 				<RewardsCalculator tokensPerDollar={config.tokensPerDollar} />
 			</section>
 
-			{/* FAQ */}
+			{/* FAQ: the shipping page's glassy neon answer panels (`.wv-info-*`: pink while closed, cyan once open, the +/−
+			    in a neon ring, the question lifted), over a soft pink and cyan glow (`.wv-faq-glow`). */}
 			<section
 				id="faqs"
-				className="flex flex-col items-center gap-8 px-5 py-8 md:px-8 md:py-12 xl:gap-12 xl:px-20 xl:py-16"
+				className="wv-faq-glow flex scroll-mt-6 flex-col items-center gap-8 px-5 py-8 md:px-8 md:py-12 xl:gap-12 xl:px-20 xl:py-16"
 			>
 				<SectionHeading eyebrow="Questions" title="REWARDS FAQS" />
 				<div className="flex w-full max-w-[860px] flex-col gap-3 xl:gap-4">
 					{faqs.map((f, i) => (
-						<details
-							key={f.q}
-							open={i === 0}
-							className="group rounded-xl border border-[var(--wv-pink)] bg-[var(--wv-control)] p-4 open:border-[var(--wv-cyan-soft)]"
-						>
+						<details key={f.q} open={i === 0} className="wv-info-item group rounded-xl p-4 md:p-5">
 							<summary
-								className={`${heyComic} flex cursor-pointer list-none items-center justify-between gap-4 text-[15px] [&::-webkit-details-marker]:hidden`}
+								className={`${heyComic} wv-trust-title flex cursor-pointer list-none items-center justify-between gap-4 text-[15px] [&::-webkit-details-marker]:hidden`}
 							>
 								{f.q}
-								<span
-									aria-hidden
-									className="font-mono text-base text-[var(--wv-pink)] group-open:text-[var(--wv-cyan-soft)]"
-								>
+								<span aria-hidden className="wv-info-toggle font-mono text-base">
 									<span className="group-open:hidden">+</span>
 									<span className="hidden group-open:inline">−</span>
 								</span>
 							</summary>
-							<p className={`${orbitron} wv-unfold mt-3 text-[13px] leading-[1.6] text-[var(--wv-text-dim)]`}>
-								{f.a}
-							</p>
+							<p className={`${orbitron} wv-trust-text wv-unfold mt-3 text-[13px] leading-[1.6]`}>{f.a}</p>
 						</details>
 					))}
 				</div>
 			</section>
 
-			{/* Closing call to action */}
-			<section className="wv-nebula flex flex-col items-center gap-5 border-y border-[var(--wv-purple)] px-5 py-10 text-center md:px-8 md:py-14 xl:py-20">
-				<h2 className={`${heyComic} text-[26px] leading-tight md:text-[34px] xl:text-[40px]`}>
-					EVERY ORDER GETS YOU <span className="text-[var(--wv-cyan-soft)]">CLOSER</span> TO THE NEXT ONE
-				</h2>
-				<p
-					className={`${orbitron} max-w-[520px] text-[13px] leading-[1.6] text-[var(--wv-text-dim)] md:text-sm`}
-				>
-					Sign in, shop, and your tokens add up automatically. Questions? Our team is happy to help.
-				</p>
-				<div className="flex w-full flex-col gap-3 md:w-auto md:flex-row md:gap-4">
-					<Link href="/shop" className={primaryButton}>
-						SHOP NOW
-					</Link>
-					<Link href="/contact-us" className={outlineButton}>
-						CONTACT SUPPORT
-					</Link>
+			{/* Closing call to action: a lit glass card (`.wv-news-card`) over a pink and cyan glow, between neon edges
+			    (`.wv-rw-outro`). A token glows in a neon ring over the 3D title and its glowing bar; the copy is brighter
+			    with its two promises lit; the glossy button and the neon outline one, each with its icon. */}
+			<section className="wv-rw-outro relative px-4 py-10 md:px-8 md:py-14 xl:py-20">
+				<div className="wv-news-card mx-auto flex max-w-[860px] flex-col items-center gap-5 rounded-[24px] px-5 py-8 text-center md:gap-6 md:px-12 md:py-12">
+					<span
+						aria-hidden
+						className="wv-rw-outro-token wv-float flex size-14 items-center justify-center rounded-full md:size-16"
+					>
+						<Coins className="size-7 md:size-8" strokeWidth={2} />
+					</span>
+					<div className="flex flex-col items-center gap-3">
+						<h2
+							className={`${heyComic} wv-rw-outro-title text-balance text-[26px] leading-tight md:text-[34px] xl:text-[40px]`}
+						>
+							EVERY ORDER GETS YOU <span className="wv-rw-outro-key">CLOSER</span> TO THE NEXT ONE
+						</h2>
+						<div className="wv-hero-bar h-1 w-20 rounded-full md:w-[120px]" />
+					</div>
+					<p
+						className={`${orbitron} wv-hero-copy max-w-[560px] text-balance text-[13px] leading-[1.6] md:text-sm`}
+					>
+						Sign in, shop, and <strong className="wv-hero-key">your tokens add up automatically</strong>.
+						Questions? <strong className="wv-hero-key wv-hero-key--pink">Our team is happy to help</strong>.
+					</p>
+					<div className="flex w-full flex-col gap-3 md:w-auto md:flex-row md:gap-4">
+						<Link href="/shop" className={primaryButton}>
+							<ShoppingBag aria-hidden className="size-4" strokeWidth={2.5} />
+							<span className="wv-pc-cta-label">SHOP NOW</span>
+						</Link>
+						<Link href="/contact-us" className={outlineButton}>
+							<Headset aria-hidden className="size-4" strokeWidth={2.5} />
+							<span className="wv-btn-label">CONTACT SUPPORT</span>
+						</Link>
+					</div>
 				</div>
 			</section>
 

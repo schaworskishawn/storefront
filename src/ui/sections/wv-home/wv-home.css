@@ -471,6 +471,312 @@ button[aria-pressed="true"] > .wv-filter-dot {
 	background: linear-gradient(90deg, var(--wv-cyan), transparent);
 	box-shadow: 0 0 8px color-mix(in srgb, var(--wv-cyan) 70%, transparent);
 }
+/* The rewards page's three numbers (wv-rewards.tsx), in a lit glass band: each icon glows in its neon ring in the item's
+ * colour (cyan, pink, cyan), the value is lifted (a dark edge, a purple one beneath) and glows in that colour, and
+ * glowing neon lines, cyan into pink, stand between the items (across on phones, upright from tablets up). */
+.wv-stat .wv-trust-icon svg {
+	color: var(--accent);
+	filter: drop-shadow(0 0 4px color-mix(in srgb, var(--accent) 85%, transparent));
+}
+.wv-stat-value {
+	color: var(--accent);
+	text-shadow:
+		0 1px 0 var(--wv-ink),
+		0 2px 0 color-mix(in srgb, var(--wv-purple) 80%, transparent),
+		0 0 12px color-mix(in srgb, var(--accent) 55%, transparent),
+		0 0 28px color-mix(in srgb, var(--accent) 28%, transparent);
+}
+.wv-stat + .wv-stat {
+	position: relative;
+}
+.wv-stat + .wv-stat::before {
+	content: "";
+	position: absolute;
+	top: -8px;
+	left: 12%;
+	right: 12%;
+	height: 1px;
+	background: linear-gradient(90deg, transparent, var(--wv-cyan) 30%, var(--wv-pink) 70%, transparent);
+	box-shadow: 0 0 8px color-mix(in srgb, var(--wv-pink) 60%, transparent);
+}
+@media (min-width: 768px) {
+	.wv-stat + .wv-stat::before {
+		top: 12%;
+		bottom: 12%;
+		left: -12px;
+		right: auto;
+		width: 1px;
+		height: auto;
+		background: linear-gradient(180deg, transparent, var(--wv-cyan) 30%, var(--wv-pink) 70%, transparent);
+	}
+}
+/* The rewards page's account panels (wv-rewards-account-view.tsx): neon cards that glow under the pointer but don't lift
+ * (they aren't links), each icon glowing in its lit tile in the card's colour; tokens about to expire in a pink glass
+ * strip; the history's header glowing cyan over neon-ruled rows, the tokens left glowing, and each status a neon pill
+ * (cyan while active, pink once taken back, dimmed once used up or expired). */
+.wv-neon-card.wv-rw-card:hover {
+	transform: none;
+}
+.wv-rw-card .wv-neon-card-icon svg {
+	color: var(--accent);
+	filter: drop-shadow(0 0 5px color-mix(in srgb, var(--accent) 85%, transparent));
+}
+.wv-rw-expiring {
+	color: color-mix(in srgb, white 75%, var(--wv-pink));
+	border: 1px solid color-mix(in srgb, var(--wv-pink) 55%, transparent);
+	background: color-mix(in srgb, var(--wv-pink) 10%, transparent);
+	box-shadow: 0 0 12px color-mix(in srgb, var(--wv-pink) 28%, transparent);
+}
+.wv-rw-expiring svg {
+	color: var(--wv-pink);
+	filter: drop-shadow(0 0 4px var(--wv-pink));
+}
+/* The history scrolls sideways on phones: a thin purple scrollbar on the dark, not the browser's white one. */
+.wv-rw-scroll {
+	scrollbar-width: thin;
+	scrollbar-color: color-mix(in srgb, var(--wv-purple) 85%, var(--wv-pink)) transparent;
+}
+.wv-rw-table thead {
+	color: var(--wv-cyan-soft);
+	text-shadow: 0 0 8px color-mix(in srgb, var(--wv-cyan) 60%, transparent);
+}
+.wv-rw-row {
+	border-top: 1px solid color-mix(in srgb, var(--wv-purple) 75%, transparent);
+	transition: background-color 150ms ease;
+}
+.wv-rw-row:hover {
+	background-color: color-mix(in srgb, var(--wv-cyan) 5%, transparent);
+}
+.wv-rw-left {
+	color: var(--wv-cyan-soft);
+	text-shadow: 0 0 8px color-mix(in srgb, var(--wv-cyan) 55%, transparent);
+}
+.wv-rw-status {
+	--tone: var(--wv-cyan-soft);
+	color: var(--tone);
+	border: 1px solid color-mix(in srgb, var(--tone) 60%, transparent);
+	background: color-mix(in srgb, var(--tone) 12%, transparent);
+	box-shadow: 0 0 10px color-mix(in srgb, var(--tone) 35%, transparent);
+	text-shadow: 0 0 8px color-mix(in srgb, var(--tone) 70%, transparent);
+}
+.wv-rw-status[data-tone="pink"] {
+	--tone: var(--wv-pink);
+}
+.wv-rw-status[data-tone="muted"] {
+	--tone: var(--wv-muted);
+	box-shadow: none;
+	text-shadow: none;
+}
+/* The rewards page's "how it works" steps (wv-rewards.tsx): neon cards (.wv-rw-card) with each step's number as a big
+ * neon outline in the corner, and a glowing line from each step to the next in the colours it joins (cyan into pink,
+ * then pink into cyan): down the 20px gap on phones and tablets, across the 24px gap on desktops. */
+.wv-step {
+	position: relative;
+}
+/* The fine print's ticks and crosses (wv-rewards.tsx): each a small glowing neon badge in its card's colour. */
+.wv-rw-mark {
+	color: var(--accent);
+	border: 1px solid color-mix(in srgb, var(--accent) 60%, transparent);
+	background: radial-gradient(circle, color-mix(in srgb, var(--accent) 24%, transparent), transparent 75%);
+	box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 40%, transparent);
+}
+.wv-rw-mark svg {
+	filter: drop-shadow(0 0 3px color-mix(in srgb, var(--accent) 85%, transparent));
+}
+/* The rewards calculator (wv-rewards-calculator.tsx). The slider is drawn in neon: a dark groove, filled cyan into pink
+ * up to the knob (`--fill`, set from the value), and a glowing knob, white-hot at its centre. The presets are neon pills;
+ * the chosen one is glossy cyan. The result is dark glass set into the card inside a cyan-through-purple-to-pink edge. */
+.wv-calc-range {
+	-webkit-appearance: none;
+	appearance: none;
+	height: 8px;
+	border-radius: 9999px;
+	background:
+		linear-gradient(90deg, var(--wv-cyan), var(--wv-pink)) 0 0 / var(--fill, 0%) 100% no-repeat,
+		color-mix(in srgb, var(--wv-purple) 28%, var(--wv-ink));
+	box-shadow:
+		inset 0 1px 3px var(--wv-ink),
+		0 0 10px color-mix(in srgb, var(--wv-cyan) 25%, transparent);
+}
+.wv-calc-range::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	appearance: none;
+	width: 22px;
+	height: 22px;
+	border: 2px solid var(--wv-bg);
+	border-radius: 9999px;
+	background: radial-gradient(circle at 40% 35%, white, var(--wv-cyan-soft) 65%);
+	box-shadow:
+		0 0 0 2px var(--wv-cyan-soft),
+		0 0 14px var(--wv-cyan);
+}
+.wv-calc-range::-moz-range-thumb {
+	width: 18px;
+	height: 18px;
+	border: 2px solid var(--wv-bg);
+	border-radius: 9999px;
+	background: radial-gradient(circle at 40% 35%, white, var(--wv-cyan-soft) 65%);
+	box-shadow:
+		0 0 0 2px var(--wv-cyan-soft),
+		0 0 14px var(--wv-cyan);
+}
+.wv-calc-range:focus-visible {
+	outline: 2px solid var(--wv-cyan-soft);
+	outline-offset: 6px;
+}
+.wv-calc-chip {
+	color: var(--wv-cyan-soft);
+	border: 1px solid color-mix(in srgb, var(--wv-cyan-soft) 55%, transparent);
+	background: color-mix(in srgb, var(--wv-cyan) 8%, transparent);
+	box-shadow: 0 0 8px color-mix(in srgb, var(--wv-cyan) 20%, transparent);
+	text-shadow: 0 0 6px color-mix(in srgb, var(--wv-cyan) 55%, transparent);
+	transition: box-shadow 150ms ease;
+}
+.wv-calc-chip:is(:hover, :focus-visible) {
+	box-shadow: 0 0 14px color-mix(in srgb, var(--wv-cyan) 45%, transparent);
+}
+.wv-calc-chip[aria-pressed="true"] {
+	color: var(--wv-ink);
+	border-color: transparent;
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, white 30%, var(--wv-cyan-soft)),
+		var(--wv-cyan-soft) 55%,
+		color-mix(in srgb, var(--wv-cyan) 80%, var(--wv-purple))
+	);
+	text-shadow: 0 1px 0 color-mix(in srgb, white 45%, transparent);
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 55%, transparent),
+		inset 0 -2px 0 color-mix(in srgb, var(--wv-ink) 30%, transparent),
+		0 0 14px color-mix(in srgb, var(--wv-cyan) 55%, transparent);
+}
+.wv-calc-result {
+	border: 1px solid transparent;
+	background:
+		linear-gradient(180deg, var(--wv-bg), color-mix(in srgb, var(--wv-purple) 14%, var(--wv-bg))) padding-box,
+		linear-gradient(
+				135deg,
+				color-mix(in srgb, var(--wv-cyan) 60%, transparent),
+				color-mix(in srgb, var(--wv-purple) 70%, transparent) 50%,
+				color-mix(in srgb, var(--wv-pink) 60%, transparent)
+			)
+			border-box;
+	box-shadow:
+		inset 0 2px 10px var(--wv-ink),
+		0 0 16px color-mix(in srgb, var(--wv-purple) 45%, transparent);
+}
+.wv-step-ghost {
+	color: transparent;
+	-webkit-text-stroke: 1.2px color-mix(in srgb, var(--accent) 45%, transparent);
+	filter: drop-shadow(0 0 6px color-mix(in srgb, var(--accent) 35%, transparent));
+}
+.wv-step:not(:last-child)::after {
+	content: "";
+	position: absolute;
+	left: 50%;
+	top: 100%;
+	width: 2px;
+	height: 20px;
+	transform: translateX(-50%);
+	border-radius: 1px;
+	background: linear-gradient(180deg, var(--wv-cyan), var(--wv-pink));
+	box-shadow: 0 0 8px color-mix(in srgb, var(--wv-purple) 90%, transparent);
+}
+.wv-step:nth-child(even):not(:last-child)::after {
+	background: linear-gradient(180deg, var(--wv-pink), var(--wv-cyan));
+}
+@media (min-width: 1280px) {
+	.wv-step:not(:last-child)::after {
+		left: 100%;
+		top: 50%;
+		width: 24px;
+		height: 2px;
+		transform: translateY(-50%);
+		background: linear-gradient(90deg, var(--wv-cyan), var(--wv-pink));
+	}
+	.wv-step:nth-child(even):not(:last-child)::after {
+		background: linear-gradient(90deg, var(--wv-pink), var(--wv-cyan));
+	}
+}
+/* The rewards page's closing call to action: a lit glass card (.wv-news-card) over a pink glow to its left and a cyan one
+ * to its right, between neon edges that run cyan into pink through a white-hot middle and fade out at both ends. Over
+ * the title, a token: lit glass inside a cyan-to-pink rim, glowing cyan and pink, its coins glowing. */
+.wv-rw-outro {
+	background:
+		radial-gradient(40% 70% at 10% 40%, color-mix(in srgb, var(--wv-pink) 13%, transparent), transparent 70%),
+		radial-gradient(40% 70% at 90% 60%, color-mix(in srgb, var(--wv-cyan) 10%, transparent), transparent 70%),
+		linear-gradient(
+			180deg,
+			var(--wv-bg),
+			color-mix(in srgb, var(--wv-purple) 12%, var(--wv-bg)) 50%,
+			var(--wv-bg)
+		);
+}
+.wv-rw-outro::before,
+.wv-rw-outro::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	right: 0;
+	height: 1px;
+	background: linear-gradient(
+		90deg,
+		transparent,
+		var(--wv-cyan) 24%,
+		color-mix(in srgb, white 62%, var(--wv-purple)) 50%,
+		var(--wv-pink) 76%,
+		transparent
+	);
+	filter: drop-shadow(0 0 2px color-mix(in srgb, var(--wv-cyan) 55%, var(--wv-pink)))
+		drop-shadow(0 0 8px color-mix(in srgb, var(--wv-pink) 55%, transparent));
+}
+.wv-rw-outro::before {
+	top: 0;
+}
+.wv-rw-outro::after {
+	bottom: 0;
+}
+.wv-rw-outro-token {
+	border: 2px solid transparent;
+	color: var(--wv-cyan-soft);
+	background:
+		radial-gradient(
+				circle at 35% 30%,
+				color-mix(in srgb, var(--wv-cyan) 30%, var(--wv-control)),
+				var(--wv-control) 70%
+			)
+			padding-box,
+		linear-gradient(135deg, var(--wv-cyan), var(--wv-purple) 55%, var(--wv-pink)) border-box;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 25%, transparent),
+		inset 0 -3px 6px color-mix(in srgb, var(--wv-ink) 60%, transparent),
+		0 0 16px color-mix(in srgb, var(--wv-cyan) 45%, transparent),
+		0 0 34px -6px color-mix(in srgb, var(--wv-pink) 60%, transparent);
+}
+.wv-rw-outro-token svg {
+	filter: drop-shadow(0 0 5px color-mix(in srgb, var(--wv-cyan) 90%, transparent));
+}
+/* Its title is white lettering with depth (a dark edge, a purple one three pixels deep, a soft glow), as text-shadows so
+ * it holds however the title wraps; "closer" glows cyan. */
+.wv-rw-outro-title {
+	color: white;
+	text-shadow:
+		0 1px 0 var(--wv-ink),
+		0 2px 0 var(--wv-purple),
+		0 3px 0 color-mix(in srgb, var(--wv-purple) 70%, var(--wv-ink)),
+		0 4px 2px var(--wv-ink),
+		0 0 16px color-mix(in srgb, var(--wv-cyan-soft) 28%, transparent);
+}
+.wv-rw-outro-key {
+	color: var(--wv-cyan-soft);
+	text-shadow:
+		0 1px 0 var(--wv-ink),
+		0 2px 0 color-mix(in srgb, var(--wv-cyan) 45%, var(--wv-purple)),
+		0 3px 0 var(--wv-purple),
+		0 4px 2px var(--wv-ink),
+		0 0 10px color-mix(in srgb, var(--wv-cyan) 75%, transparent),
+		0 0 22px color-mix(in srgb, var(--wv-cyan) 45%, transparent);
+}
 /* The payments strip's chips, one for each way to pay, alternating cyan and pink: a glass pill inside a gradient edge that
  * glows, its icon in a glowing neon ring (.wv-trust-icon) and its label lifted (.wv-trust-title). Under the pointer a
  * chip lifts and glows brighter (no movement for reduced motion). */
