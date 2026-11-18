@@ -1,12 +1,15 @@
 import {
 	ArrowDown,
+	CalendarClock,
 	Check,
 	ChevronRight,
 	Cloud,
+	Gem,
 	Globe,
 	Handshake,
 	Home,
 	TrendingUp,
+	Wallet,
 	Wind,
 	Zap,
 } from "lucide-react";
@@ -24,25 +27,25 @@ const orbitron = "font-[family-name:var(--font-orbitron)]";
 
 const HIGHLIGHTS = [
 	{
-		icon: "💎",
+		Icon: Gem,
 		title: "15% COMMISSION",
 		text: "Earn top-tier industry commissions on every single referral",
 		mobile: true,
 	},
 	{
-		icon: "⚡",
+		Icon: Zap,
 		title: "REAL-TIME TRACKING",
 		text: "Live cookie tracking & instant conversions on your dashboard",
 		mobile: true,
 	},
 	{
-		icon: "📅",
+		Icon: CalendarClock,
 		title: "30-DAY COOKIE",
 		text: "Generous window to maximize your referral conversions",
 		mobile: true,
 	},
 	{
-		icon: "💰",
+		Icon: Wallet,
 		title: "MONTHLY PAYOUTS",
 		text: "Guaranteed prompt payouts on the 1st of every month",
 		mobile: false,
@@ -236,16 +239,20 @@ export function WvAffiliate() {
 					</div>
 				</section>
 
-				{/* Highlights */}
-				<ul className="grid gap-4 border-y border-[var(--wv-cyan-soft)] bg-[var(--wv-ink)] px-4 py-6 md:grid-cols-2 md:gap-6 md:px-8 md:py-8 xl:grid-cols-4 xl:px-20 xl:py-10">
+				{/* Highlights, as a trust strip: a lit glass band (`.wv-band`) whose items alternate cyan and pink
+				    (`.wv-trust-item`), each icon glowing in a neon ring (`.wv-trust-icon`), its title lifted and its text brighter. */}
+				<ul className="wv-band grid gap-5 px-4 py-6 md:grid-cols-2 md:gap-6 md:px-8 md:py-8 xl:grid-cols-4 xl:px-20 xl:py-10">
 					{HIGHLIGHTS.map((h) => (
-						<li key={h.title} className={`items-center gap-4 ${h.mobile ? "flex" : "hidden md:flex"}`}>
-							<span aria-hidden className="text-[32px] leading-none">
-								{h.icon}
+						<li
+							key={h.title}
+							className={`wv-trust-item wv-af-highlight items-center gap-4 ${h.mobile ? "flex" : "hidden md:flex"}`}
+						>
+							<span aria-hidden className="wv-trust-icon text-[28px] xl:text-[32px]">
+								<h.Icon className="size-[0.7em]" strokeWidth={2} />
 							</span>
 							<span className="flex min-w-0 flex-col gap-1">
-								<span className={`${heyComic} text-sm`}>{h.title}</span>
-								<span className={`${orbitron} text-xs text-[var(--lg-body)]`}>{h.text}</span>
+								<span className={`${heyComic} wv-trust-title text-sm`}>{h.title}</span>
+								<span className={`${orbitron} wv-trust-text text-xs leading-[1.5]`}>{h.text}</span>
 							</span>
 						</li>
 					))}
