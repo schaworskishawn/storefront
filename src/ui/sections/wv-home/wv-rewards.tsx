@@ -5,6 +5,7 @@ import {
 	Ban,
 	Check,
 	Coins,
+	Headset,
 	Hourglass,
 	LogIn,
 	ShoppingBag,
@@ -361,23 +362,41 @@ export function WvRewards({ config, account }: { config: RewardsConfig; account:
 				</div>
 			</section>
 
-			{/* Closing call to action */}
-			<section className="wv-nebula flex flex-col items-center gap-5 border-y border-[var(--wv-purple)] px-5 py-10 text-center md:px-8 md:py-14 xl:py-20">
-				<h2 className={`${heyComic} text-[26px] leading-tight md:text-[34px] xl:text-[40px]`}>
-					EVERY ORDER GETS YOU <span className="text-[var(--wv-cyan-soft)]">CLOSER</span> TO THE NEXT ONE
-				</h2>
-				<p
-					className={`${orbitron} max-w-[520px] text-[13px] leading-[1.6] text-[var(--wv-text-dim)] md:text-sm`}
-				>
-					Sign in, shop, and your tokens add up automatically. Questions? Our team is happy to help.
-				</p>
-				<div className="flex w-full flex-col gap-3 md:w-auto md:flex-row md:gap-4">
-					<Link href="/shop" className={primaryButton}>
-						<span className="wv-pc-cta-label">SHOP NOW</span>
-					</Link>
-					<Link href="/contact-us" className={outlineButton}>
-						<span className="wv-btn-label">CONTACT SUPPORT</span>
-					</Link>
+			{/* Closing call to action: a lit glass card (`.wv-news-card`) over a pink and cyan glow, between neon edges
+			    (`.wv-rw-outro`). A token glows in a neon ring over the 3D title and its glowing bar; the copy is brighter
+			    with its two promises lit; the glossy button and the neon outline one, each with its icon. */}
+			<section className="wv-rw-outro relative px-4 py-10 md:px-8 md:py-14 xl:py-20">
+				<div className="wv-news-card mx-auto flex max-w-[860px] flex-col items-center gap-5 rounded-[24px] px-5 py-8 text-center md:gap-6 md:px-12 md:py-12">
+					<span
+						aria-hidden
+						className="wv-rw-outro-token wv-float flex size-14 items-center justify-center rounded-full md:size-16"
+					>
+						<Coins className="size-7 md:size-8" strokeWidth={2} />
+					</span>
+					<div className="flex flex-col items-center gap-3">
+						<h2
+							className={`${heyComic} wv-rw-outro-title text-balance text-[26px] leading-tight md:text-[34px] xl:text-[40px]`}
+						>
+							EVERY ORDER GETS YOU <span className="wv-rw-outro-key">CLOSER</span> TO THE NEXT ONE
+						</h2>
+						<div className="wv-hero-bar h-1 w-20 rounded-full md:w-[120px]" />
+					</div>
+					<p
+						className={`${orbitron} wv-hero-copy max-w-[560px] text-balance text-[13px] leading-[1.6] md:text-sm`}
+					>
+						Sign in, shop, and <strong className="wv-hero-key">your tokens add up automatically</strong>.
+						Questions? <strong className="wv-hero-key wv-hero-key--pink">Our team is happy to help</strong>.
+					</p>
+					<div className="flex w-full flex-col gap-3 md:w-auto md:flex-row md:gap-4">
+						<Link href="/shop" className={primaryButton}>
+							<ShoppingBag aria-hidden className="size-4" strokeWidth={2.5} />
+							<span className="wv-pc-cta-label">SHOP NOW</span>
+						</Link>
+						<Link href="/contact-us" className={outlineButton}>
+							<Headset aria-hidden className="size-4" strokeWidth={2.5} />
+							<span className="wv-btn-label">CONTACT SUPPORT</span>
+						</Link>
+					</div>
 				</div>
 			</section>
 

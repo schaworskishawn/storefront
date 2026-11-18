@@ -698,6 +698,85 @@ button[aria-pressed="true"] > .wv-filter-dot {
 		background: linear-gradient(90deg, var(--wv-pink), var(--wv-cyan));
 	}
 }
+/* The rewards page's closing call to action: a lit glass card (.wv-news-card) over a pink glow to its left and a cyan one
+ * to its right, between neon edges that run cyan into pink through a white-hot middle and fade out at both ends. Over
+ * the title, a token: lit glass inside a cyan-to-pink rim, glowing cyan and pink, its coins glowing. */
+.wv-rw-outro {
+	background:
+		radial-gradient(40% 70% at 10% 40%, color-mix(in srgb, var(--wv-pink) 13%, transparent), transparent 70%),
+		radial-gradient(40% 70% at 90% 60%, color-mix(in srgb, var(--wv-cyan) 10%, transparent), transparent 70%),
+		linear-gradient(
+			180deg,
+			var(--wv-bg),
+			color-mix(in srgb, var(--wv-purple) 12%, var(--wv-bg)) 50%,
+			var(--wv-bg)
+		);
+}
+.wv-rw-outro::before,
+.wv-rw-outro::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	right: 0;
+	height: 1px;
+	background: linear-gradient(
+		90deg,
+		transparent,
+		var(--wv-cyan) 24%,
+		color-mix(in srgb, white 62%, var(--wv-purple)) 50%,
+		var(--wv-pink) 76%,
+		transparent
+	);
+	filter: drop-shadow(0 0 2px color-mix(in srgb, var(--wv-cyan) 55%, var(--wv-pink)))
+		drop-shadow(0 0 8px color-mix(in srgb, var(--wv-pink) 55%, transparent));
+}
+.wv-rw-outro::before {
+	top: 0;
+}
+.wv-rw-outro::after {
+	bottom: 0;
+}
+.wv-rw-outro-token {
+	border: 2px solid transparent;
+	color: var(--wv-cyan-soft);
+	background:
+		radial-gradient(
+				circle at 35% 30%,
+				color-mix(in srgb, var(--wv-cyan) 30%, var(--wv-control)),
+				var(--wv-control) 70%
+			)
+			padding-box,
+		linear-gradient(135deg, var(--wv-cyan), var(--wv-purple) 55%, var(--wv-pink)) border-box;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 25%, transparent),
+		inset 0 -3px 6px color-mix(in srgb, var(--wv-ink) 60%, transparent),
+		0 0 16px color-mix(in srgb, var(--wv-cyan) 45%, transparent),
+		0 0 34px -6px color-mix(in srgb, var(--wv-pink) 60%, transparent);
+}
+.wv-rw-outro-token svg {
+	filter: drop-shadow(0 0 5px color-mix(in srgb, var(--wv-cyan) 90%, transparent));
+}
+/* Its title is white lettering with depth (a dark edge, a purple one three pixels deep, a soft glow), as text-shadows so
+ * it holds however the title wraps; "closer" glows cyan. */
+.wv-rw-outro-title {
+	color: white;
+	text-shadow:
+		0 1px 0 var(--wv-ink),
+		0 2px 0 var(--wv-purple),
+		0 3px 0 color-mix(in srgb, var(--wv-purple) 70%, var(--wv-ink)),
+		0 4px 2px var(--wv-ink),
+		0 0 16px color-mix(in srgb, var(--wv-cyan-soft) 28%, transparent);
+}
+.wv-rw-outro-key {
+	color: var(--wv-cyan-soft);
+	text-shadow:
+		0 1px 0 var(--wv-ink),
+		0 2px 0 color-mix(in srgb, var(--wv-cyan) 45%, var(--wv-purple)),
+		0 3px 0 var(--wv-purple),
+		0 4px 2px var(--wv-ink),
+		0 0 10px color-mix(in srgb, var(--wv-cyan) 75%, transparent),
+		0 0 22px color-mix(in srgb, var(--wv-cyan) 45%, transparent);
+}
 /* The payments strip's chips, one for each way to pay, alternating cyan and pink: a glass pill inside a gradient edge that
  * glows, its icon in a glowing neon ring (.wv-trust-icon) and its label lifted (.wv-trust-title). Under the pointer a
  * chip lifts and glows brighter (no movement for reduced motion). */
