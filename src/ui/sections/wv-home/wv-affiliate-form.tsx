@@ -24,7 +24,8 @@ type Status =
 	| { kind: "sending" }
 	| { kind: "done" }
 	| { kind: "fallback"; href: string }
-	| { kind: "error"; text: string };
+	| { kind: "signin" }
+	| { kind: "error"; text: string; dashboard?: boolean };
 
 function Field({
 	id,
@@ -54,8 +55,11 @@ function Field({
 	);
 }
 
-/** Affiliate application. Posts to /api/affiliate; if online delivery isn't configured it hands the applicant a pre-filled email instead. */
-export function AffiliateApplyForm() {
+/**
+ * Affiliate application, for a signed-in customer (their name and email are filled in). Posts to /api/affiliate, which
+ * saves it on their account; if online delivery isn't configured it hands the applicant a pre-filled email instead.
+ */
+export function AffiliateApplyForm({ defaults }: { defaults?: { name: string; email: string } }) {
 	const [errors, setErrors] = useState<FieldErrors>({});
 	const [status, setStatus] = useState<Status>({ kind: "idle" });
 
@@ -90,8 +94,11 @@ export function AffiliateApplyForm() {
 				message?: string;
 				errors?: FieldErrors;
 				fallback?: boolean;
+				signIn?: boolean;
+				already?: boolean;
 			};
 			if (res.ok) return setStatus({ kind: "done" });
+			if (data.signIn) return setStatus({ kind: "signin" });
 			if (data.errors) {
 				setErrors(data.errors);
 				return setStatus({ kind: "idle" });
@@ -100,7 +107,11 @@ export function AffiliateApplyForm() {
 				const href = `mailto:${SUPPORT}?subject=${encodeURIComponent(`Affiliate application — ${app.name}`)}&body=${encodeURIComponent(toPlainText(app))}`;
 				return setStatus({ kind: "fallback", href });
 			}
-			setStatus({ kind: "error", text: data.message ?? "Something went wrong. Please try again." });
+			setStatus({
+				kind: "error",
+				text: data.message ?? "Something went wrong. Please try again.",
+				dashboard: data.already,
+			});
 		} catch {
 			setStatus({
 				kind: "error",
@@ -146,6 +157,7 @@ export function AffiliateApplyForm() {
 					<input
 						id="af-name"
 						name="name"
+						defaultValue={defaults?.name}
 						autoComplete="name"
 						placeholder="e.g. Neo Anderson"
 						className={field}
@@ -157,6 +169,7 @@ export function AffiliateApplyForm() {
 						id="af-email"
 						name="email"
 						type="email"
+						defaultValue={defaults?.email}
 						autoComplete="email"
 						placeholder="you@example.com"
 						className={field}
@@ -301,6 +314,26 @@ export function AffiliateApplyForm() {
 					className="rounded border border-[var(--q-red)] px-4 py-3 text-center text-sm text-[var(--q-red)]"
 				>
 					{status.text}
+					{status.dashboard && (
+						<>
+							{" "}
+							<Link href="/account/affiliate" className="underline">
+								Open my dashboard
+							</Link>
+						</>
+					)}
+				</p>
+			)}
+			{status.kind === "signin" && (
+				<p
+					role="alert"
+					className="border-[var(--ct-cyan)]/40 rounded border bg-[var(--ct-field)] px-4 py-3 text-center text-[13px] text-[var(--ct-text)]"
+				>
+					Your session has ended. Please{" "}
+					<Link href="/login?next=%2Faffiliate-program%23apply" className="text-[var(--ct-cyan)] underline">
+						sign in again
+					</Link>{" "}
+					to send your application.
 				</p>
 			)}
 			{status.kind === "fallback" && (

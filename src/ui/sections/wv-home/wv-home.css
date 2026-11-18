@@ -3621,3 +3621,26 @@ li:nth-child(even) > .wv-cat-chip {
 	color: var(--tone);
 	text-shadow: 0 0 8px color-mix(in srgb, var(--tone) 65%, transparent);
 }
+
+/* The affiliate dashboard and admin (wv-affiliate-dashboard.tsx, wv-affiliate-admin.tsx). The referral link sits in dark
+ * glass set into its card; the month's progress to the next tier is a neon bar filling cyan into pink (`--fill`); small
+ * icons in running text glow in the card's colour. */
+.wv-af-link {
+	border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+	background: linear-gradient(180deg, var(--wv-bg), color-mix(in srgb, var(--wv-purple) 14%, var(--wv-bg)));
+	box-shadow:
+		inset 0 2px 8px var(--wv-ink),
+		0 0 10px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+.wv-af-progress {
+	background:
+		linear-gradient(90deg, var(--wv-cyan), var(--wv-pink)) 0 0 / var(--fill, 0%) 100% no-repeat,
+		color-mix(in srgb, var(--wv-purple) 22%, var(--wv-ink));
+	box-shadow:
+		inset 0 1px 3px var(--wv-ink),
+		0 0 10px color-mix(in srgb, var(--wv-pink) 30%, transparent);
+}
+.wv-af-inline-icon {
+	color: var(--accent);
+	filter: drop-shadow(0 0 4px color-mix(in srgb, var(--accent) 85%, transparent));
+}

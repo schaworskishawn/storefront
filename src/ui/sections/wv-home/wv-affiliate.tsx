@@ -16,7 +16,9 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { AffiliateApplyForm } from "./wv-affiliate-form";
+import { Suspense } from "react";
+import { AFFILIATE_TIERS, rangeLabel, rateLabel, tierTitle } from "@/lib/affiliates/tiers";
+import { AffiliateApply, AffiliateApplySkeleton } from "./wv-affiliate-apply";
 import { WvFooter, WvHeader } from "./wv-chrome";
 import "./wv-home.css";
 
@@ -53,49 +55,25 @@ const HIGHLIGHTS = [
 	},
 ];
 
-/** The tiers build on each other: each card lists what it adds to the tier below (all of whose benefits it keeps). */
-const TIERS = [
-	{
-		name: "CLOUD",
-		Icon: Cloud,
-		rate: "10%",
-		range: "$0 - $1,000 / mo",
-		color: "yellow",
-		benefits: ["Basic marketing banners", "Monthly payouts", "Email support", "30-day cookie life"],
-	},
-	{
-		name: "VAPOR",
-		Icon: Wind,
-		rate: "12%",
-		range: "$1,001 - $5,000 / mo",
-		color: "orange",
-		benefits: ["Custom social templates", "Early access to select drops", "Co-branded landing page"],
-	},
-	{
-		name: "SURGE",
-		Icon: Zap,
-		rate: "15%",
-		range: "$5,001 - $15,000 / mo",
-		color: "pink",
-		benefits: [
-			"Bi-weekly payouts",
-			"Dedicated account manager",
-			"Exclusive product samples",
-			"Custom discount codes",
-		],
-	},
-	{
-		name: "GLOBAL",
-		Icon: Globe,
-		rate: "20%",
-		range: "$15,000+ / mo",
-		color: "cyan",
-		benefits: ["Weekly payouts", "Highest commission rate", "Sponsorship & merch kit", "Direct Slack line"],
-	},
-] as const;
+/**
+ * The cards' look for each tier. The rates, monthly ranges and benefits come from the program's own settings
+ * (`@/lib/affiliates/tiers`), the same ones commission is paid by, so the page can't promise something else. Each card
+ * lists what its tier adds to the one below, all of whose benefits it keeps.
+ */
+const TIER_LOOK = {
+	cloud: { Icon: Cloud, color: "yellow" },
+	vapor: { Icon: Wind, color: "orange" },
+	surge: { Icon: Zap, color: "pink" },
+	global: { Icon: Globe, color: "cyan" },
+} as const;
 
-/** "CLOUD" as "Cloud", for the line that says what a tier builds on. */
-const tierTitle = (name: string) => name.charAt(0) + name.slice(1).toLowerCase();
+const TIERS = AFFILIATE_TIERS.map((tier) => ({
+	name: tier.name,
+	...TIER_LOOK[tier.id],
+	rate: rateLabel(tier),
+	range: rangeLabel(tier),
+	benefits: tier.adds,
+}));
 
 const STATS = [
 	{ label: "TOTAL EARNINGS", value: "$12,480.50", trend: "+14.2% this month", pink: false, mobile: true },
@@ -311,8 +289,8 @@ export function WvAffiliate() {
 										<p className="wv-af-includes wv-neon-card-text flex items-center gap-2 text-[11px]">
 											<Layers aria-hidden className="size-3.5 shrink-0" strokeWidth={2.25} />
 											<span>
-												Everything in <strong className="wv-neon-key">{tierTitle(TIERS[i - 1].name)}</strong>,
-												plus:
+												Everything in{" "}
+												<strong className="wv-neon-key">{tierTitle(AFFILIATE_TIERS[i - 1])}</strong>, plus:
 											</span>
 										</p>
 									)}
@@ -444,8 +422,11 @@ export function WvAffiliate() {
 						title="APPLY TO JOIN"
 						sub="Tell us about your audience. We review every application by hand."
 					/>
+					{/* Depends on who's looking (signed out, applying, under review, or already an affiliate). */}
 					<div className="w-full max-w-[820px]">
-						<AffiliateApplyForm />
+						<Suspense fallback={<AffiliateApplySkeleton />}>
+							<AffiliateApply />
+						</Suspense>
 					</div>
 				</section>
 

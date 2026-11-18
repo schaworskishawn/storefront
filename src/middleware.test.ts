@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { REFERRAL_COOKIE } from "@/lib/affiliates/referral";
 import { AGE_VERIFIED_COOKIE } from "@/lib/age-gate";
 import { SITE_ACCESS_COOKIE, sitePasswordToken } from "@/lib/site-password";
 import { middleware } from "./middleware";
@@ -72,5 +73,38 @@ describe("site password gate", () => {
 		expect(location(await middleware(request("/shop", access)))).toBe("/age-verification?next=%2Fshop");
 		const full = { ...access, [AGE_VERIFIED_COOKIE]: "1" };
 		expect(passesThrough(await middleware(request("/shop", full)))).toBe(true);
+	});
+});
+
+describe("affiliate referral links", () => {
+	const referral = (res: Response) =>
+		res.headers
+			.getSetCookie()
+			.find((c) => c.startsWith(`${REFERRAL_COOKIE}=`))
+			?.split(";")[0]
+			.split("=")[1];
+
+	it("remembers the code on the age-gate redirect a first visit gets, and keeps it in the destination", async () => {
+		vi.stubEnv("SITE_PASSWORD", "");
+		const res = await middleware(request("/home?aff=NeoAnderson"));
+		expect(location(res)).toBe("/age-verification?next=%2Fhome%3Faff%3DNeoAnderson");
+		expect(referral(res)).toBe("neoanderson");
+		const cookie = res.headers.getSetCookie().find((c) => c.startsWith(`${REFERRAL_COOKIE}=`)) ?? "";
+		expect(cookie).toMatch(/Max-Age=2592000/i);
+		expect(cookie).toMatch(/HttpOnly/i);
+	});
+
+	it("remembers it on an ordinary page too, and a later link replaces it", async () => {
+		vi.stubEnv("SITE_PASSWORD", "");
+		const verified = { [AGE_VERIFIED_COOKIE]: "1", [REFERRAL_COOKIE]: "first_partner" };
+		expect(referral(await middleware(request("/shop?aff=second-partner", verified)))).toBe("second-partner");
+	});
+
+	it("ignores a malformed code and pages without one", async () => {
+		vi.stubEnv("SITE_PASSWORD", "");
+		const verified = { [AGE_VERIFIED_COOKIE]: "1" };
+		expect(referral(await middleware(request("/shop?aff=<script>", verified)))).toBeUndefined();
+		expect(referral(await middleware(request("/shop?aff=ab", verified)))).toBeUndefined();
+		expect(referral(await middleware(request("/shop", verified)))).toBeUndefined();
 	});
 });
