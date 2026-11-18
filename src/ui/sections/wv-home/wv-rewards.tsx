@@ -336,34 +336,26 @@ export function WvRewards({ config, account }: { config: RewardsConfig; account:
 				<RewardsCalculator tokensPerDollar={config.tokensPerDollar} />
 			</section>
 
-			{/* FAQ */}
+			{/* FAQ: the shipping page's glassy neon answer panels (`.wv-info-*`: pink while closed, cyan once open, the +/−
+			    in a neon ring, the question lifted), over a soft pink and cyan glow (`.wv-faq-glow`). */}
 			<section
 				id="faqs"
-				className="flex flex-col items-center gap-8 px-5 py-8 md:px-8 md:py-12 xl:gap-12 xl:px-20 xl:py-16"
+				className="wv-faq-glow flex scroll-mt-6 flex-col items-center gap-8 px-5 py-8 md:px-8 md:py-12 xl:gap-12 xl:px-20 xl:py-16"
 			>
 				<SectionHeading eyebrow="Questions" title="REWARDS FAQS" />
 				<div className="flex w-full max-w-[860px] flex-col gap-3 xl:gap-4">
 					{faqs.map((f, i) => (
-						<details
-							key={f.q}
-							open={i === 0}
-							className="group rounded-xl border border-[var(--wv-pink)] bg-[var(--wv-control)] p-4 open:border-[var(--wv-cyan-soft)]"
-						>
+						<details key={f.q} open={i === 0} className="wv-info-item group rounded-xl p-4 md:p-5">
 							<summary
-								className={`${heyComic} flex cursor-pointer list-none items-center justify-between gap-4 text-[15px] [&::-webkit-details-marker]:hidden`}
+								className={`${heyComic} wv-trust-title flex cursor-pointer list-none items-center justify-between gap-4 text-[15px] [&::-webkit-details-marker]:hidden`}
 							>
 								{f.q}
-								<span
-									aria-hidden
-									className="font-mono text-base text-[var(--wv-pink)] group-open:text-[var(--wv-cyan-soft)]"
-								>
+								<span aria-hidden className="wv-info-toggle font-mono text-base">
 									<span className="group-open:hidden">+</span>
 									<span className="hidden group-open:inline">−</span>
 								</span>
 							</summary>
-							<p className={`${orbitron} wv-unfold mt-3 text-[13px] leading-[1.6] text-[var(--wv-text-dim)]`}>
-								{f.a}
-							</p>
+							<p className={`${orbitron} wv-trust-text wv-unfold mt-3 text-[13px] leading-[1.6]`}>{f.a}</p>
 						</details>
 					))}
 				</div>
