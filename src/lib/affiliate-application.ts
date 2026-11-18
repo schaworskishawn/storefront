@@ -29,8 +29,6 @@ export type AffiliateApplication = {
 	plan: string;
 	confirmAge: boolean;
 	agree: boolean;
-	/** Honeypot: real people leave this empty. */
-	company: string;
 };
 
 export type FieldErrors = Partial<Record<keyof AffiliateApplication, string>>;
@@ -62,7 +60,6 @@ export function normalize(raw: unknown): AffiliateApplication {
 				: "",
 		confirmAge: r.confirmAge === true,
 		agree: r.agree === true,
-		company: clean(r.company, 100),
 	};
 }
 

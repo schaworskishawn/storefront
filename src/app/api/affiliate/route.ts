@@ -29,7 +29,8 @@ export async function POST(request: Request) {
 		);
 
 	const app = normalize(await request.json().catch(() => null));
-	if (app.company) return NextResponse.json({ ok: true }); // honeypot
+	// No honeypot: applying needs a signed-in account (and is rate-limited), and a hidden "Company" field got filled in by
+	// browsers' autofill, which made real applications look like bots and quietly vanish.
 
 	const errors = validate(app);
 	if (Object.keys(errors).length)
@@ -114,7 +115,6 @@ export async function POST(request: Request) {
 					type: "affiliate_application",
 					submittedAt: new Date().toISOString(),
 					...app,
-					company: undefined,
 					account: account.email,
 					text,
 				}),
