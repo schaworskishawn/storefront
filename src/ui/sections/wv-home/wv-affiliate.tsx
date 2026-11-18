@@ -1,3 +1,4 @@
+import { ArrowDown, ChevronRight, Handshake, Home } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { AffiliateApplyForm } from "./wv-affiliate-form";
@@ -176,25 +177,27 @@ export function WvAffiliate() {
 			<div className="relative">
 				<WvHeader />
 
-				{/* Hero */}
-				<section className="flex flex-col gap-6 px-4 py-6 md:flex-row md:items-center md:justify-between md:gap-8 md:px-8 md:py-12 xl:px-20 xl:py-20">
-					<div className="flex max-w-[680px] flex-col gap-5 xl:gap-6">
+				{/* Hero. The text has depth, as on the other heroes (`.wv-hero-*`): the shop's neon breadcrumb (`.wv-crumb*`:
+				    Home glowing cyan, a pink chevron, this page in a neon pill), a 3D title over a glowing pink-to-cyan bar,
+				    brighter copy with its key phrases lit, the glossy button and the neon outline one; the art in the heroes'
+				    lit neon frame (`.wv-art`, glass, HUD corners); behind it all a pink and cyan glow. */}
+				<section className="wv-hero-backdrop flex flex-col gap-6 px-4 py-6 md:flex-row md:items-center md:justify-between md:gap-8 md:px-8 md:py-12 xl:px-20 xl:py-20">
+					<div className="flex min-w-0 max-w-[680px] flex-col gap-5 xl:gap-6">
 						<nav
 							aria-label="Breadcrumb"
-							className="flex items-center gap-2 text-[11px] uppercase tracking-[1.5px]"
+							className={`${heyComic} flex items-center gap-2 text-xs tracking-[0.5px]`}
 						>
-							<Link href="/home" className={`${bungee} text-[var(--ct-placeholder)]`}>
+							<Link href="/home" className="wv-link wv-crumb-link">
+								<Home aria-hidden className="size-3.5" strokeWidth={2.25} />
 								Home
 							</Link>
-							<span aria-hidden className={`${orbitron} font-bold text-[var(--ct-placeholder)]`}>
-								&gt;
-							</span>
-							<span aria-current="page" className={`${bungee} text-[var(--wv-cyan-soft)]`}>
+							<ChevronRight aria-hidden className="wv-crumb-sep size-3.5" strokeWidth={2.5} />
+							<span aria-current="page" className="wv-crumb-current">
 								Affiliate Program
 							</span>
 						</nav>
 						<div className="flex flex-col gap-3">
-							<h1 className={`${heyComic} leading-none`}>
+							<h1 className={`${heyComic} wv-title-glow wv-hero-title leading-none`}>
 								<span className="block text-[38px] tracking-[-0.5px] md:text-[42px] xl:text-[54px] xl:leading-[60px]">
 									<span className="text-[var(--wv-cyan-soft)]">EARN</span> WITH
 								</span>
@@ -202,38 +205,46 @@ export function WvAffiliate() {
 									WORLDWIDE VAPOR
 								</span>
 							</h1>
-							<span aria-hidden className="h-[2px] w-[120px] bg-[var(--wv-cyan-soft)] xl:w-40" />
+							<span aria-hidden className="wv-hero-bar h-1 w-[120px] rounded-full xl:w-40" />
 						</div>
-						<p
-							className={`${orbitron} text-sm leading-[1.7] text-[var(--lg-body)] xl:text-base xl:leading-[26px]`}
-						>
-							Promote premium disposable vapes, state-of-the-art pod systems, and delicious e-liquids. Earn
-							high-octane commissions with the globe&apos;s trusted e-commerce vapor storefront.
+						{/* The apostrophe is {"'"}, not &apos;: SWC drops the space after a tag when the text that follows holds an
+						    entity, which would run "commissions" into "with". */}
+						<p className={`${orbitron} wv-hero-copy text-sm leading-[1.7] xl:text-base xl:leading-[26px]`}>
+							Promote <strong className="wv-hero-key">premium disposable vapes</strong>, state-of-the-art pod
+							systems, and delicious e-liquids. Earn{" "}
+							<strong className="wv-hero-key wv-hero-key--pink">high-octane commissions</strong> with the
+							globe
+							{"'"}s trusted e-commerce vapor storefront.
 						</p>
-						<div className="flex flex-col gap-3 md:flex-row md:gap-4">
+						{/* Stacked beside the art on tablets, where the column is too narrow for both in a row. */}
+						<div className="flex flex-col gap-3 xl:flex-row xl:gap-4">
 							<a
 								href="#apply"
-								className={`${heyComic} flex items-center justify-center rounded-xl border border-[var(--wv-cyan-soft)] bg-[var(--wv-cyan-soft)] px-6 py-[14px] text-base tracking-[0.04em] text-[var(--wv-ink)]`}
+								className={`${heyComic} wv-pc-cta flex h-[49px] items-center justify-center gap-2 rounded-xl bg-[var(--wv-cyan-soft)] px-6 text-base tracking-[0.04em] text-[var(--wv-ink)] xl:px-8`}
 							>
-								Apply Now
+								<Handshake aria-hidden className="size-[18px]" strokeWidth={2.25} />
+								<span className="wv-pc-cta-label">Apply Now</span>
 							</a>
 							<a
 								href="#tiers"
-								className={`${heyComic} flex items-center justify-center rounded-xl border border-[var(--wv-cyan-soft)] px-6 py-[14px] text-base tracking-[0.04em] text-[var(--wv-cyan-soft)]`}
+								className={`${heyComic} wv-btn wv-btn-outline wv-btn-neon flex h-[49px] items-center justify-center gap-2 rounded-xl border-[1.5px] border-[var(--wv-cyan-soft)] px-6 text-base tracking-[0.04em] text-[var(--wv-cyan-soft)] xl:px-8`}
 							>
-								See Commission Tiers
+								<span className="wv-btn-label">See Commission Tiers</span>
+								<ArrowDown aria-hidden className="size-4" strokeWidth={2.5} />
 							</a>
 						</div>
 					</div>
-					<div className="relative h-[180px] w-full shrink-0 overflow-hidden rounded-2xl border border-[var(--wv-cyan-soft)] shadow-[0_0_30px_rgba(105,235,255,0.16)] md:h-[240px] md:w-[332px] xl:h-[280px] xl:w-[440px]">
+					<div className="wv-art relative aspect-[1000/638] w-full shrink-0 overflow-hidden rounded-[20px] md:w-[332px] xl:w-[500px]">
 						<Image
 							src="/home/affiliate/hero.png"
 							alt="A neon handshake over a global network of affiliates"
 							fill
 							priority
-							sizes="(min-width: 1280px) 440px, (min-width: 768px) 332px, 328px"
+							sizes="(min-width: 1280px) 500px, (min-width: 768px) 332px, 100vw"
 							className="object-cover"
 						/>
+						<span aria-hidden className="wv-art-glass absolute inset-0" />
+						<span aria-hidden className="wv-art-hud absolute inset-[10px] md:inset-[14px]" />
 					</div>
 				</section>
 
