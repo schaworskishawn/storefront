@@ -26,20 +26,33 @@ async function AdminData() {
 	if (!staff.ok) {
 		if (staff.reason === "unavailable")
 			return (
-				<AdminNotice title="WE CAN'T CHECK YOUR SIGN-IN RIGHT NOW">Please refresh in a moment.</AdminNotice>
+				<AdminNotice title="WE CAN'T CHECK YOUR SIGN-IN RIGHT NOW">
+					Saleor didn&apos;t confirm your session just now. Refresh the page in a moment; if it keeps
+					happening,{" "}
+					<Link href="/logout" className="underline">
+						sign out
+					</Link>{" "}
+					and sign in again.
+				</AdminNotice>
+			);
+		if (staff.reason === "not-staff")
+			return (
+				<AdminNotice title="STAFF ONLY">
+					You&apos;re signed in as <strong className="wv-neon-key">{staff.email}</strong>, which isn&apos;t a
+					Saleor staff account that can manage customers.{" "}
+					<Link href="/logout" className="underline">
+						Sign out
+					</Link>
+					, then sign in with the email and password you use for the Saleor Dashboard.
+				</AdminNotice>
 			);
 		return (
 			<AdminNotice title="STAFF ONLY">
-				{staff.reason === "signed-out" ? (
-					<>
-						<Link href="/login?next=%2Faffiliate-admin" className="underline">
-							Sign in
-						</Link>{" "}
-						with your Saleor staff account to manage affiliates.
-					</>
-				) : (
-					"This page is for Worldwide Vapor staff who can manage customers."
-				)}
+				<Link href="/login?next=%2Faffiliate-admin" className="underline">
+					Sign in
+				</Link>{" "}
+				with the email and password you use for the Saleor Dashboard (being signed in to the Dashboard
+				doesn&apos;t sign you in here). You&apos;ll come straight back to this page.
 			</AdminNotice>
 		);
 	}
