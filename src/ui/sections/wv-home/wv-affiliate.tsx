@@ -195,8 +195,8 @@ export function WvAffiliate() {
 					</div>
 					<div className="wv-art relative aspect-[1000/638] w-full shrink-0 overflow-hidden rounded-[20px] md:w-[332px] xl:w-[500px]">
 						<Image
-							src="/home/affiliate/hero.png"
-							alt="A neon handshake over a global network of affiliates"
+							src="/home/affiliate/hero.svg"
+							alt="A glowing phone with a rising commission chart and Vapor Tokens streaming out of it, vapes and e-liquids on a neon floor, and a globe wrapped in a network"
 							fill
 							priority
 							sizes="(min-width: 1280px) 500px, (min-width: 768px) 332px, 100vw"
