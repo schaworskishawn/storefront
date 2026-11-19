@@ -1,5 +1,5 @@
 import { earnBaseCents } from "@/lib/rewards/tokens";
-import { normalizeAffiliateCode } from "./referral";
+import { normalizeAffiliateCode, normalizeCampaign } from "./referral";
 import { normalizeVoucher, type AffiliateRecord, type CreditVia, type OrderStamp } from "./records";
 
 /**
@@ -28,6 +28,8 @@ export type AffiliateOrder = {
 	voucherCode: string | null;
 	/** The referral code the checkout copied from the cookie (unchecked). */
 	ref: string | null;
+	/** The campaign tag the referral link carried, copied the same way (unchecked). */
+	campaign: string | null;
 	stamp: OrderStamp | null;
 };
 
@@ -124,6 +126,8 @@ export async function creditOrder(orderId: string, deps: AffiliateEngineDeps): P
 	const baseCents = earnBaseCents(order);
 	if (baseCents <= 0) return "nothing-to-earn";
 
+	// The link's campaign tag belongs to the credit only when the order came through that affiliate's own link.
+	const campaign = normalizeAffiliateCode(order.ref) === code ? normalizeCampaign(order.campaign) : null;
 	const stamp: OrderStamp = {
 		code,
 		affiliateId: account.userId,
@@ -132,6 +136,7 @@ export async function creditOrder(orderId: string, deps: AffiliateEngineDeps): P
 		currency: order.currency,
 		paidAt: deps.now().toISOString(),
 		state: "earned",
+		...(campaign ? { campaign } : {}),
 	};
 	const stamped = await deps.orders.stamp(order.id, stamp);
 	if (!stamped.ok) {

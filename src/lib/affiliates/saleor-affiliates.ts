@@ -82,6 +82,7 @@ export const AFFILIATE_ORDER_QUERY = `query AffiliateOrder($id: ID!) {
 		totalCharged { amount currency }
 		voucherCode
 		ref: metafield(key: "${AFFILIATE_KEYS.ref}")
+		campaign: metafield(key: "${AFFILIATE_KEYS.campaign}")
 		stamp: privateMetafield(key: "${AFFILIATE_KEYS.orderStamp}")
 	}
 }`;
@@ -98,6 +99,7 @@ type RawOrder = {
 	totalCharged?: { amount?: number; currency?: string } | null;
 	voucherCode?: string | null;
 	ref?: string | null;
+	campaign?: string | null;
 	stamp?: string | null;
 };
 
@@ -118,6 +120,7 @@ export function toAffiliateOrder(raw: RawOrder | null | undefined): AffiliateOrd
 		subtotalCents: toCents(raw.subtotal?.gross?.amount),
 		voucherCode: raw.voucherCode?.trim() || null,
 		ref: raw.ref ?? null,
+		campaign: raw.campaign?.trim() || null,
 		stamp: parseOrderStamp(raw.stamp),
 	};
 }

@@ -3747,3 +3747,24 @@ li:nth-child(even) > .wv-cat-chip {
 .wv-af-choice input[type="radio"] {
 	accent-color: var(--accent);
 }
+
+/* The affiliate dashboard's referral tools (wv-affiliate-link-tools.tsx): the QR code sits in dark glass that glows
+ * cyan into pink, and campaign tags, in the builder's report and the orders table, are small pink neon pills. */
+.wv-af-qr {
+	border: 1.5px solid transparent;
+	background:
+		linear-gradient(180deg, var(--wv-ink), color-mix(in srgb, var(--wv-purple) 18%, var(--wv-ink)))
+			padding-box,
+		linear-gradient(135deg, var(--wv-cyan), var(--wv-purple) 50%, var(--wv-pink)) border-box;
+	box-shadow:
+		inset 0 2px 10px var(--wv-ink),
+		0 0 18px color-mix(in srgb, var(--wv-cyan) 30%, transparent),
+		0 0 36px -10px color-mix(in srgb, var(--wv-pink) 45%, transparent);
+}
+.wv-af-tag {
+	color: var(--wv-pink);
+	border: 1px solid color-mix(in srgb, var(--wv-pink) 55%, transparent);
+	background: color-mix(in srgb, var(--wv-pink) 10%, transparent);
+	box-shadow: 0 0 8px color-mix(in srgb, var(--wv-pink) 25%, transparent);
+	text-shadow: 0 0 6px color-mix(in srgb, var(--wv-pink) 60%, transparent);
+}

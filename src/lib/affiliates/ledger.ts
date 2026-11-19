@@ -38,6 +38,8 @@ export type CommissionLine = {
 	rateBps: number;
 	commissionCents: number;
 	status: "pending" | "payable" | "reversed";
+	/** The campaign tag of the link the order came through, if it had one. */
+	campaign: string | null;
 };
 
 export type CurrencyTotals = {
@@ -107,6 +109,7 @@ export function computeLedger(orders: readonly LedgerOrder[], payouts: readonly 
 			rateBps: tier.rateBps,
 			commissionCents,
 			status,
+			campaign: stamp.campaign ?? null,
 		};
 	});
 

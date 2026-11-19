@@ -2,6 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { getAccountAuthState } from "@/app/(storefront)/[locale]/[channel]/(main)/account/get-current-user";
+import { DefaultChannelSlug } from "@/app/config";
+import { getStaticStorefrontChannelSlugs } from "@/config/channels";
+import { getDefaultLocaleSlug } from "@/config/locale";
 import { payoutDetailsChangedEmail } from "@/lib/affiliates/messages";
 import { readPayoutApiConfig, validateAddress } from "@/lib/affiliates/nowpayments-payouts";
 import { storeOrigin } from "@/lib/affiliates/payout-deps";
@@ -9,6 +12,8 @@ import { choosePayoutMethod, describePayoutMethod } from "@/lib/affiliates/payou
 import { getAffiliateAccount, saveAffiliateRecord } from "@/lib/affiliates/saleor-affiliates";
 import { WALLET_CHANGE_HOLD_HOURS } from "@/lib/affiliates/tiers";
 import { sendEmail } from "@/lib/email";
+import { rateLimited } from "@/lib/rate-limit";
+import { searchProducts } from "@/lib/search";
 
 export type PayoutPrefsState = { ok: boolean; message: string } | null;
 
@@ -78,5 +83,33 @@ export async function savePayoutMethodAction(
 			choice.method.kind === "crypto"
 				? `Saved. For your security, nothing is sent to a new wallet for ${WALLET_CHANGE_HOLD_HOURS} hours.`
 				: "Saved.",
+	};
+}
+
+export type LinkProduct = { name: string; slug: string; image: string | null };
+export type ProductSearchResult = { ok: true; products: LinkProduct[] } | { ok: false; message: string };
+
+/**
+ * The reflink creator's product search: a few matching products to link to, for a signed-in affiliate. Public catalogue
+ * data, but behind the session (and a per-account limit) so it isn't an open search endpoint.
+ */
+export async function searchLinkProductsAction(query: string): Promise<ProductSearchResult> {
+	const q = typeof query === "string" ? query.trim().slice(0, 60) : "";
+	if (q.length < 2) return { ok: false, message: "Type at least two letters of a product's name." };
+	const auth = await getAccountAuthState();
+	if (auth.status !== "authenticated") return { ok: false, message: "Please sign in again to search." };
+	if (rateLimited(`affiliate-link-search:${auth.user.id}`, 120))
+		return { ok: false, message: "That's a lot of searches. Please try again in a while." };
+
+	const channel = DefaultChannelSlug ?? getStaticStorefrontChannelSlugs()[0] ?? "";
+	const result = await searchProducts({ query: q, channel, locale: getDefaultLocaleSlug(), limit: 6 });
+	return {
+		ok: true,
+		// A product without a photo comes back with a placeholder path; the builder shows an icon for it instead.
+		products: result.products.map((p) => ({
+			name: p.name,
+			slug: p.slug,
+			image: p.image && !p.image.includes("placeholder") ? p.image : null,
+		})),
 	};
 }

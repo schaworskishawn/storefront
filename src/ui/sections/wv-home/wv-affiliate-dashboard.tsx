@@ -7,9 +7,11 @@ import {
 	Hourglass,
 	Link2,
 	Receipt,
+	Tags,
 	TrendingUp,
 	TriangleAlert,
 	Wallet,
+	Wand2,
 	type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
@@ -21,6 +23,8 @@ import {
 	type Ledger,
 	type PayoutStatus,
 } from "@/lib/affiliates/ledger";
+import { campaignReport, campaignSuggestions } from "@/lib/affiliates/link-tools";
+import { money } from "@/lib/affiliates/live-stats";
 import { describePayoutMethod } from "@/lib/affiliates/payout-prefs";
 import type { Payout, PayoutMethod } from "@/lib/affiliates/records";
 import {
@@ -32,6 +36,7 @@ import {
 	rateLabel,
 	tierTitle,
 } from "@/lib/affiliates/tiers";
+import { AffiliateLinkTools } from "./wv-affiliate-link-tools";
 import { PayoutMethodForm } from "./wv-affiliate-payout-form";
 import { CopyButton } from "./wv-copy-button";
 
@@ -136,6 +141,8 @@ const payoutProgress = (p: Payout): string | null =>
 export type AffiliateDashboardProps = {
 	code: string;
 	link: string;
+	/** The shop's address, for the links the referral tools build. */
+	origin: string;
 	vouchers: string[];
 	paused: boolean;
 	ledger: Ledger;
@@ -150,6 +157,7 @@ export type AffiliateDashboardProps = {
 export function AffiliateDashboard({
 	code,
 	link,
+	origin,
 	vouchers,
 	paused,
 	ledger,
@@ -166,6 +174,7 @@ export function AffiliateDashboard({
 		: 100;
 	const currencies = Object.entries(ledger.totals).sort(([a], [b]) => a.localeCompare(b));
 	const lines = ledger.lines.slice(0, 25);
+	const campaigns = campaignReport(ledger.lines);
 
 	return (
 		<div className="flex flex-col gap-5">
@@ -204,6 +213,12 @@ export function AffiliateDashboard({
 						. Orders that use {vouchers.length === 1 ? "it" : "one"} count for you even without your link.
 					</p>
 				)}
+			</div>
+
+			{/* Referral tools: reflink creator, campaign tags and QR codes */}
+			<div className={`${card} flex flex-col gap-5`}>
+				<CardHead Icon={Wand2} title="REFERRAL TOOLS" tag="LINKS · TAGS · QR CODES" />
+				<AffiliateLinkTools code={code} origin={origin} suggestions={campaignSuggestions(ledger.lines)} />
 			</div>
 
 			<div className="grid gap-5 xl:grid-cols-2">
@@ -339,6 +354,59 @@ export function AffiliateDashboard({
 				/>
 			</div>
 
+			{/* Campaigns: what each link tag sold */}
+			<div className={`${card} wv-neon-card--pink flex flex-col gap-4`}>
+				<CardHead Icon={Tags} title="CAMPAIGNS" tag="BY LINK TAG" />
+				{campaigns.length === 0 ? (
+					<p className={`${orbitron} wv-neon-card-text text-[13px] leading-[1.6]`}>
+						Tag your links in Referral tools (instagram, tiktok, bio…) and you&apos;ll see here which posts
+						sell.
+					</p>
+				) : (
+					<div className="wv-rw-scroll overflow-x-auto">
+						<table
+							className={`${orbitron} wv-rw-table w-full min-w-[520px] whitespace-nowrap text-left text-[13px]`}
+						>
+							<thead className="text-xs">
+								<tr>
+									<th scope="col" className="py-2 pr-4 font-normal">
+										Campaign
+									</th>
+									<th scope="col" className="py-2 pr-4 text-right font-normal">
+										Orders
+									</th>
+									<th scope="col" className="py-2 pr-4 text-right font-normal">
+										Sales
+									</th>
+									<th scope="col" className="py-2 text-right font-normal">
+										Commission
+									</th>
+								</tr>
+							</thead>
+							<tbody className="wv-neon-card-text">
+								{campaigns.map((row) => (
+									<tr key={row.key} className="wv-rw-row">
+										<td className="py-3 pr-4">
+											{row.key === "link" || row.key === "voucher" ? (
+												row.label
+											) : (
+												<span className="wv-af-tag inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px]">
+													<Tags aria-hidden className="size-3" strokeWidth={2.5} />
+													{row.label}
+												</span>
+											)}
+										</td>
+										<td className="py-3 pr-4 text-right tabular-nums text-white">{row.orders}</td>
+										<td className="py-3 pr-4 text-right tabular-nums">{money(row.salesCents)}</td>
+										<td className="py-3 text-right tabular-nums text-white">{money(row.commissionCents)}</td>
+									</tr>
+								))}
+							</tbody>
+						</table>
+					</div>
+				)}
+			</div>
+
 			{/* Orders */}
 			<div className={`${card} flex flex-col gap-4`}>
 				<CardHead Icon={Receipt} title="REFERRED ORDERS" />
@@ -373,7 +441,20 @@ export function AffiliateDashboard({
 									{lines.map((line) => (
 										<tr key={line.orderId} className="wv-rw-row">
 											<td className="py-3 pr-4 text-white">{day(line.paidAt)}</td>
-											<td className="py-3 pr-4">{line.via === "voucher" ? "Discount code" : "Your link"}</td>
+											<td className="py-3 pr-4">
+												{line.via === "voucher" ? (
+													"Discount code"
+												) : line.campaign ? (
+													<>
+														Your link{" "}
+														<span className="wv-af-tag ml-1 inline-flex rounded-full px-2 py-px text-[11px]">
+															{line.campaign}
+														</span>
+													</>
+												) : (
+													"Your link"
+												)}
+											</td>
 											<td className="py-3 pr-4 text-right tabular-nums">
 												{formatCents(line.baseCents, line.currency)}
 											</td>

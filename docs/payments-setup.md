@@ -254,6 +254,15 @@ program page also reads.
 7. **The affiliate's dashboard** (`/account/affiliate`, in the account menu) shows their link and codes, this month's sales, tier and
    progress to the next, pending, owed and paid amounts, the next payout date, how they get paid (and the form to change it),
    referred orders (no customer details) and payouts.
+8. **Referral tools**, on the dashboard:
+   - **Reflink creator:** a link to any page. Pick a quick destination (home, the shop, a category, rewards), search for a
+     product, or paste any page of the shop. Links to other sites and to pages behind a sign-in or in checkout are refused.
+   - **Campaign tags:** an optional tag (`instagram`, `tiktok-review`…) goes on the link as `&sub=<tag>`. It travels with the
+     referral (a second cookie, `wv_aff_sub`; a later link without a tag clears it), is copied onto the order as `wv_aff.sub`,
+     and is kept on the credit when the order came through that affiliate's own link. The dashboard's **Campaigns** card shows
+     orders, sales and commission per tag, and the orders table tags each order.
+   - **QR codes** for any link built, **neon** (the shop's near-black on a cyan-to-pink tile) or **classic** (black on white),
+     to download as PNG or SVG. Both are dark on light, so every scanner reads them.
 
 **Set up.**
 
@@ -320,8 +329,8 @@ with its fallback model instead. If the reviewer can't answer, nothing is held a
 **Where things live.** On the affiliate's customer account, private metadata `wv_aff.record` holds their record (status, code,
 linked discount codes, application, payouts). Public `wv_aff.status` and `wv_aff.code` are copies Saleor can search on: they are
 never trusted, because customers can edit their own public metadata. On an order, public `wv_aff.ref` is the code from the
-cookie (a claim), public `wv_aff.code` is who it was credited to, and private `wv_aff.stamp` holds the credit. Don't edit these by
-hand.
+cookie (a claim), public `wv_aff.sub` is the link's campaign tag (also a claim), public `wv_aff.code` is who it was credited to,
+and private `wv_aff.stamp` holds the credit (with the campaign, when it counts). Don't edit these by hand.
 
 **Things to know.**
 
