@@ -3645,11 +3645,44 @@ li:nth-child(even) > .wv-cat-chip {
 	filter: drop-shadow(0 0 4px color-mix(in srgb, var(--accent) 85%, transparent));
 }
 
-/* The affiliate page's "Your affiliate dashboard" section (wv-affiliate-live.tsx): neon cards (.wv-neon-card) that glow
- * brighter under the pointer but don't lift, as they aren't links, their icons lit in the card's colour; a neon "live"
- * pill whose dot glows and sends out a ring (no ring for reduced motion). */
+/* The affiliate page's "Your affiliate dashboard" section (wv-affiliate-live.tsx) and its referral tools
+ * (wv-affiliate.tsx): neon cards (.wv-neon-card) that glow brighter under the pointer but don't lift, as they aren't
+ * links, their icons lit in the card's colour; a neon "live" pill whose dot glows and sends out a ring (no ring for
+ * reduced motion). */
 .wv-neon-card.wv-af-stat:hover {
 	transform: none;
+}
+/* The referral tools: a soft glow, cyan behind the link and pink behind the tools; the sample link set into dark glass
+ * with its ?aff= glowing cyan and the code pink; where to put it as neon chips, in turn cyan and pink; and the tools in
+ * turn cyan and pink. */
+.wv-af-tools-glow {
+	background:
+		radial-gradient(45% 40% at 25% 45%, color-mix(in srgb, var(--wv-cyan) 9%, transparent), transparent 70%),
+		radial-gradient(40% 45% at 85% 60%, color-mix(in srgb, var(--wv-pink) 10%, transparent), transparent 70%);
+}
+.wv-af-reflink {
+	--accent: var(--wv-cyan-soft);
+	text-shadow: 0 1px 1px var(--wv-ink);
+}
+.wv-af-reflink-param {
+	color: var(--wv-cyan-soft);
+	text-shadow: 0 0 8px color-mix(in srgb, var(--wv-cyan) 75%, transparent);
+}
+.wv-af-reflink-code {
+	color: var(--wv-pink);
+	text-shadow: 0 0 8px color-mix(in srgb, var(--wv-pink) 85%, transparent);
+}
+.wv-af-chip {
+	--accent: var(--wv-cyan-soft);
+	color: var(--accent);
+	border: 1px solid color-mix(in srgb, var(--accent) 55%, transparent);
+	background: color-mix(in srgb, var(--accent) 10%, transparent);
+	box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 28%, transparent);
+	text-shadow: 0 0 6px color-mix(in srgb, var(--accent) 60%, transparent);
+}
+.wv-af-chip:nth-child(even),
+.wv-af-tools > .wv-af-stat:nth-child(even) {
+	--accent: var(--wv-pink);
 }
 /* Cyan and pink in turn down the column on phones; a checkerboard on the two-by-two grid from tablets up. */
 .wv-af-stats > .wv-af-stat:nth-child(even) {
