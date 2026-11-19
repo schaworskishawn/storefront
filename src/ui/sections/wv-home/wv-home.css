@@ -3645,6 +3645,53 @@ li:nth-child(even) > .wv-cat-chip {
 	filter: drop-shadow(0 0 4px color-mix(in srgb, var(--accent) 85%, transparent));
 }
 
+/* The affiliate page's "Your affiliate dashboard" section (wv-affiliate-live.tsx): neon cards (.wv-neon-card) that glow
+ * brighter under the pointer but don't lift, as they aren't links, their icons lit in the card's colour; a neon "live"
+ * pill whose dot glows and sends out a ring (no ring for reduced motion). */
+.wv-neon-card.wv-af-stat:hover {
+	transform: none;
+}
+/* Cyan and pink in turn down the column on phones; a checkerboard on the two-by-two grid from tablets up. */
+.wv-af-stats > .wv-af-stat:nth-child(even) {
+	--accent: var(--wv-pink);
+}
+@media (min-width: 768px) {
+	.wv-af-stats > .wv-af-stat:nth-child(even) {
+		--accent: var(--wv-cyan-soft);
+	}
+	.wv-af-stats > .wv-af-stat:nth-child(4n + 2),
+	.wv-af-stats > .wv-af-stat:nth-child(4n + 3) {
+		--accent: var(--wv-pink);
+	}
+}
+.wv-af-stat .wv-neon-card-icon svg {
+	color: var(--accent);
+	filter: drop-shadow(0 0 4px color-mix(in srgb, var(--accent) 85%, transparent));
+}
+.wv-af-live-pill {
+	color: var(--wv-cyan-soft);
+	border: 1px solid color-mix(in srgb, var(--wv-cyan) 55%, transparent);
+	background: color-mix(in srgb, var(--wv-cyan) 10%, transparent);
+	box-shadow: 0 0 10px color-mix(in srgb, var(--wv-cyan) 30%, transparent);
+	text-shadow: 0 0 6px color-mix(in srgb, var(--wv-cyan) 60%, transparent);
+}
+.wv-af-live-dot {
+	position: relative;
+	flex: none;
+	background: var(--wv-cyan);
+	box-shadow: 0 0 8px var(--wv-cyan);
+}
+@media (prefers-reduced-motion: no-preference) {
+	body.wv-motion .wv-af-live-dot::after {
+		content: "";
+		position: absolute;
+		inset: -1px;
+		border-radius: 9999px;
+		border: 1.5px solid var(--wv-cyan);
+		animation: wv-order-ping 2s ease-out infinite;
+	}
+}
+
 /* "How you get paid" (wv-affiliate-payout-form.tsx): each way to be paid is a glass tile; the chosen one lights up in
  * the card's colour, and a keyboard focus ring shows on the tile around its radio. */
 .wv-af-choice {
