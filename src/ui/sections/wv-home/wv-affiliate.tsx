@@ -19,6 +19,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { AFFILIATE_TIERS, TOKEN_BONUS_BPS, rangeLabel, rateLabel, tierTitle } from "@/lib/affiliates/tiers";
 import { AffiliateApply, AffiliateApplySkeleton } from "./wv-affiliate-apply";
+import { AffiliateLive, AffiliateLiveSkeleton } from "./wv-affiliate-live";
 import { WvFooter, WvHeader } from "./wv-chrome";
 import "./wv-home.css";
 
@@ -74,13 +75,6 @@ const TIERS = AFFILIATE_TIERS.map((tier) => ({
 	range: rangeLabel(tier),
 	benefits: tier.adds,
 }));
-
-const STATS = [
-	{ label: "TOTAL EARNINGS", value: "$12,480.50", trend: "+14.2% this month", pink: false, mobile: true },
-	{ label: "ACTIVE REFERRALS", value: "348 members", trend: "+24 new this week", pink: false, mobile: true },
-	{ label: "CONVERSION RATE", value: "4.82%", trend: "+0.6% vs avg", pink: false, mobile: false },
-	{ label: "PENDING PAYOUT", value: "$1,120.00", trend: "Arriving April 1", pink: true, mobile: false },
-];
 
 const TOOLS = [
 	{ title: "REFLINK CREATOR", text: "Generate deep links for specific products or custom vaping kits." },
@@ -313,66 +307,15 @@ export function WvAffiliate() {
 					</ul>
 				</section>
 
-				{/* Dashboard preview */}
-				<section className="flex flex-col gap-8 border-y border-[var(--wv-control)] bg-[var(--ct-bg)] px-4 py-12 md:gap-10 md:px-8 md:py-14 xl:gap-14 xl:p-20">
+				{/* Dashboard: an affiliate's own numbers, or the program's real terms (wv-affiliate-live.tsx) */}
+				<section className="wv-faq-glow flex flex-col gap-8 px-4 py-12 md:gap-10 md:px-8 md:py-14 xl:gap-14 xl:p-20">
 					<SectionTitle
 						title="YOUR AFFILIATE DASHBOARD"
-						sub="Sleek real-time metrics designed for optimal growth"
+						sub="Real sales, commission and payouts, live from your account"
 					/>
-					<div className="flex flex-col gap-8 xl:flex-row xl:items-start xl:gap-10">
-						<div className="flex min-w-0 flex-1 flex-col gap-5 xl:gap-6">
-							<div className="flex items-center justify-between gap-3">
-								<h3 className={`${heyComic} text-base text-[var(--wv-cyan-soft)] xl:text-lg`}>
-									LIVE MONITORING
-								</h3>
-								<span
-									className={`${orbitron} rounded border border-[var(--wv-control)] px-2 py-1 text-[10px] text-[var(--wv-disabled)]`}
-								>
-									PREVIEW · SAMPLE DATA
-								</span>
-							</div>
-							<ul className="grid gap-4 md:grid-cols-2 xl:gap-5">
-								{STATS.map((s) => (
-									<li
-										key={s.label}
-										className={`flex-col gap-3 rounded-xl border border-[var(--wv-control)] bg-[var(--wv-bg)] p-5 xl:p-6 ${s.mobile ? "flex" : "hidden md:flex"}`}
-									>
-										<p className={`${orbitron} text-xs text-[var(--wv-disabled)]`}>{s.label}</p>
-										<p className={`${bungee} text-2xl xl:text-[28px]`}>{s.value}</p>
-										<p
-											className={`${orbitron} text-[11px] ${s.pink ? "text-[var(--wv-pink)]" : "text-[var(--wv-cyan-soft)]"}`}
-										>
-											{s.trend}
-										</p>
-									</li>
-								))}
-							</ul>
-						</div>
-						<div className="flex flex-col gap-5 rounded-2xl border-[1.5px] border-[var(--wv-cyan-soft)] bg-[var(--wv-bg)] p-6 shadow-[0_0_8px_var(--wv-cyan-soft)] xl:w-[480px] xl:shrink-0 xl:gap-6 xl:p-8">
-							<h3 className={`${heyComic} text-base text-[var(--wv-cyan-soft)]`}>LIVE PAYOUT INFO</h3>
-							<div className="flex flex-col gap-2">
-								<p className={`${orbitron} text-xs text-[var(--wv-disabled)]`}>
-									ACCUMULATED REVENUE (THIS PERIOD)
-								</p>
-								<p className={`${bungee} text-[32px] xl:text-[40px]`}>$4,250.00</p>
-							</div>
-							<hr className="border-[var(--wv-control)]" />
-							<dl className={`${orbitron} flex flex-col gap-3 text-[13px] xl:gap-4`}>
-								<div className="flex justify-between gap-4">
-									<dt className="text-[var(--lg-body)]">Next Payout Date:</dt>
-									<dd className="text-[var(--wv-cyan-soft)]">April 01, 2026</dd>
-								</div>
-								<div className="hidden justify-between gap-4 md:flex">
-									<dt className="text-[var(--lg-body)]">Payment Method:</dt>
-									<dd>Vapor Tokens (+{TOKEN_BONUS_BPS / 100}%)</dd>
-								</div>
-								<div className="hidden justify-between gap-4 md:flex">
-									<dt className="text-[var(--lg-body)]">Payout Threshold:</dt>
-									<dd className="text-[var(--wv-disabled)]">$50.00 Minimum</dd>
-								</div>
-							</dl>
-						</div>
-					</div>
+					<Suspense fallback={<AffiliateLiveSkeleton />}>
+						<AffiliateLive />
+					</Suspense>
 				</section>
 
 				{/* Referral tools */}
