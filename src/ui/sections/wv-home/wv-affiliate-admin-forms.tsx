@@ -1,13 +1,31 @@
 "use client";
 
-import { BadgeCheck, Ban, Pause, Play, Save, Wallet, X } from "lucide-react";
+import {
+	BadgeCheck,
+	Ban,
+	Bot,
+	Coins,
+	KeyRound,
+	Pause,
+	Play,
+	Save,
+	Send,
+	ShieldCheck,
+	Wallet,
+	X,
+} from "lucide-react";
 import { useActionState, useState } from "react";
 import {
 	approveAffiliateAction,
+	clearHoldAction,
+	createCryptoBatchAction,
+	payTokensNowAction,
 	recordAffiliatePayoutAction,
 	rejectAffiliateAction,
 	setAffiliatePausedAction,
+	runAiReviewNowAction,
 	setAffiliateVouchersAction,
+	verifyCryptoBatchAction,
 	type AdminActionState,
 } from "@/app/(root)/affiliate-admin/actions";
 
@@ -190,6 +208,124 @@ export function PayoutForm({
 					<span className="wv-pc-cta-label">RECORD A PAYOUT</span>
 				</button>
 			)}
+			<Message state={state} />
+		</form>
+	);
+}
+
+/** Pays everything owed now in Vapor Tokens: the owner's OK for a payout over the limit, held, or early. */
+export function PayTokensNowButton({ userId, owed }: { userId: string; owed: string }) {
+	const [state, action, pending] = useActionState(payTokensNowAction, null);
+	const confirm = useConfirm(state);
+	return (
+		<form action={action} className={`${orbitron} flex flex-col items-start gap-2`}>
+			<input type="hidden" name="userId" value={userId} />
+			{confirm.open ? (
+				<div className="flex flex-wrap items-center gap-2">
+					<span className="text-xs text-white">Pay {owed} now in Vapor Tokens (+bonus)?</span>
+					<button type="submit" disabled={pending} className={pill}>
+						<Coins aria-hidden className="size-3" strokeWidth={2.5} />
+						{pending ? "PAYING…" : "YES, PAY"}
+					</button>
+					<button type="button" onClick={confirm.hide} className={pill}>
+						<X aria-hidden className="size-3" strokeWidth={2.5} />
+						CANCEL
+					</button>
+				</div>
+			) : (
+				<button type="button" onClick={confirm.show} className={pill}>
+					<Coins aria-hidden className="size-3" strokeWidth={2.5} />
+					PAY IN TOKENS NOW
+				</button>
+			)}
+			<Message state={state} />
+		</form>
+	);
+}
+
+export function ClearHoldButton({ userId }: { userId: string }) {
+	const [state, action, pending] = useActionState(clearHoldAction, null);
+	return (
+		<form action={action} className={`${orbitron} flex flex-col items-start gap-2`}>
+			<input type="hidden" name="userId" value={userId} />
+			<button type="submit" disabled={pending} className={pill}>
+				<ShieldCheck aria-hidden className="size-3" strokeWidth={2.5} />
+				{pending ? "CLEARING…" : "CHECKED: CLEAR THE HOLD"}
+			</button>
+			<Message state={state} />
+		</form>
+	);
+}
+
+/** Creates one NOWPayments batch for every crypto payout that's due; it then waits for the 2FA code below. */
+export function CryptoBatchButton({ count }: { count: number }) {
+	const [state, action, pending] = useActionState(createCryptoBatchAction, null);
+	const confirm = useConfirm(state);
+	return (
+		<form action={action} className={`${orbitron} flex flex-col items-start gap-2`}>
+			{confirm.open ? (
+				<div className="flex flex-wrap items-center gap-2">
+					<span className="text-xs text-white">
+						Create a NOWPayments batch for {count} crypto payout{count === 1 ? "" : "s"}? Nothing is sent
+						until you enter your 2FA code.
+					</span>
+					<button type="submit" disabled={pending} className={primary}>
+						<Send aria-hidden className="size-4" strokeWidth={2.5} />
+						<span className="wv-pc-cta-label">{pending ? "CREATING…" : "CREATE BATCH"}</span>
+					</button>
+					<button type="button" onClick={confirm.hide} className={pill}>
+						<X aria-hidden className="size-3" strokeWidth={2.5} />
+						CANCEL
+					</button>
+				</div>
+			) : (
+				<button type="button" onClick={confirm.show} className={primary}>
+					<Send aria-hidden className="size-4" strokeWidth={2.5} />
+					<span className="wv-pc-cta-label">SEND CRYPTO PAYOUTS</span>
+				</button>
+			)}
+			<Message state={state} />
+		</form>
+	);
+}
+
+/** Releases a created batch with the NOWPayments 2FA code (one code for the whole batch, within an hour). */
+export function VerifyBatchForm({ batchId, summary }: { batchId: string; summary: string }) {
+	const [state, action, pending] = useActionState(verifyCryptoBatchAction, null);
+	return (
+		<form action={action} className="flex flex-col gap-2">
+			<input type="hidden" name="batchId" value={batchId} />
+			<label className={label}>
+				BATCH {batchId}: {summary.toUpperCase()}. ENTER YOUR NOWPAYMENTS 2FA CODE TO SEND IT
+				<div className="flex gap-2">
+					<input
+						name="code"
+						inputMode="numeric"
+						autoComplete="one-time-code"
+						maxLength={6}
+						placeholder="123456"
+						className={input}
+						required
+					/>
+					<button type="submit" disabled={pending} className={`${pill} shrink-0`}>
+						<KeyRound aria-hidden className="size-3" strokeWidth={2.5} />
+						{pending ? "SENDING…" : "SEND"}
+					</button>
+				</div>
+			</label>
+			<Message state={state} />
+		</form>
+	);
+}
+
+export function RunAiReviewButton() {
+	const [state, action, pending] = useActionState(runAiReviewNowAction, null);
+	return (
+		<form action={action} className={`${orbitron} flex flex-col items-start gap-2`}>
+			<button type="submit" disabled={pending} className={pill}>
+				<Bot aria-hidden className="size-3" strokeWidth={2.5} />
+				{pending ? "REVIEWING… (UP TO A MINUTE)" : "RUN THE AI REVIEW NOW"}
+			</button>
 			<Message state={state} />
 		</form>
 	);

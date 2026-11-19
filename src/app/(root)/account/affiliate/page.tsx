@@ -7,6 +7,7 @@ import { DefaultChannelSlug } from "@/app/config";
 import { getStaticStorefrontChannelSlugs } from "@/config/channels";
 import { getDefaultLocaleSlug } from "@/config/locale";
 import { computeLedger, payoutStatus, payoutsSince } from "@/lib/affiliates/ledger";
+import { walletReadyAt } from "@/lib/affiliates/payout-prefs";
 import { referralLink } from "@/lib/affiliates/referral";
 import {
 	getAffiliateAccount,
@@ -163,6 +164,7 @@ async function DashboardData() {
 		payoutsSince(record.payouts, record.approvedAt),
 		now,
 	);
+	const readyAt = walletReadyAt(record.payoutMethod);
 	return (
 		<Shell user={user}>
 			<AffiliateDashboard
@@ -172,6 +174,9 @@ async function DashboardData() {
 				paused={record.status === "paused"}
 				ledger={ledger}
 				payout={payout}
+				payoutMethod={record.payoutMethod}
+				walletReadyAt={readyAt && readyAt > now ? readyAt.toISOString() : null}
+				held={record.autoHold !== null}
 			/>
 		</Shell>
 	);

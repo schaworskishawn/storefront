@@ -110,7 +110,9 @@ export function computeLedger(orders: readonly LedgerOrder[], payouts: readonly 
 		};
 	});
 
+	// A crypto payout NOWPayments failed or rejected never reached the affiliate, so what it covered is owed again.
 	for (const payout of payouts) {
+		if (payout.status === "failed") continue;
 		for (const [currency, cents] of Object.entries(payout.amounts)) totalsFor(currency).paidCents += cents;
 	}
 	for (const t of Object.values(totals)) t.owedCents = t.payableCents - t.paidCents;
@@ -193,10 +195,11 @@ export function payoutStatus(
 	return { due, nextDate: new Date(due.length ? last : next).toISOString() };
 }
 
-/** When the affiliate was last paid, or approved if never: what the payout schedule counts from. */
+/** When the affiliate was last paid (a failed crypto payout doesn't count), or approved if never: what the schedule counts from. */
 export const payoutsSince = (payouts: readonly Payout[], approvedAt: string | null): string | null =>
-	payouts.reduce<string | null>((latest, p) => (!latest || p.at > latest ? p.at : latest), null) ??
-	approvedAt;
+	payouts
+		.filter((p) => p.status !== "failed")
+		.reduce<string | null>((latest, p) => (!latest || p.at > latest ? p.at : latest), null) ?? approvedAt;
 
 /** "$12.50 USD". */
 export function formatCents(cents: number, currency: string): string {

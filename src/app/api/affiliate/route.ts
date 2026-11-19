@@ -1,6 +1,7 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
 import { getAccountAuthState } from "@/app/(storefront)/[locale]/[channel]/(main)/account/get-current-user";
 import { normalize, toPlainText, validate } from "@/lib/affiliate-application";
+import { isAiConfigured, reviewApplication } from "@/lib/affiliates/ai-review";
 import { newApplicationRecord } from "@/lib/affiliates/records";
 import {
 	getAffiliateAccount,
@@ -84,6 +85,18 @@ export async function POST(request: Request) {
 			return failed;
 		}
 		saved = true;
+
+		// The AI reviewer's read of the application, for the owner on /affiliate-admin. After the answer has gone back to
+		// the applicant, so they never wait on it; only what they wrote about their platform and plans is sent.
+		if (isAiConfigured())
+			after(async () => {
+				const review = await reviewApplication({ platform, audience, country, profileUrl, plan }, new Date());
+				if (!review.ok)
+					return console.warn(`[affiliates] no AI review for an application: ${review.message}`);
+				const latest = await getAffiliateAccount(account.id);
+				if (!latest.ok || !latest.value || latest.value.record.status !== "pending") return;
+				await saveAffiliateRecord(account.id, { ...latest.value.record, aiReview: review.value });
+			});
 	}
 
 	const text = [

@@ -31,7 +31,7 @@ export function readNowPaymentsConfig(
 	return { apiKey, ipnSecret, sandbox: env.NOWPAYMENTS_SANDBOX?.trim().toLowerCase() === "true" };
 }
 
-const API_URLS = {
+export const NOWPAYMENTS_API_URLS = {
 	live: "https://api.nowpayments.io/v1",
 	sandbox: "https://api-sandbox.nowpayments.io/v1",
 } as const;
@@ -59,7 +59,7 @@ export async function createInvoice(
 ): Promise<InvoiceOutcome> {
 	let response: Response;
 	try {
-		response = await fetchImpl(`${API_URLS[config.sandbox ? "sandbox" : "live"]}/invoice`, {
+		response = await fetchImpl(`${NOWPAYMENTS_API_URLS[config.sandbox ? "sandbox" : "live"]}/invoice`, {
 			method: "POST",
 			headers: { "Content-Type": "application/json", "x-api-key": config.apiKey },
 			body: JSON.stringify({

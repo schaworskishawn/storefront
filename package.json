@@ -53,6 +53,7 @@
 	},
 	"dependencies": {
 		"@adyen/adyen-web": "6.46.0",
+		"@anthropic-ai/sdk": "1.10.0",
 		"@builder.io/sdk-react": "5.2.4",
 		"@capacitor/android": "8.5.2",
 		"@capacitor/core": "8.5.2",

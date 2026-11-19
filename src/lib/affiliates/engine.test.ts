@@ -18,6 +18,10 @@ const record = (over: Partial<AffiliateRecord> = {}): AffiliateRecord => ({
 	appliedAt: "2026-10-01T00:00:00.000Z",
 	approvedAt: "2026-10-02T00:00:00.000Z",
 	payouts: [],
+	payoutMethod: { kind: "tokens" },
+	autoHold: null,
+	aiReview: null,
+	aiFlag: null,
 	...over,
 });
 

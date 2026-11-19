@@ -3,6 +3,7 @@ import "server-only";
 import { saleorGraphqlUrl } from "@/lib/saleor-endpoint";
 import type { AffiliateAccount, AffiliateOrder, Result } from "./engine";
 import type { LedgerOrder } from "./ledger";
+import type { ReferredOrder } from "./signals";
 import {
 	AFFILIATE_KEYS,
 	parseAffiliateRecord,
@@ -313,4 +314,75 @@ export async function listCreditedOrders(
 		after = info.endCursor;
 	}
 	return { ok: true, value: orders };
+}
+
+const REFERRED_ORDER_FIELDS = `
+			id
+			created
+			status
+			userEmail
+			voucherCode
+			shippingAddress { postalCode }
+			stamp: privateMetafield(key: "${AFFILIATE_KEYS.orderStamp}")`;
+
+/** Orders by one public metadata key and value, with what the weekly review needs. */
+export const REFERRED_ORDERS_QUERY = `query AffiliateReferredOrders($key: String!, $value: String!, $after: String) {
+	orders(first: 100, after: $after, filter: { metadata: [{ key: $key, value: $value }] }) {
+		edges { node {${REFERRED_ORDER_FIELDS}
+		} }
+		pageInfo { hasNextPage endCursor }
+	}
+}`;
+
+type RawReferredOrder = {
+	id?: string;
+	created?: string;
+	status?: string;
+	userEmail?: string | null;
+	voucherCode?: string | null;
+	shippingAddress?: { postalCode?: string | null } | null;
+	stamp?: string | null;
+};
+
+/**
+ * Every order that carried an affiliate's code from their link (credited or not) or was credited to them, for the AI
+ * reviewer's signals. A stamp only counts when it belongs to this affiliate, so a public copy can't add orders.
+ */
+export async function listReferredOrders(
+	code: string,
+	affiliateId: string,
+	options: Options = {},
+): Promise<Result<ReferredOrder[]>> {
+	const byId = new Map<string, ReferredOrder>();
+	for (const key of [AFFILIATE_KEYS.ref, AFFILIATE_KEYS.orderCode]) {
+		let after: string | null = null;
+		for (let page = 0; page < 20; page++) {
+			const result: Result<{
+				orders?: {
+					edges?: { node?: RawReferredOrder | null }[] | null;
+					pageInfo?: { hasNextPage?: boolean; endCursor?: string | null };
+				} | null;
+			}> = await request(REFERRED_ORDERS_QUERY, { key, value: code, after }, options);
+			if (!result.ok) return result;
+			for (const edge of result.value.orders?.edges ?? []) {
+				const node = edge.node;
+				if (!node?.id || !node.created) continue;
+				const stamp = parseOrderStamp(node.stamp);
+				byId.set(node.id, {
+					id: node.id,
+					createdAt: node.created,
+					status: node.status ?? "",
+					buyerEmail: node.userEmail ?? null,
+					postalCode: node.shippingAddress?.postalCode ?? null,
+					voucherCode: node.voucherCode ?? null,
+					stamp: stamp && stamp.code === code && stamp.affiliateId === affiliateId ? stamp : null,
+				});
+			}
+			const info: { hasNextPage?: boolean; endCursor?: string | null } | undefined =
+				result.value.orders?.pageInfo;
+			if (!info?.hasNextPage || !info.endCursor) break;
+			after = info.endCursor;
+		}
+	}
+	return { ok: true, value: [...byId.values()] };
 }

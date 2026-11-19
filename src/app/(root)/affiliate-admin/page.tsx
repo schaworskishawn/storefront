@@ -2,6 +2,7 @@ import { type Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { computeLedger, payoutStatus, payoutsSince } from "@/lib/affiliates/ledger";
+import { payoutSetup } from "@/lib/affiliates/payout-deps";
 import {
 	isAffiliateAppConfigured,
 	listAffiliateAccounts,
@@ -97,7 +98,9 @@ async function AdminData() {
 			(a.account.record.code ?? "").localeCompare(b.account.record.code ?? ""),
 	);
 
-	return <AffiliateAdmin applications={applications} affiliates={affiliates} />;
+	return (
+		<AffiliateAdmin applications={applications} affiliates={affiliates} setup={payoutSetup()} now={now} />
+	);
 }
 
 export default function AffiliateAdminPage() {
