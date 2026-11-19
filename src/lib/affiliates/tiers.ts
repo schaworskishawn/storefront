@@ -69,6 +69,15 @@ export const COMMISSION_HOLD_DAYS = 15;
 /** A payout is only due once at least this much is owed in a currency (the page's "$50.00 minimum"). */
 export const PAYOUT_MINIMUM_CENTS = 5_000;
 
+/** Vapor Tokens payouts carry this bonus (2500 = +25%): $1 owed becomes $1.25 of tokens. */
+export const TOKEN_BONUS_BPS = 2_500;
+
+/** Above this much in one currency, an automatic payout waits for the owner's OK on /affiliate-admin. */
+export const AUTO_PAYOUT_LIMIT_CENTS = 25_000;
+
+/** A new crypto wallet can't be paid until this long after it was set, so a hijacked account can't redirect a payout. */
+export const WALLET_CHANGE_HOLD_HOURS = 72;
+
 /** How long a referral link is remembered. */
 export const REFERRAL_COOKIE_DAYS = 30;
 

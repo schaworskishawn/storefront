@@ -307,6 +307,8 @@ export type NewLot = {
 	userId: string;
 	orderId: string;
 	orderNumber: string;
+	/** The gift card's note in the Dashboard; by default "Vapor Tokens earned on order #…". */
+	note?: string;
 };
 
 /**
@@ -330,7 +332,7 @@ export async function createLot(
 				...(lot.expiryDate ? { expiryDate: lot.expiryDate } : {}),
 				addTags: [TOKEN_TAG],
 				assignedTo: lot.userId,
-				note: `Vapor Tokens earned on order #${lot.orderNumber}`,
+				note: lot.note ?? `Vapor Tokens earned on order #${lot.orderNumber}`,
 				metadata: [
 					{ key: LOT_ORDER_KEY, value: lot.orderId },
 					{ key: LOT_TOKENS_KEY, value: String(lot.tokens) },

@@ -17,7 +17,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
-import { AFFILIATE_TIERS, rangeLabel, rateLabel, tierTitle } from "@/lib/affiliates/tiers";
+import { AFFILIATE_TIERS, TOKEN_BONUS_BPS, rangeLabel, rateLabel, tierTitle } from "@/lib/affiliates/tiers";
 import { AffiliateApply, AffiliateApplySkeleton } from "./wv-affiliate-apply";
 import { WvFooter, WvHeader } from "./wv-chrome";
 import "./wv-home.css";
@@ -49,8 +49,8 @@ const HIGHLIGHTS = [
 	},
 	{
 		Icon: Wallet,
-		title: "MONTHLY PAYOUTS",
-		text: "Guaranteed prompt payouts on the 1st of every month",
+		title: "AUTOMATIC PAYOUTS",
+		text: `Paid in Vapor Tokens with a +${TOKEN_BONUS_BPS / 100}% bonus, or in USDT or USDC`,
 		mobile: false,
 	},
 ];
@@ -364,7 +364,7 @@ export function WvAffiliate() {
 								</div>
 								<div className="hidden justify-between gap-4 md:flex">
 									<dt className="text-[var(--lg-body)]">Payment Method:</dt>
-									<dd>Direct Bank Transfer</dd>
+									<dd>Vapor Tokens (+{TOKEN_BONUS_BPS / 100}%)</dd>
 								</div>
 								<div className="hidden justify-between gap-4 md:flex">
 									<dt className="text-[var(--lg-body)]">Payout Threshold:</dt>

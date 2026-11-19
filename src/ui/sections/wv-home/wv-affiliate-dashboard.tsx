@@ -3,6 +3,8 @@ import {
 	Banknote,
 	CalendarClock,
 	Check,
+	HandCoins,
+	Hourglass,
 	Link2,
 	Receipt,
 	TrendingUp,
@@ -19,13 +21,18 @@ import {
 	type Ledger,
 	type PayoutStatus,
 } from "@/lib/affiliates/ledger";
+import { describePayoutMethod } from "@/lib/affiliates/payout-prefs";
+import type { Payout, PayoutMethod } from "@/lib/affiliates/records";
 import {
 	PAYOUT_MINIMUM_CENTS,
 	SCHEDULE_LABEL,
+	TOKEN_BONUS_BPS,
+	WALLET_CHANGE_HOLD_HOURS,
 	benefitsThrough,
 	rateLabel,
 	tierTitle,
 } from "@/lib/affiliates/tiers";
+import { PayoutMethodForm } from "./wv-affiliate-payout-form";
 import { CopyButton } from "./wv-copy-button";
 
 /**
@@ -111,6 +118,21 @@ const STATUS: Record<CommissionLine["status"], { label: string; tone?: "pink" | 
 	reversed: { label: "Reversed", tone: "muted" },
 };
 
+/** The card's tag: the method only (a wallet address is case-sensitive, so it's never shown in capitals). */
+const METHOD_TAG: Record<PayoutMethod["kind"], string> = {
+	tokens: "VAPOR TOKENS",
+	crypto: "CRYPTO",
+	etransfer: "E-TRANSFER",
+};
+
+/** A crypto payout's progress, in the affiliate's words. Other payouts are simply paid. */
+const payoutProgress = (p: Payout): string | null =>
+	p.status === "processing"
+		? "On its way"
+		: p.status === "failed"
+			? "Didn't go through, so it's owed to you again"
+			: null;
+
 export type AffiliateDashboardProps = {
 	code: string;
 	link: string;
@@ -118,6 +140,11 @@ export type AffiliateDashboardProps = {
 	paused: boolean;
 	ledger: Ledger;
 	payout: PayoutStatus;
+	payoutMethod: PayoutMethod;
+	/** When a newly added crypto wallet can first be paid (ISO), while that's still in the future. */
+	walletReadyAt: string | null;
+	/** The team is checking this affiliate's payouts before they go out. */
+	held: boolean;
 };
 
 export function AffiliateDashboard({
@@ -127,7 +154,11 @@ export function AffiliateDashboard({
 	paused,
 	ledger,
 	payout,
+	payoutMethod,
+	walletReadyAt,
+	held,
 }: AffiliateDashboardProps) {
+	const bonusPercent = TOKEN_BONUS_BPS / 100;
 	const { thisMonth } = ledger;
 	const tier = thisMonth.tier;
 	const progress = thisMonth.next
@@ -266,6 +297,48 @@ export function AffiliateDashboard({
 				</div>
 			</div>
 
+			{/* How they're paid */}
+			<div className={`${card} flex flex-col gap-4`}>
+				<CardHead Icon={HandCoins} title="HOW YOU GET PAID" tag={METHOD_TAG[payoutMethod.kind]} />
+				<p className={`${orbitron} wv-neon-card-text flex items-start gap-2 text-[13px] leading-[1.6]`}>
+					<Wallet aria-hidden className="wv-af-inline-icon mt-0.5 size-4 shrink-0" strokeWidth={2.25} />
+					<span className="min-w-0 break-words">
+						You&apos;re paid by <strong className="wv-neon-key">{describePayoutMethod(payoutMethod)}</strong>.
+					</span>
+				</p>
+				<p className={`${orbitron} wv-neon-card-text text-[13px] leading-[1.6]`}>
+					Choose Vapor Tokens and every payout is worth{" "}
+					<strong className="wv-neon-key">{bonusPercent}% more</strong>, paid automatically into your token
+					balance. Or take it in crypto or by e-Transfer. Any change is confirmed by email.
+				</p>
+				{walletReadyAt && (
+					<p className={`${orbitron} wv-neon-card-text flex items-start gap-2 text-[13px] leading-[1.6]`}>
+						<Hourglass aria-hidden className="wv-af-inline-icon mt-0.5 size-4 shrink-0" strokeWidth={2.25} />
+						<span>
+							Your new wallet can be paid from <strong className="wv-neon-key">{day(walletReadyAt)}</strong>.
+							Anything due before then waits for it.
+						</span>
+					</p>
+				)}
+				{held && (
+					<p className={`${orbitron} wv-neon-card-text flex items-start gap-2 text-[13px] leading-[1.6]`}>
+						<Hourglass aria-hidden className="wv-af-inline-icon mt-0.5 size-4 shrink-0" strokeWidth={2.25} />
+						<span>
+							Our team is checking your next payout before it goes out. Your earnings are safe; questions?{" "}
+							<Link href="/contact-us" className="underline">
+								Contact us
+							</Link>
+							.
+						</span>
+					</p>
+				)}
+				<PayoutMethodForm
+					method={payoutMethod}
+					bonusPercent={bonusPercent}
+					holdHours={WALLET_CHANGE_HOLD_HOURS}
+				/>
+			</div>
+
 			{/* Orders */}
 			<div className={`${card} flex flex-col gap-4`}>
 				<CardHead Icon={Receipt} title="REFERRED ORDERS" />
@@ -350,6 +423,14 @@ export function AffiliateDashboard({
 											.join(" + ")}
 									</span>
 									{p.method && <span className="w-full text-xs">{p.method}</span>}
+									{payoutProgress(p) && (
+										<span
+											data-tone={p.status === "failed" ? "pink" : undefined}
+											className="wv-rw-status inline-block rounded-full px-2.5 py-0.5 text-[11px]"
+										>
+											{payoutProgress(p)}
+										</span>
+									)}
 								</li>
 							))}
 						</ul>

@@ -39,14 +39,60 @@ export type AffiliateApplication = {
 	plan: string;
 };
 
-/** A payout the owner made and recorded: what was paid in each currency (cents), how, and when. */
+/** The coins affiliates can be paid in through NOWPayments: dollar stablecoins on cheap networks. */
+export const CRYPTO_COINS = {
+	usdttrc20: { label: "USDT (TRON)", network: "TRON" },
+	usdcmatic: { label: "USDC (Polygon)", network: "Polygon" },
+} as const;
+export type CryptoCoin = keyof typeof CRYPTO_COINS;
+export const isCryptoCoin = (v: unknown): v is CryptoCoin => typeof v === "string" && v in CRYPTO_COINS;
+
+/** How an affiliate is paid. New affiliates start on Vapor Tokens, which the daily job pays automatically. */
+export type PayoutMethod =
+	| { kind: "tokens" }
+	| { kind: "crypto"; currency: CryptoCoin; address: string; setAt: string }
+	| { kind: "etransfer"; email: string };
+
+export const DEFAULT_PAYOUT_METHOD: PayoutMethod = { kind: "tokens" };
+
+/**
+ * A payout: what it covered of what was owed in each currency (cents), how, and when. `kind` is absent on payouts the
+ * owner recorded by hand before automatic payouts existed. A crypto payout counts as paid while NOWPayments processes it
+ * and stops counting if NOWPayments reports it failed or rejected (`status: "failed"`), so the amount is owed again.
+ */
 export type Payout = {
 	id: string;
 	at: string;
 	amounts: Record<string, number>;
 	method: string;
 	note?: string;
+	kind?: "manual" | "tokens" | "crypto";
+	/** Tokens: how many were credited, at what bonus, in which lots. */
+	tokens?: number;
+	bonusBps?: number;
+	lotIds?: string[];
+	/** Crypto: NOWPayments' batch and payout ids, where it was sent, and how it's going. */
+	batchId?: string;
+	payoutIds?: string[];
+	coin?: CryptoCoin;
+	/** How much of the coin was sent. */
+	coinAmount?: number;
+	address?: string;
+	status?: "processing" | "finished" | "failed";
+	/** Crypto: when the batch was released with the 2FA code. Until then NOWPayments holds it (and rejects it after an hour). */
+	verifiedAt?: string;
 };
+
+/** The AI reviewer's read of an application: advice for the owner, never a decision. */
+export type AiApplicationReview = {
+	at: string;
+	recommendation: "approve" | "review" | "reject";
+	risk: "low" | "medium" | "high";
+	reasons: string[];
+};
+
+/** The AI reviewer's latest weekly flag on an affiliate. */
+export type AiFlag = { at: string; severity: "low" | "medium" | "high"; reason: string };
 
 export type AffiliateRecord = {
 	status: AffiliateStatus;
@@ -58,6 +104,11 @@ export type AffiliateRecord = {
 	appliedAt: string | null;
 	approvedAt: string | null;
 	payouts: Payout[];
+	payoutMethod: PayoutMethod;
+	/** Automatic payouts wait for the owner while this is set (an AI high-severity flag, or the owner). Crediting goes on. */
+	autoHold: { reason: string; at: string } | null;
+	aiReview: AiApplicationReview | null;
+	aiFlag: AiFlag | null;
 };
 
 /** How an order came to be credited: through the referral link, or a linked discount code. */
@@ -122,7 +173,81 @@ function parsePayout(v: unknown): Payout | null {
 			if (/^[A-Z]{3}$/.test(currency) && cents(value) !== 0) amounts[currency] = cents(value);
 		}
 	}
-	return { id: p.id, at, amounts, method: str(p.method, 120), ...(p.note ? { note: str(p.note, 500) } : {}) };
+	const kind = p.kind === "tokens" || p.kind === "crypto" || p.kind === "manual" ? p.kind : undefined;
+	const status =
+		p.status === "processing" || p.status === "finished" || p.status === "failed" ? p.status : undefined;
+	const strings = (x: unknown) =>
+		Array.isArray(x) ? x.filter((i): i is string => typeof i === "string").slice(0, 20) : undefined;
+	return {
+		id: p.id,
+		at,
+		amounts,
+		method: str(p.method, 120),
+		...(p.note ? { note: str(p.note, 500) } : {}),
+		...(kind ? { kind } : {}),
+		...(typeof p.tokens === "number" ? { tokens: Math.max(0, Math.round(p.tokens)) } : {}),
+		...(typeof p.bonusBps === "number" ? { bonusBps: Math.max(0, Math.round(p.bonusBps)) } : {}),
+		...(strings(p.lotIds) ? { lotIds: strings(p.lotIds) } : {}),
+		...(typeof p.batchId === "string" ? { batchId: str(p.batchId, 100) } : {}),
+		...(strings(p.payoutIds) ? { payoutIds: strings(p.payoutIds) } : {}),
+		...(isCryptoCoin(p.coin) ? { coin: p.coin } : {}),
+		...(typeof p.coinAmount === "number" && Number.isFinite(p.coinAmount)
+			? { coinAmount: p.coinAmount }
+			: {}),
+		...(typeof p.address === "string" ? { address: str(p.address, 120) } : {}),
+		...(status ? { status } : {}),
+		...(isoOrNull(p.verifiedAt) ? { verifiedAt: p.verifiedAt as string } : {}),
+	};
+}
+
+function parsePayoutMethod(v: unknown): PayoutMethod {
+	if (!v || typeof v !== "object") return DEFAULT_PAYOUT_METHOD;
+	const m = v as Record<string, unknown>;
+	if (m.kind === "crypto" && isCryptoCoin(m.currency) && typeof m.address === "string" && isoOrNull(m.setAt))
+		return { kind: "crypto", currency: m.currency, address: str(m.address, 120), setAt: m.setAt as string };
+	if (m.kind === "etransfer" && typeof m.email === "string")
+		return { kind: "etransfer", email: str(m.email, 200) };
+	return DEFAULT_PAYOUT_METHOD;
+}
+
+const oneOf = <T extends string>(v: unknown, options: readonly T[], fallback: T): T =>
+	options.find((o) => o === v) ?? fallback;
+
+function parseAiReview(v: unknown): AiApplicationReview | null {
+	if (!v || typeof v !== "object") return null;
+	const r = v as Record<string, unknown>;
+	const at = isoOrNull(r.at);
+	if (!at) return null;
+	return {
+		at,
+		recommendation: oneOf(r.recommendation, ["approve", "review", "reject"] as const, "review"),
+		risk: oneOf(r.risk, ["low", "medium", "high"] as const, "medium"),
+		reasons: Array.isArray(r.reasons)
+			? r.reasons
+					.filter((x): x is string => typeof x === "string")
+					.map((x) => x.slice(0, 300))
+					.slice(0, 6)
+			: [],
+	};
+}
+
+function parseAiFlag(v: unknown): AiFlag | null {
+	if (!v || typeof v !== "object") return null;
+	const f = v as Record<string, unknown>;
+	const at = isoOrNull(f.at);
+	if (!at || typeof f.reason !== "string") return null;
+	return {
+		at,
+		severity: oneOf(f.severity, ["low", "medium", "high"] as const, "low"),
+		reason: str(f.reason, 500),
+	};
+}
+
+function parseHold(v: unknown): { reason: string; at: string } | null {
+	if (!v || typeof v !== "object") return null;
+	const h = v as Record<string, unknown>;
+	const at = isoOrNull(h.at);
+	return at && typeof h.reason === "string" ? { reason: str(h.reason, 500), at } : null;
 }
 
 /** The record from a customer's private metadata, or null when they've never applied (or it's unreadable). */
@@ -144,6 +269,10 @@ export function parseAffiliateRecord(raw: string | null | undefined): AffiliateR
 		appliedAt: isoOrNull(r.appliedAt),
 		approvedAt: isoOrNull(r.approvedAt),
 		payouts: Array.isArray(r.payouts) ? r.payouts.map(parsePayout).filter((p): p is Payout => !!p) : [],
+		payoutMethod: parsePayoutMethod(r.payoutMethod),
+		autoHold: parseHold(r.autoHold),
+		aiReview: parseAiReview(r.aiReview),
+		aiFlag: parseAiFlag(r.aiFlag),
 	};
 }
 
@@ -181,5 +310,9 @@ export function newApplicationRecord(application: AffiliateApplication, now: Dat
 		appliedAt: now.toISOString(),
 		approvedAt: null,
 		payouts: [],
+		payoutMethod: DEFAULT_PAYOUT_METHOD,
+		autoHold: null,
+		aiReview: null,
+		aiFlag: null,
 	};
 }

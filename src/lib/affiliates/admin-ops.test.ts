@@ -19,6 +19,10 @@ const pending: AffiliateRecord = {
 	appliedAt: "2026-11-01T00:00:00.000Z",
 	approvedAt: null,
 	payouts: [],
+	payoutMethod: { kind: "tokens" },
+	autoHold: null,
+	aiReview: null,
+	aiFlag: null,
 };
 const approved: AffiliateRecord = {
 	...pending,

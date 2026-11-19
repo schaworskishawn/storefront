@@ -236,11 +236,24 @@ program page also reads.
 5. **Holding.** Commission is pending for **15 days** after the order is paid (the return window), then payable. A cancellation
    (`ORDER_CANCELLED`) or full refund (`ORDER_FULLY_REFUNDED`) reverses it; if it was already paid out, the amount comes off the
    next payout.
-6. **Paying.** The admin page shows what each affiliate is owed in each currency and when a payout is due: monthly on the 1st
-   (Cloud, Vapor), every other Monday (Surge) or every Monday (Global), once at least $50 is owed. **You send the money yourself**
-   (e-Transfer, crypto, bank) and then press **Record a payout**; the affiliate is emailed and sees it on their dashboard.
+6. **Paying.** A payout is due monthly on the 1st (Cloud, Vapor), every other Monday (Surge) or every Monday (Global), once at
+   least $50 is owed in a currency. Each affiliate chooses how they're paid on their dashboard, and the daily job (below) pays or
+   lists what's due:
+   - **Vapor Tokens (the default), automatically**, with a **+25% bonus**: $100 owed becomes 2,500 tokens ($125 to spend). The
+     tokens land in their token balance as a lot that never expires, and they spend them with "Use my tokens" at checkout. Only
+     whole tokens are paid; the odd cents stay owed. A payout over **$250** in a currency, or for an affiliate whose payouts are
+     held, waits for you: press **Pay tokens now** on `/affiliate-admin`.
+   - **Crypto** (USDT on TRON or USDC on Polygon) through your NOWPayments account. Press **Send crypto payouts** on the admin page
+     to create one batch for everyone due, then enter your NOWPayments 2FA code there to release it. A new wallet isn't paid for
+     **72 hours** after the affiliate adds it, and every change of payout details is emailed to the affiliate.
+   - **Interac e-Transfer**: listed for you; send it and press **Record a payout** as before.
+
+   Every payout is emailed to the affiliate and shown on their dashboard. **Record a payout** still works for anything you pay by
+   hand.
+
 7. **The affiliate's dashboard** (`/account/affiliate`, in the account menu) shows their link and codes, this month's sales, tier and
-   progress to the next, pending, owed and paid amounts, the next payout date, referred orders (no customer details) and payouts.
+   progress to the next, pending, owed and paid amounts, the next payout date, how they get paid (and the form to change it),
+   referred orders (no customer details) and payouts.
 
 **Set up.**
 
@@ -255,6 +268,54 @@ program page also reads.
 
 Until the token is set, applications are only emailed (as before), the dashboard says the program isn't open yet, and nothing is
 credited. Referral cookies are still set and copied onto orders, so orders placed meanwhile can be checked by hand.
+
+**Automatic payouts and the AI reviewer.**
+
+A daily job, `/api/affiliates/run` (Vercel Cron at 15:00 UTC, in `vercel.json`, authorised with the same `CRON_SECRET` as Pay
+in 4), does the following:
+
+1. Checks the status of crypto payouts that are still on their way. A payout NOWPayments rejected or failed is marked failed, and
+   the amount is owed again.
+2. On Mondays, runs the AI review first (below).
+3. Pays what's due in Vapor Tokens. A crypto payout is sent itself only when `NOWPAYMENTS_2FA_SECRET` is set; otherwise it's
+   listed. e-Transfers are always listed.
+4. Emails you a digest, only when something needs you: cash payouts to send, token payouts held, new wallets to whitelist, failed
+   crypto, AI flags and problems.
+
+The **AI reviewer** (Claude, model `claude-opus-5-5`, through the Anthropic API) gives advice only. It never pays, approves,
+rejects or pauses anyone. It has two jobs:
+
+- **New applications:** it reads what the applicant wrote about their platform, audience, country, profile link and plans (never
+  their name, email or phone), and its suggestion (approve, review or reject, with reasons) shows on the application on
+  `/affiliate-admin`.
+- **Weekly review:** every Monday, and whenever you press **Run AI review now**, it reads each affiliate's order signals for the
+  last 90 days. These are counts and shares only: reversal rate, orders from one postal code or one buyer, orders from the
+  affiliate's own or a lookalike email, discount-code share, and sales against previous months. Postal codes and emails are
+  compared as fingerprints and never sent. It emails you a summary. A **high** flag holds that affiliate's automatic payouts
+  until you press **Clear hold** on their card; their orders are still credited, and they only see that the team is checking
+  their next payout.
+
+Requests use structured output, check why Claude stopped before reading the answer, and **opt into Anthropic's server-side
+fallback** (`fallbacks: "default"`, beta `server-side-fallback-2026-07-01`): if Claude declines a request, Anthropic may answer it
+with its fallback model instead. If the reviewer can't answer, nothing is held and the digest says so.
+
+**Set up automatic payouts.**
+
+1. **Vapor Tokens payouts** need nothing new: they use the rewards app (`REWARDS_APP_TOKEN`), and are off while Vapor Tokens are
+   switched off.
+2. **The AI reviewer:** set `ANTHROPIC_API_KEY` in Vercel (server-only). Without it, the AI features are off.
+3. **Crypto payouts:**
+   1. Set `NOWPAYMENTS_PAYOUT_EMAIL` and `NOWPAYMENTS_PAYOUT_PASSWORD` (your NOWPayments login; `NOWPAYMENTS_API_KEY` is already
+      set for crypto checkout).
+   2. Email `whitelist@nowpayments.io` to lift the **IP whitelist**: Vercel has no fixed IP addresses.
+   3. Whitelist each affiliate's wallet in NOWPayments (the digest and the admin page list new ones), or ask NOWPayments to lift
+      the wallet check.
+   4. Keep enough USDT (TRC-20) and USDC (Polygon) in your NOWPayments custody balance.
+4. **Optional, fully automatic crypto:** set `NOWPAYMENTS_2FA_SECRET` to your NOWPayments authenticator secret (the base32 text
+   behind the QR code), and the job verifies batches itself, for payouts up to $250 to wallets older than 72 hours. Anyone who
+   can read your Vercel environment could then send payouts (only to whitelisted wallets). Leave it unset unless you accept that.
+5. **Kill switch:** `AFFILIATE_AUTO_PAYOUTS=off` stops every automatic payout. Everything is listed for you instead, and the AI
+   review still runs.
 
 **Where things live.** On the affiliate's customer account, private metadata `wv_aff.record` holds their record (status, code,
 linked discount codes, application, payouts). Public `wv_aff.status` and `wv_aff.code` are copies Saleor can search on: they are
@@ -276,6 +337,12 @@ hand.
 with fakes, and every request to Saleor has been checked against Saleor's schema, but a full run (install the app, approve a test
 affiliate, place an order through their link, see it credited, refund it) has not been done against a running Saleor. Do that on a
 small test order first.
+
+The same goes for automatic payouts. The token payout, the NOWPayments payouts client (its requests follow NOWPayments' API
+reference, and the 2FA code generator passes RFC 6238's test vectors) and the AI reviewer are unit-tested with fakes, not live:
+
+- Let the first daily run pay a test affiliate's tokens, and check the lot under `/rewards` on their account.
+- Send one small USDT payout from the admin page with your 2FA code before trusting crypto.
 
 ## Account emails (sign-up confirmation, password reset)
 
