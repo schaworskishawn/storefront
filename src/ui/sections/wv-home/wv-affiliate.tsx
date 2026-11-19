@@ -1,5 +1,6 @@
 import {
 	ArrowDown,
+	AtSign,
 	CalendarClock,
 	Check,
 	ChevronRight,
@@ -9,14 +10,20 @@ import {
 	Handshake,
 	Home,
 	Layers,
+	Link2,
+	MonitorPlay,
+	QrCode,
+	Tags,
 	TrendingUp,
 	Wallet,
+	Wand2,
 	Wind,
 	Zap,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
+import { REFERRAL_PARAM } from "@/lib/affiliates/referral";
 import { AFFILIATE_TIERS, TOKEN_BONUS_BPS, rangeLabel, rateLabel, tierTitle } from "@/lib/affiliates/tiers";
 import { AffiliateApply, AffiliateApplySkeleton } from "./wv-affiliate-apply";
 import { AffiliateLive, AffiliateLiveSkeleton } from "./wv-affiliate-live";
@@ -77,9 +84,28 @@ const TIERS = AFFILIATE_TIERS.map((tier) => ({
 }));
 
 const TOOLS = [
-	{ title: "REFLINK CREATOR", text: "Generate deep links for specific products or custom vaping kits." },
-	{ title: "QR CODE GEN", text: "Instantly create high-res neon styled QR codes for offline scanning." },
-	{ title: "CAMPAIGN TAGS", text: "Organize tracking with custom sub-IDs (e.g. instagram, bio-link)." },
+	{
+		Icon: Wand2,
+		title: "REFLINK CREATOR",
+		text: "Generate deep links for specific products or custom vaping kits.",
+	},
+	{
+		Icon: QrCode,
+		title: "QR CODE GEN",
+		text: "Instantly create high-res neon styled QR codes for offline scanning.",
+	},
+	{
+		Icon: Tags,
+		title: "CAMPAIGN TAGS",
+		text: "Organize tracking with custom sub-IDs (e.g. instagram, bio-link).",
+	},
+];
+
+/** Where affiliates put their link, as neon chips under it. */
+const PLACES = [
+	{ Icon: AtSign, label: "BIO" },
+	{ Icon: MonitorPlay, label: "VIDEOS" },
+	{ Icon: Globe, label: "BANNERS" },
 ];
 
 const BENEFITS = [
@@ -318,38 +344,67 @@ export function WvAffiliate() {
 					</Suspense>
 				</section>
 
-				{/* Referral tools */}
-				<section className="flex flex-col items-center gap-8 px-4 py-12 md:gap-10 md:px-8 md:py-14 xl:p-20">
+				{/* Referral tools: the link in lit glass, set into dark glass with its code lit, and the tools as neon cards
+				    in turn cyan and pink, over a soft glow */}
+				<section className="wv-af-tools-glow flex flex-col items-center gap-8 px-4 py-12 md:gap-10 md:px-8 md:py-14 xl:p-20">
 					<SectionTitle
 						title="REFERRAL & TRACKING TOOLS"
 						sub="High conversion assets to share with your audience"
 					/>
 					<div className="flex w-full flex-col gap-4 xl:flex-row xl:gap-6">
-						<div className="flex min-w-0 flex-1 flex-col gap-5 rounded-2xl border border-[var(--wv-control)] bg-[var(--wv-ink)] p-5 md:p-8 xl:gap-6 xl:self-start">
-							<h3 className={`${heyComic} text-base md:text-lg`}>YOUR GENERAL REFERRAL LINK</h3>
-							<p
-								className={`${heyComic} truncate rounded-lg border border-[var(--wv-cyan-soft)] bg-[var(--wv-bg)] px-4 py-3 text-sm`}
-							>
-								https://worldwidevapor.com/?aff=wv_neo_2026
+						<div className="wv-news-card flex min-w-0 flex-1 flex-col gap-5 rounded-[20px] p-5 md:p-8 xl:gap-6 xl:self-start">
+							<div className="flex items-center gap-3">
+								<span
+									aria-hidden
+									className="wv-acct-icon flex size-11 shrink-0 items-center justify-center rounded-xl"
+								>
+									<Link2 className="size-5" strokeWidth={2.25} />
+								</span>
+								<h3 className={`${heyComic} wv-pc-name text-base md:text-lg`}>YOUR GENERAL REFERRAL LINK</h3>
+							</div>
+							<p className={`${heyComic} wv-af-link wv-af-reflink rounded-xl px-4 py-3 text-sm`}>
+								<span className="text-white [overflow-wrap:anywhere]">
+									https://www.worldwidevapor.com/home
+								</span>
+								<wbr />
+								<span className="whitespace-nowrap">
+									<span className="wv-af-reflink-param">?{REFERRAL_PARAM}=</span>
+									<span className="wv-af-reflink-code">yourcode</span>
+								</span>
 							</p>
-							<p className={`${orbitron} hidden text-xs text-[var(--wv-disabled)] md:block`}>
-								Place this unique tracking URL in your bio, video descriptions, or website banners to
-								attribute sales.
+							<p className={`${orbitron} wv-hero-copy text-xs leading-[1.6]`}>
+								Place this unique tracking URL in your <strong className="wv-hero-key">bio</strong>, video
+								descriptions or website banners to{" "}
+								<strong className="wv-hero-key wv-hero-key--pink">attribute sales</strong>.
 							</p>
-							<p className={`${orbitron} text-[11px] text-[var(--wv-disabled)]`}>
+							<ul className="flex flex-wrap gap-2">
+								{PLACES.map(({ Icon, label }) => (
+									<li
+										key={label}
+										className={`${orbitron} wv-af-chip flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] tracking-[1px]`}
+									>
+										<Icon aria-hidden className="size-3" strokeWidth={2.5} />
+										{label}
+									</li>
+								))}
+							</ul>
+							<p className={`${orbitron} text-[11px] text-[var(--wv-muted)]`}>
 								Sample link. Your personal link is issued once your application is approved.
 							</p>
 						</div>
-						<ul className="flex flex-col gap-3 xl:w-[480px] xl:shrink-0 xl:gap-4">
-							{TOOLS.map((t) => (
-								<li
-									key={t.title}
-									className="flex flex-col gap-1 rounded-xl border border-[var(--wv-control)] bg-[var(--wv-ink)] p-5"
-								>
-									<span className={`${heyComic} text-[13px]`}>{t.title}</span>
-									<span className={`${orbitron} text-[11px] leading-[1.5] text-[var(--lg-body)]`}>
-										{t.text}
+						<ul className="wv-af-tools flex flex-col gap-3 xl:w-[480px] xl:shrink-0 xl:gap-4">
+							{TOOLS.map(({ Icon, title, text }) => (
+								<li key={title} className="wv-neon-card wv-af-stat flex items-start gap-4 rounded-2xl p-5">
+									<span
+										aria-hidden
+										className="wv-neon-card-icon flex size-11 shrink-0 items-center justify-center rounded-xl"
+									>
+										<Icon className="size-5" strokeWidth={2.25} />
 									</span>
+									<div className="flex min-w-0 flex-col gap-1">
+										<span className={`${heyComic} wv-pc-name text-sm`}>{title}</span>
+										<span className={`${orbitron} wv-neon-card-text text-xs leading-[1.5]`}>{text}</span>
+									</div>
 								</li>
 							))}
 						</ul>
