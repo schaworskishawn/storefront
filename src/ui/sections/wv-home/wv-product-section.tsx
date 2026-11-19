@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { type ReactNode } from "react";
 import { type HomeProduct } from "@/lib/catalog/get-home-products";
+import { PRODUCT_IMAGE_PLACEHOLDER } from "@/lib/images";
 import { formatPrice } from "@/ui/components/plp/utils";
 
 /**
@@ -118,15 +119,13 @@ function ProductCard({ product, ctx }: { product: CardProduct; ctx: CatalogConte
 	return (
 		<article className="wv-lift flex flex-col overflow-hidden rounded-[13px] border border-[var(--wv-cyan)] bg-[var(--wv-section)]">
 			<Link href={href} className="relative block h-[130px] w-full bg-[var(--wv-deep)] md:h-[194px]">
-				{product.image && (
-					<Image
-						src={product.image.url}
-						alt={product.image.alt}
-						fill
-						sizes="(min-width: 1280px) 302px, 50vw"
-						className="object-cover"
-					/>
-				)}
+				<Image
+					src={product.image?.url ?? PRODUCT_IMAGE_PLACEHOLDER}
+					alt={product.image?.alt ?? product.name}
+					fill
+					sizes="(min-width: 1280px) 302px, 50vw"
+					className={product.image ? "object-cover" : "object-contain p-2"}
+				/>
 				{badge && (
 					<span className="absolute left-2 top-2 rounded-full bg-[var(--wv-pink)] px-2 py-1 font-sans text-[9px] font-extrabold text-[var(--wv-bg)] md:left-3 md:top-3 md:px-[10px] md:py-[6px] md:text-[10px]">
 						{badge}
