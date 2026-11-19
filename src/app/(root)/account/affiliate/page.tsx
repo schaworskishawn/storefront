@@ -170,6 +170,7 @@ async function DashboardData() {
 			<AffiliateDashboard
 				code={record.code}
 				link={referralLink(origin(), record.code)}
+				origin={origin()}
 				vouchers={record.vouchers}
 				paused={record.status === "paused"}
 				ledger={ledger}

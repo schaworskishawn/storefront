@@ -97,7 +97,12 @@ import { toCheckoutActionResult } from "@/checkout/lib/server/mutation-result";
 import { toTypedDocument } from "@/checkout/lib/server/to-typed-document";
 import { checkoutGraphqlLanguageCode } from "@/lib/checkout-locale";
 import { AFFILIATE_KEYS } from "@/lib/affiliates/records";
-import { REFERRAL_COOKIE, normalizeAffiliateCode } from "@/lib/affiliates/referral";
+import {
+	CAMPAIGN_COOKIE,
+	REFERRAL_COOKIE,
+	normalizeAffiliateCode,
+	normalizeCampaign,
+} from "@/lib/affiliates/referral";
 import { getRequestOrigin, isAllowedRedirectUrl } from "@/lib/auth/validate-redirect-url";
 import { executeAuthenticatedGraphQL, executePublicGraphQL, executeRawGraphQL } from "@/lib/graphql";
 import * as Checkout from "@/lib/checkout";
@@ -595,15 +600,24 @@ export async function processCheckoutTransaction(
 }
 
 /**
- * Copies an affiliate's referral code (the `wv_aff` cookie their link set) onto the checkout, which Saleor copies onto the
- * order; the affiliates app checks and credits it once the order is paid. Best effort: it never stands in an order's way.
+ * Copies an affiliate's referral code (the `wv_aff` cookie their link set) and the link's campaign tag (`wv_aff_sub`, empty
+ * when the link had none, so an earlier attempt's tag can't linger) onto the checkout, which Saleor copies onto the order;
+ * the affiliates app checks and credits it once the order is paid. Best effort: it never stands in an order's way.
  */
 async function stampAffiliateReferral(checkoutId: string): Promise<void> {
 	try {
-		const code = normalizeAffiliateCode((await cookies()).get(REFERRAL_COOKIE)?.value);
+		const jar = await cookies();
+		const code = normalizeAffiliateCode(jar.get(REFERRAL_COOKIE)?.value);
 		if (!code) return;
+		const campaign = normalizeCampaign(jar.get(CAMPAIGN_COOKIE)?.value) ?? "";
 		const result = await executeAuthenticatedGraphQL(checkoutMetadataUpdateDocument, {
-			variables: { id: checkoutId, input: [{ key: AFFILIATE_KEYS.ref, value: code }] },
+			variables: {
+				id: checkoutId,
+				input: [
+					{ key: AFFILIATE_KEYS.ref, value: code },
+					{ key: AFFILIATE_KEYS.campaign, value: campaign },
+				],
+			},
 			cache: "no-cache",
 		});
 		const error = result.ok ? result.data.updateMetadata?.errors?.[0]?.message : result.error.message;

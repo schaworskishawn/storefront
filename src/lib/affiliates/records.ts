@@ -1,4 +1,4 @@
-import { normalizeAffiliateCode } from "./referral";
+import { normalizeAffiliateCode, normalizeCampaign } from "./referral";
 
 /**
  * What the affiliate program keeps in Saleor, and how it reads it back. Everything lives in metadata, so there is no
@@ -20,6 +20,8 @@ export const AFFILIATE_KEYS = {
 	indexCode: "wv_aff.code",
 	/** Checkout and order, public: the code from the referral cookie (a claim, not yet checked). */
 	ref: "wv_aff.ref",
+	/** Checkout and order, public: the campaign tag from the referral link (`&sub=`), if it had one. */
+	campaign: "wv_aff.sub",
 	/** Order, public: the affiliate the order was credited to (written by the app). */
 	orderCode: "wv_aff.code",
 	/** Order, private: the credit, as JSON. */
@@ -126,6 +128,8 @@ export type OrderStamp = {
 	paidAt: string;
 	state: "earned" | "reversed";
 	reversedAt?: string;
+	/** The campaign tag the referral link carried, when the order was credited through that link. */
+	campaign?: string;
 };
 
 const STATUSES: readonly AffiliateStatus[] = ["pending", "approved", "paused", "rejected"];
@@ -295,6 +299,7 @@ export function parseOrderStamp(raw: string | null | undefined): OrderStamp | nu
 		paidAt,
 		state: s.state === "reversed" ? "reversed" : "earned",
 		...(isoOrNull(s.reversedAt) ? { reversedAt: isoOrNull(s.reversedAt) as string } : {}),
+		...(normalizeCampaign(s.campaign) ? { campaign: normalizeCampaign(s.campaign) as string } : {}),
 	};
 }
 

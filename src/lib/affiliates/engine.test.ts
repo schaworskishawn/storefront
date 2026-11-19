@@ -46,6 +46,7 @@ const baseOrder = (over: Partial<AffiliateOrder> = {}): AffiliateOrder => ({
 	subtotalCents: 10_000,
 	voucherCode: null,
 	ref: "neo",
+	campaign: null,
 	stamp: null,
 	...over,
 });
@@ -94,6 +95,23 @@ describe("creditOrder", () => {
 			},
 		]);
 		expect(notes[0]).toContain("credited to neo (referral link)");
+	});
+
+	it("keeps the link's campaign tag on the credit", async () => {
+		const { deps, stamps } = setup(baseOrder({ campaign: "TikTok" }));
+		expect(await creditOrder("order-1", deps)).toBe("credited");
+		expect(stamps[0]?.stamp.campaign).toBe("tiktok");
+	});
+
+	it("drops a campaign tag that's malformed or came with another affiliate's link", async () => {
+		const bad = setup(baseOrder({ campaign: "<script>" }));
+		await creditOrder("order-1", bad.deps);
+		expect(bad.stamps[0]?.stamp).not.toHaveProperty("campaign");
+
+		const other = setup(baseOrder({ voucherCode: "trin10", ref: "neo", campaign: "instagram" }));
+		await creditOrder("order-1", other.deps);
+		expect(other.stamps[0]?.stamp).toMatchObject({ code: "trinity", via: "voucher" });
+		expect(other.stamps[0]?.stamp).not.toHaveProperty("campaign");
 	});
 
 	it("lets a linked discount code win over the link", async () => {
