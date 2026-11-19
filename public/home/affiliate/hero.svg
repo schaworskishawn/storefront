@@ -1,0 +1,367 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 638" width="1000" height="638">
+	<title>A neon smartphone with a rising commission chart, Vapor Tokens streaming out of it, vapes, a pod system and e-liquids on a glossy floor, and a globe wrapped in a network</title>
+	<defs>
+		<!-- Sky, floor and light -->
+		<radialGradient id="sky" cx="0.5" cy="0.4" r="0.8">
+			<stop offset="0" stop-color="#1d0b33" />
+			<stop offset="0.5" stop-color="#0d0718" />
+			<stop offset="1" stop-color="#05030a" />
+		</radialGradient>
+		<radialGradient id="lightPink" cx="0.5" cy="0.5" r="0.5">
+			<stop offset="0" stop-color="#f179fb" stop-opacity="0.34" />
+			<stop offset="1" stop-color="#f179fb" stop-opacity="0" />
+		</radialGradient>
+		<radialGradient id="lightCyan" cx="0.5" cy="0.5" r="0.5">
+			<stop offset="0" stop-color="#00e5ff" stop-opacity="0.26" />
+			<stop offset="1" stop-color="#00e5ff" stop-opacity="0" />
+		</radialGradient>
+		<radialGradient id="lightPurple" cx="0.5" cy="0.5" r="0.5">
+			<stop offset="0" stop-color="#7a1fa2" stop-opacity="0.6" />
+			<stop offset="1" stop-color="#7a1fa2" stop-opacity="0" />
+		</radialGradient>
+		<linearGradient id="floor" x1="0" y1="0" x2="0" y2="1">
+			<stop offset="0" stop-color="#170b28" />
+			<stop offset="0.35" stop-color="#0b0614" />
+			<stop offset="1" stop-color="#05030a" />
+		</linearGradient>
+		<linearGradient id="horizon" x1="0" y1="0" x2="1" y2="0">
+			<stop offset="0" stop-color="#00e5ff" stop-opacity="0" />
+			<stop offset="0.25" stop-color="#00e5ff" />
+			<stop offset="0.5" stop-color="#f179fb" />
+			<stop offset="0.75" stop-color="#7a1fa2" />
+			<stop offset="1" stop-color="#7a1fa2" stop-opacity="0" />
+		</linearGradient>
+		<linearGradient id="gridFade" x1="0" y1="440" x2="0" y2="638" gradientUnits="userSpaceOnUse">
+			<stop offset="0" stop-color="#fff" stop-opacity="0" />
+			<stop offset="0.25" stop-color="#fff" stop-opacity="0.35" />
+			<stop offset="1" stop-color="#fff" stop-opacity="1" />
+		</linearGradient>
+		<mask id="gridMask"><rect x="0" y="440" width="1000" height="198" fill="url(#gridFade)" /></mask>
+		<linearGradient id="reflectFade" x1="0" y1="528" x2="0" y2="638" gradientUnits="userSpaceOnUse">
+			<stop offset="0" stop-color="#fff" stop-opacity="0.5" />
+			<stop offset="1" stop-color="#fff" stop-opacity="0" />
+		</linearGradient>
+		<mask id="reflectMask"><rect x="0" y="528" width="1000" height="110" fill="url(#reflectFade)" /></mask>
+		<radialGradient id="vignette" cx="0.5" cy="0.48" r="0.72">
+			<stop offset="0.6" stop-color="#05030a" stop-opacity="0" />
+			<stop offset="1" stop-color="#05030a" stop-opacity="0.75" />
+		</radialGradient>
+
+		<!-- Neon edges and glossy bodies -->
+		<linearGradient id="edge" x1="0" y1="0" x2="1" y2="1">
+			<stop offset="0" stop-color="#69ebff" />
+			<stop offset="1" stop-color="#f179fb" />
+		</linearGradient>
+		<linearGradient id="edgeSide" x1="0" y1="0" x2="1" y2="0">
+			<stop offset="0" stop-color="#00e5ff" />
+			<stop offset="0.5" stop-color="#7a1fa2" stop-opacity="0.6" />
+			<stop offset="1" stop-color="#f179fb" />
+		</linearGradient>
+		<linearGradient id="body" x1="0" y1="0" x2="1" y2="0">
+			<stop offset="0" stop-color="#2a0f45" />
+			<stop offset="0.45" stop-color="#14091f" />
+			<stop offset="1" stop-color="#3a1257" />
+		</linearGradient>
+		<linearGradient id="bodyPink" x1="0" y1="0" x2="1" y2="0">
+			<stop offset="0" stop-color="#40104d" />
+			<stop offset="0.5" stop-color="#1a0a26" />
+			<stop offset="1" stop-color="#5c1a63" />
+		</linearGradient>
+		<linearGradient id="screen" x1="0" y1="0" x2="0" y2="1">
+			<stop offset="0" stop-color="#1b0d33" />
+			<stop offset="1" stop-color="#0b0712" />
+		</linearGradient>
+		<linearGradient id="chartLine" x1="0" y1="0" x2="1" y2="0">
+			<stop offset="0" stop-color="#00e5ff" />
+			<stop offset="1" stop-color="#f179fb" />
+		</linearGradient>
+		<linearGradient id="chartArea" x1="0" y1="0" x2="0" y2="1">
+			<stop offset="0" stop-color="#f179fb" stop-opacity="0.45" />
+			<stop offset="1" stop-color="#f179fb" stop-opacity="0" />
+		</linearGradient>
+		<linearGradient id="liquidPink" x1="0" y1="0" x2="0" y2="1">
+			<stop offset="0" stop-color="#f179fb" stop-opacity="0.95" />
+			<stop offset="1" stop-color="#7a1fa2" stop-opacity="0.9" />
+		</linearGradient>
+		<linearGradient id="liquidCyan" x1="0" y1="0" x2="0" y2="1">
+			<stop offset="0" stop-color="#69ebff" stop-opacity="0.95" />
+			<stop offset="1" stop-color="#1a5f8a" stop-opacity="0.9" />
+		</linearGradient>
+		<linearGradient id="glass" x1="0" y1="0" x2="1" y2="0">
+			<stop offset="0" stop-color="#fff" stop-opacity="0.16" />
+			<stop offset="0.3" stop-color="#fff" stop-opacity="0.03" />
+			<stop offset="1" stop-color="#fff" stop-opacity="0.1" />
+		</linearGradient>
+		<linearGradient id="trail" x1="452" y1="112" x2="178" y2="190" gradientUnits="userSpaceOnUse">
+			<stop offset="0" stop-color="#69ebff" stop-opacity="0.9" />
+			<stop offset="0.55" stop-color="#f179fb" stop-opacity="0.8" />
+			<stop offset="1" stop-color="#f179fb" stop-opacity="0" />
+		</linearGradient>
+		<radialGradient id="globe" cx="0.36" cy="0.32" r="0.8">
+			<stop offset="0" stop-color="#2e1250" />
+			<stop offset="0.55" stop-color="#140827" />
+			<stop offset="1" stop-color="#07040d" />
+		</radialGradient>
+		<linearGradient id="ring" x1="0" y1="0" x2="1" y2="0">
+			<stop offset="0" stop-color="#00e5ff" />
+			<stop offset="1" stop-color="#f179fb" />
+		</linearGradient>
+		<clipPath id="globeClip"><circle cx="748" cy="250" r="165" /></clipPath>
+		<clipPath id="floorClip"><rect x="0" y="440" width="1000" height="198" /></clipPath>
+
+		<!-- Coins: Vapor Tokens as hexagons with a vapor drop, one cyan and one pink -->
+		<linearGradient id="coinCyanFill" x1="0" y1="0" x2="1" y2="1">
+			<stop offset="0" stop-color="#b8f7ff" />
+			<stop offset="0.45" stop-color="#00a9c7" />
+			<stop offset="1" stop-color="#22104a" />
+		</linearGradient>
+		<linearGradient id="coinPinkFill" x1="0" y1="0" x2="1" y2="1">
+			<stop offset="0" stop-color="#ffd2ff" />
+			<stop offset="0.45" stop-color="#d04fe0" />
+			<stop offset="1" stop-color="#2a0c3e" />
+		</linearGradient>
+		<symbol id="coinCyan" viewBox="-50 -50 100 100">
+			<polygon points="0,-46 39.8,-23 39.8,23 0,46 -39.8,23 -39.8,-23" fill="url(#coinCyanFill)" stroke="#69ebff" stroke-width="4" />
+			<polygon points="0,-31 26.8,-15.5 26.8,15.5 0,31 -26.8,15.5 -26.8,-15.5" fill="none" stroke="#e6fdff" stroke-opacity="0.75" stroke-width="2.5" />
+			<path d="M0,-17 C7,-6 12,1 12,7 A12,12 0 0 1 -12,7 C-12,1 -7,-6 0,-17 Z" fill="#e6fdff" fill-opacity="0.9" />
+		</symbol>
+		<symbol id="coinPink" viewBox="-50 -50 100 100">
+			<polygon points="0,-46 39.8,-23 39.8,23 0,46 -39.8,23 -39.8,-23" fill="url(#coinPinkFill)" stroke="#f179fb" stroke-width="4" />
+			<polygon points="0,-31 26.8,-15.5 26.8,15.5 0,31 -26.8,15.5 -26.8,-15.5" fill="none" stroke="#ffe6ff" stroke-opacity="0.75" stroke-width="2.5" />
+			<path d="M0,-17 C7,-6 12,1 12,7 A12,12 0 0 1 -12,7 C-12,1 -7,-6 0,-17 Z" fill="#ffe6ff" fill-opacity="0.9" />
+		</symbol>
+		<symbol id="spark" viewBox="-10 -10 20 20">
+			<path d="M0,-10 C1,-2 2,-1 10,0 C2,1 1,2 0,10 C-1,2 -2,1 -10,0 C-2,-1 -1,-2 0,-10 Z" fill="#fff" />
+		</symbol>
+
+		<!-- Bloom: a wide glow, a tight glow, then the shape itself -->
+		<filter id="bloom" x="-60%" y="-60%" width="220%" height="220%">
+			<feGaussianBlur in="SourceGraphic" stdDeviation="8" result="wide" />
+			<feGaussianBlur in="SourceGraphic" stdDeviation="2.5" result="tight" />
+			<feMerge>
+				<feMergeNode in="wide" />
+				<feMergeNode in="tight" />
+				<feMergeNode in="SourceGraphic" />
+			</feMerge>
+		</filter>
+		<filter id="bloomSm" x="-60%" y="-60%" width="220%" height="220%">
+			<feGaussianBlur in="SourceGraphic" stdDeviation="3" result="b" />
+			<feMerge>
+				<feMergeNode in="b" />
+				<feMergeNode in="SourceGraphic" />
+			</feMerge>
+		</filter>
+		<filter id="haze" x="-50%" y="-80%" width="200%" height="260%"><feGaussianBlur stdDeviation="24" /></filter>
+		<filter id="wisp" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="5" /></filter>
+		<filter id="blur2"><feGaussianBlur stdDeviation="2" /></filter>
+
+		<!-- The products on the floor, drawn once and reused for their reflections -->
+		<g id="leftProducts">
+			<!-- Tall disposable -->
+			<rect x="102" y="310" width="32" height="40" rx="11" fill="url(#body)" stroke="url(#edgeSide)" stroke-width="2.5" />
+			<rect x="92" y="338" width="52" height="190" rx="17" fill="url(#body)" stroke="url(#edgeSide)" stroke-width="3" />
+			<rect x="99" y="350" width="6" height="160" rx="3" fill="#fff" fill-opacity="0.14" />
+			<rect x="104" y="372" width="28" height="64" rx="10" fill="#0b0712" stroke="#f179fb" stroke-opacity="0.8" stroke-width="2" />
+			<rect x="110" y="380" width="16" height="48" rx="6" fill="url(#liquidPink)" fill-opacity="0.7" />
+			<rect x="92" y="482" width="52" height="6" fill="#00e5ff" filter="url(#bloomSm)" />
+			<!-- Box disposable with a display -->
+			<rect x="171" y="366" width="36" height="34" rx="12" fill="url(#bodyPink)" stroke="url(#edgeSide)" stroke-width="2.5" />
+			<rect x="156" y="392" width="66" height="136" rx="19" fill="url(#bodyPink)" stroke="url(#edgeSide)" stroke-width="3" />
+			<rect x="163" y="402" width="6" height="112" rx="3" fill="#fff" fill-opacity="0.13" />
+			<rect x="172" y="414" width="34" height="22" rx="6" fill="#05030a" stroke="#69ebff" stroke-width="1.8" />
+			<rect x="177" y="420" width="17" height="4" rx="2" fill="#69ebff" filter="url(#bloomSm)" />
+			<rect x="177" y="428" width="10" height="3" rx="1.5" fill="#f179fb" />
+			<circle cx="189" cy="480" r="9" fill="none" stroke="#f179fb" stroke-width="2.5" filter="url(#bloomSm)" />
+			<!-- E-liquid bottle, pink -->
+			<rect x="250" y="362" width="32" height="50" rx="7" fill="#1a0a26" stroke="url(#edgeSide)" stroke-width="2.5" />
+			<path d="M254 372 H278 M254 382 H278 M254 392 H278 M254 402 H278" stroke="#f179fb" stroke-opacity="0.45" stroke-width="1.5" />
+			<rect x="256" y="408" width="20" height="14" rx="3" fill="#2a0f45" stroke="#f179fb" stroke-opacity="0.7" stroke-width="1.5" />
+			<path d="M244 528 H288 Q296 528 296 520 V448 Q296 434 282 428 L276 420 H256 L250 428 Q236 434 236 448 V520 Q236 528 244 528 Z" fill="url(#glass)" stroke="url(#edgeSide)" stroke-width="3" />
+			<path d="M240 452 H292 V518 Q292 524 286 524 H246 Q240 524 240 518 Z" fill="url(#liquidPink)" fill-opacity="0.55" />
+			<rect x="240" y="468" width="52" height="30" fill="#0b0712" fill-opacity="0.75" />
+			<path d="M246 476 H286 M246 484 H274 M246 491 H280" stroke="#69ebff" stroke-opacity="0.6" stroke-width="2" stroke-linecap="round" />
+			<rect x="242" y="440" width="5" height="78" rx="2.5" fill="#fff" fill-opacity="0.22" />
+		</g>
+		<g id="rightProducts">
+			<!-- Pod system with a see-through pod -->
+			<rect x="814" y="350" width="28" height="26" rx="9" fill="#1a0a26" stroke="url(#edgeSide)" stroke-width="2.5" />
+			<rect x="800" y="368" width="56" height="160" rx="27" fill="url(#body)" stroke="url(#edgeSide)" stroke-width="3" />
+			<rect x="808" y="380" width="40" height="52" rx="14" fill="url(#glass)" stroke="#69ebff" stroke-opacity="0.85" stroke-width="2" />
+			<rect x="813" y="398" width="30" height="30" rx="10" fill="url(#liquidCyan)" fill-opacity="0.7" />
+			<rect x="807" y="384" width="5" height="128" rx="2.5" fill="#fff" fill-opacity="0.14" />
+			<rect x="822" y="452" width="12" height="40" rx="6" fill="#05030a" stroke="#f179fb" stroke-width="2" />
+			<rect x="825" y="458" width="6" height="16" rx="3" fill="#f179fb" filter="url(#bloomSm)" />
+			<!-- E-liquid bottle, cyan -->
+			<rect x="884" y="372" width="32" height="48" rx="7" fill="#1a0a26" stroke="url(#edgeSide)" stroke-width="2.5" />
+			<path d="M888 382 H912 M888 392 H912 M888 402 H912" stroke="#69ebff" stroke-opacity="0.45" stroke-width="1.5" />
+			<rect x="890" y="416" width="20" height="12" rx="3" fill="#2a0f45" stroke="#69ebff" stroke-opacity="0.7" stroke-width="1.5" />
+			<path d="M878 528 H922 Q930 528 930 520 V454 Q930 440 916 435 L910 428 H890 L884 435 Q870 440 870 454 V520 Q870 528 878 528 Z" fill="url(#glass)" stroke="url(#edgeSide)" stroke-width="3" />
+			<path d="M874 458 H926 V518 Q926 524 920 524 H880 Q874 524 874 518 Z" fill="url(#liquidCyan)" fill-opacity="0.5" />
+			<rect x="874" y="472" width="52" height="28" fill="#0b0712" fill-opacity="0.75" />
+			<path d="M880 480 H920 M880 488 H906 M880 494 H914" stroke="#f179fb" stroke-opacity="0.65" stroke-width="2" stroke-linecap="round" />
+			<rect x="876" y="446" width="5" height="74" rx="2.5" fill="#fff" fill-opacity="0.22" />
+		</g>
+	</defs>
+
+	<!-- Sky -->
+	<rect width="1000" height="638" fill="url(#sky)" />
+	<ellipse cx="190" cy="170" rx="330" ry="250" fill="url(#lightPink)" />
+	<ellipse cx="790" cy="230" rx="320" ry="260" fill="url(#lightCyan)" />
+	<ellipse cx="500" cy="430" rx="520" ry="150" fill="url(#lightPurple)" />
+	<g fill="#69ebff">
+		<circle cx="62" cy="58" r="1.4" opacity="0.8" />
+		<circle cx="140" cy="36" r="1" opacity="0.6" />
+		<circle cx="330" cy="140" r="1.2" opacity="0.55" />
+		<circle cx="560" cy="40" r="1.6" opacity="0.8" />
+		<circle cx="610" cy="96" r="1" opacity="0.5" />
+		<circle cx="955" cy="70" r="1.4" opacity="0.7" />
+		<circle cx="930" cy="160" r="1" opacity="0.5" />
+		<circle cx="46" cy="260" r="1.2" opacity="0.6" />
+	</g>
+	<g fill="#f179fb">
+		<circle cx="96" cy="120" r="1.2" opacity="0.7" />
+		<circle cx="250" cy="24" r="1.4" opacity="0.7" />
+		<circle cx="470" cy="30" r="1" opacity="0.6" />
+		<circle cx="660" cy="30" r="1.3" opacity="0.7" />
+		<circle cx="880" cy="28" r="1" opacity="0.6" />
+		<circle cx="975" cy="300" r="1.4" opacity="0.6" />
+		<circle cx="372" cy="260" r="1" opacity="0.5" />
+	</g>
+
+	<!-- Globe, its network and orbit -->
+	<circle cx="748" cy="250" r="200" fill="url(#lightCyan)" />
+	<path d="M523 250 A225 54 0 0 1 973 250" transform="rotate(-12 748 250)" fill="none" stroke="url(#ring)" stroke-width="1.6" stroke-opacity="0.35" />
+	<circle cx="748" cy="250" r="165" fill="url(#globe)" stroke="#69ebff" stroke-opacity="0.45" stroke-width="1.5" />
+	<g clip-path="url(#globeClip)" fill="none" stroke="#69ebff" stroke-opacity="0.16" stroke-width="1">
+		<ellipse cx="748" cy="250" rx="146" ry="165" />
+		<ellipse cx="748" cy="250" rx="100" ry="165" />
+		<ellipse cx="748" cy="250" rx="48" ry="165" />
+		<line x1="748" y1="85" x2="748" y2="415" />
+		<ellipse cx="748" cy="140" rx="123" ry="20" />
+		<ellipse cx="748" cy="195" rx="155" ry="25" />
+		<ellipse cx="748" cy="250" rx="165" ry="27" />
+		<ellipse cx="748" cy="305" rx="155" ry="25" />
+		<ellipse cx="748" cy="360" rx="123" ry="20" />
+	</g>
+	<g clip-path="url(#globeClip)" fill="#f179fb" opacity="0.55">
+		<circle cx="676" cy="176" r="1.6" /><circle cx="688" cy="186" r="1.2" /><circle cx="668" cy="196" r="1.3" />
+		<circle cx="702" cy="170" r="1.1" /><circle cx="812" cy="168" r="1.5" /><circle cx="826" cy="180" r="1.1" />
+		<circle cx="842" cy="262" r="1.4" /><circle cx="852" cy="276" r="1.1" /><circle cx="782" cy="320" r="1.5" />
+		<circle cx="770" cy="334" r="1.1" /><circle cx="704" cy="292" r="1.3" /><circle cx="716" cy="304" r="1.1" />
+	</g>
+	<path d="M640 120 A165 165 0 0 1 900 190" fill="none" stroke="#f179fb" stroke-width="2.5" stroke-linecap="round" opacity="0.8" filter="url(#bloomSm)" />
+	<path d="M598 300 A165 165 0 0 0 690 404" fill="none" stroke="#69ebff" stroke-width="2" stroke-linecap="round" opacity="0.6" filter="url(#bloomSm)" />
+	<g fill="none" stroke-linecap="round" filter="url(#bloomSm)">
+		<path d="M652 170 Q735 60 820 150" stroke="#f179fb" stroke-width="1.6" />
+		<path d="M720 120 Q862 108 870 240" stroke="#69ebff" stroke-width="1.6" />
+		<path d="M820 150 Q912 262 800 330" stroke="#f179fb" stroke-width="1.4" />
+		<path d="M690 312 Q612 240 652 170" stroke="#69ebff" stroke-width="1.4" />
+		<path d="M760 232 Q700 170 720 120" stroke="#f179fb" stroke-width="1.2" opacity="0.8" />
+		<path d="M760 232 Q820 280 800 330" stroke="#69ebff" stroke-width="1.2" opacity="0.8" />
+		<path d="M760 232 Q840 200 870 240" stroke="#f179fb" stroke-width="1.2" opacity="0.8" />
+		<path d="M690 312 Q745 360 800 330" stroke="#f179fb" stroke-width="1.2" opacity="0.8" />
+		<path d="M586 214 Q610 150 652 170" stroke="#f179fb" stroke-width="1.4" stroke-dasharray="2 6" />
+		<path d="M586 300 Q640 330 690 312" stroke="#69ebff" stroke-width="1.4" stroke-dasharray="2 6" />
+	</g>
+	<g filter="url(#bloom)">
+		<circle cx="652" cy="170" r="5" fill="#f179fb" />
+		<circle cx="720" cy="120" r="4.5" fill="#69ebff" />
+		<circle cx="820" cy="150" r="5" fill="#69ebff" />
+		<circle cx="870" cy="240" r="4.5" fill="#f179fb" />
+		<circle cx="800" cy="330" r="5" fill="#69ebff" />
+		<circle cx="690" cy="312" r="4.5" fill="#f179fb" />
+		<circle cx="760" cy="232" r="6" fill="#fff" />
+	</g>
+	<path d="M523 250 A225 54 0 0 0 973 250" transform="rotate(-12 748 250)" fill="none" stroke="url(#ring)" stroke-width="2.4" filter="url(#bloomSm)" />
+	<circle cx="958" cy="200" r="4" fill="#f179fb" filter="url(#bloom)" />
+
+	<!-- Floor: a glossy synthwave grid running to a glowing horizon -->
+	<rect x="0" y="440" width="1000" height="198" fill="url(#floor)" />
+	<g clip-path="url(#floorClip)" mask="url(#gridMask)" stroke="#f179fb" stroke-opacity="0.42" stroke-width="1">
+		<path d="M500 440 L-700 638 M500 440 L-460 638 M500 440 L-220 638 M500 440 L20 638 M500 440 L260 638 M500 440 L500 638 M500 440 L740 638 M500 440 L980 638 M500 440 L1220 638 M500 440 L1460 638 M500 440 L1700 638" />
+		<path d="M0 448 H1000 M0 458 H1000 M0 472 H1000 M0 490 H1000 M0 514 H1000 M0 546 H1000 M0 588 H1000" stroke="#69ebff" stroke-opacity="0.38" />
+	</g>
+	<rect x="0" y="438" width="1000" height="4" fill="url(#horizon)" filter="url(#bloom)" />
+	<ellipse cx="748" cy="452" rx="190" ry="14" fill="#69ebff" opacity="0.12" filter="url(#wisp)" />
+
+	<!-- Haze -->
+	<ellipse cx="200" cy="470" rx="230" ry="60" fill="#7a1fa2" opacity="0.5" filter="url(#haze)" />
+	<ellipse cx="860" cy="480" rx="200" ry="55" fill="#7a1fa2" opacity="0.45" filter="url(#haze)" />
+	<ellipse cx="130" cy="260" rx="150" ry="70" fill="#f179fb" opacity="0.16" filter="url(#haze)" />
+
+	<!-- Reflections in the floor -->
+	<g mask="url(#reflectMask)" opacity="0.8">
+		<use href="#leftProducts" transform="matrix(1 0 0 -1 0 1056)" />
+		<use href="#rightProducts" transform="matrix(1 0 0 -1 0 1056)" />
+	</g>
+	<ellipse cx="497" cy="532" rx="130" ry="15" fill="#69ebff" opacity="0.35" filter="url(#wisp)" />
+	<ellipse cx="497" cy="532" rx="70" ry="6" fill="#f179fb" opacity="0.5" filter="url(#blur2)" />
+
+	<!-- Products -->
+	<use href="#rightProducts" />
+	<use href="#leftProducts" />
+	<!-- Vapor curling up from the tall disposable -->
+	<g fill="none" stroke-linecap="round" filter="url(#wisp)">
+		<path d="M118 306 C96 270 146 250 122 214 C104 188 132 166 120 140" stroke="#f179fb" stroke-opacity="0.45" stroke-width="7" />
+		<path d="M124 300 C150 268 110 242 138 210" stroke="#69ebff" stroke-opacity="0.3" stroke-width="5" />
+	</g>
+
+	<!-- The phone, floating -->
+	<g transform="rotate(-4 497 273)">
+		<rect x="405" y="92" width="184" height="362" rx="30" fill="#0b0712" stroke="url(#edge)" stroke-width="4" filter="url(#bloom)" />
+		<rect x="413" y="100" width="168" height="346" rx="23" fill="url(#screen)" />
+		<rect x="470" y="110" width="54" height="13" rx="6.5" fill="#05030a" />
+		<!-- Link card -->
+		<rect x="425" y="136" width="144" height="44" rx="11" fill="#fff" fill-opacity="0.05" stroke="#69ebff" stroke-opacity="0.4" stroke-width="1.5" />
+		<g fill="none" stroke="#69ebff" stroke-width="3" stroke-linecap="round" filter="url(#bloomSm)">
+			<rect x="435" y="152" width="16" height="10" rx="5" transform="rotate(-35 443 157)" />
+			<rect x="445" y="152" width="16" height="10" rx="5" transform="rotate(-35 453 157)" />
+		</g>
+		<rect x="472" y="148" width="74" height="6" rx="3" fill="#f179fb" fill-opacity="0.8" />
+		<rect x="472" y="161" width="48" height="5" rx="2.5" fill="#fff" fill-opacity="0.25" />
+		<!-- Chart card: sales rising -->
+		<rect x="425" y="190" width="144" height="124" rx="13" fill="#fff" fill-opacity="0.04" stroke="#f179fb" stroke-opacity="0.35" stroke-width="1.5" />
+		<path d="M437 232 H557 M437 258 H557 M437 284 H557" stroke="#fff" stroke-opacity="0.07" stroke-width="1" />
+		<path d="M437 298 L458 284 L476 290 L496 264 L514 270 L534 238 L556 214 V304 H437 Z" fill="url(#chartArea)" />
+		<path d="M437 298 L458 284 L476 290 L496 264 L514 270 L534 238 L556 214" fill="none" stroke="url(#chartLine)" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round" filter="url(#bloomSm)" />
+		<circle cx="556" cy="214" r="5" fill="#fff" filter="url(#bloom)" />
+		<path d="M542 206 L556 200 L552 214" fill="none" stroke="#f179fb" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+		<!-- Tier card: four rising tiers -->
+		<rect x="425" y="324" width="144" height="66" rx="13" fill="#fff" fill-opacity="0.04" stroke="#69ebff" stroke-opacity="0.35" stroke-width="1.5" />
+		<g filter="url(#bloomSm)">
+			<rect x="441" y="364" width="20" height="14" rx="4" fill="#ffd900" />
+			<rect x="469" y="354" width="20" height="24" rx="4" fill="#e58c26" />
+			<rect x="497" y="344" width="20" height="34" rx="4" fill="#f233cc" />
+			<rect x="525" y="334" width="20" height="44" rx="4" fill="#00e5ff" />
+		</g>
+		<!-- Button -->
+		<rect x="425" y="402" width="144" height="30" rx="15" fill="#69ebff" filter="url(#bloomSm)" />
+		<polygon points="497,408 505.7,412.5 505.7,421.5 497,426 488.3,421.5 488.3,412.5" fill="#0b0712" />
+		<!-- Glare -->
+		<path d="M420 104 L500 104 L420 300 Z" fill="#fff" fill-opacity="0.05" />
+	</g>
+
+	<!-- Vapor Tokens arcing out of the phone -->
+	<path d="M452 112 C424 66 360 40 290 52 S190 110 178 190" fill="none" stroke="url(#trail)" stroke-width="14" stroke-linecap="round" opacity="0.5" filter="url(#wisp)" />
+	<path d="M452 112 C424 66 360 40 290 52 S190 110 178 190" fill="none" stroke="url(#trail)" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="1 9" />
+	<g filter="url(#bloomSm)">
+		<use href="#coinPink" x="-10" y="-10" width="20" height="20" transform="translate(446 104)" />
+		<use href="#coinCyan" x="-12" y="-12" width="24" height="24" transform="translate(405 72) rotate(12) scale(0.5 1)" />
+		<use href="#coinPink" x="-14" y="-14" width="28" height="28" transform="translate(354 52) rotate(-8) scale(0.9 1)" />
+		<use href="#coinCyan" x="-16" y="-16" width="32" height="32" transform="translate(300 54) rotate(10)" />
+		<use href="#coinPink" x="-18" y="-18" width="36" height="36" transform="translate(250 74) rotate(-14) scale(0.45 1)" />
+		<use href="#coinCyan" x="-20" y="-20" width="40" height="40" transform="translate(208 108) rotate(8) scale(0.85 1)" />
+		<use href="#coinPink" x="-23" y="-23" width="46" height="46" transform="translate(184 162) rotate(-10)" />
+	</g>
+
+	<!-- Sparkles -->
+	<g filter="url(#bloomSm)">
+		<use href="#spark" x="-7" y="-7" width="14" height="14" transform="translate(600 70)" />
+		<use href="#spark" x="-5" y="-5" width="10" height="10" transform="translate(372 196)" />
+		<use href="#spark" x="-8" y="-8" width="16" height="16" transform="translate(290 300)" />
+		<use href="#spark" x="-6" y="-6" width="12" height="12" transform="translate(940 380)" />
+		<use href="#spark" x="-5" y="-5" width="10" height="10" transform="translate(560 500)" />
+	</g>
+
+	<rect width="1000" height="638" fill="url(#vignette)" />
+</svg>
