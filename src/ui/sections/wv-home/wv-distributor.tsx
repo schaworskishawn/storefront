@@ -66,8 +66,8 @@ export function WvDistributor() {
 				/>
 				<div className="relative h-[200px] w-full shrink-0 overflow-hidden rounded-[20px] border-2 border-[var(--wv-purple)] bg-[var(--wv-control)] shadow-[0_10px_30px_rgba(105,235,255,0.12)] md:h-[320px] xl:h-[400px] xl:w-[500px]">
 					<Image
-						src="/home/distributor/hero.png"
-						alt="Global distribution warehouse network"
+						src="/home/distributor/hero.svg"
+						alt="A distribution warehouse with lit loading bays, a truck heading out, a pallet of product cases and e-liquid cartons, shipping containers, and a globe wrapped in glowing shipping routes"
 						fill
 						priority
 						sizes="(min-width: 1280px) 500px, 100vw"
