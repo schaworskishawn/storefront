@@ -1,7 +1,10 @@
 import { ArrowDown, ChevronRight, Handshake, Home } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import type { CategoryBadgeIcon } from "./wv-category-art";
+import { CategoryBadgeImage } from "./wv-category-badge-image";
 import { WvFooter, WvHeader } from "./wv-chrome";
+import { SectionHeading } from "./wv-product-section";
 import { NewsletterForm } from "./wv-newsletter-client";
 import "./wv-home.css";
 
@@ -11,7 +14,15 @@ const heyComic = "font-[family-name:var(--font-hey-comic)]";
 const bungee = "font-[family-name:var(--font-bungee)]";
 const orbitron = "font-[family-name:var(--font-orbitron)]";
 
-const CATEGORIES = ["Disposables", "E-Liquids", "Hardware", "Coils", "Accessories", "New Arrivals"];
+/** The wholesale range, as the home page's category badges, each opening that category in the shop. */
+const CATEGORIES: { name: string; slug: string; badge: CategoryBadgeIcon }[] = [
+	{ name: "Disposables", slug: "disposables", badge: "disposables" },
+	{ name: "E-Liquids", slug: "ejuice", badge: "eliquid" },
+	{ name: "Hardware", slug: "hardware", badge: "hardware" },
+	{ name: "Coils", slug: "coils", badge: "coils" },
+	{ name: "Accessories", slug: "accessories", badge: "accessories" },
+	{ name: "New Arrivals", slug: "new-arrivals", badge: "new-arrivals" },
+];
 
 const REQUIREMENTS = [
 	"Valid Business License & Tobacco Permits",
@@ -139,24 +150,38 @@ export function WvDistributor() {
 				</div>
 			</section>
 
-			{/* Categories strip */}
-			<section className="flex flex-col gap-4 border-y border-[var(--wv-purple)] bg-[var(--wv-control)] px-4 py-6 md:gap-6 md:px-10 md:py-8 xl:px-[100px] xl:py-10">
-				<h2 className={`${bungee} text-center text-sm tracking-[1px] md:text-base`}>
-					AVAILABLE PRODUCT CATEGORIES FOR WHOLESALE
-				</h2>
-				<ul className="mx-auto grid grid-cols-3 gap-4 md:flex md:flex-wrap md:justify-center md:gap-4 xl:gap-10">
-					{CATEGORIES.map((c, i) => (
-						<li key={c} className="relative mx-auto size-24 md:size-20 xl:size-[108px]">
-							<Image
-								src={`/home/distributor/cat${i + 1}.png`}
-								alt={c}
-								fill
-								sizes="108px"
-								className="object-contain"
-							/>
+			{/* Categories: the home page's badges (production art that glows along its own outline and lifts under the
+			    pointer, `.wv-badge`), each opening its category in the shop, under the shared neon heading, over the nebula. */}
+			<section className="wv-nebula px-4 py-8 md:px-10 md:py-10 xl:px-[100px] xl:py-12">
+				<SectionHeading
+					eyebrow="Wholesale Catalog"
+					title="PRODUCT CATEGORIES"
+					size="small"
+					bar="w-12 xl:w-[57px]"
+				/>
+				<ul className="mx-auto mt-6 grid max-w-[704px] grid-cols-3 gap-3 md:gap-5 xl:flex xl:max-w-[1040px] xl:justify-center xl:gap-10">
+					{CATEGORIES.map((c) => (
+						<li key={c.slug} className="xl:shrink-0">
+							<Link
+								href={`/shop?category=${encodeURIComponent(c.slug)}`}
+								className="relative block aspect-[100/110] w-full md:aspect-square xl:h-[150px] xl:w-[140px]"
+							>
+								<CategoryBadgeImage
+									icon={c.badge}
+									sizes="(min-width: 1280px) 140px, (min-width: 768px) 230px, 33vw"
+								/>
+								<span className="sr-only">{c.name}</span>
+							</Link>
 						</li>
 					))}
 				</ul>
+				<p
+					className={`${orbitron} wv-hero-copy mx-auto mt-6 max-w-[560px] text-center text-xs leading-[1.7] md:text-sm`}
+				>
+					Every category is available at <strong className="wv-hero-key">wholesale pricing</strong>, with{" "}
+					<strong className="wv-hero-key wv-hero-key--pink">volume tiers</strong> that deepen as your orders
+					grow.
+				</p>
 			</section>
 
 			{/* Tiers */}
