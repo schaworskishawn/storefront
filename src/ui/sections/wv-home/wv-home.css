@@ -3818,3 +3818,28 @@ li:nth-child(even) > .wv-cat-chip {
 	color: var(--wv-cyan-soft);
 	filter: drop-shadow(0 0 4px var(--wv-cyan));
 }
+
+/* The distributor page's partnership tiers (wv-distributor.tsx): neon cards (.wv-neon-card) in their tier's colour
+ * (cyan, pink, or violet), glowing but not lifting under the pointer as they aren't links, each icon lit in its tile and
+ * a short neon rule under the name; the featured Master Distributor is the brightest. Behind them, the glowing globe
+ * they stand on (tiers-stage.svg), its podium under the featured card. */
+.wv-dist-tier[data-tone="pink"] {
+	--accent: var(--wv-pink);
+}
+.wv-dist-tier[data-tone="violet"] {
+	--accent: color-mix(in srgb, var(--wv-purple) 40%, white);
+}
+.wv-neon-card.wv-dist-tier:hover {
+	transform: none;
+}
+.wv-dist-tier .wv-neon-card-icon svg {
+	color: var(--accent);
+	filter: drop-shadow(0 0 5px color-mix(in srgb, var(--accent) 85%, transparent));
+}
+.wv-dist-rule {
+	background: linear-gradient(90deg, transparent, var(--accent), transparent);
+	box-shadow: 0 0 8px color-mix(in srgb, var(--accent) 60%, transparent);
+}
+.wv-dist-stage {
+	background: url("/home/distributor/tiers-stage.svg") center top / 100% 100% no-repeat;
+}
