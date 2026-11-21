@@ -1,4 +1,15 @@
-import { ArrowDown, ChevronRight, Handshake, Home } from "lucide-react";
+import {
+	ArrowDown,
+	ChevronRight,
+	Crown,
+	Globe,
+	Handshake,
+	Home,
+	ShieldCheck,
+	ShoppingCart,
+	Store,
+	type LucideIcon,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import type { CategoryBadgeIcon } from "./wv-category-art";
@@ -22,6 +33,51 @@ const CATEGORIES: { name: string; slug: string; badge: CategoryBadgeIcon }[] = [
 	{ name: "Coils", slug: "coils", badge: "coils" },
 	{ name: "Accessories", slug: "accessories", badge: "accessories" },
 	{ name: "New Arrivals", slug: "new-arrivals", badge: "new-arrivals" },
+];
+
+/**
+ * The partnership levels, as live neon cards (they used to be one wide picture with the words baked in, which scrolled
+ * sideways on phones and couldn't be read aloud). The Master Distributor is the featured card, raised over the podium
+ * of the globe the cards stand on (tiers-stage.svg).
+ */
+const TIERS: {
+	name: string;
+	text: string;
+	Icon: LucideIcon;
+	tone: "cyan" | "pink" | "violet";
+	featured?: boolean;
+}[] = [
+	{
+		name: "SMALL WHOLESALE",
+		text: "An entry-level option for smaller or newer businesses that want to test demand before scaling.",
+		Icon: ShoppingCart,
+		tone: "cyan",
+	},
+	{
+		name: "WHOLESALE PARTNER",
+		text: "A licensed retailer or business purchasing inventory directly for resale to its own customers.",
+		Icon: Store,
+		tone: "pink",
+	},
+	{
+		name: "MASTER DISTRIBUTOR",
+		text: "Our highest-level partner. Manages major-volume purchasing and supplies regional distributors and wholesale accounts.",
+		Icon: Crown,
+		tone: "pink",
+		featured: true,
+	},
+	{
+		name: "REGIONAL DISTRIBUTOR",
+		text: "Serves an assigned city, province or territory while supporting retailers and local product fulfillment.",
+		Icon: Globe,
+		tone: "cyan",
+	},
+	{
+		name: "AUTHORIZED DISTRIBUTOR",
+		text: "An approved, non-exclusive partner that purchases wholesale inventory and supplies independent retail stores.",
+		Icon: Handshake,
+		tone: "violet",
+	},
 ];
 
 const REQUIREMENTS = [
@@ -185,22 +241,65 @@ export function WvDistributor() {
 			</section>
 
 			{/* Tiers */}
+			{/* Partnership tiers: live neon cards in their tier's colour, the Master Distributor featured and raised over the
+			    podium of a glowing globe they stand on (tiers-stage.svg), under the shared neon heading. */}
 			<section
 				id="tiers"
-				className="flex scroll-mt-6 flex-col items-center gap-6 px-4 py-10 md:gap-8 md:px-10 md:py-12 xl:gap-12 xl:px-[100px] xl:py-20"
+				className="wv-faq-glow relative flex scroll-mt-6 flex-col items-center gap-8 overflow-hidden px-4 pb-28 pt-10 md:gap-10 md:px-10 md:pb-36 md:pt-12 xl:gap-12 xl:px-[100px] xl:pb-56 xl:pt-20"
 			>
-				<h2 className={`${bungee} text-2xl md:text-3xl xl:text-4xl`}>PARTNERSHIP TIERS</h2>
-				<div className="w-full overflow-x-auto rounded-2xl">
-					<div className="relative aspect-[1774/887] min-w-[680px] xl:min-w-0">
-						<Image
-							src="/home/distributor/tiers.png"
-							alt="Distribution partner levels: Small Wholesale, Wholesale Partner, Master Distributor, Regional Distributor and Authorized Distributor"
-							fill
-							sizes="(min-width: 1280px) 1240px, 100vw"
-							className="object-cover"
-						/>
-					</div>
+				<div className="flex flex-col items-center gap-4">
+					<SectionHeading eyebrow="Distribution Partner Levels" title="PARTNERSHIP TIERS" />
+					<p className={`${orbitron} wv-hero-copy max-w-[620px] text-center text-sm leading-[1.7]`}>
+						Choose the partnership level that matches your{" "}
+						<strong className="wv-hero-key">business reach</strong> and capabilities.
+					</p>
 				</div>
+				<div className="relative w-full">
+					<span
+						aria-hidden
+						className="wv-dist-stage pointer-events-none absolute left-1/2 top-full h-[210px] w-[800px] -translate-x-1/2 -translate-y-[55px] md:h-[315px] md:w-[1200px] md:-translate-y-[83px] xl:h-[420px] xl:w-[1600px] xl:-translate-y-[110px]"
+					/>
+					<ul className="relative grid w-full gap-4 md:grid-cols-2 md:gap-5 xl:grid-cols-5 xl:gap-5">
+						{TIERS.map(({ name, text, Icon, tone, featured }) => (
+							<li
+								key={name}
+								data-tone={tone}
+								className={`wv-neon-card wv-dist-tier flex flex-col items-center gap-4 rounded-2xl p-6 text-center ${featured ? "wv-neon-card--featured md:col-span-2 xl:col-span-1 xl:-mt-8" : ""}`}
+							>
+								{featured && (
+									<span
+										className={`${orbitron} wv-acct-card-tag rounded-full px-2.5 py-[3px] text-[10px] tracking-[1px]`}
+									>
+										TOP TIER
+									</span>
+								)}
+								<span
+									aria-hidden
+									className={`wv-neon-card-icon flex items-center justify-center rounded-2xl ${featured ? "size-16" : "size-14"}`}
+								>
+									<Icon className={featured ? "size-8" : "size-7"} strokeWidth={2} />
+								</span>
+								<h3
+									className={`${heyComic} wv-pc-name text-lg leading-tight xl:flex xl:min-h-[2.5em] xl:items-center`}
+								>
+									{name}
+								</h3>
+								<span aria-hidden className="wv-dist-rule h-0.5 w-10 rounded-full" />
+								<p className={`${orbitron} wv-neon-card-text text-[13px] leading-[1.6]`}>{text}</p>
+							</li>
+						))}
+					</ul>
+				</div>
+				<p
+					className={`${orbitron} relative flex items-center gap-2 text-center text-xs text-[var(--wv-text-dim)] xl:-mt-4`}
+				>
+					<ShieldCheck
+						aria-hidden
+						className="size-4 shrink-0 text-[var(--wv-cyan-soft)]"
+						strokeWidth={2.25}
+					/>
+					Partnership approval and business verification required.
+				</p>
 			</section>
 
 			{/* Requirements + newsletter */}
