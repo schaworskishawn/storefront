@@ -414,7 +414,7 @@ export function WvAffiliate() {
 				{/* Apply */}
 				<section
 					id="apply"
-					className="flex scroll-mt-6 flex-col items-center gap-8 px-4 py-12 md:px-8 md:py-14 xl:px-20 xl:py-20"
+					className="wv-faq-glow flex scroll-mt-6 flex-col items-center gap-8 px-4 py-12 md:px-8 md:py-14 xl:px-20 xl:py-20"
 				>
 					<SectionTitle
 						title="APPLY TO JOIN"
