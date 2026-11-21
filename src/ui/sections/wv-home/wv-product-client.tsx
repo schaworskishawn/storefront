@@ -3,12 +3,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useTransition } from "react";
+import { PRODUCT_IMAGE_PLACEHOLDER } from "@/lib/images";
 import { addVariantToCart } from "@/lib/wv-cart-actions";
 import { WishlistHeart } from "./wv-wishlist-client";
 import { formatPrice } from "@/ui/components/plp/utils";
 
 const heyComic = "font-[family-name:var(--font-hey-comic)]";
-const bungee = "font-[family-name:var(--font-bungee)]";
 const orbitron = "font-[family-name:var(--font-orbitron)]";
 
 const chip = (on: boolean) =>
@@ -26,29 +26,24 @@ export type ProductImage = { url: string; alt: string };
 export function ProductGallery({ images, name }: { images: ProductImage[]; name: string }) {
 	const [i, setI] = useState(0);
 	const many = images.length > 1;
-	const cur = images[i];
+	// No photo in Saleor → the shared neon placeholder, so the gallery never renders empty.
+	const cur = images[i] ?? { url: PRODUCT_IMAGE_PLACEHOLDER, alt: name };
 	const step = (d: number) => setI((v) => (v + d + images.length) % images.length);
 	const arrow =
 		"absolute top-1/2 flex size-9 -translate-y-1/2 items-center justify-center rounded-full border border-[var(--wv-cyan-soft)] bg-[var(--wv-bg)] text-[var(--wv-cyan-soft)] disabled:opacity-40 md:size-11";
 	return (
 		<div className="flex flex-col gap-3">
 			<div className="relative h-[284px] w-full overflow-hidden rounded-2xl border border-[var(--wv-cyan-soft)] bg-[var(--wv-bg)] md:h-[520px] xl:h-[650px]">
-				{cur ? (
-					<div key={cur.url} className="wv-fade absolute inset-6 md:inset-14">
-						<Image
-							src={cur.url}
-							alt={cur.alt || name}
-							fill
-							sizes="(min-width: 1280px) 500px, 80vw"
-							className="object-contain"
-							priority
-						/>
-					</div>
-				) : (
-					<div className="absolute left-1/2 top-1/2 flex h-[65%] w-[62%] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-xl border border-[var(--wv-cyan-soft)] bg-[var(--wv-ink)]">
-						<span className={`${bungee} text-lg text-[var(--wv-cyan-soft)]`}>PRODUCT</span>
-					</div>
-				)}
+				<div key={cur.url} className="wv-fade absolute inset-6 md:inset-14">
+					<Image
+						src={cur.url}
+						alt={cur.alt || name}
+						fill
+						sizes="(min-width: 1280px) 500px, 80vw"
+						className="object-contain"
+						priority
+					/>
+				</div>
 				<button
 					type="button"
 					aria-label="Previous image"

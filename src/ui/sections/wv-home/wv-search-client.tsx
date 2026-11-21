@@ -11,6 +11,7 @@ import { pageWindow } from "@/lib/catalog/page-window";
 import { activeFilterChips, categoryNames } from "@/lib/catalog/shop-filter-options";
 import { useShopFilters } from "@/lib/catalog/use-shop-filters";
 import { useShuffleSeed } from "@/lib/catalog/use-shuffle-seed";
+import { PRODUCT_IMAGE_PLACEHOLDER } from "@/lib/images";
 import { ShopFilterSidebar } from "./wv-shop-filter-sidebar";
 import { WishlistHeart } from "./wv-wishlist-client";
 import { formatPrice } from "@/ui/components/plp/utils";
@@ -50,15 +51,13 @@ function ResultCard({ p, money }: { p: HomeProduct; money: (n: number) => string
 	return (
 		<article className="wv-lift flex flex-col overflow-hidden rounded-xl border border-[var(--wv-purple)] bg-[var(--wv-surface)]">
 			<Link href={href} className="relative block h-[200px] bg-[var(--wv-deep)] md:h-[220px]">
-				{p.image && (
-					<Image
-						src={p.image.url}
-						alt={p.image.alt}
-						fill
-						sizes="(min-width: 1280px) 315px, (min-width: 768px) 352px, 328px"
-						className="object-contain p-4"
-					/>
-				)}
+				<Image
+					src={p.image?.url ?? PRODUCT_IMAGE_PLACEHOLDER}
+					alt={p.image?.alt ?? p.name}
+					fill
+					sizes="(min-width: 1280px) 315px, (min-width: 768px) 352px, 328px"
+					className="object-contain p-4"
+				/>
 				{p.isOnSale && p.discountPercent ? (
 					<span
 						className={`${heyComic} absolute left-3 top-3 rounded bg-[var(--wv-pink)] px-2 py-1 text-[10px] text-[var(--wv-ink)]`}

@@ -9,6 +9,7 @@ import { NEW_ARRIVALS_SLUG } from "@/lib/catalog/new-arrivals";
 import { sortProducts, type Sort } from "@/lib/catalog/product-sort";
 import { useShopFilters } from "@/lib/catalog/use-shop-filters";
 import { useShuffleSeed } from "@/lib/catalog/use-shuffle-seed";
+import { PRODUCT_IMAGE_PLACEHOLDER } from "@/lib/images";
 import { ShopFilterSidebar } from "./wv-shop-filter-sidebar";
 import { WishlistHeart } from "./wv-wishlist-client";
 import { CATEGORY_BADGE } from "./wv-category-art";
@@ -43,15 +44,13 @@ function ShopProductCard({ product, ctx }: { product: HomeProduct; ctx: Ctx }) {
 				href={href}
 				className="relative block h-40 w-full overflow-hidden rounded-[10px] bg-[var(--wv-deep)]"
 			>
-				{product.image && (
-					<Image
-						src={product.image.url}
-						alt={product.image.alt}
-						fill
-						sizes="230px"
-						className="object-cover"
-					/>
-				)}
+				<Image
+					src={product.image?.url ?? PRODUCT_IMAGE_PLACEHOLDER}
+					alt={product.image?.alt ?? product.name}
+					fill
+					sizes="230px"
+					className={product.image ? "object-cover" : "object-contain p-2"}
+				/>
 				<span className="to-[var(--wv-bg)]/80 absolute inset-0 bg-gradient-to-b from-transparent" />
 			</Link>
 			<div className="flex flex-1 flex-col gap-[6px]">
