@@ -1,3 +1,4 @@
+import { ArrowDown, ChevronRight, Handshake, Home } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { WvFooter, WvHeader } from "./wv-chrome";
@@ -54,8 +55,11 @@ export function WvDistributor() {
 		<div className="min-h-dvh overflow-x-clip bg-[var(--wv-bg)] text-white">
 			<WvHeader />
 
-			{/* Hero */}
-			<section className="relative flex flex-col gap-6 overflow-hidden bg-[var(--wv-bg)] px-4 pb-10 pt-6 md:gap-10 md:px-10 md:pb-14 md:pt-12 xl:flex-row-reverse xl:items-center xl:gap-10 xl:px-[100px] xl:py-20">
+			{/* Hero, lit like the other heroes (`.wv-hero-*`): the neon breadcrumb, a chrome eyebrow, a 3D title over a glowing
+			    pink-to-cyan bar, brighter copy with its key phrases lit, the glossy button and the neon outline one; the art in the
+			    heroes' lit neon frame (`.wv-art`, glass, HUD corners) with its "connected" status as a live neon pill; behind it
+			    all a pink and cyan glow. */}
+			<section className="wv-hero-backdrop relative flex flex-col gap-6 overflow-hidden px-4 pb-10 pt-6 md:gap-10 md:px-10 md:pb-14 md:pt-12 xl:flex-row-reverse xl:items-center xl:gap-10 xl:px-[100px] xl:py-20">
 				<Image
 					src="/home/distributor/dot.svg"
 					alt=""
@@ -64,7 +68,7 @@ export function WvDistributor() {
 					aria-hidden
 					className="pointer-events-none absolute -right-[200px] -top-[200px] hidden size-[600px] xl:block"
 				/>
-				<div className="relative h-[200px] w-full shrink-0 overflow-hidden rounded-[20px] border-2 border-[var(--wv-purple)] bg-[var(--wv-control)] shadow-[0_10px_30px_rgba(105,235,255,0.12)] md:h-[320px] xl:h-[400px] xl:w-[500px]">
+				<div className="wv-art relative h-[200px] w-full shrink-0 overflow-hidden rounded-[20px] md:h-[320px] xl:h-[400px] xl:w-[500px]">
 					<Image
 						src="/home/distributor/hero.svg"
 						alt="A distribution warehouse with lit loading bays, a truck heading out, a pallet of product cases and e-liquid cartons, shipping containers, and a globe wrapped in glowing shipping routes"
@@ -73,39 +77,63 @@ export function WvDistributor() {
 						sizes="(min-width: 1280px) 500px, 100vw"
 						className="object-cover"
 					/>
+					<span aria-hidden className="wv-art-glass absolute inset-0" />
+					<span aria-hidden className="wv-art-hud absolute inset-[10px] md:inset-[14px]" />
 					<span
-						className={`${orbitron} bg-[var(--wv-bg)]/75 absolute left-3 top-3 rounded border border-[var(--wv-cyan-soft)] px-2 py-1 text-[10px] text-[var(--wv-cyan-soft)] xl:left-[18px] xl:top-[18px]`}
+						className={`${orbitron} wv-af-live-pill absolute left-6 top-6 flex items-center gap-2 rounded-full px-3 py-1 text-[10px] tracking-[1px] backdrop-blur-sm md:left-8 md:top-8`}
 					>
+						<span aria-hidden className="wv-af-live-dot size-2 rounded-full" />
 						WV-SYS: CONNECTED
 					</span>
 				</div>
-				<div className="relative flex min-w-0 flex-1 flex-col gap-4 md:gap-6">
-					<p className={`${bungee} text-xs tracking-[2px] text-[var(--wv-cyan-soft)]`}>
-						WHOLESALE &amp; DISTRIBUTION NETWORK
+				<div className="relative flex min-w-0 flex-1 flex-col gap-5 xl:gap-6">
+					<nav
+						aria-label="Breadcrumb"
+						className={`${heyComic} flex items-center gap-2 text-xs tracking-[0.5px]`}
+					>
+						<Link href="/home" className="wv-link wv-crumb-link">
+							<Home aria-hidden className="size-3.5" strokeWidth={2.25} />
+							Home
+						</Link>
+						<ChevronRight aria-hidden className="wv-crumb-sep size-3.5" strokeWidth={2.5} />
+						<span aria-current="page" className="wv-crumb-current">
+							Distributor
+						</span>
+					</nav>
+					<p className={`${heyComic} wv-hero-tagline text-xs uppercase tracking-[2px] md:text-sm`}>
+						Wholesale <span className="wv-hero-sep">&amp;</span> distribution network
 					</p>
-					<h1
-						className={`${heyComic} text-[28px] leading-[32px] md:text-[40px] md:leading-[44px] xl:text-[48px] xl:leading-[56px]`}
-					>
-						BECOME A <span className="text-[var(--wv-cyan-soft)]">WORLDWIDE VAPOR</span> DISTRIBUTOR
-					</h1>
-					<p
-						className={`${orbitron} text-[13px] leading-[22px] text-[var(--q-text-nav)] md:text-[15px] md:leading-6`}
-					>
-						Join the premier global vaping distribution network. Unlock direct access to high-capacity
-						hardware, next-generation e-liquids, and class-leading margins backed by 24/7 dedicated support.
+					<div className="flex flex-col gap-3">
+						<h1 className={`${heyComic} wv-title-glow wv-hero-title leading-none`}>
+							<span className="block text-[32px] tracking-[-0.5px] md:text-[40px] xl:text-[50px] xl:leading-[56px]">
+								BECOME A <span className="text-[var(--wv-cyan-soft)]">WORLDWIDE VAPOR</span>
+							</span>
+							<span className="mt-3 block text-[30px] leading-tight tracking-[-0.3px] text-[var(--wv-pink)] md:text-[36px] xl:text-[46px] xl:leading-[52px]">
+								DISTRIBUTOR
+							</span>
+						</h1>
+						<span aria-hidden className="wv-hero-bar h-1 w-[120px] rounded-full xl:w-40" />
+					</div>
+					<p className={`${orbitron} wv-hero-copy text-sm leading-[1.7] xl:text-base xl:leading-[26px]`}>
+						Join the <strong className="wv-hero-key">premier global vaping distribution network</strong>.
+						Unlock direct access to high-capacity hardware, next-generation e-liquids, and{" "}
+						<strong className="wv-hero-key wv-hero-key--pink">class-leading margins</strong> backed by{" "}
+						<strong className="wv-hero-key">24/7 dedicated support</strong>.
 					</p>
 					<div className="flex flex-col gap-3 md:flex-row md:gap-4">
 						<a
 							href={APPLY_HREF}
-							className={`${heyComic} flex items-center justify-center rounded-xl border border-[var(--wv-cyan-soft)] bg-[var(--wv-cyan-soft)] px-5 py-[14px] text-base tracking-[0.04em] text-[var(--wv-ink)]`}
+							className={`${heyComic} wv-pc-cta flex h-[49px] items-center justify-center gap-2 rounded-xl bg-[var(--wv-cyan-soft)] px-6 text-base tracking-[0.04em] text-[var(--wv-ink)] xl:px-8`}
 						>
-							Apply Now
+							<Handshake aria-hidden className="size-[18px]" strokeWidth={2.25} />
+							<span className="wv-pc-cta-label">Apply Now</span>
 						</a>
 						<a
 							href="#tiers"
-							className={`${heyComic} flex items-center justify-center rounded-xl border border-[var(--wv-cyan-soft)] px-5 py-[14px] text-base tracking-[0.04em] text-[var(--wv-cyan-soft)]`}
+							className={`${heyComic} wv-btn wv-btn-outline wv-btn-neon flex h-[49px] items-center justify-center gap-2 rounded-xl border-[1.5px] border-[var(--wv-cyan-soft)] px-6 text-base tracking-[0.04em] text-[var(--wv-cyan-soft)] xl:px-8`}
 						>
-							Learn More
+							<span className="wv-btn-label">Learn More</span>
+							<ArrowDown aria-hidden className="size-4" strokeWidth={2.5} />
 						</a>
 					</div>
 				</div>
