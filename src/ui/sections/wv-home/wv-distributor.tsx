@@ -1,10 +1,15 @@
 import {
 	ArrowDown,
+	BellRing,
 	ChevronRight,
 	Crown,
+	FileBadge,
+	FileCheck,
 	Globe,
 	Handshake,
 	Home,
+	MapPinned,
+	PackageCheck,
 	ShieldCheck,
 	ShoppingCart,
 	Store,
@@ -16,7 +21,7 @@ import type { CategoryBadgeIcon } from "./wv-category-art";
 import { CategoryBadgeImage } from "./wv-category-badge-image";
 import { WvFooter, WvHeader } from "./wv-chrome";
 import { SectionHeading } from "./wv-product-section";
-import { NewsletterForm } from "./wv-newsletter-client";
+import { CardNewsletterForm } from "./wv-newsletter-client";
 import "./wv-home.css";
 
 /** Worldwide Vapor distributor page — Figma "6.11 - High Fidelity - Distributor" (desktop 1440, tablet 768, mobile 360). */
@@ -24,6 +29,7 @@ import "./wv-home.css";
 const heyComic = "font-[family-name:var(--font-hey-comic)]";
 const bungee = "font-[family-name:var(--font-bungee)]";
 const orbitron = "font-[family-name:var(--font-orbitron)]";
+const marker = "font-[family-name:var(--font-permanent-marker)]";
 
 /** The wholesale range, as the home page's category badges, each opening that category in the shop. */
 const CATEGORIES: { name: string; slug: string; badge: CategoryBadgeIcon }[] = [
@@ -80,13 +86,17 @@ const TIERS: {
 	},
 ];
 
-const REQUIREMENTS = [
-	"Valid Business License & Tobacco Permits",
-	"Minimum Order Commitments (based on tier)",
-	"Territory & Exclusivity Agreements",
-	"Age Verification Compliance (18+)",
-	"Insurance & Liability Documentation",
+/** What a distributor needs, as a numbered checklist of neon cards joined by a glowing line. */
+const REQUIREMENTS: { text: string; Icon: LucideIcon }[] = [
+	{ text: "Valid Business License & Tobacco Permits", Icon: FileBadge },
+	{ text: "Minimum Order Commitments (based on tier)", Icon: PackageCheck },
+	{ text: "Territory & Exclusivity Agreements", Icon: MapPinned },
+	{ text: "Age Verification Compliance (18+)", Icon: ShieldCheck },
+	{ text: "Insurance & Liability Documentation", Icon: FileCheck },
 ];
+
+/** What the "Stay connected" alerts cover, as neon chips. */
+const ALERTS = ["EXCLUSIVE DEALS", "BULK STOCK", "HARDWARE DROPS"];
 
 const FAQS = [
 	{
@@ -302,36 +312,79 @@ export function WvDistributor() {
 				</p>
 			</section>
 
-			{/* Requirements + newsletter */}
-			<section className="flex flex-col gap-8 bg-[var(--wv-bg)] px-4 py-10 md:px-10 md:py-16 xl:flex-row xl:gap-10 xl:px-[100px] xl:py-20">
+			{/* Requirements + newsletter. The requirements are a numbered checklist of neon cards (in turn cyan and pink, each
+			    number glowing in its tile beside the item's icon) joined by a glowing line; "Stay connected" is the lit glass
+			    newsletter card (`.wv-news-card`), as on the payments page, with chips for what the alerts cover. */}
+			<section className="wv-dist-reqs-glow flex flex-col gap-8 px-4 py-10 md:px-10 md:py-16 xl:flex-row xl:gap-10 xl:px-[100px] xl:py-20">
 				<div className="flex min-w-0 flex-1 flex-col gap-6">
-					<div className="flex flex-col gap-2">
-						<p className={`${bungee} text-xs tracking-[3px] text-[var(--wv-cyan-soft)]`}>LOGISTICS DETAIL</p>
-						<h2 className={`${heyComic} text-[22px] leading-tight md:text-[28px] xl:text-[32px]`}>
-							DISTRIBUTOR REQUIREMENTS
+					<div className="flex flex-col gap-3">
+						<p className={`${heyComic} wv-hero-tagline text-xs uppercase tracking-[3px] md:text-sm`}>
+							Logistics detail
+						</p>
+						<h2
+							className={`${heyComic} wv-heading-title text-[24px] leading-tight text-white md:text-[28px] xl:text-[32px]`}
+						>
+							DISTRIBUTOR <span className="text-[var(--wv-cyan-soft)]">REQUIREMENTS</span>
 						</h2>
+						<span aria-hidden className="wv-hero-bar h-1 w-[100px] rounded-full xl:w-[120px]" />
 					</div>
-					<ol className="flex flex-col gap-3">
-						{REQUIREMENTS.map((r, i) => (
+					<ol className="wv-dist-steps relative flex flex-col gap-3">
+						{REQUIREMENTS.map(({ text, Icon }, i) => (
 							<li
-								key={r}
-								className={`${orbitron} flex items-start gap-3 rounded-lg border border-[var(--q-border-strong)] bg-[var(--wv-control)] p-4 text-[13px] xl:items-center xl:text-sm`}
+								key={text}
+								className="wv-neon-card wv-dist-step relative flex items-center gap-4 rounded-2xl p-3 pr-4 md:p-4"
 							>
-								<span className="shrink-0 text-[var(--wv-cyan-soft)]">
-									[{String(i + 1).padStart(2, "0")}]
+								<span
+									aria-hidden
+									className={`${bungee} wv-neon-card-icon wv-dist-step-num relative z-10 flex size-11 shrink-0 items-center justify-center rounded-xl text-sm`}
+								>
+									{String(i + 1).padStart(2, "0")}
 								</span>
-								<span className="font-semibold">{r}</span>
+								<span
+									className={`${orbitron} min-w-0 flex-1 text-[13px] font-semibold text-white xl:text-sm`}
+								>
+									{text}
+								</span>
+								<Icon aria-hidden className="wv-dist-step-icon size-5 shrink-0" strokeWidth={2.25} />
 							</li>
 						))}
 					</ol>
 				</div>
-				<div className="flex flex-col gap-5 rounded-2xl border border-[var(--wv-purple)] bg-[var(--wv-ink)] p-5 md:p-6 xl:w-[460px] xl:shrink-0 xl:self-start xl:p-8">
-					<h2 className={`${heyComic} text-lg xl:text-xl`}>STAY CONNECTED</h2>
-					<p className={`${orbitron} text-xs leading-[18px] text-[var(--q-text-nav)]`}>
-						Sign up for the connected core network. Get instant alerts regarding exclusive deals, bulk stock
-						availability, and quarterly hardware releases.
+				<div className="wv-news-card flex w-full shrink-0 flex-col gap-6 rounded-[20px] p-5 md:p-8 xl:w-[460px] xl:self-start">
+					<div className="flex items-center gap-3">
+						<span
+							aria-hidden
+							className="wv-acct-icon flex size-12 shrink-0 items-center justify-center rounded-xl"
+						>
+							<BellRing className="size-5" strokeWidth={2.25} />
+						</span>
+						<div className="flex flex-col gap-1">
+							<p
+								className={`${marker} wv-heading-eyebrow text-sm uppercase tracking-[1px] text-[var(--wv-pink)]`}
+							>
+								Connected core network
+							</p>
+							<h2 className={`${heyComic} wv-heading-title text-xl leading-tight text-white xl:text-2xl`}>
+								STAY CONNECTED
+							</h2>
+						</div>
+					</div>
+					<p className={`${orbitron} wv-hero-copy text-[13px] leading-[1.6]`}>
+						Get <strong className="wv-hero-key">instant alerts</strong> on exclusive deals, bulk stock
+						availability and{" "}
+						<strong className="wv-hero-key wv-hero-key--pink">quarterly hardware releases</strong>.
 					</p>
-					<NewsletterForm compact />
+					<ul className="flex flex-wrap gap-2">
+						{ALERTS.map((a) => (
+							<li
+								key={a}
+								className={`${orbitron} wv-af-chip rounded-full px-3 py-1 text-[10px] tracking-[1px]`}
+							>
+								{a}
+							</li>
+						))}
+					</ul>
+					<CardNewsletterForm />
 				</div>
 			</section>
 

@@ -3843,3 +3843,42 @@ li:nth-child(even) > .wv-cat-chip {
 .wv-dist-stage {
 	background: url("/home/distributor/tiers-stage.svg") center top / 100% 100% no-repeat;
 }
+
+/* The distributor page's requirements (wv-distributor.tsx): a numbered checklist of neon cards (.wv-neon-card) in turn
+ * cyan and pink that glow but don't lift, as they aren't links; each number glows in its lit tile and the item's icon is
+ * lit at the end; a glowing line running cyan into pink joins the numbers, showing in the gaps between the cards. A soft
+ * glow sits behind the section, cyan by the checklist and pink by the newsletter card. */
+.wv-dist-reqs-glow {
+	background:
+		radial-gradient(40% 50% at 20% 45%, color-mix(in srgb, var(--wv-cyan) 8%, transparent), transparent 70%),
+		radial-gradient(35% 50% at 85% 45%, color-mix(in srgb, var(--wv-pink) 10%, transparent), transparent 70%);
+}
+.wv-dist-steps > .wv-dist-step:nth-child(even) {
+	--accent: var(--wv-pink);
+}
+.wv-neon-card.wv-dist-step:hover {
+	transform: none;
+}
+.wv-dist-step-num {
+	color: var(--accent);
+}
+.wv-dist-step-icon {
+	color: var(--accent);
+	filter: drop-shadow(0 0 4px color-mix(in srgb, var(--accent) 80%, transparent));
+}
+.wv-dist-steps::before {
+	content: "";
+	position: absolute;
+	top: 24px;
+	bottom: 24px;
+	left: 34px;
+	width: 2px;
+	border-radius: 1px;
+	background: linear-gradient(180deg, var(--wv-cyan), var(--wv-purple) 50%, var(--wv-pink));
+	box-shadow: 0 0 8px color-mix(in srgb, var(--wv-pink) 60%, transparent);
+}
+@media (min-width: 768px) {
+	.wv-dist-steps::before {
+		left: 38px;
+	}
+}
