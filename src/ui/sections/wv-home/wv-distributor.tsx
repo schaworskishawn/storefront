@@ -8,6 +8,7 @@ import {
 	Globe,
 	Handshake,
 	Home,
+	Mail,
 	MapPinned,
 	PackageCheck,
 	ShieldCheck,
@@ -388,29 +389,41 @@ export function WvDistributor() {
 				</div>
 			</section>
 
-			{/* FAQ */}
-			<section className="flex flex-col gap-8 px-4 py-10 md:gap-10 md:px-10 md:py-16 xl:gap-12 xl:px-[100px] xl:py-20">
-				<div className="flex flex-col gap-2 md:items-center">
-					<p className={`${bungee} text-xs tracking-[4px] text-[var(--wv-pink)]`}>QUESTIONS</p>
-					<h2 className={`${heyComic} text-2xl md:text-3xl xl:text-4xl`}>DISTRIBUTOR FAQS</h2>
-				</div>
-				<ul className="grid gap-4 xl:grid-cols-2">
-					{FAQS.map((f) => (
-						<li
-							key={f.q}
-							className="flex flex-col gap-[10px] rounded-xl border border-[var(--wv-control)] bg-[var(--wv-ink)] p-5"
-						>
-							<h3 className={`${heyComic} text-sm text-[var(--wv-cyan-soft)]`}>{f.q}</h3>
-							<p className={`${orbitron} text-xs leading-[18px] text-[var(--wv-disabled)]`}>{f.a}</p>
-						</li>
+			{/* FAQ: the glassy neon answer panels used on the rewards and shipping pages (`.wv-info-*`: pink while closed, cyan
+			    once open, the +/- in a neon ring, the question lifted), in two columns on desktop, under the shared neon heading
+			    and over a soft pink and cyan glow (`.wv-faq-glow`); the partnerships team as a glowing link at the end. */}
+			<section
+				id="faqs"
+				className="wv-faq-glow flex scroll-mt-6 flex-col items-center gap-8 px-4 py-10 md:gap-10 md:px-10 md:py-16 xl:gap-12 xl:px-[100px] xl:py-20"
+			>
+				<SectionHeading eyebrow="Questions" title="DISTRIBUTOR FAQS" />
+				<div className="grid w-full items-start gap-3 xl:grid-cols-2 xl:gap-4">
+					{FAQS.map((f, i) => (
+						<details key={f.q} open={i === 0} className="wv-info-item group rounded-xl p-4 md:p-5">
+							<summary
+								className={`${heyComic} wv-trust-title flex cursor-pointer list-none items-center justify-between gap-4 text-[15px] [&::-webkit-details-marker]:hidden`}
+							>
+								{f.q}
+								<span aria-hidden className="wv-info-toggle font-mono text-base">
+									<span className="group-open:hidden">+</span>
+									<span className="hidden group-open:inline">−</span>
+								</span>
+							</summary>
+							<p className={`${orbitron} wv-trust-text wv-unfold mt-3 text-[13px] leading-[1.6]`}>{f.a}</p>
+						</details>
 					))}
-				</ul>
-				<p className={`${orbitron} text-center text-xs text-[var(--wv-disabled)]`}>
-					Still have questions?{" "}
-					<Link href="mailto:support@worldwidevapor.com" className="text-[var(--wv-cyan-soft)] underline">
+				</div>
+				<p
+					className={`${orbitron} wv-hero-copy flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-center text-sm`}
+				>
+					<span>Still have questions?</span>
+					<Link
+						href="mailto:support@worldwidevapor.com"
+						className="wv-auth-link inline-flex items-center gap-1.5 underline"
+					>
+						<Mail aria-hidden className="size-4" strokeWidth={2.25} />
 						Contact our partnerships team
 					</Link>
-					.
 				</p>
 			</section>
 
