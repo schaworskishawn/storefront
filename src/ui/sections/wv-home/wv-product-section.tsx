@@ -3,6 +3,7 @@ import Link from "next/link";
 import { type ReactNode } from "react";
 import { type HomeProduct } from "@/lib/catalog/get-home-products";
 import { formatPrice } from "@/ui/components/plp/utils";
+import { WholesalePrice } from "./wv-wholesale-price";
 
 /**
  * Pieces of the home page that are shared between the server-rendered page and the client component that orders the
@@ -153,6 +154,12 @@ function ProductCard({ product, ctx }: { product: CardProduct; ctx: CatalogConte
 								{money(product.undiscountedPrice)}
 							</span>
 						)}
+						<WholesalePrice
+							price={product.price}
+							priceStop={product.priceStop}
+							currency={product.currency}
+							localeBcp47={ctx.localeBcp47}
+						/>
 					</div>
 					<Link
 						href={href}

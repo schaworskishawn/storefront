@@ -15,6 +15,7 @@ off until its flag is set, so nothing here changes the live store by itself.
 | Crypto (hosted checkout)            | Built, untested against a live account | NOWPayments account, a Saleor app token, the payments app installed           |
 | Vapor Tokens (rewards)              | Built, untested against a live install | The rewards app installed, `REWARDS_APP_TOKEN`, `allowLegacyGiftCardUse`      |
 | Affiliate program (commissions)     | Built, untested against a live install | The affiliates app installed, `AFFILIATE_APP_TOKEN`                           |
+| Distributor program (wholesale)     | Built, untested against a live install | The distributors app installed, `DISTRIBUTOR_APP_TOKEN`                       |
 | Account emails (confirm, reset)     | Built, untested against a live install | The emails app installed, a verified sending domain in Resend                 |
 | Shop Pay                            | Not possible                           | Only works inside Shopify's checkout                                          |
 
@@ -352,6 +353,71 @@ reference, and the 2FA code generator passes RFC 6238's test vectors) and the AI
 
 - Let the first daily run pay a test affiliate's tokens, and check the lot under `/rewards` on their account.
 - Send one small USDT payout from the admin page with your 2FA code before trusting crypto.
+
+## Distributor program (wholesale prices)
+
+Approved distributors buy at a set discount off list price on every product, by tier, once their cart reaches the tier's
+minimum order. The tiers live in `src/lib/distributors/tiers.ts`, which the distributor page, the account page and checkout all
+read:
+
+| Tier                   | Discount off list | Minimum order (at list price) |
+| ---------------------- | ----------------- | ----------------------------- |
+| Small Wholesale        | 5%                | $250                          |
+| Wholesale Partner      | 10%               | $500                          |
+| Authorized Distributor | 15%               | $1,000                        |
+| Regional Distributor   | 20%               | $2,500                        |
+| Master Distributor     | 25%               | $10,000                       |
+
+**What happens.**
+
+1. **Applying.** A business applies on `/distributor` (the **Apply Now** button and the form above the FAQs) while signed in to its
+   customer account, because the tier and its prices belong to that account. The application (business, contact, licence and
+   permit numbers, expected volume, the tier they'd like) is saved on the account as pending and emailed to you.
+2. **Approving.** On `/distributor-admin` you check the licence, pick the tier and approve, or reject. They're emailed either way.
+   Later you can move a distributor to another tier, or pause their wholesale pricing (their orders are charged retail until you
+   resume it).
+3. **Their account.** `/account/distributor` (Distributor, in the account menu) shows their tier, its discount and minimum, the
+   tier ladder with theirs lit, and the business on file. While they're signed in, product cards, search, the shop and product
+   pages show their wholesale price under the retail one.
+4. **Paying wholesale.** The discount is charged by Saleor, not shown and hoped for: whenever their cart changes, the cart or
+   checkout page loads, a payment starts, and right before the order is completed, the storefront sets each checkout line's price
+   to the tier's wholesale price (a Saleor line price override, with a reason naming the tier, which shows on the order). A cart
+   below the minimum is charged retail, and the cart says how much more reaches the minimum. The minimum is counted on the list
+   price, in the checkout's own currency, so it doesn't flip on and off as the discount applies.
+5. **Who gets it.** Only the customer the checkout belongs to, read from their account's private record. Guests, signed-out
+   visitors and paused or rejected accounts pay retail, and any wholesale price set earlier is taken off their checkout.
+
+**Things to know.**
+
+- **Sales stack.** Saleor applies sale prices (catalogue promotions) and discount codes on top of the wholesale price. If you
+  don't want both, end the sale or use codes that exclude distributors.
+- Prices are set on the pre-tax price, so tax is charged on the wholesale price as usual.
+- Product pages and listings stay cached for everyone. The wholesale price is fetched separately for a signed-in visitor
+  (`/api/distributor/me`), so it can appear a moment after the page.
+
+**Set up.**
+
+1. Install the app: Dashboard, Apps, **Install external app**,
+   `https://<your-domain>/api/distributor-app/manifest`. Saleor shows the permissions before you approve: `MANAGE_USERS` (read
+   customers and keep each distributor's record on their account) and `HANDLE_CHECKOUTS` (set wholesale prices on checkout
+   lines). It has no webhooks.
+2. Create a token for the app and set it as `DISTRIBUTOR_APP_TOKEN` (server-only, never `NEXT_PUBLIC_`), the same way as the other
+   apps (the `appTokenCreate` mutation in the Playground if the Dashboard won't show it). Redeploy.
+3. Allow `/api/distributor-app/*` through Vercel's firewall, like the other apps, so Saleor can reach it when you install.
+4. Sign in with a staff account that has `MANAGE_USERS` and open `/distributor-admin`.
+
+Until the token is set, the form offers to send the application by email instead, nobody sees wholesale prices, and checkout
+charges retail.
+
+**Where things live.** On the distributor's customer account, private metadata `wv_dist.record` holds their record (status, tier,
+application, dates). Public `wv_dist.status` and `wv_dist.tier` are copies Saleor can search on: they are never trusted for
+pricing, because customers can edit their own public metadata. Don't edit these by hand.
+
+**Not yet exercised against live services.** The tiers, the pricing plan, the record, the application checks, the admin actions,
+the price sync and the apply endpoint are unit-tested with fakes, and every request to Saleor has been checked against Saleor's
+schema, but no live checkout has been priced yet. Before trusting it: approve a test account at Small Wholesale, put $240 of
+products in its cart (retail, with the "add $10 more" note), then $260 (5% off every line), and check the checkout total and the
+line prices on the order in the Dashboard. Then cancel the order.
 
 ## Account emails (sign-up confirmation, password reset)
 

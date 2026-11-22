@@ -1,5 +1,6 @@
 "use client";
 
+import { BadgePercent } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -22,6 +23,19 @@ export type CartLineView = {
 	quantity: number;
 };
 
+/** A distributor's wholesale pricing on this cart, worked out on the server when the cart was read. */
+export type CartWholesale = {
+	tierName: string;
+	discountPercent: number;
+	/** Wholesale prices are on for this cart. */
+	applies: boolean;
+	/** Dollars of list-price value still needed to reach the minimum (0 once reached). */
+	remaining: number;
+	minimum: number;
+	/** What wholesale prices save on this cart. */
+	savings: number;
+};
+
 type Props = {
 	channel: string;
 	currency: string;
@@ -30,6 +44,7 @@ type Props = {
 	subtotal: number;
 	freeShippingThreshold: number | null;
 	checkoutHref: string;
+	wholesale?: CartWholesale | null;
 };
 
 export function WvCartClient({
@@ -40,6 +55,7 @@ export function WvCartClient({
 	subtotal,
 	freeShippingThreshold,
 	checkoutHref,
+	wholesale = null,
 }: Props) {
 	const router = useRouter();
 	const [pending, start] = useTransition();
@@ -115,6 +131,34 @@ export function WvCartClient({
 								style={{ width: `${progress}%` }}
 							/>
 						</div>
+					</div>
+				)}
+				{wholesale && (
+					<div
+						role="status"
+						className={`wv-neon-card ${wholesale.applies ? "" : "wv-neon-card--pink"} wv-dist-cart flex items-start gap-3 rounded-xl p-4`}
+					>
+						<span
+							aria-hidden
+							className="wv-neon-card-icon flex size-10 shrink-0 items-center justify-center rounded-xl"
+						>
+							<BadgePercent className="size-5" strokeWidth={2.25} />
+						</span>
+						<p className={`${orbitron} wv-neon-card-text text-[13px] leading-[1.6]`}>
+							{wholesale.applies ? (
+								<>
+									<strong className="wv-neon-key">Wholesale pricing is on</strong>: {wholesale.tierName},{" "}
+									{wholesale.discountPercent}% off list. You&apos;re saving{" "}
+									<strong className="wv-neon-key">{money(wholesale.savings)}</strong> on this order.
+								</>
+							) : (
+								<>
+									Add <strong className="wv-neon-key">{money(wholesale.remaining)}</strong> more (at list
+									price) to reach your {wholesale.tierName} minimum of {money(wholesale.minimum)}, and your{" "}
+									{wholesale.discountPercent}% wholesale prices switch on.
+								</>
+							)}
+						</p>
 					</div>
 				)}
 			</section>

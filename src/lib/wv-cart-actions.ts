@@ -10,6 +10,7 @@ import {
 import { revalidateStorefrontChrome } from "@/lib/auth/revalidate-storefront-chrome";
 import * as Checkout from "@/lib/checkout";
 import { getProductDetails } from "@/lib/catalog/get-product-details";
+import { syncDistributorPricing } from "@/lib/distributors/sync";
 import { executeAuthenticatedGraphQL } from "@/lib/graphql";
 
 export type CartActionResult =
@@ -46,6 +47,8 @@ export async function addVariantToCart(
 		const err = result.data.checkoutLinesAdd?.errors?.[0];
 		if (err) return { ok: false, error: err.message || "Could not add this item." };
 
+		// A distributor's wholesale prices follow the cart: reaching their minimum switches them on.
+		await syncDistributorPricing(checkout.id);
 		refresh(channel);
 		return {
 			ok: true,
@@ -74,6 +77,7 @@ export async function setCartLineQuantity(
 		variables: { checkoutId, lines: [{ lineId, quantity: Math.min(99, quantity) }] },
 		cache: "no-cache",
 	});
+	await syncDistributorPricing(checkoutId);
 	refresh(channel);
 	if (!result.ok) return { ok: false, error: result.error.message };
 	const err = result.data.checkoutLinesUpdate?.errors?.[0];
@@ -90,6 +94,7 @@ export async function removeCartLines(
 		variables: { checkoutId, lineIds },
 		cache: "no-cache",
 	});
+	await syncDistributorPricing(checkoutId);
 	refresh(channel);
 	if (!result.ok) return { ok: false, error: result.error.message };
 	return { ok: true };
