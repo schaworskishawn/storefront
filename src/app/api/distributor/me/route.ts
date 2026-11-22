@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { connection, NextResponse } from "next/server";
 import { getAccountAuthState } from "@/app/(storefront)/[locale]/[channel]/(main)/account/get-current-user";
 import { activeTierId } from "@/lib/distributors/records";
 import { getDistributorAccount, isDistributorAppConfigured } from "@/lib/distributors/saleor-distributors";
@@ -11,6 +11,8 @@ import { tierById } from "@/lib/distributors/tiers";
  * distributor, and is never cached.
  */
 export async function GET() {
+	// Per visitor, so never prerendered: without this, a build with the program switched off would freeze `{ tier: null }`.
+	await connection();
 	const none = NextResponse.json({ tier: null }, { headers: { "Cache-Control": "private, no-store" } });
 	if (!isDistributorAppConfigured()) return none;
 	const auth = await getAccountAuthState();
