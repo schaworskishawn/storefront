@@ -18,9 +18,12 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { Suspense } from "react";
+import { discountLabel, minimumLabel, tierById, type DistributorTierId } from "@/lib/distributors/tiers";
 import type { CategoryBadgeIcon } from "./wv-category-art";
 import { CategoryBadgeImage } from "./wv-category-badge-image";
 import { WvFooter, WvHeader } from "./wv-chrome";
+import { DistributorApply, DistributorApplySkeleton } from "./wv-distributor-apply";
 import { SectionHeading } from "./wv-product-section";
 import { CardNewsletterForm } from "./wv-newsletter-client";
 import "./wv-home.css";
@@ -48,6 +51,7 @@ const CATEGORIES: { name: string; slug: string; badge: CategoryBadgeIcon }[] = [
  * of the globe the cards stand on (tiers-stage.svg).
  */
 const TIERS: {
+	id: DistributorTierId;
 	name: string;
 	text: string;
 	Icon: LucideIcon;
@@ -55,18 +59,21 @@ const TIERS: {
 	featured?: boolean;
 }[] = [
 	{
+		id: "small",
 		name: "SMALL WHOLESALE",
 		text: "An entry-level option for smaller or newer businesses that want to test demand before scaling.",
 		Icon: ShoppingCart,
 		tone: "cyan",
 	},
 	{
+		id: "partner",
 		name: "WHOLESALE PARTNER",
 		text: "A licensed retailer or business purchasing inventory directly for resale to its own customers.",
 		Icon: Store,
 		tone: "pink",
 	},
 	{
+		id: "master",
 		name: "MASTER DISTRIBUTOR",
 		text: "Our highest-level partner. Manages major-volume purchasing and supplies regional distributors and wholesale accounts.",
 		Icon: Crown,
@@ -74,12 +81,14 @@ const TIERS: {
 		featured: true,
 	},
 	{
+		id: "regional",
 		name: "REGIONAL DISTRIBUTOR",
 		text: "Serves an assigned city, province or territory while supporting retailers and local product fulfillment.",
 		Icon: Globe,
 		tone: "cyan",
 	},
 	{
+		id: "authorized",
 		name: "AUTHORIZED DISTRIBUTOR",
 		text: "An approved, non-exclusive partner that purchases wholesale inventory and supplies independent retail stores.",
 		Icon: Handshake,
@@ -102,11 +111,11 @@ const ALERTS = ["EXCLUSIVE DEALS", "BULK STOCK", "HARDWARE DROPS"];
 const FAQS = [
 	{
 		q: "How do I apply to become a distributor?",
-		a: "Submit an application via our digital portal with valid business registration and tobacco tax license. Our team reviews submissions within 48 business hours.",
+		a: "Sign in to your business's Worldwide Vapor account and fill in the application below with your business licence and any tobacco or vapour permits. We verify every business by hand and set your tier, usually within 48 business hours.",
 	},
 	{
 		q: "What are the minimum order quantities?",
-		a: "Minimum orders vary by tier: Authorized Retailers start at $500, Regional Distributors at $2,500, and Master Distributors at $10,000 per order.",
+		a: "Each tier has a minimum order, counted at list price: Small Wholesale $250, Wholesale Partner $500, Authorized Distributor $1,000, Regional Distributor $2,500 and Master Distributor $10,000. Below your minimum you can still order, at retail prices.",
 	},
 	{
 		q: "Do you offer territory exclusivity?",
@@ -118,7 +127,7 @@ const FAQS = [
 	},
 	{
 		q: "How is wholesale pricing structured?",
-		a: "Pricing is tier-based with volume incentives. Higher partnership levels unlock deeper discounts, seasonal promotions, and early access to new releases.",
+		a: "Every tier takes a set discount off list price on every product: 5%, 10%, 15%, 20% and 25%, from Small Wholesale up to Master Distributor. Signed in, you see your wholesale price on each product, and checkout charges it automatically once your cart reaches your minimum. Sale prices still apply on top.",
 	},
 	{
 		q: "What is the onboarding timeline?",
@@ -126,7 +135,7 @@ const FAQS = [
 	},
 ];
 
-const APPLY_HREF = "mailto:support@worldwidevapor.com?subject=Distributor%20application";
+const APPLY_HREF = "#apply";
 
 export function WvDistributor() {
 	return (
@@ -271,7 +280,7 @@ export function WvDistributor() {
 						className="wv-dist-stage pointer-events-none absolute left-1/2 top-full h-[210px] w-[800px] -translate-x-1/2 -translate-y-[55px] md:h-[315px] md:w-[1200px] md:-translate-y-[83px] xl:h-[420px] xl:w-[1600px] xl:-translate-y-[110px]"
 					/>
 					<ul className="relative grid w-full gap-4 md:grid-cols-2 md:gap-5 xl:grid-cols-5 xl:gap-5">
-						{TIERS.map(({ name, text, Icon, tone, featured }) => (
+						{TIERS.map(({ id, name, text, Icon, tone, featured }) => (
 							<li
 								key={name}
 								data-tone={tone}
@@ -296,6 +305,12 @@ export function WvDistributor() {
 									{name}
 								</h3>
 								<span aria-hidden className="wv-dist-rule h-0.5 w-10 rounded-full" />
+								<p className={`${bungee} wv-dist-tier-terms flex flex-col items-center gap-0.5`}>
+									<span className="wv-stat-value text-xl">{discountLabel(tierById(id))} OFF</span>
+									<span className={`${orbitron} wv-neon-card-text text-[11px] tracking-[1px]`}>
+										ON ORDERS OF {minimumLabel(tierById(id))}+
+									</span>
+								</p>
 								<p className={`${orbitron} wv-neon-card-text text-[13px] leading-[1.6]`}>{text}</p>
 							</li>
 						))}
@@ -386,6 +401,26 @@ export function WvDistributor() {
 						))}
 					</ul>
 					<CardNewsletterForm />
+				</div>
+			</section>
+
+			{/* Apply: who's looking decides what shows (sign in, the form, under review, or your tier); it reads the session, so
+			    it renders inside Suspense and the rest of the page never waits for it. */}
+			<section
+				id="apply"
+				className="wv-faq-glow flex scroll-mt-6 flex-col items-center gap-8 px-4 py-12 md:px-10 md:py-14 xl:px-[100px] xl:py-20"
+			>
+				<div className="flex flex-col items-center gap-4">
+					<SectionHeading eyebrow="Join the network" title="APPLY TO DISTRIBUTE" />
+					<p className={`${orbitron} wv-hero-copy max-w-[620px] text-center text-sm leading-[1.7]`}>
+						Tell us about your business. We verify your licence by hand, set your tier, and your{" "}
+						<strong className="wv-hero-key">wholesale prices</strong> switch on in your account.
+					</p>
+				</div>
+				<div className="w-full max-w-[860px]">
+					<Suspense fallback={<DistributorApplySkeleton />}>
+						<DistributorApply />
+					</Suspense>
 				</div>
 			</section>
 

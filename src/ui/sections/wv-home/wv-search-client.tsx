@@ -14,6 +14,7 @@ import { useShuffleSeed } from "@/lib/catalog/use-shuffle-seed";
 import { ShopFilterSidebar } from "./wv-shop-filter-sidebar";
 import { WishlistHeart } from "./wv-wishlist-client";
 import { formatPrice } from "@/ui/components/plp/utils";
+import { WholesalePrice } from "./wv-wholesale-price";
 
 const heyComic = "font-[family-name:var(--font-hey-comic)]";
 const bungee = "font-[family-name:var(--font-bungee)]";
@@ -75,14 +76,17 @@ function ResultCard({ p, money }: { p: HomeProduct; money: (n: number) => string
 					<Link href={href}>{p.name}</Link>
 				</h3>
 				<div className="mt-auto flex items-center justify-between gap-3 pt-2">
-					<p className={`${bungee} flex items-baseline gap-2 text-base text-[var(--wv-cyan-soft)]`}>
-						<span className="wv-pc-price">{money(p.price)}</span>
-						{p.undiscountedPrice !== null && (
-							<span className="text-[10px] text-[var(--wv-muted)] line-through">
-								{money(p.undiscountedPrice)}
-							</span>
-						)}
-					</p>
+					<div className="flex flex-col gap-1">
+						<p className={`${bungee} flex items-baseline gap-2 text-base text-[var(--wv-cyan-soft)]`}>
+							<span className="wv-pc-price">{money(p.price)}</span>
+							{p.undiscountedPrice !== null && (
+								<span className="text-[10px] text-[var(--wv-muted)] line-through">
+									{money(p.undiscountedPrice)}
+								</span>
+							)}
+						</p>
+						<WholesalePrice price={p.price} currency={p.currency} />
+					</div>
 					<WishlistHeart slug={p.slug} className="size-8" />
 				</div>
 			</div>

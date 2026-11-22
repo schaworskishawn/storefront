@@ -97,6 +97,7 @@ import { toCheckoutActionResult } from "@/checkout/lib/server/mutation-result";
 import { toTypedDocument } from "@/checkout/lib/server/to-typed-document";
 import { checkoutGraphqlLanguageCode } from "@/lib/checkout-locale";
 import { AFFILIATE_KEYS } from "@/lib/affiliates/records";
+import { syncDistributorPricing } from "@/lib/distributors/sync";
 import {
 	CAMPAIGN_COOKIE,
 	REFERRAL_COOKIE,
@@ -629,6 +630,8 @@ async function stampAffiliateReferral(checkoutId: string): Promise<void> {
 
 export async function runCheckoutComplete(checkoutId: string): Promise<CheckoutCompleteActionResult> {
 	await stampAffiliateReferral(checkoutId);
+	// The last word on price: a distributor's wholesale prices only if their tier and cart still earn them.
+	await syncDistributorPricing(checkoutId);
 	const result = await executeAuthenticatedGraphQL(checkoutCompleteDocument, {
 		variables: { checkoutId },
 		cache: "no-cache",

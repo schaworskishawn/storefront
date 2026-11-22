@@ -3,6 +3,7 @@ import Link from "next/link";
 import { type HomeProduct } from "@/lib/catalog/get-home-products";
 import { type ProductDetails } from "@/lib/catalog/get-product-details";
 import { formatPrice } from "@/ui/components/plp/utils";
+import { WholesalePrice } from "./wv-wholesale-price";
 import { WvFooter, WvHeader } from "./wv-chrome";
 import { ProductGallery, ProductPurchase } from "./wv-product-client";
 import "./wv-home.css";
@@ -165,6 +166,7 @@ export function WvProduct({
 										<span className={`${orbitron} mt-auto text-lg font-extrabold text-[var(--wv-cyan-soft)]`}>
 											{formatPrice(p.price, p.currency, localeBcp47)}
 										</span>
+										<WholesalePrice price={p.price} currency={p.currency} localeBcp47={localeBcp47} />
 									</span>
 								</Link>
 							</li>

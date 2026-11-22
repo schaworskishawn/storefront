@@ -6,6 +6,7 @@ import { useState, useTransition } from "react";
 import { addVariantToCart } from "@/lib/wv-cart-actions";
 import { WishlistHeart } from "./wv-wishlist-client";
 import { formatPrice } from "@/ui/components/plp/utils";
+import { WholesalePrice } from "./wv-wholesale-price";
 
 const heyComic = "font-[family-name:var(--font-hey-comic)]";
 const bungee = "font-[family-name:var(--font-bungee)]";
@@ -197,6 +198,7 @@ export function ProductPurchase({
 					</span>
 				)}
 			</p>
+			<WholesalePrice price={v.price} currency={v.currency} localeBcp47={localeBcp47} variant="page" />
 			<hr className="border-[var(--wv-ink)]" />
 			{variants.length === 1 && groups.length > 0 && (
 				<div className="flex flex-col gap-3">

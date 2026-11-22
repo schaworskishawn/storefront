@@ -5,7 +5,7 @@ import { type HomeProduct } from "@/lib/catalog/get-home-products";
 import { type CartCheckout } from "@/lib/cart-checkout";
 import { formatPrice } from "@/ui/components/plp/utils";
 import { WvFooter, WvHeader } from "./wv-chrome";
-import { WvCartClient, type CartLineView } from "./wv-cart-client";
+import { WvCartClient, type CartLineView, type CartWholesale } from "./wv-cart-client";
 import "./wv-home.css";
 
 /** Worldwide Vapor cart — Figma "6.08 - High Fidelity - Cart" (desktop 1440, tablet 768, mobile 360). */
@@ -20,12 +20,15 @@ export function WvCart({
 	checkout,
 	freeShippingThreshold,
 	recommended,
+	wholesale = null,
 }: {
 	channel: string;
 	localeBcp47: string;
 	checkout: CartCheckout | null;
 	freeShippingThreshold: number | null;
 	recommended: HomeProduct[];
+	/** A distributor's wholesale pricing on this cart (the cart page works it out as it reads the cart). */
+	wholesale?: CartWholesale | null;
 }) {
 	const lines: CartLineView[] = (checkout?.lines ?? []).map((l) => {
 		const product = l.variant.product;
@@ -40,7 +43,11 @@ export function WvCart({
 			image: product.thumbnail?.url
 				? { url: product.thumbnail.url, alt: product.thumbnail.alt || product.name }
 				: null,
-			unit: l.variant.pricing?.price?.gross.amount ?? l.totalPrice.gross.amount / Math.max(1, l.quantity),
+			// With wholesale prices on, the line's own price is the one charged; otherwise the catalogue price, as before.
+			unit:
+				wholesale?.applies || !l.variant.pricing?.price
+					? l.totalPrice.gross.amount / Math.max(1, l.quantity)
+					: l.variant.pricing.price.gross.amount,
 			total: l.totalPrice.gross.amount,
 			quantity: l.quantity,
 		};
@@ -59,6 +66,7 @@ export function WvCart({
 					subtotal={checkout.totalPrice.gross.amount}
 					freeShippingThreshold={freeShippingThreshold}
 					checkoutHref={buildCheckoutPath({ checkoutId: checkout.id, step: "contact" })}
+					wholesale={wholesale}
 				/>
 			) : (
 				<section className="flex flex-col items-center gap-5 px-4 py-24 text-center">

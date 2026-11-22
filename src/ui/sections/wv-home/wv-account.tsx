@@ -37,6 +37,7 @@ function navItems(active: string): NavItem[] {
 		{ label: "Wishlist", href: "/wishlist" },
 		...(readRewardsConfig().enabled ? [{ label: "Vapor Tokens", href: "/rewards" }] : []),
 		{ label: "Affiliate Program", href: "/account/affiliate" },
+		{ label: "Distributor", href: "/account/distributor" },
 		{ label: "Payment Methods", href: "/payment-methods" },
 		{ label: "My Reviews", href: "/my-reviews" },
 		{ label: "Addresses", href: "/addresses" },

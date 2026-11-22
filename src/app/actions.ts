@@ -8,6 +8,7 @@ import { executeAuthenticatedGraphQL } from "@/lib/graphql";
 import { CheckoutDeleteLinesDocument, CheckoutLinesUpdateDocument } from "@/gql/graphql";
 import { getStorefrontLocaleSlugs } from "@/config/locale";
 import * as Checkout from "@/lib/checkout";
+import { syncDistributorPricing } from "@/lib/distributors/sync";
 import { buildStorefrontPath } from "@/lib/storefront-path";
 
 function revalidateCart(channel: string) {
@@ -69,6 +70,8 @@ export async function deleteCartLine(checkoutId: string, lineId: string, channel
 		const checkout = result.data.checkoutLinesDelete?.checkout;
 		if (checkout && checkout.lines.length === 0) {
 			await Checkout.clearCheckoutCookie(checkout.channel.slug);
+		} else {
+			await syncDistributorPricing(checkoutId);
 		}
 	}
 
@@ -92,6 +95,7 @@ export async function updateCartLineQuantity(
 		},
 		cache: "no-cache",
 	});
+	await syncDistributorPricing(checkoutId);
 
 	revalidateCart(channel);
 }

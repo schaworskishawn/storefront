@@ -14,6 +14,7 @@ import { WishlistHeart } from "./wv-wishlist-client";
 import { CATEGORY_BADGE } from "./wv-category-art";
 import { CategoryBadgeImage } from "./wv-category-badge-image";
 import { formatPrice } from "@/ui/components/plp/utils";
+import { WholesalePrice } from "./wv-wholesale-price";
 
 const heyComic = "font-[family-name:var(--font-hey-comic)]";
 const bungee = "font-[family-name:var(--font-bungee)]";
@@ -74,6 +75,12 @@ function ShopProductCard({ product, ctx }: { product: HomeProduct; ctx: Ctx }) {
 						</span>
 					)}
 				</p>
+				<WholesalePrice
+					price={product.price}
+					priceStop={product.priceStop}
+					currency={product.currency}
+					localeBcp47={ctx.localeBcp47}
+				/>
 			</div>
 			<div className="flex items-center justify-between">
 				<WishlistHeart slug={product.slug} className="size-7 text-sm" />
