@@ -1484,7 +1484,9 @@ li:nth-child(even) > .wv-cat-chip {
 		0 0 10px color-mix(in srgb, var(--accent) 18%, transparent);
 	transition: box-shadow 200ms ease;
 }
-.wv-info-item[open] {
+/* Open: a <details> (the shipping page), or a panel that says so itself (the legal pages' accordion, wv-legal-client.tsx). */
+.wv-info-item[open],
+.wv-info-item[data-open="true"] {
 	--accent: var(--wv-cyan-soft);
 	box-shadow:
 		inset 0 1px 0 color-mix(in srgb, white 12%, transparent),
@@ -3930,4 +3932,41 @@ li:nth-child(even) > .wv-cat-chip {
 }
 .wv-neon-card.wv-legal-badge:hover {
 	transform: none;
+}
+
+/* The legal pages' table of contents and help card (wv-legal-client.tsx): neon cards that glow brighter under the
+ * pointer but don't lift. In the contents, each section is dim until the pointer finds it; the one you're on is lit cyan
+ * in a glass strip with a glowing bar at its left. */
+.wv-neon-card.wv-legal-panel:hover {
+	transform: none;
+}
+.wv-legal-toc-link {
+	position: relative;
+	color: color-mix(in srgb, white 70%, var(--wv-text-dim));
+	transition:
+		color 150ms ease,
+		background-color 150ms ease;
+}
+.wv-legal-toc-link:hover,
+.wv-legal-toc-link:focus-visible {
+	color: white;
+	background: color-mix(in srgb, var(--wv-pink) 10%, transparent);
+}
+.wv-legal-toc-link[aria-current] {
+	color: var(--wv-cyan-soft);
+	background: linear-gradient(90deg, color-mix(in srgb, var(--wv-cyan) 16%, transparent), transparent);
+	text-shadow:
+		0 1px 1px var(--wv-ink),
+		0 0 8px color-mix(in srgb, var(--wv-cyan) 65%, transparent);
+}
+.wv-legal-toc-link[aria-current]::before {
+	content: "";
+	position: absolute;
+	left: 0;
+	top: 6px;
+	bottom: 6px;
+	width: 3px;
+	border-radius: 3px;
+	background: var(--wv-cyan-soft);
+	box-shadow: 0 0 8px var(--wv-cyan);
 }
