@@ -176,11 +176,11 @@ export function WvFaqs() {
 						visual={
 							<div
 								key="visual"
-								className="wv-art relative h-44 w-full shrink-0 overflow-hidden rounded-2xl md:h-[300px] xl:h-[280px] xl:w-[420px]"
+								className="wv-art relative aspect-[5/3] w-full shrink-0 overflow-hidden rounded-2xl md:aspect-auto md:h-[300px] xl:h-[280px] xl:w-[420px]"
 							>
 								<Image
-									src="/home/faqs/hero.png"
-									alt="Neon question-mark hologram over a support console"
+									src="/home/faqs/hero.svg"
+									alt="A neon question mark rising from a holographic help console, ringed by floating answer cards for payments, shipping, order tracking, worldwide delivery, returns and authentic products, with a search magnifier and chat bubbles"
 									fill
 									priority
 									sizes="(min-width: 1280px) 420px, 100vw"
