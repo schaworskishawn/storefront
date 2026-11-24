@@ -135,6 +135,37 @@ describe("the terms match what the rest of the site says", () => {
 	});
 });
 
+describe("the privacy policy matches who the site really shares data with", () => {
+	const text = PRIVACY_SECTIONS.flatMap((s) => s.body).join("\n");
+	const read = (path: string) => readFileSync(path, "utf8");
+
+	it("names each service the code sends personal data to", () => {
+		// Each pair: the service as the policy names it, and the code that proves the site uses it.
+		const services: [string, string, RegExp][] = [
+			["Resend", "src/lib/email.ts", /api\.resend\.com|Resend/],
+			["AgeChecker.Net", "src/checkout/lib/identity-verification/agechecker/client.ts", /agechecker/i],
+			["NOWPayments", "src/lib/affiliates/nowpayments-payouts.ts", /nowpayments/i],
+			["Anthropic", "src/lib/affiliates/ai-review.ts", /anthropic/i],
+			["Saleor", "src/lib/reviews.ts", /Saleor/],
+		];
+		for (const [name, file, proof] of services) {
+			expect(read(file), `${file} should still use ${name}`).toMatch(proof);
+			expect(text, `the privacy policy should name ${name}`).toContain(name);
+		}
+	});
+
+	it("says the AI reviewer never sees names, emails or phone numbers, as its code promises", () => {
+		expect(read("src/lib/affiliates/ai-review.ts")).toMatch(/never their name, email/);
+		expect(text).toMatch(/never names, email addresses, phone numbers/);
+	});
+
+	it("keeps the promises the hero's chips make", () => {
+		expect(text).toMatch(/We do not sell your personal information/);
+		expect(text).toMatch(/encrypted \(SSL\)/);
+		expect(text).toMatch(/do not use advertising/i);
+	});
+});
+
 describe("the legal heroes' highlight chips", () => {
 	const PAGE_FILES: Record<keyof typeof PAGES, string> = {
 		terms: "terms-and-conditions",
