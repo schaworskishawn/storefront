@@ -3970,3 +3970,42 @@ li:nth-child(even) > .wv-cat-chip {
 	background: var(--wv-cyan-soft);
 	box-shadow: 0 0 8px var(--wv-cyan);
 }
+
+/* The legal heroes' text (wv-legal.tsx) sits on a lit glass panel: a pink glow in its top corner and a cyan one in the
+ * bottom over a hint of purple, a cyan-through-purple-to-pink edge that glows, a highlight along the top and a shadow
+ * beneath, with the art frame's HUD corners (.wv-art-hud). The highlight chips' icons glow in neon rings in the chip's
+ * colour (.wv-trust-icon). */
+.wv-legal-hero-panel {
+	border: 1.5px solid transparent;
+	background:
+		radial-gradient(70% 60% at 0% 0%, color-mix(in srgb, var(--wv-pink) 12%, transparent), transparent 70%)
+			padding-box,
+		radial-gradient(
+				60% 60% at 100% 100%,
+				color-mix(in srgb, var(--wv-cyan) 10%, transparent),
+				transparent 70%
+			)
+			padding-box,
+		linear-gradient(
+				180deg,
+				color-mix(in srgb, var(--wv-purple) 14%, var(--wv-ink)),
+				color-mix(in srgb, var(--wv-ink) 88%, transparent)
+			)
+			padding-box,
+		linear-gradient(
+				135deg,
+				var(--wv-cyan),
+				color-mix(in srgb, var(--wv-purple) 70%, transparent) 50%,
+				var(--wv-pink)
+			)
+			border-box;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 12%, transparent),
+		0 0 22px color-mix(in srgb, var(--wv-cyan) 18%, transparent),
+		0 0 46px -12px color-mix(in srgb, var(--wv-pink) 40%, transparent),
+		0 20px 34px -18px var(--wv-ink);
+}
+.wv-legal-chip-icon svg {
+	color: var(--accent);
+	filter: drop-shadow(0 0 3px color-mix(in srgb, var(--accent) 85%, transparent));
+}

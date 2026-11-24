@@ -116,7 +116,10 @@ export function WvLegal({
 				    behind it, the date it was last updated in a neon badge, a 3D two-tone title over a glowing pink-to-cyan bar,
 				    brighter copy, and the art in a glowing frame with glass and HUD corners (`.wv-art*`). */}
 				<section className="wv-hero-backdrop flex flex-col gap-6 px-4 pb-6 pt-6 md:flex-row md:items-center md:justify-between md:gap-8 md:px-6 md:pt-8 xl:px-20 xl:pb-12 xl:pt-10">
-					<div className="flex max-w-[750px] flex-col items-start gap-4 xl:gap-6">
+					{/* The text sits on a lit glass panel (`.wv-legal-hero-panel`) with the art frame's HUD corners, so the two
+					    read as a pair of screens. */}
+					<div className="wv-legal-hero-panel relative flex max-w-[750px] flex-col items-start gap-4 rounded-[20px] p-5 md:p-6 xl:gap-6 xl:p-8">
+						<span aria-hidden className="wv-art-hud absolute inset-[10px]" />
 						<p
 							className={`${heyComic} wv-hero-badge flex items-center gap-2 rounded-full px-3 py-1 text-[10px] tracking-[1.5px] md:px-4 md:py-[6px] md:text-[11px]`}
 						>
@@ -147,9 +150,11 @@ export function WvLegal({
 									<a
 										key={h.section}
 										href={`#${h.section}`}
-										className={`${heyComic} wv-pay-chip flex items-center gap-2 rounded-full px-3 py-[6px] text-xs text-white`}
+										className={`${heyComic} wv-pay-chip flex items-center gap-2 rounded-full py-[5px] pl-[5px] pr-3 text-xs text-white`}
 									>
-										<h.Icon aria-hidden className="size-3.5 text-[var(--accent)]" strokeWidth={2.25} />
+										<span aria-hidden className="wv-trust-icon wv-legal-chip-icon text-[14px]">
+											<h.Icon className="size-3.5" strokeWidth={2.25} />
+										</span>
 										{h.label}
 									</a>
 								))}
