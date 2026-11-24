@@ -3,10 +3,10 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { getVaporTokensView } from "@/app/(checkout)/rewards-actions";
+import { useUser } from "@/checkout/hooks/use-user";
 import type { ServerCheckout } from "@/checkout/lib/checkout-types";
-import { toFlowCheckout } from "@/checkout/lib/vapor-tokens";
+import { checkoutTokensView, type FetchedTokensView } from "@/checkout/lib/vapor-tokens";
 import type { TokensView } from "@/lib/rewards/checkout-flow";
-import { buildCheckoutTokensState } from "@/lib/rewards/checkout-state";
 import { readRewardsConfig } from "@/lib/rewards/tokens";
 
 const NO_CARDS: ReadonlySet<string> = new Set();
@@ -23,54 +23,49 @@ type VaporTokensCheckout = {
 /**
  * The Vapor Tokens panel's data for a checkout. A guest has no tokens, so what they see (what the order would earn) is worked
  * out here; a signed-in customer's balance comes from the server, again whenever the checkout's total or gift cards change.
+ * Signed in means the session, the same as the contact step, not whether the checkout has a customer on it yet.
  */
 export function useVaporTokens(checkout: ServerCheckout): VaporTokensCheckout {
 	const { enabled, tokensPerDollar } = readRewardsConfig();
-	const userId = checkout.user?.id ?? null;
+	const { user } = useUser();
+	const userId = user?.id ?? null;
 	const checkoutId = checkout.id;
 	const giftCardIds = (checkout.giftCards ?? []).map((card) => card.id).join(",");
 	const total = checkout.totalPrice?.gross?.amount ?? 0;
-	const [fetched, setFetched] = useState<TokensView | null>(null);
+	const [fetched, setFetched] = useState<FetchedTokensView | null>(null);
 
 	useEffect(() => {
 		if (!enabled || !userId) return;
 		let cancelled = false;
 		getVaporTokensView(checkoutId)
-			.then((next) => {
-				if (!cancelled) setFetched(next);
+			.then((view) => {
+				if (!cancelled) setFetched({ userId, view });
 			})
 			.catch(() => {
-				if (!cancelled) setFetched({ status: "unavailable" });
+				if (!cancelled) setFetched({ userId, view: { status: "unavailable" } });
 			});
 		return () => {
 			cancelled = true;
 		};
 	}, [enabled, userId, checkoutId, giftCardIds, total]);
 
-	const view = useMemo((): TokensView | null => {
-		if (!enabled) return { status: "disabled" };
-		if (!userId) {
-			const flow = toFlowCheckout(checkout);
-			const { willEarnTokens } = buildCheckoutTokensState({
-				now: new Date(),
-				currency: flow.currency,
-				totalCents: flow.totalCents,
-				shippingCents: flow.shippingCents,
-				taxCents: flow.taxCents,
-				subtotalCents: flow.subtotalCents,
-				checkoutGiftCardIds: [],
-				lots: [],
+	const view = useMemo(
+		() =>
+			checkoutTokensView({
+				enabled,
 				tokensPerDollar,
-			});
-			return { status: "guest", willEarnTokens };
-		}
-		return fetched;
-	}, [enabled, userId, checkout, tokensPerDollar, fetched]);
+				sessionUserId: userId,
+				checkout,
+				fetched,
+				now: new Date(),
+			}),
+		[enabled, tokensPerDollar, userId, checkout, fetched],
+	);
 
 	const tokenCardIds = useMemo(
 		() => (view?.status === "ready" ? new Set(view.appliedLotIds) : NO_CARDS),
 		[view],
 	);
 
-	return { view, tokenCardIds, pending: enabled && Boolean(userId) && fetched === null };
+	return { view, tokenCardIds, pending: view === null };
 }
