@@ -1,3 +1,4 @@
+import { ChevronRight, Home } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { whatsappHref } from "@/lib/whatsapp";
@@ -110,18 +111,23 @@ export function WvFaqs() {
 			<div className="relative">
 				<WvHeader />
 
+				{/* The shop's breadcrumb: a glass strip under the header, Home glowing cyan, a pink chevron, and this page in a
+				    neon pill (styles: `.wv-crumb*` in wv-home.css). */}
 				<nav
 					aria-label="Breadcrumb"
-					className={`${orbitron} flex items-center gap-2 px-4 py-4 text-[11px] text-[var(--ct-placeholder)] md:px-8 xl:px-20 xl:py-6 xl:text-xs`}
+					className={`${heyComic} wv-crumbs flex items-center gap-2 px-4 py-2 text-xs tracking-[0.5px] md:px-8 xl:px-20 xl:py-3`}
 				>
-					<Link href="/home">Home</Link>
-					<span aria-hidden>›</span>
-					<span aria-current="page" className="text-[var(--ct-cyan)]">
+					<Link href="/home" className="wv-link wv-crumb-link">
+						<Home aria-hidden className="size-3.5" strokeWidth={2.25} />
+						Home
+					</Link>
+					<ChevronRight aria-hidden className="wv-crumb-sep size-3.5" strokeWidth={2.5} />
+					<span aria-current="page" className="wv-crumb-current">
 						Frequently Asked Questions
 					</span>
 				</nav>
 
-				<div className="px-4 pb-10 md:px-8 xl:px-20 xl:pb-16">
+				<div className="px-4 pb-10 pt-6 md:px-8 md:pt-8 xl:px-20 xl:pb-16 xl:pt-10">
 					<FaqExperience
 						faqs={FAQS}
 						intro={
