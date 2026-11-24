@@ -1,4 +1,4 @@
-import { ChevronRight, Home } from "lucide-react";
+import { CalendarCheck, ChevronRight, Home } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { WvFooter, WvHeader } from "./wv-chrome";
@@ -69,37 +69,43 @@ export function WvLegal({
 					</span>
 				</nav>
 
-				<section className="flex flex-col gap-6 px-4 pb-6 pt-6 md:flex-row md:items-center md:justify-between md:gap-8 md:px-6 md:pt-8 xl:px-20 xl:pb-12 xl:pt-10">
-					<div className="flex max-w-[750px] flex-col gap-5 xl:gap-6">
-						<div className="flex flex-col gap-3">
+				{/* The hero, in the neon style of the site's other heroes (`.wv-hero-*` in wv-home.css): a pink and cyan glow
+				    behind it, the date it was last updated in a neon badge, a 3D two-tone title over a glowing pink-to-cyan bar,
+				    brighter copy, and the art in a glowing frame with glass and HUD corners (`.wv-art*`). */}
+				<section className="wv-hero-backdrop flex flex-col gap-6 px-4 pb-6 pt-6 md:flex-row md:items-center md:justify-between md:gap-8 md:px-6 md:pt-8 xl:px-20 xl:pb-12 xl:pt-10">
+					<div className="flex max-w-[750px] flex-col items-start gap-4 xl:gap-6">
+						<p
+							className={`${heyComic} wv-hero-badge flex items-center gap-2 rounded-full px-3 py-1 text-[10px] tracking-[1.5px] md:px-4 md:py-[6px] md:text-[11px]`}
+						>
+							<CalendarCheck aria-hidden className="size-3.5 md:size-4" strokeWidth={2.25} />
+							LAST UPDATED: {updated}
+						</p>
+						<div className="flex w-full flex-col gap-3">
 							<h1
-								className={`${heyComic} text-[26px] leading-[30px] md:text-[34px] md:leading-10 xl:text-[44px] xl:leading-[52px]`}
+								className={`${heyComic} wv-title-glow wv-hero-title text-[28px] leading-[32px] md:text-[34px] md:leading-10 xl:text-[44px] xl:leading-[52px]`}
 							>
-								{titleLead}{" "}
-								<span className={accent === "magenta" ? "text-[var(--ct-magenta)]" : "text-[var(--wv-cyan)]"}>
+								<span>{titleLead}</span>{" "}
+								<span
+									className={accent === "magenta" ? "text-[var(--wv-pink)]" : "text-[var(--wv-cyan-soft)]"}
+								>
 									{titleAccent}
 								</span>
 							</h1>
-							<span aria-hidden className="h-[2px] w-[100px] bg-[var(--wv-cyan-soft)] md:w-[120px] xl:w-40" />
+							<div className="wv-hero-bar h-1 w-20 rounded-full md:w-[120px]" />
 						</div>
-						<p
-							className={`${orbitron} text-xs font-semibold tracking-[1px] text-[var(--wv-cyan)] md:text-sm`}
-						>
-							LAST UPDATED: {updated}
-						</p>
-						<p className={`${orbitron} text-sm leading-[1.6] text-[var(--lg-body)] xl:text-[15px]`}>
-							{intro}
-						</p>
+						<p className={`${orbitron} wv-hero-copy text-sm leading-[1.6] xl:text-[15px]`}>{intro}</p>
 					</div>
-					<div className="relative h-[137px] w-full shrink-0 overflow-hidden rounded-2xl border border-[var(--wv-cyan-soft)] md:h-[180px] md:w-[200px] xl:h-[260px] xl:w-[400px]">
+					<div className="wv-art relative h-[150px] w-full shrink-0 overflow-hidden rounded-2xl md:h-[180px] md:w-[220px] xl:h-[260px] xl:w-[400px]">
 						<Image
 							src={image}
 							alt=""
 							fill
 							priority
-							sizes="(min-width: 1280px) 400px, (min-width: 768px) 200px, 328px"
+							sizes="(min-width: 1280px) 400px, (min-width: 768px) 220px, 100vw"
 							className="object-cover"
 						/>
+						<span aria-hidden className="wv-art-glass absolute inset-0" />
+						<span aria-hidden className="wv-art-hud absolute inset-[10px] xl:inset-[14px]" />
 					</div>
 				</section>
 
