@@ -26,7 +26,8 @@ export default function AccessibilityPage() {
 			sectionsHeading="Accessibility Sections"
 			supportText="Having trouble using our site? Our team is here to help you shop."
 			sections={ACCESSIBILITY_SECTIONS}
-			image="/home/legal/terms.png"
+			image="/home/legal/accessibility.svg"
+			imageAlt="A glowing tablet showing the shop, its Add to cart button in a keyboard-focus ring beside a large text-size control, a screen-reader speech bubble, the accessibility symbol, lit keycaps for Tab, the arrows and Enter, and neon seals for text size, contrast, voice control and every screen size"
 		/>
 	);
 }
