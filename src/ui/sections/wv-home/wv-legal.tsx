@@ -36,6 +36,7 @@ export function WvLegal({
 	supportText,
 	sections,
 	image,
+	imageAlt = "",
 	accent = "magenta",
 }: {
 	crumb: string;
@@ -47,6 +48,8 @@ export function WvLegal({
 	supportText: string;
 	sections: LegalSection[];
 	image: string;
+	/** What the art shows, for screen readers; empty (decorative) when the art says nothing the page doesn't. */
+	imageAlt?: string;
 	accent?: "magenta" | "cyan";
 }) {
 	return (
@@ -104,13 +107,14 @@ export function WvLegal({
 						</div>
 						<p className={`${orbitron} wv-hero-copy text-sm leading-[1.6] xl:text-[15px]`}>{intro}</p>
 					</div>
-					<div className="wv-art relative h-[150px] w-full shrink-0 overflow-hidden rounded-2xl md:h-[180px] md:w-[220px] xl:h-[260px] xl:w-[400px]">
+					{/* 5:3 on phones and tablets, so a whole scene shows (the art is drawn 1200×720). */}
+					<div className="wv-art relative aspect-[5/3] w-full shrink-0 overflow-hidden rounded-2xl md:aspect-auto md:h-[168px] md:w-[280px] xl:h-[260px] xl:w-[400px]">
 						<Image
 							src={image}
-							alt=""
+							alt={imageAlt}
 							fill
 							priority
-							sizes="(min-width: 1280px) 400px, (min-width: 768px) 220px, 100vw"
+							sizes="(min-width: 1280px) 400px, (min-width: 768px) 280px, 100vw"
 							className="object-cover"
 						/>
 						<span aria-hidden className="wv-art-glass absolute inset-0" />

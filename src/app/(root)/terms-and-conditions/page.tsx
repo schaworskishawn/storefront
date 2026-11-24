@@ -18,7 +18,8 @@ export default function TermsPage() {
 			sectionsHeading="Terms & Conditions Sections"
 			supportText="If you have any questions about these Terms, our team is always here to assist."
 			sections={TERMS_SECTIONS}
-			image="/home/legal/terms.png"
+			image="/home/legal/terms.svg"
+			imageAlt="A glowing contract with ticked clauses, a seal and a signature, between the scales of justice and a shield with a tick, wired to neon seals for age verification, secure payments, shipping, returns and intellectual property"
 		/>
 	);
 }
