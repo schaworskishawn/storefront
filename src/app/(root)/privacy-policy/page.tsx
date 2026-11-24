@@ -26,7 +26,8 @@ export default function PrivacyPolicyPage() {
 			sectionsHeading="Privacy Policy Sections"
 			supportText="If you have questions about your privacy or data, our team is here to help."
 			sections={PRIVACY_SECTIONS}
-			image="/home/legal/privacy.png"
+			image="/home/legal/privacy.svg"
+			imageAlt="A profile card sealed in a glowing shield dome with a padlock, the data a store collects (email, address, phone and payment) wired in over locked links, and a crossed-out price tag and eye for not selling your data and no ad tracking"
 		/>
 	);
 }

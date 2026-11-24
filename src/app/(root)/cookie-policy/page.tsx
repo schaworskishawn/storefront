@@ -26,7 +26,7 @@ export default function CookiePolicyPage() {
 			sectionsHeading="Cookie Policy Sections"
 			supportText="If you have questions about cookies or your data, our team is here to help."
 			sections={COOKIE_SECTIONS}
-			image="/home/legal/privacy.png"
+			image="/home/legal/privacy.svg"
 		/>
 	);
 }
