@@ -1,9 +1,87 @@
 "use client";
 
-import { ChevronDown, MessageCircle } from "lucide-react";
+import {
+	BadgeCheck,
+	BookOpen,
+	ChevronDown,
+	Cookie,
+	Copyright,
+	CreditCard,
+	Database,
+	Earth,
+	FileText,
+	Gift,
+	Globe,
+	Handshake,
+	HardDrive,
+	HeartHandshake,
+	LifeBuoy,
+	ListChecks,
+	Lock,
+	Mail,
+	MessageCircle,
+	MessageSquare,
+	MonitorSmartphone,
+	Package,
+	Plug,
+	RefreshCw,
+	Scale,
+	Settings2,
+	Share2,
+	ShieldAlert,
+	SlidersHorizontal,
+	TriangleAlert,
+	Truck,
+	Undo2,
+	UserCheck,
+	UserRound,
+	type LucideIcon,
+} from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { flushSync } from "react-dom";
+
+/** Each legal section's icon, shown glowing in its number tile (any section not listed gets a page). */
+const SECTION_ICONS: Record<string, LucideIcon> = {
+	// Terms
+	introduction: BookOpen,
+	"use-of-our-site": Globe,
+	"products-and-orders": Package,
+	"pricing-and-payment": CreditCard,
+	"shipping-and-delivery": Truck,
+	"returns-and-refunds": Undo2,
+	"age-verification": BadgeCheck,
+	"vapor-tokens-and-gift-cards": Gift,
+	"affiliate-and-distributor-programs": Handshake,
+	"intellectual-property": Copyright,
+	"user-accounts": UserRound,
+	"limitation-of-liability": Scale,
+	"changes-and-contact": Mail,
+	// Privacy
+	"information-we-collect": Database,
+	"how-we-use-your-data": Settings2,
+	"data-sharing": Share2,
+	"cookies-and-tracking": Cookie,
+	"data-security": Lock,
+	"your-rights-and-choices": UserCheck,
+	"childrens-privacy": ShieldAlert,
+	"international-transfers": Earth,
+	"policy-updates": RefreshCw,
+	"contact-us": Mail,
+	// Cookies
+	"what-are-cookies": Cookie,
+	"cookies-we-set": ListChecks,
+	"browser-storage": HardDrive,
+	"third-party-services": Plug,
+	"managing-cookies": SlidersHorizontal,
+	// Accessibility
+	"our-commitment": HeartHandshake,
+	"what-we-do": ListChecks,
+	"known-limitations": TriangleAlert,
+	"browsers-and-technology": MonitorSmartphone,
+	"need-help-ordering": LifeBuoy,
+	feedback: MessageSquare,
+};
 
 const heyComic = "font-[family-name:var(--font-hey-comic)]";
 const bungee = "font-[family-name:var(--font-bungee)]";
@@ -202,6 +280,10 @@ export function LegalSections({
 										<span className="flex min-w-0 items-center gap-3">
 											{/* The number in a neon tile, in the panel's colour (`.wv-legal-num`) */}
 											<span className={`${bungee} wv-legal-num text-xs`}>
+												{(() => {
+													const Icon = SECTION_ICONS[s.id] ?? FileText;
+													return <Icon aria-hidden className="size-3.5" strokeWidth={2.25} />;
+												})()}
 												{String(i + 1).padStart(2, "0")}
 											</span>
 											<span className={`${heyComic} wv-trust-title text-sm uppercase md:text-[15px]`}>

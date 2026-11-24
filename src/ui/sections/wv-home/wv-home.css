@@ -4049,3 +4049,10 @@ li:nth-child(even) > .wv-cat-chip {
 	);
 	box-shadow: 0 0 6px color-mix(in srgb, var(--wv-cyan) 60%, transparent);
 }
+/* Each section's icon sits in its number tile, glowing in the tile's colour. */
+.wv-legal-num {
+	gap: 6px;
+}
+.wv-legal-num svg {
+	filter: drop-shadow(0 0 3px var(--accent));
+}
