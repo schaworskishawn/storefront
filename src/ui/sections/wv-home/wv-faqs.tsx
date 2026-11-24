@@ -10,53 +10,20 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { readInstallmentConfig } from "@/lib/installments/plan";
+import { readRewardsConfig } from "@/lib/rewards/tokens";
 import { whatsappHref } from "@/lib/whatsapp";
 import { WvFooter, WvHeader } from "./wv-chrome";
-import { FaqExperience, type Faq } from "./wv-faqs-client";
+import { buildFaqs, SUPPORT_EMAIL } from "./wv-faqs-content";
+import { FaqExperience } from "./wv-faqs-client";
 import "./wv-home.css";
+import { describePayIn4 } from "./wv-payments-copy";
 
 /** Worldwide Vapor FAQs — Figma "6.14 - High Fidelity - Faqs" (desktop 1440, tablet 768, mobile 360). */
 
 const heyComic = "font-[family-name:var(--font-hey-comic)]";
 const bungee = "font-[family-name:var(--font-bungee)]";
 const orbitron = "font-[family-name:var(--font-orbitron)]";
-
-const SUPPORT = "support@worldwidevapor.com";
-const PENDING = `Details for this answer are coming soon. Contact ${SUPPORT} in the meantime.`;
-
-const FAQS: Faq[] = [
-	{
-		q: "What payment methods do you accept?",
-		a: "We accept Visa, Mastercard, American Express, and store gift cards. All transactions are securely processed with 256-bit encryption.",
-	},
-	{
-		q: "How long does shipping take?",
-		a: "Standard shipping takes 3-5 business days once processed by our fulfillment center. Orders received before 2PM EST Monday through Friday are processed the same business day.",
-		link: { href: "/shipping", label: "Shipping details" },
-	},
-	{ q: "Can I change or cancel my order?", a: PENDING },
-	{
-		q: "Do you ship internationally?",
-		a: "Yes, we ship to most major global destinations subject to local custom import regulations. The recipient is responsible for local import charges and duties.",
-		link: { href: "/shipping", label: "Shipping details" },
-	},
-	{
-		q: "How do I return a product?",
-		a: "Returns are accepted within 15 days of delivery. Start a return, pack the item in its original packaging and ship it back with the label we provide. Refunds are issued within 3-5 business days of the package being scanned.",
-		link: { href: "/returns", label: "Returns & refunds" },
-	},
-	{ q: "Are your products authentic?", a: PENDING },
-	{
-		q: "Where can I find my tracking number?",
-		a: "You will receive a tracking link via email as soon as your order ships from our warehouse. If you can't find it, contact support with your order number.",
-		link: { href: "/contact-us", label: "Contact support" },
-	},
-	{
-		q: "Do you offer wholesale or distributor pricing?",
-		a: "Yes. Pricing is tier-based with volume incentives for authorized retailers and regional and master distributors. See our distributor program to apply.",
-		link: { href: "/distributor", label: "Distributor program" },
-	},
-];
 
 const BADGES: { Icon: LucideIcon; title: string; text: string }[] = [
 	{ Icon: Truck, title: "Fast Shipping", text: "Dispatched within 24 hours" },
@@ -67,6 +34,13 @@ const BADGES: { Icon: LucideIcon; title: string; text: string }[] = [
 
 export function WvFaqs() {
 	const chat = whatsappHref();
+	// The answers come from the rest of the site and the programs' settings (wv-faqs-content.ts); Pay in 4 and Vapor
+	// Tokens appear only while they are switched on, as on the payments page.
+	const rewards = readRewardsConfig();
+	const faqs = buildFaqs({
+		payIn4: describePayIn4(readInstallmentConfig()),
+		rewards: rewards.enabled ? rewards : null,
+	});
 	const primary = `${bungee} flex items-center justify-center gap-2 rounded-md bg-[var(--ct-cyan)] px-6 py-[14px] text-sm tracking-[1.5px] text-[var(--ct-ink)]`;
 	const outline = `${bungee} flex items-center justify-center gap-2 rounded-md border-[1.5px] border-[var(--ct-cyan)] px-6 py-[14px] text-sm tracking-[1.5px] text-[var(--ct-cyan)]`;
 
@@ -101,7 +75,7 @@ export function WvFaqs() {
 						💬 LIVE CHAT
 					</a>
 				)}
-				<a key="email" href={`mailto:${SUPPORT}`} className={chat ? outline : primary}>
+				<a key="email" href={`mailto:${SUPPORT_EMAIL}`} className={chat ? outline : primary}>
 					✉️ EMAIL US
 				</a>
 			</div>
@@ -143,16 +117,16 @@ export function WvFaqs() {
 				    and cyan glow behind it and the neon search bar. */}
 				<div className="px-4 pb-10 md:px-8 xl:px-20 xl:pb-16">
 					<FaqExperience
-						faqs={FAQS}
+						faqs={faqs}
 						intro={
 							<div key="intro" className="flex flex-col items-start gap-4 xl:gap-6">
 								<span
 									className={`${heyComic} wv-hero-badge flex items-center gap-2 rounded-full px-3 py-1 text-[10px] tracking-[1.5px] md:px-4 md:py-[6px] md:text-[11px]`}
 								>
 									<MessageCircleQuestion aria-hidden className="size-3.5 md:size-4" strokeWidth={2.25} />
-									<span className="md:hidden">{FAQS.length} QUICK ANSWERS</span>
+									<span className="md:hidden">{faqs.length} QUICK ANSWERS</span>
 									<span className="hidden md:inline">
-										{FAQS.length} QUICK ANSWERS · SUPPORT 7 DAYS A WEEK
+										{faqs.length} QUICK ANSWERS · SUPPORT 7 DAYS A WEEK
 									</span>
 								</span>
 								<div className="flex w-full flex-col gap-3">
