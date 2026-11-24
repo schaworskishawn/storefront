@@ -1,6 +1,10 @@
 import { existsSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { COMMISSION_HOLD_DAYS, PAYOUT_MINIMUM_CENTS, REFERRAL_COOKIE_DAYS } from "@/lib/affiliates/tiers";
 import { AGE_VERIFIED_COOKIE } from "@/lib/age-gate";
+import { INSTALLMENT_INTERVAL_DAYS, LATER_PAYMENT_COUNT } from "@/lib/installments/plan";
+import { formatDollars } from "@/lib/rewards/program-copy";
+import { centsForTokens } from "@/lib/rewards/tokens";
 import { BROWSE_LOCALE_COOKIE } from "@/lib/browse-locale";
 import { ANNOUNCEMENT_DISMISS_COOKIE } from "@/lib/content/announcement-dismiss-key";
 import { SITE_ACCESS_COOKIE } from "@/lib/site-password";
@@ -83,5 +87,50 @@ describe("the accessibility statement", () => {
 			expect.arrayContaining(["known-limitations", "need-help-ordering", "feedback"]),
 		);
 		expect(text).toContain("support@worldwidevapor.com");
+	});
+});
+
+describe("the terms match what the rest of the site says", () => {
+	const section = (id: string) => (TERMS_SECTIONS.find((s) => s.id === id)?.body ?? []).join("\n");
+
+	it("lists the payment methods the payments page lists, and Pay in 4's schedule from its settings", () => {
+		const text = section("pricing-and-payment");
+		for (const method of [
+			"Visa",
+			"Mastercard",
+			"Discover",
+			"American Express",
+			"Interac e-Transfer",
+			"crypto",
+			"gift cards",
+		])
+			expect(text).toContain(method);
+		expect(text).toContain(`${LATER_PAYMENT_COUNT} equal payments every ${INSTALLMENT_INTERVAL_DAYS} days`);
+	});
+
+	it("gives the shipping page's cut-off, speeds and prices", () => {
+		const text = section("shipping-and-delivery");
+		for (const fact of ["2PM EST", "3-5 business days", "$115", "$4.99", "$9.99", "$24.99"])
+			expect(text).toContain(fact);
+	});
+
+	it("gives the returns page's window, exclusions and fee", () => {
+		const text = section("returns-and-refunds");
+		for (const fact of ["15 days", "Opened e-liquids", "unboxed disposables", "$4.99", "3-5 business days"])
+			expect(text).toContain(fact);
+	});
+
+	it("words the programs from their settings", () => {
+		expect(section("vapor-tokens-and-gift-cards")).toContain(
+			`100 tokens take ${formatDollars(centsForTokens(100))} off`,
+		);
+		const programs = section("affiliate-and-distributor-programs");
+		expect(programs).toContain(`within ${REFERRAL_COOKIE_DAYS} days`);
+		expect(programs).toContain(`payable ${COMMISSION_HOLD_DAYS} days after`);
+		expect(programs).toContain(`${formatDollars(PAYOUT_MINIMUM_CENTS)} minimum`);
+	});
+
+	it("names the age-verification provider the cookie policy names", () => {
+		expect(section("age-verification")).toContain("AgeChecker.Net");
 	});
 });
