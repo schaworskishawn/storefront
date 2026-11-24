@@ -1,3 +1,4 @@
+import { ChevronRight, Home } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { WvFooter, WvHeader } from "./wv-chrome";
@@ -52,18 +53,23 @@ export function WvLegal({
 			<div className="relative">
 				<WvHeader />
 
+				{/* The shop's breadcrumb: a glass strip under the header, Home glowing cyan, a pink chevron, and this page in a
+				    neon pill (styles: `.wv-crumb*` in wv-home.css). */}
 				<nav
 					aria-label="Breadcrumb"
-					className={`${orbitron} flex items-center gap-2 px-4 py-4 text-[11px] text-[var(--ct-placeholder)] md:px-6 xl:px-20 xl:py-6 xl:text-xs`}
+					className={`${heyComic} wv-crumbs flex items-center gap-2 px-4 py-2 text-xs tracking-[0.5px] md:px-6 xl:px-20 xl:py-3`}
 				>
-					<Link href="/home">Home</Link>
-					<span aria-hidden>›</span>
-					<span aria-current="page" className="text-[var(--wv-cyan)]">
+					<Link href="/home" className="wv-link wv-crumb-link">
+						<Home aria-hidden className="size-3.5" strokeWidth={2.25} />
+						Home
+					</Link>
+					<ChevronRight aria-hidden className="wv-crumb-sep size-3.5" strokeWidth={2.5} />
+					<span aria-current="page" className="wv-crumb-current">
 						{crumb}
 					</span>
 				</nav>
 
-				<section className="flex flex-col gap-6 px-4 pb-6 md:flex-row md:items-center md:justify-between md:gap-8 md:px-6 xl:px-20 xl:pb-12 xl:pt-5">
+				<section className="flex flex-col gap-6 px-4 pb-6 pt-6 md:flex-row md:items-center md:justify-between md:gap-8 md:px-6 md:pt-8 xl:px-20 xl:pb-12 xl:pt-10">
 					<div className="flex max-w-[750px] flex-col gap-5 xl:gap-6">
 						<div className="flex flex-col gap-3">
 							<h1
