@@ -1,4 +1,13 @@
-import { CalendarCheck, ChevronRight, Home } from "lucide-react";
+import {
+	Award,
+	CalendarCheck,
+	ChevronRight,
+	Home,
+	Lock,
+	MessageCircle,
+	Truck,
+	type LucideIcon,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { WvFooter, WvHeader } from "./wv-chrome";
@@ -10,11 +19,11 @@ import "./wv-home.css";
 const heyComic = "font-[family-name:var(--font-hey-comic)]";
 const orbitron = "font-[family-name:var(--font-orbitron)]";
 
-const BADGES = [
-	{ icon: "truck", title: "Fast Shipping", text: "Dispatched within 24 hours" },
-	{ icon: "lock", title: "Secure Payments", text: "100% SSL protected" },
-	{ icon: "support", title: "Dedicated Support", text: "We are always here to help" },
-	{ icon: "award", title: "Quality Guarantee", text: "All products fully certified" },
+const BADGES: { Icon: LucideIcon; title: string; text: string }[] = [
+	{ Icon: Truck, title: "Fast Shipping", text: "Dispatched within 24 hours" },
+	{ Icon: Lock, title: "Secure Payments", text: "100% SSL protected" },
+	{ Icon: MessageCircle, title: "Dedicated Support", text: "We are always here to help" },
+	{ Icon: Award, title: "Quality Guarantee", text: "All products fully certified" },
 ];
 
 export function WvLegal({
@@ -111,19 +120,21 @@ export function WvLegal({
 
 				<LegalSections sections={sections} heading={sectionsHeading} supportText={supportText} />
 
-				<ul className="grid gap-3 px-4 pb-10 md:grid-cols-2 md:gap-3 md:px-6 xl:hidden">
+				{/* Trust badges (phones and tablets): neon cards in turn cyan and pink (`.wv-neon-card`, `.wv-trust-item`), each
+				    icon glowing in a neon ring of its colour, its title lifted and its line brighter (`.wv-trust-*`). They glow
+				    brighter under the pointer but don't lift, as they aren't links (`.wv-legal-badge`). */}
+				<ul className="grid gap-3 px-4 pb-10 md:grid-cols-2 md:gap-4 md:px-6 xl:hidden">
 					{BADGES.map((b) => (
 						<li
 							key={b.title}
-							className="flex items-center gap-4 rounded-lg border border-[var(--ct-border)] bg-[var(--ct-card)] p-4"
+							className="wv-neon-card wv-trust-item wv-legal-badge flex items-center gap-4 rounded-xl p-4"
 						>
-							<span aria-hidden className="h-8 w-[3px] shrink-0 rounded-[2px] bg-[var(--ct-cyan)]" />
+							<span aria-hidden className="wv-trust-icon text-[22px]">
+								<b.Icon className="size-[0.7em]" strokeWidth={2} />
+							</span>
 							<span className="flex min-w-0 flex-col gap-1">
-								<span className={`${heyComic} flex items-center gap-[6px] text-[13px]`}>
-									<Image src={`/home/contact/${b.icon}.svg`} alt="" width={14} height={14} />
-									{b.title}
-								</span>
-								<span className={`${orbitron} text-xs text-[var(--ct-text)]`}>{b.text}</span>
+								<span className={`${heyComic} wv-trust-title text-[13px]`}>{b.title}</span>
+								<span className={`${orbitron} wv-trust-text text-xs leading-[1.45]`}>{b.text}</span>
 							</span>
 						</li>
 					))}

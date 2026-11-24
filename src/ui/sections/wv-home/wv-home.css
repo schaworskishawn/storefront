@@ -3921,3 +3921,13 @@ li:nth-child(even) > .wv-cat-chip {
 .wv-dist-tier-terms .wv-stat-value {
 	color: var(--accent);
 }
+
+/* The legal pages' trust badges (wv-legal.tsx): neon cards (.wv-neon-card) in turn cyan and pink, their icons lit in the
+ * card's colour like the affiliate highlights', glowing brighter under the pointer but not lifting, as they aren't links. */
+.wv-legal-badge .wv-trust-icon svg {
+	color: var(--accent);
+	filter: drop-shadow(0 0 4px color-mix(in srgb, var(--accent) 85%, transparent));
+}
+.wv-neon-card.wv-legal-badge:hover {
+	transform: none;
+}
