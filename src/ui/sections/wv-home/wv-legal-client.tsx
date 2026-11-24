@@ -44,9 +44,17 @@ export function LegalSections({
 	const [tocOpen, setTocOpen] = useState(false);
 
 	useEffect(() => {
+		// A link to a section (the hero's chips, or another page linking here): open it, then bring it into view once the
+		// accordion has re-rendered, because the section that was open above it closes and moves everything up.
 		const fromHash = () => {
 			const id = window.location.hash.slice(1);
-			if (sections.some((s) => s.id === id)) setOpen(id);
+			if (!sections.some((s) => s.id === id)) return;
+			setOpen(id);
+			requestAnimationFrame(() =>
+				requestAnimationFrame(() =>
+					document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" }),
+				),
+			);
 		};
 		fromHash();
 		window.addEventListener("hashchange", fromHash);

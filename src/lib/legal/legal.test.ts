@@ -1,4 +1,4 @@
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { COMMISSION_HOLD_DAYS, PAYOUT_MINIMUM_CENTS, REFERRAL_COOKIE_DAYS } from "@/lib/affiliates/tiers";
 import { AGE_VERIFIED_COOKIE } from "@/lib/age-gate";
@@ -132,5 +132,30 @@ describe("the terms match what the rest of the site says", () => {
 
 	it("names the age-verification provider the cookie policy names", () => {
 		expect(section("age-verification")).toContain("AgeChecker.Net");
+	});
+});
+
+describe("the legal heroes' highlight chips", () => {
+	const PAGE_FILES: Record<keyof typeof PAGES, string> = {
+		terms: "terms-and-conditions",
+		privacy: "privacy-policy",
+		cookies: "cookie-policy",
+		accessibility: "accessibility",
+	};
+
+	it.each(Object.entries(PAGE_FILES))("%s: each chip opens a section that exists", (name, folder) => {
+		const source = readFileSync(`src/app/(root)/${folder}/page.tsx`, "utf8");
+		const targets = [...source.matchAll(/section: "([^"]+)"/g)].map((m) => m[1]);
+		expect(targets.length).toBeGreaterThan(0);
+		const ids = PAGES[name as keyof typeof PAGES].sections.map((s) => s.id);
+		for (const target of targets) expect(ids, `${name} chip -> #${target}`).toContain(target);
+	});
+
+	it.each(Object.entries(PAGE_FILES))("%s: every lit phrase is in the intro", (_name, folder) => {
+		const source = readFileSync(`src/app/(root)/${folder}/page.tsx`, "utf8");
+		const intro = source.match(/intro="([^"]+)"/)?.[1] ?? "";
+		const keys = JSON.parse(source.match(/introKeys=\{(\[[^\]]*\])\}/)?.[1] ?? "[]") as string[];
+		expect(keys.length).toBeGreaterThan(0);
+		for (const key of keys) expect(intro).toContain(key);
 	});
 });

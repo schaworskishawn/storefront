@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { type ReactNode } from "react";
 import { WvFooter, WvHeader } from "./wv-chrome";
 import { LegalSections, type LegalSection } from "./wv-legal-client";
 import "./wv-home.css";
@@ -26,6 +27,30 @@ const BADGES: { Icon: LucideIcon; title: string; text: string }[] = [
 	{ Icon: Award, title: "Quality Guarantee", text: "All products fully certified" },
 ];
 
+export type LegalHighlight = {
+	Icon: LucideIcon;
+	label: string;
+	/** The section id it opens. */ section: string;
+};
+
+/** The intro with each key phrase lit (`.wv-hero-key`), in turn cyan and pink. A phrase not in the text is ignored. */
+export function lightUp(text: string, keys: readonly string[]): ReactNode[] {
+	const found = keys.filter((k) => k && text.includes(k));
+	if (found.length === 0) return [text];
+	const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+	const parts = text.split(new RegExp(`(${found.map(escape).join("|")})`));
+	let lit = 0;
+	return parts.map((part, i) =>
+		found.includes(part) ? (
+			<strong key={i} className={`wv-hero-key${lit++ % 2 ? " wv-hero-key--pink" : ""}`}>
+				{part}
+			</strong>
+		) : (
+			part
+		),
+	);
+}
+
 export function WvLegal({
 	crumb,
 	titleLead,
@@ -38,12 +63,18 @@ export function WvLegal({
 	image,
 	imageAlt = "",
 	accent = "magenta",
+	introKeys = [],
+	highlights = [],
 }: {
 	crumb: string;
 	titleLead: string;
 	titleAccent: string;
 	updated: string;
 	intro: string;
+	/** Phrases of the intro to light up, in turn cyan and pink, as the other heroes light their key phrases. */
+	introKeys?: string[];
+	/** Up to three things the page promises, each a chip that opens its section. */
+	highlights?: LegalHighlight[];
 	sectionsHeading: string;
 	supportText: string;
 	sections: LegalSection[];
@@ -105,7 +136,25 @@ export function WvLegal({
 							</h1>
 							<div className="wv-hero-bar h-1 w-20 rounded-full md:w-[120px]" />
 						</div>
-						<p className={`${orbitron} wv-hero-copy text-sm leading-[1.6] xl:text-[15px]`}>{intro}</p>
+						<p className={`${orbitron} wv-hero-copy text-sm leading-[1.6] xl:text-[15px]`}>
+							{lightUp(intro, introKeys)}
+						</p>
+						{highlights.length > 0 && (
+							// What the page promises, as the payments strip's glowing chips (`.wv-pay-chip`, in turn cyan and
+							// pink): each opens its section below (the accordion follows the URL hash).
+							<nav aria-label="Highlights" className="flex flex-wrap gap-2">
+								{highlights.map((h) => (
+									<a
+										key={h.section}
+										href={`#${h.section}`}
+										className={`${heyComic} wv-pay-chip flex items-center gap-2 rounded-full px-3 py-[6px] text-xs text-white`}
+									>
+										<h.Icon aria-hidden className="size-3.5 text-[var(--accent)]" strokeWidth={2.25} />
+										{h.label}
+									</a>
+								))}
+							</nav>
+						)}
 					</div>
 					{/* 5:3 on phones and tablets, so a whole scene shows (the art is drawn 1200×720). */}
 					<div className="wv-art relative aspect-[5/3] w-full shrink-0 overflow-hidden rounded-2xl md:aspect-auto md:h-[168px] md:w-[280px] xl:h-[260px] xl:w-[400px]">
