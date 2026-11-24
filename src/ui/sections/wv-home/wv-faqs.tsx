@@ -1,4 +1,4 @@
-import { ChevronRight, Home } from "lucide-react";
+import { ChevronRight, Home, MessageCircleQuestion } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { whatsappHref } from "@/lib/whatsapp";
@@ -63,6 +63,7 @@ export function WvFaqs() {
 
 	const supportCard = (
 		<aside
+			key="aside"
 			className="border-[var(--ct-magenta)]/40 flex flex-col gap-6 rounded-2xl border bg-[var(--ct-card)] p-6 shadow-[0_0_12px_rgba(217,0,255,0.07)] md:p-8 xl:flex-1"
 			aria-labelledby="still-help"
 		>
@@ -127,41 +128,57 @@ export function WvFaqs() {
 					</span>
 				</nav>
 
-				<div className="px-4 pb-10 pt-6 md:px-8 md:pt-8 xl:px-20 xl:pb-16 xl:pt-10">
+				{/* The hero, in the neon style of the site's other heroes (`.wv-hero-*` in wv-home.css): a neon badge with
+				    the real count of answers, a 3D two-tone title over a glowing pink-to-cyan bar, brighter copy with its key
+				    phrases lit, and the hologram in a glowing frame with HUD corners (`.wv-art*`). FaqExperience adds the pink
+				    and cyan glow behind it and the neon search bar. */}
+				<div className="px-4 pb-10 md:px-8 xl:px-20 xl:pb-16">
 					<FaqExperience
 						faqs={FAQS}
 						intro={
-							<div className="flex flex-col gap-5 xl:gap-7">
-								<div key="title" className="flex flex-col gap-3">
-									<h1
-										className={`${heyComic} text-[26px] leading-[30px] md:text-[34px] md:leading-10 xl:text-[44px] xl:leading-[52px]`}
-									>
-										FREQUENTLY ASKED{" "}
-										<span key="accent" className="text-[var(--ct-cyan)]">
-											QUESTIONS
-										</span>
-									</h1>
-									<span aria-hidden className="h-[2px] w-20 bg-[var(--ct-cyan)] md:w-[120px] xl:w-40" />
-								</div>
-								<p
-									key="lead"
-									className={`${orbitron} text-sm leading-[1.6] text-[var(--ct-text)] xl:text-[15px]`}
+							<div key="intro" className="flex flex-col items-start gap-4 xl:gap-6">
+								<span
+									className={`${heyComic} wv-hero-badge flex items-center gap-2 rounded-full px-3 py-1 text-[10px] tracking-[1.5px] md:px-4 md:py-[6px] md:text-[11px]`}
 								>
-									Find quick answers to the most common questions about our premium product offerings, secure
-									ordering system, fast shipping, and easy return policies.
+									<MessageCircleQuestion aria-hidden className="size-3.5 md:size-4" strokeWidth={2.25} />
+									<span className="md:hidden">{FAQS.length} QUICK ANSWERS</span>
+									<span className="hidden md:inline">
+										{FAQS.length} QUICK ANSWERS · SUPPORT 7 DAYS A WEEK
+									</span>
+								</span>
+								<div className="flex w-full flex-col gap-3">
+									<h1
+										className={`${heyComic} wv-title-glow wv-hero-title text-[28px] leading-[32px] md:text-[38px] md:leading-[44px] xl:text-[44px] xl:leading-[52px]`}
+									>
+										<span>FREQUENTLY ASKED</span>{" "}
+										<span className="text-[var(--wv-cyan-soft)]">QUESTIONS</span>
+									</h1>
+									<div className="wv-hero-bar h-1 w-20 rounded-full md:w-[120px]" />
+								</div>
+								<p className={`${orbitron} wv-hero-copy text-sm leading-[1.6] xl:text-[15px]`}>
+									Find quick answers to the most common questions about our{" "}
+									<strong className="wv-hero-key">premium product offerings</strong>,{" "}
+									<strong className="wv-hero-key wv-hero-key--pink">secure ordering system</strong>,{" "}
+									<strong className="wv-hero-key">fast shipping</strong>, and{" "}
+									<strong className="wv-hero-key wv-hero-key--pink">easy return policies</strong>.
 								</p>
 							</div>
 						}
 						visual={
-							<div className="border-[var(--ct-cyan)]/20 relative h-40 w-full shrink-0 overflow-hidden rounded-2xl border md:h-[300px] xl:h-[260px] xl:w-[400px]">
+							<div
+								key="visual"
+								className="wv-art relative h-44 w-full shrink-0 overflow-hidden rounded-2xl md:h-[300px] xl:h-[280px] xl:w-[420px]"
+							>
 								<Image
 									src="/home/faqs/hero.png"
 									alt="Neon question-mark hologram over a support console"
 									fill
 									priority
-									sizes="(min-width: 1280px) 400px, 100vw"
+									sizes="(min-width: 1280px) 420px, 100vw"
 									className="object-cover"
 								/>
+								<span aria-hidden className="wv-art-glass absolute inset-0" />
+								<span aria-hidden className="wv-art-hud absolute inset-[10px] md:inset-[14px]" />
 							</div>
 						}
 						aside={supportCard}
