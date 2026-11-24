@@ -199,8 +199,14 @@ export function LegalSections({
 										onClick={() => toggle(s.id)}
 										className="flex w-full items-center justify-between gap-4 text-left"
 									>
-										<span className={`${heyComic} wv-trust-title text-sm uppercase md:text-[15px]`}>
-											{i + 1}. {s.title}
+										<span className="flex min-w-0 items-center gap-3">
+											{/* The number in a neon tile, in the panel's colour (`.wv-legal-num`) */}
+											<span className={`${bungee} wv-legal-num text-xs`}>
+												{String(i + 1).padStart(2, "0")}
+											</span>
+											<span className={`${heyComic} wv-trust-title text-sm uppercase md:text-[15px]`}>
+												{s.title}
+											</span>
 										</span>
 										<span aria-hidden className="wv-info-toggle font-mono text-base">
 											{isOpen ? "−" : "+"}
@@ -211,8 +217,9 @@ export function LegalSections({
 									<div
 										id={`${s.id}-body`}
 										role="region"
-										className={`${orbitron} wv-trust-text wv-unfold mt-4 flex flex-col gap-3 border-t border-[var(--lg-border)] pt-3 text-sm leading-[1.6]`}
+										className={`${orbitron} wv-trust-text wv-unfold mt-4 flex flex-col gap-3 text-sm leading-[1.6]`}
 									>
+										<span aria-hidden className="wv-legal-divider mb-1 block" />
 										{s.body.map((p) => (
 											<p key={p}>{p}</p>
 										))}
