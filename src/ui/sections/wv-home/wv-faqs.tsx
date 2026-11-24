@@ -1,4 +1,13 @@
-import { ChevronRight, Home, MessageCircleQuestion } from "lucide-react";
+import {
+	Award,
+	ChevronRight,
+	Home,
+	Lock,
+	MessageCircle,
+	MessageCircleQuestion,
+	Truck,
+	type LucideIcon,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { whatsappHref } from "@/lib/whatsapp";
@@ -49,11 +58,11 @@ const FAQS: Faq[] = [
 	},
 ];
 
-const BADGES = [
-	{ icon: "truck", title: "Fast Shipping", text: "Dispatched within 24 hours" },
-	{ icon: "lock", title: "Secure Payments", text: "100% SSL protected" },
-	{ icon: "support", title: "Dedicated Support", text: "We are always here to help" },
-	{ icon: "award", title: "Quality Guarantee", text: "All products fully certified" },
+const BADGES: { Icon: LucideIcon; title: string; text: string }[] = [
+	{ Icon: Truck, title: "Fast Shipping", text: "Dispatched within 24 hours" },
+	{ Icon: Lock, title: "Secure Payments", text: "100% SSL protected" },
+	{ Icon: MessageCircle, title: "Dedicated Support", text: "We are always here to help" },
+	{ Icon: Award, title: "Quality Guarantee", text: "All products fully certified" },
 ];
 
 export function WvFaqs() {
@@ -185,20 +194,24 @@ export function WvFaqs() {
 					/>
 				</div>
 
-				{/* Trust badges */}
+				{/* Trust badges: neon cards in turn cyan and pink (`.wv-neon-card`, `.wv-trust-item`), each icon glowing in a
+				    neon ring of its colour, its title lifted and its line brighter (`.wv-trust-*`). They glow brighter under the
+				    pointer but don't lift, as they aren't links (`.wv-faq-badge`). On phones the ring sits above the words, so
+				    the narrow cards don't squeeze them. */}
 				<ul className="grid grid-cols-2 gap-3 px-4 pb-10 md:gap-4 md:px-8 xl:grid-cols-4 xl:gap-6 xl:px-20 xl:pb-12">
 					{BADGES.map((b) => (
 						<li
 							key={b.title}
-							className="flex items-center gap-3 rounded-lg border border-[var(--ct-border)] bg-[var(--ct-card)] p-3 md:gap-4 md:p-4 xl:p-5"
+							className="wv-neon-card wv-trust-item wv-faq-badge flex flex-col items-start gap-3 rounded-xl p-4 md:flex-row md:items-center md:gap-4 xl:p-5"
 						>
-							<span aria-hidden className="h-8 w-[3px] shrink-0 rounded-[2px] bg-[var(--ct-cyan)]" />
+							<span aria-hidden className="wv-trust-icon text-[22px] xl:text-[26px]">
+								<b.Icon className="size-[0.7em]" strokeWidth={2} />
+							</span>
 							<span className="flex min-w-0 flex-col gap-1">
-								<span className={`${heyComic} flex items-center gap-[6px] text-xs md:text-[13px]`}>
-									<Image src={`/home/contact/${b.icon}.svg`} alt="" width={14} height={14} />
-									{b.title}
+								<span className={`${heyComic} wv-trust-title text-[13px] xl:text-sm`}>{b.title}</span>
+								<span className={`${orbitron} wv-trust-text text-[11px] leading-[1.45] md:text-xs`}>
+									{b.text}
 								</span>
-								<span className={`${orbitron} text-[11px] text-[var(--ct-text)] md:text-xs`}>{b.text}</span>
 							</span>
 						</li>
 					))}
