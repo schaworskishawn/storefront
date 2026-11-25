@@ -10,7 +10,6 @@ import {
 	PackageCheck,
 	PackageSearch,
 	RotateCcw,
-	ShieldCheck,
 	Tag,
 	TriangleAlert,
 	Truck,
@@ -20,6 +19,7 @@ import {
 	type LucideIcon,
 } from "lucide-react";
 import Image from "next/image";
+import { readRewardsConfig } from "@/lib/rewards/tokens";
 import { whatsappHref } from "@/lib/whatsapp";
 import { WvFooter, WvHeader } from "./wv-chrome";
 import "./wv-home.css";
@@ -42,9 +42,13 @@ const TOP_BADGES: BadgeData[] = [
 	{
 		Icon: CalendarDays,
 		title: "15-DAY RETURN WINDOW",
-		text: "Returns accepted within 15 days of delivery date.",
+		text: "Unopened items can come back within 15 days of delivery.",
 	},
-	{ Icon: ShieldCheck, title: "EASY & HASSLE-FREE", text: "Simple process with clear digital steps." },
+	{
+		Icon: Tag,
+		title: "PREPAID RETURN LABEL",
+		text: "Email us and we send the label; $4.99 postage is deducted.",
+	},
 	{ Icon: BadgeCheck, title: "QUALITY GUARANTEED", text: "Damaged or defective items are fully covered." },
 ];
 const BOTTOM_BADGES: BadgeData[] = [
@@ -57,37 +61,70 @@ const STEPS: { n: string; Icon: LucideIcon; title: string; text: string }[] = [
 	{
 		n: "01",
 		Icon: ClipboardList,
-		title: "START RETURN",
-		text: "Submit return request with your order details.",
+		title: "START YOUR RETURN",
+		text: "Email us within 15 days of delivery with your order number, the items and why.",
 	},
 	{
 		n: "02",
 		Icon: PackageCheck,
-		title: "PACK YOUR ITEM",
-		text: "Securely pack the items in original packaging.",
+		title: "PACK YOUR ITEMS",
+		text: "Pack them unopened, in their original packaging.",
 	},
-	{ n: "03", Icon: Tag, title: "SHIP YOUR RETURN", text: "Print the label and drop off at local carrier." },
-	{ n: "04", Icon: Wallet, title: "RECEIVE REFUND", text: "We process, inspect and credit your account." },
+	{
+		n: "03",
+		Icon: Tag,
+		title: "SHIP IT BACK",
+		text: "Print the prepaid label we email you and drop the parcel at the carrier.",
+	},
+	{
+		n: "04",
+		Icon: Wallet,
+		title: "GET YOUR REFUND",
+		text: "Within 3-5 business days of the parcel being scanned, to your original payment method or as store credit.",
+	},
 ];
 
-const FAQS = [
-	{
-		q: "HOW LONG DOES A REFUND TAKE TO PROCESS?",
-		a: "Once your package is scanned at our facility, refunds are issued within 3-5 business days to your original payment method.",
-	},
-	{
-		q: "ARE THERE FEES FOR RETURN SHIPPING?",
-		a: "No hidden restocking fees. For standard returns within 15 days, we provide a prepaid label and deduct a flat $4.99 return postage fee.",
-	},
-	{
-		q: "CAN I EXCHANGE AN ITEM INSTEAD OF A REFUND?",
-		a: "Absolutely. Choose exchange when initiating your digital return to receive immediate store credit or reserve your replacement item.",
-	},
-	{
-		q: "WHAT ITEMS ARE ELIGIBLE FOR RETURN?",
-		a: "Unopened hardware, sealed coils, and unused accessories in original condition are fully eligible for return within 15 days.",
-	},
-];
+/**
+ * The page's questions, worded from the returns policy the rest of the site states (the terms and the FAQ page). Returns
+ * start by email; the Vapor Tokens answer is how the rewards program treats a refunded order (lib/rewards/engine.ts) and
+ * only shows while the program is on.
+ */
+function returnFaqs(tokens: boolean): { q: string; a: string }[] {
+	return [
+		{
+			q: "HOW DO I START A RETURN?",
+			a: `Email ${SUPPORT} within 15 days of delivery with your order number, the items you are returning and why. The Start a Return button fills that in for you. We reply with a prepaid return label.`,
+		},
+		{
+			q: "HOW LONG DOES A REFUND TAKE TO PROCESS?",
+			a: "Once your parcel is scanned at our facility, your refund is issued within 3-5 business days to your original payment method.",
+		},
+		{
+			q: "ARE THERE FEES FOR RETURN SHIPPING?",
+			a: "No restocking fees. Standard returns use our prepaid label, and a flat $4.99 return postage fee is deducted from your refund. Damaged or defective items are fully covered.",
+		},
+		{
+			q: "CAN I EXCHANGE AN ITEM INSTEAD OF A REFUND?",
+			a: "Yes. Ask for an exchange when you email us to start your return, and we will give you store credit or set aside a replacement for you.",
+		},
+		{
+			q: "WHAT ITEMS ARE ELIGIBLE FOR RETURN?",
+			a: "Unopened hardware, sealed coils and unused accessories in their original condition and packaging, within 15 days of delivery. The list beside these answers shows what cannot be returned.",
+		},
+		{
+			q: "WHAT IF MY ORDER ARRIVED DAMAGED OR DEFECTIVE?",
+			a: "Email us with your order number and what is wrong. Damaged or defective items are fully covered, so we will put it right with a replacement or a refund.",
+		},
+		...(tokens
+			? [
+					{
+						q: "WHAT HAPPENS TO MY VAPOR TOKENS?",
+						a: "If an order is refunded in full, the Vapor Tokens it earned are taken back, and any tokens you spent on it are returned to your account.",
+					},
+				]
+			: []),
+	];
+}
 
 const NOT_ELIGIBLE = [
 	"E-liquids that have been opened or unsealed",
@@ -123,6 +160,7 @@ const secondary = `${heyComic} wv-btn wv-btn-outline wv-btn-neon flex h-[49px] i
 
 export function WvReturns() {
 	const chat = whatsappHref("Hi Worldwide Vapor, I need help with a return.");
+	const faqs = returnFaqs(readRewardsConfig().enabled);
 	return (
 		<div className="min-h-dvh overflow-x-clip bg-[var(--rt-bg)] text-white">
 			<WvHeader />
@@ -166,20 +204,20 @@ export function WvReturns() {
 					<p
 						className={`${orbitron} wv-hero-copy text-sm leading-[1.6] md:text-center md:text-base xl:text-left`}
 					>
-						We want you to be <strong className="wv-hero-key">100% satisfied</strong> with your purchase.{" "}
-						{/* A string, not JSX text: the compiler drops a leading space from JSX text that has an apostrophe. */}
-						{"If something isn't right, we are here to help you get it "}
-						<strong className="wv-hero-key wv-hero-key--pink">sorted immediately</strong> with{" "}
-						<strong className="wv-hero-key">zero stress</strong>.
+						We want you to be <strong className="wv-hero-key">100% satisfied</strong>. Unopened items can come
+						back within <strong className="wv-hero-key wv-hero-key--pink">15 days of delivery</strong> with a{" "}
+						<strong className="wv-hero-key">prepaid label</strong>, and your refund lands within{" "}
+						<strong className="wv-hero-key wv-hero-key--pink">3-5 business days</strong> of the parcel being
+						scanned.
 					</p>
 					<div className="flex flex-col gap-3 md:flex-row md:justify-center xl:justify-start xl:gap-4">
-						<a href={START_HREF} className={`${primary} hidden md:flex`}>
+						<a href={START_HREF} className={primary}>
 							<Undo2 aria-hidden className="size-4" strokeWidth={2.5} />
 							<span className="wv-pc-cta-label">START A RETURN</span>
 						</a>
 						<a href={STATUS_HREF} className={`${secondary} w-full md:w-auto`}>
 							<PackageSearch aria-hidden className="size-4" strokeWidth={2.5} />
-							<span className="wv-btn-label">VIEW STATUS</span>
+							<span className="wv-btn-label">CHECK RETURN STATUS</span>
 						</a>
 					</div>
 				</div>
@@ -247,7 +285,7 @@ export function WvReturns() {
 						<span aria-hidden className="wv-hero-bar mt-1 h-1 w-20 rounded-full md:w-[120px]" />
 					</div>
 					<div className="flex flex-col gap-3 xl:gap-4">
-						{FAQS.map((f, i) => (
+						{faqs.map((f, i) => (
 							<details key={f.q} open={i === 0} className="wv-info-item group rounded-xl p-4 md:p-5">
 								<summary
 									className={`${heyComic} wv-trust-title flex cursor-pointer list-none items-center justify-between gap-4 text-[13px] md:text-sm [&::-webkit-details-marker]:hidden`}
