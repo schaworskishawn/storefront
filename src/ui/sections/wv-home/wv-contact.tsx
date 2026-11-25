@@ -9,6 +9,7 @@ import {
 	Mail,
 	MapPin,
 	MessageSquare,
+	MessageSquareText,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -239,11 +240,25 @@ export function WvContact() {
 
 				{/* Form + help */}
 				<section className="flex flex-col gap-8 px-4 py-6 md:px-8 md:py-8 xl:flex-row xl:gap-12 xl:px-20 xl:py-12">
-					<div className="flex flex-col gap-6 rounded-xl border border-[var(--ct-border)] bg-[var(--ct-card)] p-5 md:p-6 xl:w-[740px] xl:shrink-0 xl:gap-7 xl:p-8">
-						<div className="flex flex-col gap-[6px]">
-							<h2 className={`${bungee} text-base`}>SEND US A MESSAGE</h2>
-							<span aria-hidden className="h-[2px] w-16 bg-[var(--ct-cyan)]" />
+					{/* The form is lit glass like the affiliate application (`.wv-auth-card`, with `.wv-af-form` for its fields'
+					    pink "needs fixing" state): its title is chrome beside a lit icon tile over a glowing bar, and a neon rule
+					    runs cyan into pink above the fields. */}
+					<div className="wv-auth-card wv-af-form flex flex-col gap-6 rounded-[20px] p-5 md:p-6 xl:w-[740px] xl:shrink-0 xl:gap-7 xl:p-8">
+						<div className="flex items-center gap-3">
+							<span
+								aria-hidden
+								className="wv-acct-icon flex size-10 shrink-0 items-center justify-center rounded-xl"
+							>
+								<MessageSquareText className="size-[18px]" strokeWidth={2.25} />
+							</span>
+							<div className="flex flex-col gap-1.5">
+								<h2 className={`${bungee} wv-heading-title text-base text-white md:text-lg`}>
+									SEND US A MESSAGE
+								</h2>
+								<span aria-hidden className="wv-hero-bar h-[3px] w-16 rounded-full" />
+							</div>
 						</div>
+						<div aria-hidden className="wv-af-rule h-px w-full" />
 						<ContactForm whatsapp={chat} />
 					</div>
 					<div className="flex min-w-0 flex-1 flex-col gap-6">
