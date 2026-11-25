@@ -1,3 +1,4 @@
+import { ChevronRight, Clock, Home } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { whatsappHref } from "@/lib/whatsapp";
@@ -87,41 +88,59 @@ export function WvContact() {
 			<div className="relative">
 				<WvHeader />
 
-				{/* Hero */}
-				<section className="flex flex-col gap-6 px-4 py-6 md:flex-row md:items-center md:justify-between md:gap-8 md:px-8 md:py-16 xl:px-20 xl:py-[105px]">
-					<div className="flex max-w-[640px] flex-col gap-5 xl:gap-6">
+				{/* The hero, in the neon style of the site's other heroes (`.wv-hero-*` in wv-home.css): a pink and cyan glow
+				    behind it, the breadcrumb lit (Home glowing cyan, a pink chevron, this page in a neon pill), what we promise
+				    in a neon badge, a 3D two-tone title over a glowing pink-to-cyan bar, brighter copy with its key words lit,
+				    and the art in a glowing frame with glass and HUD corners (`.wv-art*`). */}
+				<section className="wv-hero-backdrop flex flex-col gap-6 px-4 py-6 md:flex-row md:items-center md:justify-between md:gap-8 md:px-8 md:py-16 xl:px-20 xl:py-[105px]">
+					<div className="flex max-w-[640px] flex-col items-start gap-5 xl:gap-6">
 						<nav
 							aria-label="Breadcrumb"
-							className={`${orbitron} flex items-center gap-2 text-[11px] font-bold uppercase`}
+							className={`${heyComic} flex items-center gap-2 text-xs tracking-[0.5px]`}
 						>
-							<Link href="/home" className="text-[var(--ct-placeholder)]">
+							<Link href="/home" className="wv-link wv-crumb-link">
+								<Home aria-hidden className="size-3.5" strokeWidth={2.25} />
 								Home
 							</Link>
-							<Image src="/home/contact/crumb.svg" alt="" width={8} height={8} />
-							<span aria-current="page" className="text-[var(--ct-cyan)]">
+							<ChevronRight aria-hidden className="wv-crumb-sep size-3.5" strokeWidth={2.5} />
+							<span aria-current="page" className="wv-crumb-current">
 								Contact Us
 							</span>
 						</nav>
-						<div className="flex flex-col gap-2">
-							<h1 className={`${bungee} text-[26px] leading-none md:text-4xl xl:text-5xl`}>
-								CONTACT <span className="text-[var(--ct-cyan)]">US</span>
+						<p
+							className={`${heyComic} wv-hero-badge flex items-center gap-2 rounded-full px-3 py-1 text-[10px] tracking-[1.5px] md:px-4 md:py-[6px] md:text-[11px]`}
+						>
+							<Clock aria-hidden className="size-3.5 md:size-4" strokeWidth={2.25} />
+							<span className="md:hidden">WE REPLY WITHIN 24 HOURS</span>
+							<span className="hidden md:inline">WE REPLY WITHIN 24 HOURS · 7 DAYS A WEEK</span>
+						</p>
+						<div className="flex w-full flex-col gap-3">
+							<h1
+								className={`${heyComic} wv-title-glow wv-hero-title text-[30px] leading-[1.1] md:text-4xl xl:text-5xl`}
+							>
+								<span>CONTACT</span> <span className="text-[var(--wv-cyan-soft)]">US</span>
 							</h1>
-							<span aria-hidden className="h-[2px] w-[70px] bg-[var(--ct-cyan)] md:w-[90px] xl:w-[120px]" />
+							<div className="wv-hero-bar h-1 w-20 rounded-full md:w-[120px]" />
 						</div>
-						<p className={`${orbitron} text-sm leading-[1.6] text-[var(--ct-text)] xl:text-base`}>
-							We&apos;re here to help! Reach out to us with any questions about our products, orders, or
-							anything vaping related.
+						<p className={`${orbitron} wv-hero-copy text-sm leading-[1.6] xl:text-base`}>
+							{/* A string, not JSX text: the compiler drops a leading space from JSX text that has an apostrophe. */}
+							{"We're "}
+							<strong className="wv-hero-key">here to help</strong>! Reach out to us with any questions about
+							our <strong className="wv-hero-key wv-hero-key--pink">products</strong>,{" "}
+							<strong className="wv-hero-key">orders</strong>, or anything vaping related.
 						</p>
 					</div>
-					<div className="border-[var(--ct-cyan)]/15 relative h-[150px] w-full shrink-0 overflow-hidden rounded-2xl border md:h-[236px] md:w-[240px] xl:h-[240px] xl:w-[400px]">
+					<div className="wv-art relative h-[170px] w-full shrink-0 overflow-hidden rounded-2xl md:h-[236px] md:w-[260px] xl:h-[260px] xl:w-[420px]">
 						<Image
 							src="/home/contact/hero.png"
 							alt="Neon email, chat and phone icons over a support console"
 							fill
 							priority
-							sizes="(min-width: 1280px) 400px, (min-width: 768px) 240px, 328px"
+							sizes="(min-width: 1280px) 420px, (min-width: 768px) 260px, 100vw"
 							className="object-cover"
 						/>
+						<span aria-hidden className="wv-art-glass absolute inset-0" />
+						<span aria-hidden className="wv-art-hud absolute inset-[10px] md:inset-[14px]" />
 					</div>
 				</section>
 
