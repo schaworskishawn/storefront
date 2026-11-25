@@ -1,7 +1,9 @@
 import {
 	ArrowRight,
 	ArrowUpRight,
+	BookOpen,
 	ChevronRight,
+	CircleHelp,
 	Clock,
 	Globe,
 	Home,
@@ -10,6 +12,9 @@ import {
 	MapPin,
 	MessageSquare,
 	MessageSquareText,
+	PackageSearch,
+	RotateCcw,
+	Truck,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -27,12 +32,12 @@ const orbitron = "font-[family-name:var(--font-orbitron)]";
 
 const SUPPORT = "support@worldwidevapor.com";
 
-const HELP_LINKS = [
-	{ icon: "help", title: "FAQs", text: "Find answers to common questions", href: "/faqs" },
-	{ icon: "ship", title: "Shipping Information", text: "Delivery times and policies", href: "/shipping" },
-	{ icon: "returns", title: "Returns & Refunds", text: "Return policy and process", href: "/returns" },
+const HELP_LINKS: { Icon: LucideIcon; title: string; text: string; href: string }[] = [
+	{ Icon: CircleHelp, title: "FAQs", text: "Find answers to common questions", href: "/faqs" },
+	{ Icon: Truck, title: "Shipping Information", text: "Delivery times and policies", href: "/shipping" },
+	{ Icon: RotateCcw, title: "Returns & Refunds", text: "Return policy and process", href: "/returns" },
 	{
-		icon: "package",
+		Icon: PackageSearch,
 		title: "Track Your Order",
 		text: "Check the status of your order",
 		href: `mailto:${SUPPORT}?subject=Track%20my%20order&body=Order%20number%3A`,
@@ -261,37 +266,55 @@ export function WvContact() {
 						<div aria-hidden className="wv-af-rule h-px w-full" />
 						<ContactForm whatsapp={chat} />
 					</div>
+					{/* Before you contact us: the title chrome over a glowing bar, the copy brighter with its key words lit; each
+					    help link a neon card in turn cyan and pink (`.wv-neon-card`, with `.wv-acct-card` for its glowing icon
+					    and focus ring) that lifts under the pointer, its title lifted and its arrow glowing and sliding on; and
+					    the Help Center the site's neon outline button (`.wv-btn-neon`). */}
 					<div className="flex min-w-0 flex-1 flex-col gap-6">
-						<div className="flex flex-col gap-2">
-							<h2 className="font-[family-name:var(--font-bungee)] text-base">BEFORE YOU CONTACT US</h2>
-							<p className="text-sm text-[var(--ct-text)]">
-								You may find your answer faster in our Help Center.
+						<div className="flex flex-col gap-3">
+							<div className="flex flex-col gap-2">
+								<h2 className={`${bungee} wv-heading-title text-base text-white md:text-lg`}>
+									BEFORE YOU CONTACT US
+								</h2>
+								<span aria-hidden className="wv-hero-bar h-[3px] w-16 rounded-full" />
+							</div>
+							<p className={`${orbitron} wv-hero-copy text-sm leading-[1.6]`}>
+								You may find your answer <strong className="wv-hero-key">faster</strong> in our{" "}
+								<strong className="wv-hero-key wv-hero-key--pink">Help Center</strong>.
 							</p>
 						</div>
 						<ul className="flex flex-col gap-3">
-							{HELP_LINKS.map((h) => (
+							{HELP_LINKS.map((h, i) => (
 								<li key={h.title}>
 									<a
 										href={h.href}
-										className="flex items-center gap-4 rounded-lg border border-[var(--ct-border)] bg-[var(--ct-card)] p-4"
+										className={`wv-neon-card wv-acct-card ${i % 2 ? "wv-neon-card--pink" : ""} group flex items-center gap-4 rounded-xl p-4`}
 									>
-										<span className="flex size-9 shrink-0 items-center justify-center rounded bg-[var(--ct-icon)]">
-											<Image src={`/home/contact/${h.icon}.svg`} alt="" width={18} height={18} />
+										<span
+											aria-hidden
+											className="wv-neon-card-icon flex size-10 shrink-0 items-center justify-center rounded-xl"
+										>
+											<h.Icon className="size-[18px]" strokeWidth={2.25} />
 										</span>
 										<span className="flex min-w-0 flex-1 flex-col gap-1">
-											<span className={`${heyComic} text-sm`}>{h.title}</span>
-											<span className={`${orbitron} text-xs text-[var(--ct-text)]`}>{h.text}</span>
+											<span className={`${heyComic} wv-trust-title text-sm`}>{h.title}</span>
+											<span className={`${orbitron} wv-neon-card-text text-xs`}>{h.text}</span>
 										</span>
-										<Image src="/home/contact/arrow.svg" alt="" width={16} height={16} className="shrink-0" />
+										<ArrowRight
+											aria-hidden
+											className="wv-af-inline-icon size-4 shrink-0 transition-transform group-hover:translate-x-1"
+											strokeWidth={2.5}
+										/>
 									</a>
 								</li>
 							))}
 						</ul>
 						<Link
 							href="/learn"
-							className={`${heyComic} flex items-center justify-center rounded border-[1.5px] border-[var(--ct-cyan)] px-7 py-[14px] text-xs uppercase text-[var(--ct-cyan)]`}
+							className={`${heyComic} wv-btn wv-btn-outline wv-btn-neon flex h-12 items-center justify-center gap-2 rounded-xl border-[1.5px] border-[var(--wv-cyan-soft)] px-7 text-[13px] uppercase text-[var(--wv-cyan-soft)]`}
 						>
-							Visit Help Center
+							<BookOpen aria-hidden className="size-4" strokeWidth={2.25} />
+							<span className="wv-btn-label">Visit Help Center</span>
 						</Link>
 					</div>
 				</section>
