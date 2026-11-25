@@ -91,10 +91,11 @@ export function WvReturns() {
 			    copy with its key phrases lit, a glossy cyan button and the neon outline one, and the art in a glowing frame
 			    with glass and HUD corners (`.wv-art*`). */}
 			<section className="wv-hero-backdrop flex flex-col gap-8 px-4 py-8 md:px-10 md:py-12 xl:flex-row-reverse xl:items-center xl:gap-20 xl:p-20">
-				<div className="wv-art relative h-[180px] w-full shrink-0 overflow-hidden rounded-3xl md:h-[260px] xl:h-[400px] xl:w-[560px]">
+				{/* 5:3 on phones, so the whole scene shows (the art is drawn 1200×720). */}
+				<div className="wv-art relative aspect-[5/3] w-full shrink-0 overflow-hidden rounded-3xl md:aspect-auto md:h-[260px] xl:h-[400px] xl:w-[560px]">
 					<Image
-						src="/home/returns/hero.png"
-						alt="A parcel returning through a secure logistics network"
+						src="/home/returns/hero.svg"
+						alt="A parcel with a prepaid return label on a glowing conveyor inside a neon return loop, the four steps of a return on it (start a return, pack it, label and drop it off, get your refund), with a 15-day calendar and a shield with a tick either side"
 						fill
 						priority
 						sizes="(min-width: 1280px) 560px, 100vw"
