@@ -9,9 +9,11 @@ import {
 	RotateCcw,
 	ShieldCheck,
 	Tag,
+	TriangleAlert,
 	Truck,
 	Undo2,
 	Wallet,
+	X,
 	type LucideIcon,
 } from "lucide-react";
 import Image from "next/image";
@@ -226,57 +228,72 @@ export function WvReturns() {
 				</ol>
 			</section>
 
-			{/* FAQ + eligibility */}
-			<section className="flex flex-col gap-10 border-y border-[var(--rt-border)] bg-[var(--rt-band)] px-4 py-12 md:px-10 md:py-16 xl:flex-row xl:gap-20 xl:p-20">
+			{/* FAQ + eligibility, over a soft pink and cyan glow (`.wv-faq-glow`). Each answer is the shipping page's glassy
+			    neon panel (`.wv-info-*`): pink while closed and glowing cyan once open, its title lifted and its +/− in a neon
+			    ring. What can't be returned sits on a pink neon card (`.wv-neon-card--pink`) whose warning and crosses glow. */}
+			<section className="wv-faq-glow flex flex-col gap-10 px-4 py-12 md:px-10 md:py-16 xl:flex-row xl:gap-20 xl:p-20">
 				<div className="flex min-w-0 flex-1 flex-col gap-6 xl:gap-8">
-					<h2 className="font-[family-name:var(--font-bungee)] text-xl md:text-2xl">RETURN POLICY FAQ</h2>
-					<div className="flex flex-col gap-4">
+					<div className="flex flex-col gap-2">
+						<p className={`${marker} wv-heading-eyebrow text-lg text-[var(--wv-pink)] md:text-xl`}>
+							Good to know
+						</p>
+						<h2 className={`${bungee} wv-heading-title text-2xl text-white md:text-[28px]`}>
+							RETURN POLICY FAQ
+						</h2>
+						<span aria-hidden className="wv-hero-bar mt-1 h-1 w-20 rounded-full md:w-[120px]" />
+					</div>
+					<div className="flex flex-col gap-3 xl:gap-4">
 						{FAQS.map((f, i) => (
-							<details
-								key={f.q}
-								open={i === 0}
-								className="group rounded-lg border border-[var(--rt-border)] bg-[var(--rt-card)] p-5"
-							>
-								<summary className="flex cursor-pointer list-none items-center justify-between gap-3 [&::-webkit-details-marker]:hidden">
-									<span className={`${heyComic} text-xs`}>{f.q}</span>
-									<Image
-										src="/home/returns/chevron.svg"
-										alt=""
-										width={16}
-										height={16}
-										className="shrink-0 transition-transform group-open:rotate-180"
-									/>
+							<details key={f.q} open={i === 0} className="wv-info-item group rounded-xl p-4 md:p-5">
+								<summary
+									className={`${heyComic} wv-trust-title flex cursor-pointer list-none items-center justify-between gap-4 text-[13px] md:text-sm [&::-webkit-details-marker]:hidden`}
+								>
+									{f.q}
+									<span aria-hidden className="wv-info-toggle font-mono text-base">
+										<span className="group-open:hidden">+</span>
+										<span className="hidden group-open:inline">−</span>
+									</span>
 								</summary>
-								<p className={`${orbitron} mt-3 text-sm leading-[1.5] text-[var(--rt-text)]`}>{f.a}</p>
+								<p className={`${orbitron} wv-trust-text mt-3 text-sm leading-[1.6]`}>{f.a}</p>
 							</details>
 						))}
 					</div>
 				</div>
 				<aside
-					className="border-[var(--rt-magenta)]/20 flex flex-col gap-8 rounded-2xl border-[1.5px] bg-[var(--rt-card)] p-6 shadow-[0_0_8px_rgba(255,0,160,0.07)] md:p-10 xl:flex-1 xl:self-start"
+					className="wv-neon-card wv-neon-card--pink wv-dist-step flex flex-col gap-6 rounded-2xl p-6 md:p-10 xl:flex-1 xl:self-start"
 					aria-labelledby="not-eligible"
 				>
 					<div className="flex flex-col gap-3">
-						<div className="flex items-center gap-[10px]">
-							<Image src="/home/returns/alert.svg" alt="" width={20} height={20} />
-							<h2 id="not-eligible" className={`${bungee} text-base`}>
+						<div className="flex items-center gap-3">
+							<span
+								aria-hidden
+								className="wv-neon-card-icon flex size-11 shrink-0 items-center justify-center rounded-xl"
+							>
+								<TriangleAlert className="wv-dist-step-icon size-5" strokeWidth={2.25} />
+							</span>
+							<h2 id="not-eligible" className={`${bungee} wv-heading-title text-base text-white md:text-lg`}>
 								NOT ELIGIBLE FOR RETURN
 							</h2>
 						</div>
-						<hr className="border-[var(--rt-magenta)]/20" />
+						<span aria-hidden className="wv-hero-bar h-1 w-16 rounded-full" />
 					</div>
-					<ul className="flex flex-col gap-5">
+					<ul className="flex flex-col gap-4">
 						{NOT_ELIGIBLE.map((t) => (
 							<li
 								key={t}
-								className={`${orbitron} flex items-center gap-3 text-sm leading-[1.4] text-[var(--rt-text)]`}
+								className={`${orbitron} wv-trust-text flex items-start gap-3 text-sm leading-[1.5]`}
 							>
-								<span aria-hidden className="size-[6px] shrink-0 rounded-[3px] bg-[var(--rt-magenta)]" />
+								<span
+									aria-hidden
+									className="wv-info-toggle mt-[-2px] size-[22px] text-[var(--wv-pink)] [&_svg]:size-3"
+								>
+									<X strokeWidth={3} />
+								</span>
 								{t}
 							</li>
 						))}
 					</ul>
-					<p className={`${heyComic} text-xs leading-[1.5] text-[var(--rt-muted)]`}>
+					<p className={`${orbitron} text-xs leading-[1.6] text-[var(--wv-text-dim)]`}>
 						Due to strict sanitation, safety, and health regulations, the items specified above cannot be
 						returned once unsealed. Please double check model compatibility before unboxing.
 					</p>
