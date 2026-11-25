@@ -1,4 +1,15 @@
-import { PackageSearch, RotateCcw, Undo2 } from "lucide-react";
+import {
+	BadgeCheck,
+	CalendarDays,
+	Headset,
+	Lock,
+	PackageSearch,
+	RotateCcw,
+	ShieldCheck,
+	Truck,
+	Undo2,
+	type LucideIcon,
+} from "lucide-react";
 import Image from "next/image";
 import { whatsappHref } from "@/lib/whatsapp";
 import { WvFooter, WvHeader } from "./wv-chrome";
@@ -15,19 +26,21 @@ const START_HREF = `mailto:${SUPPORT}?subject=Start%20a%20return&body=Order%20nu
 const STATUS_HREF = `mailto:${SUPPORT}?subject=Return%20status&body=Order%20number%3A`;
 const HELP_HREF = `mailto:${SUPPORT}?subject=Returns%20help`;
 
-const TOP_BADGES = [
+type BadgeData = { Icon: LucideIcon; title: string; text: string };
+
+const TOP_BADGES: BadgeData[] = [
 	{
-		icon: "calendar",
+		Icon: CalendarDays,
 		title: "15-DAY RETURN WINDOW",
 		text: "Returns accepted within 15 days of delivery date.",
 	},
-	{ icon: "shield", title: "EASY & HASSLE-FREE", text: "Simple process with clear digital steps." },
-	{ icon: "zap", title: "QUALITY GUARANTEED", text: "Damaged or defective items are fully covered." },
+	{ Icon: ShieldCheck, title: "EASY & HASSLE-FREE", text: "Simple process with clear digital steps." },
+	{ Icon: BadgeCheck, title: "QUALITY GUARANTEED", text: "Damaged or defective items are fully covered." },
 ];
-const BOTTOM_BADGES = [
-	{ icon: "truck", title: "FAST SHIPPING", text: "Dispatched within 24 hours." },
-	{ icon: "lock", title: "SECURE PAYMENT", text: "100% SSL protected payments." },
-	{ icon: "support", title: "EXPERT SUPPORT", text: "We are always here to help." },
+const BOTTOM_BADGES: BadgeData[] = [
+	{ Icon: Truck, title: "FAST SHIPPING", text: "Dispatched within 24 hours." },
+	{ Icon: Lock, title: "SECURE PAYMENT", text: "100% SSL protected payments." },
+	{ Icon: Headset, title: "EXPERT SUPPORT", text: "We are always here to help." },
 ];
 
 const STEPS = [
@@ -62,15 +75,22 @@ const NOT_ELIGIBLE = [
 	"Clearance, final sale, or promotional mystery items",
 ];
 
-function Badge({ b }: { b: { icon: string; title: string; text: string } }) {
+/**
+ * A badge in the page's two trust strips, lit like the home page's (`.wv-trust-*` in wv-home.css): items in turn cyan
+ * and pink, each icon glowing in a neon ring of its colour, the title lifted and the line brighter.
+ */
+function Badge({ b }: { b: BadgeData }) {
 	return (
-		<li className="flex items-center gap-4 p-4">
-			<span className="border-[var(--rt-cyan)]/20 bg-[var(--rt-cyan)]/[0.06] flex size-12 shrink-0 items-center justify-center rounded-full border">
-				<Image src={`/home/returns/${b.icon}.svg`} alt="" width={20} height={20} />
+		<li className="wv-trust-item flex items-center gap-4 p-2 md:p-3">
+			<span aria-hidden className="wv-trust-icon text-[26px] xl:text-[30px]">
+				<b.Icon
+					className="size-[0.6em] text-[var(--accent)] drop-shadow-[0_0_4px_var(--accent)]"
+					strokeWidth={2}
+				/>
 			</span>
 			<span className="flex min-w-0 flex-col gap-1">
-				<span className={`${heyComic} text-xs`}>{b.title}</span>
-				<span className={`${orbitron} text-[13px] leading-[1.4] text-[var(--rt-text)]`}>{b.text}</span>
+				<span className={`${heyComic} wv-trust-title text-[13px] md:text-sm`}>{b.title}</span>
+				<span className={`${orbitron} wv-trust-text text-xs leading-[1.45] md:text-[13px]`}>{b.text}</span>
 			</span>
 		</li>
 	);
@@ -144,8 +164,8 @@ export function WvReturns() {
 				</div>
 			</section>
 
-			{/* Top badges */}
-			<ul className="grid gap-3 border-y border-[var(--rt-border)] bg-[var(--rt-band)] px-4 py-8 md:grid-cols-3 md:gap-4 md:px-10 xl:gap-10 xl:px-20">
+			{/* Top badges: a lit glass band (`.wv-band`, neon edges top and bottom), as on the home page */}
+			<ul className="wv-band grid gap-4 px-4 py-8 md:grid-cols-3 md:gap-4 md:px-10 xl:gap-10 xl:px-20">
 				{TOP_BADGES.map((b) => (
 					<Badge key={b.title} b={b} />
 				))}
@@ -261,8 +281,8 @@ export function WvReturns() {
 				</div>
 			</section>
 
-			{/* Bottom badges */}
-			<ul className="grid gap-3 border-t border-[var(--rt-border)] bg-[var(--rt-band)] px-4 py-8 md:grid-cols-3 md:gap-4 md:px-10 xl:gap-10 xl:px-20 xl:py-10">
+			{/* Bottom badges: the same lit band */}
+			<ul className="wv-band grid gap-4 px-4 py-8 md:grid-cols-3 md:gap-4 md:px-10 xl:gap-10 xl:px-20 xl:py-10">
 				{BOTTOM_BADGES.map((b) => (
 					<Badge key={b.title} b={b} />
 				))}
