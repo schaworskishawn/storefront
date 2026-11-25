@@ -96,15 +96,16 @@ const NOT_ELIGIBLE = [
 ];
 
 /**
- * A badge in the page's two trust strips, lit like the home page's (`.wv-trust-*` in wv-home.css): items in turn cyan
- * and pink, each icon glowing in a neon ring of its colour, the title lifted and the line brighter.
+ * A badge in the page's two trust strips: a neon card (`.wv-neon-card`) set into the lit band, in turn cyan and pink
+ * (`.wv-trust-item`), that glows but doesn't lift as it isn't a link (`.wv-dist-step`); its icon glows in a neon ring of
+ * its colour, the title lifted and the line brighter (`.wv-trust-*`).
  */
 function Badge({ b }: { b: BadgeData }) {
 	return (
-		<li className="wv-trust-item flex items-center gap-4 p-2 md:p-3">
+		<li className="wv-neon-card wv-trust-item wv-dist-step flex items-center gap-4 rounded-2xl p-4 xl:p-5">
 			<span aria-hidden className="wv-trust-icon text-[26px] xl:text-[30px]">
 				<b.Icon
-					className="size-[0.6em] text-[var(--accent)] drop-shadow-[0_0_4px_var(--accent)]"
+					className="size-[0.68em] text-[var(--accent)] drop-shadow-[0_0_4px_var(--accent)]"
 					strokeWidth={2}
 				/>
 			</span>
