@@ -2,8 +2,11 @@ import {
 	BadgeCheck,
 	CalendarDays,
 	ClipboardList,
+	Clock,
 	Headset,
 	Lock,
+	Mail,
+	MessageCircle,
 	PackageCheck,
 	PackageSearch,
 	RotateCcw,
@@ -300,26 +303,42 @@ export function WvReturns() {
 				</aside>
 			</section>
 
-			{/* Need help */}
-			<section className="flex justify-center px-4 py-12 md:px-10 md:py-16 xl:px-20 xl:py-24">
-				<div className="border-[var(--rt-cyan)]/20 flex w-full max-w-[800px] flex-col items-center gap-6 rounded-2xl border bg-[var(--rt-card)] p-6 text-center shadow-[0_0_16px_rgba(0,255,224,0.07)] md:p-10 xl:gap-9 xl:p-12">
-					<div className="flex flex-col gap-3">
-						<h2 className={`${bungee} text-xl xl:text-2xl`}>NEED HELP?</h2>
-						<p className={`${orbitron} text-sm text-[var(--rt-text)]`}>
-							Contact our support team and we will guide you step by step.
+			{/* Need help, over a soft glow: the site's lit glass card (`.wv-news-card`, a cyan-through-purple-to-pink edge that
+			    glows), a glowing headset in a lit tile, the chrome 3D heading over a glowing bar, brighter copy with its promise lit,
+			    the support hours as a neon chip, and the neon outline and glossy buttons with their icons. */}
+			<section className="wv-faq-glow flex justify-center px-4 py-12 md:px-10 md:py-16 xl:px-20 xl:py-24">
+				<div className="wv-news-card flex w-full max-w-[800px] flex-col items-center gap-6 rounded-[20px] p-6 text-center md:p-10 xl:gap-8 xl:p-12">
+					<span aria-hidden className="wv-acct-icon flex size-14 items-center justify-center rounded-2xl">
+						<Headset className="size-6" strokeWidth={2.25} />
+					</span>
+					<div className="flex flex-col items-center gap-3">
+						<h2 className={`${bungee} wv-heading-title text-2xl text-white xl:text-[28px]`}>NEED HELP?</h2>
+						<span aria-hidden className="wv-hero-bar h-1 w-16 rounded-full md:w-20" />
+						<p className={`${orbitron} wv-hero-copy text-sm leading-[1.6] md:text-[15px]`}>
+							Contact our support team and we will{" "}
+							<strong className="wv-hero-key">guide you step by step</strong>.
+						</p>
+						<p
+							className={`${heyComic} wv-hero-badge flex items-center gap-2 rounded-full px-3 py-1 text-[10px] tracking-[1.2px] md:text-[11px]`}
+						>
+							<Clock aria-hidden className="size-3.5" strokeWidth={2.25} />
+							MON – SUN · 9:00 AM – 10:00 PM EST
 						</p>
 					</div>
 					<div className="flex w-full flex-col gap-3 md:w-auto md:flex-row md:gap-4">
 						<a href={HELP_HREF} className={secondary}>
-							EMAIL US
+							<Mail aria-hidden className="size-4" strokeWidth={2.5} />
+							<span className="wv-btn-label">EMAIL US</span>
 						</a>
 						{chat ? (
 							<a href={chat} target="_blank" rel="noopener noreferrer" className={primary}>
-								LIVE CHAT
+								<MessageCircle aria-hidden className="size-4" strokeWidth={2.5} />
+								<span className="wv-pc-cta-label">LIVE CHAT</span>
 							</a>
 						) : (
 							<a href={START_HREF} className={`${primary} hidden md:flex`}>
-								START A RETURN
+								<Undo2 aria-hidden className="size-4" strokeWidth={2.5} />
+								<span className="wv-pc-cta-label">START A RETURN</span>
 							</a>
 						)}
 					</div>
