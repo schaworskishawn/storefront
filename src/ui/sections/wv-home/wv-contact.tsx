@@ -130,13 +130,14 @@ export function WvContact() {
 							<strong className="wv-hero-key">orders</strong>, or anything vaping related.
 						</p>
 					</div>
-					<div className="wv-art relative h-[170px] w-full shrink-0 overflow-hidden rounded-2xl md:h-[236px] md:w-[260px] xl:h-[260px] xl:w-[420px]">
+					{/* 5:3 on phones and tablets, so the whole scene shows (the art is drawn 1200×720). */}
+					<div className="wv-art relative aspect-[5/3] w-full shrink-0 overflow-hidden rounded-2xl md:aspect-auto md:h-[176px] md:w-[294px] xl:h-[260px] xl:w-[420px]">
 						<Image
-							src="/home/contact/hero.png"
-							alt="Neon email, chat and phone icons over a support console"
+							src="/home/contact/hero.svg"
+							alt="A glowing envelope with its letter rising out inside a 24-hour reply ring, wired to neon seals for live chat, the support team, the FAQs and order tracking"
 							fill
 							priority
-							sizes="(min-width: 1280px) 420px, (min-width: 768px) 260px, 100vw"
+							sizes="(min-width: 1280px) 420px, (min-width: 768px) 294px, 100vw"
 							className="object-cover"
 						/>
 						<span aria-hidden className="wv-art-glass absolute inset-0" />
