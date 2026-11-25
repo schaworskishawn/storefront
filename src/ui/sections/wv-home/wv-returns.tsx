@@ -1,13 +1,17 @@
 import {
 	BadgeCheck,
 	CalendarDays,
+	ClipboardList,
 	Headset,
 	Lock,
+	PackageCheck,
 	PackageSearch,
 	RotateCcw,
 	ShieldCheck,
+	Tag,
 	Truck,
 	Undo2,
+	Wallet,
 	type LucideIcon,
 } from "lucide-react";
 import Image from "next/image";
@@ -20,6 +24,7 @@ import "./wv-home.css";
 const heyComic = "font-[family-name:var(--font-hey-comic)]";
 const bungee = "font-[family-name:var(--font-bungee)]";
 const orbitron = "font-[family-name:var(--font-orbitron)]";
+const marker = "font-[family-name:var(--font-permanent-marker)]";
 
 const SUPPORT = "support@worldwidevapor.com";
 const START_HREF = `mailto:${SUPPORT}?subject=Start%20a%20return&body=Order%20number%3A%0AItem(s)%20to%20return%3A%0AReason%3A`;
@@ -43,11 +48,21 @@ const BOTTOM_BADGES: BadgeData[] = [
 	{ Icon: Headset, title: "EXPERT SUPPORT", text: "We are always here to help." },
 ];
 
-const STEPS = [
-	{ n: "01", title: "START RETURN", text: "Submit return request with your order details." },
-	{ n: "02", title: "PACK YOUR ITEM", text: "Securely pack the items in original packaging." },
-	{ n: "03", title: "SHIP YOUR RETURN", text: "Print the label and drop off at local carrier." },
-	{ n: "04", title: "RECEIVE REFUND", text: "We process, inspect and credit your account." },
+const STEPS: { n: string; Icon: LucideIcon; title: string; text: string }[] = [
+	{
+		n: "01",
+		Icon: ClipboardList,
+		title: "START RETURN",
+		text: "Submit return request with your order details.",
+	},
+	{
+		n: "02",
+		Icon: PackageCheck,
+		title: "PACK YOUR ITEM",
+		text: "Securely pack the items in original packaging.",
+	},
+	{ n: "03", Icon: Tag, title: "SHIP YOUR RETURN", text: "Print the label and drop off at local carrier." },
+	{ n: "04", Icon: Wallet, title: "RECEIVE REFUND", text: "We process, inspect and credit your account." },
 ];
 
 const FAQS = [
@@ -171,27 +186,40 @@ export function WvReturns() {
 				))}
 			</ul>
 
-			{/* How it works */}
-			<section className="flex flex-col items-center gap-8 px-4 py-12 md:px-10 md:py-16 xl:gap-14 xl:px-20 xl:py-24">
-				<div className="flex flex-col items-center gap-3 text-center xl:gap-4">
-					<p className={`${bungee} text-xs text-[var(--rt-magenta)]`}>WORLDWIDE VAPOR</p>
-					<h2 className={`${heyComic} text-2xl md:text-3xl xl:text-4xl`}>HOW RETURNS WORK</h2>
+			{/* How it works, over a soft pink and cyan glow (`.wv-faq-glow`): the site's chrome 3D heading under its pink eyebrow
+			    and over a glowing bar (`.wv-heading-*`), and each step a neon card in turn cyan and pink that glows but doesn't
+			    lift, its number lit in a tile and its icon glowing (the distributor checklist's `.wv-dist-step*`). */}
+			<section className="wv-faq-glow flex flex-col items-center gap-8 px-4 py-12 md:px-10 md:py-16 xl:gap-14 xl:px-20 xl:py-24">
+				<div className="flex flex-col items-center gap-2 text-center">
+					<p className={`${marker} wv-heading-eyebrow text-lg text-[var(--wv-pink)] md:text-xl`}>
+						WORLDWIDE VAPOR
+					</p>
+					<h2 className={`${bungee} wv-heading-title text-2xl text-white md:text-[28px] xl:text-[32px]`}>
+						HOW RETURNS WORK
+					</h2>
+					<span aria-hidden className="wv-hero-bar mt-1 h-1 w-20 rounded-full md:w-[120px]" />
 				</div>
 				<ol className="grid w-full gap-4 md:grid-cols-2 xl:grid-cols-4 xl:gap-6">
-					{STEPS.map((s) => (
+					{STEPS.map((s, i) => (
 						<li
 							key={s.n}
-							className="border-[var(--rt-cyan)]/20 flex flex-col gap-5 rounded-xl border bg-[var(--rt-card)] p-6 shadow-[inset_0_1px_8px_rgba(0,255,224,0.06)]"
+							className={`wv-neon-card wv-dist-step ${i % 2 ? "wv-neon-card--pink" : ""} flex flex-col gap-5 rounded-2xl p-5 xl:p-6`}
 						>
 							<div className="flex items-center justify-between">
-								<span className="flex size-9 items-center justify-center rounded-full bg-gradient-to-r from-[var(--rt-magenta)] to-[var(--rt-purple)] text-sm font-extrabold">
+								<span
+									aria-hidden
+									className={`${bungee} wv-neon-card-icon wv-dist-step-num flex size-11 items-center justify-center rounded-xl text-sm`}
+								>
 									{s.n}
 								</span>
-								<span aria-hidden className="bg-[var(--rt-cyan)]/25 h-px w-10" />
+								<s.Icon aria-hidden className="wv-dist-step-icon size-6" strokeWidth={2} />
 							</div>
 							<div className="flex flex-col gap-2">
-								<h3 className={`${heyComic} text-sm`}>{s.title}</h3>
-								<p className={`${orbitron} text-[13px] leading-[1.5] text-[var(--rt-text)]`}>{s.text}</p>
+								<h3 className={`${heyComic} wv-trust-title text-sm md:text-[15px]`}>
+									<span className="sr-only">Step {i + 1}: </span>
+									{s.title}
+								</h3>
+								<p className={`${orbitron} wv-trust-text text-[13px] leading-[1.5]`}>{s.text}</p>
 							</div>
 						</li>
 					))}
