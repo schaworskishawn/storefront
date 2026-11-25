@@ -2438,7 +2438,15 @@ li:nth-child(even) > .wv-cat-chip {
 /* The signed-in account summaries (SummaryCard, wv-account.tsx): neon cards in their colour (--accent), each a link.
  * The icon glows in its lit tile; the label is a glowing glass pill; a neon line runs across under the hint; and the
  * action is a glass pill edged in the card's colour, brighter with its arrow sliding on while the card is under the
- * pointer or focused. */
+ * pointer or focused. The contact page's ways to reach us (MethodCard, wv-contact.tsx) are these cards too; the address
+ * there isn't a link, so it neither lifts nor brightens under the pointer. */
+.wv-neon-card.wv-acct-card:not(a, button):hover {
+	transform: none;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 12%, transparent),
+		var(--glow),
+		0 16px 26px -14px var(--wv-ink);
+}
 .wv-acct-card .wv-neon-card-icon svg {
 	color: var(--accent);
 	filter: drop-shadow(0 0 5px color-mix(in srgb, var(--accent) 85%, transparent));

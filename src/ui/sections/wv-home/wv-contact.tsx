@@ -1,6 +1,18 @@
-import { ChevronRight, Clock, Home } from "lucide-react";
+import {
+	ArrowRight,
+	ArrowUpRight,
+	ChevronRight,
+	Clock,
+	Globe,
+	Home,
+	type LucideIcon,
+	Mail,
+	MapPin,
+	MessageSquare,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { whatsappHref } from "@/lib/whatsapp";
 import { ContactForm } from "./wv-contact-form";
 import { WvFooter, WvHeader } from "./wv-chrome";
@@ -33,42 +45,90 @@ const BADGES = [
 	{ icon: "award", title: "Quality Guarantee", text: "All products fully certified" },
 ];
 
+/**
+ * One way to reach us, in the style of the account summaries: a neon card (`.wv-neon-card`, pink for the middle one,
+ * with `.wv-acct-card*` in wv-home.css). Its icon glows in a lit tile and its label sits in a glowing glass pill; the
+ * way in glows in the card's colour, with the key words of its note lit; a neon line runs under it; then, for a link,
+ * a neon pill whose arrow slides on under the pointer, or for the address, the country in a glass pill. The address
+ * isn't a link, so it doesn't lift or brighten under the pointer.
+ */
 function MethodCard({
-	tone,
-	icon,
-	title,
+	pink = false,
+	Icon,
+	label,
 	headline,
-	sub,
+	note,
+	action,
+	tag,
 	href,
 	external,
 }: {
-	tone: "cyan" | "magenta";
-	icon: string;
-	title: string;
+	pink?: boolean;
+	Icon: LucideIcon;
+	label: string;
 	headline: string;
-	sub: string;
+	note?: ReactNode;
+	/** The link's call to action ("SEND AN EMAIL"), shown when there's a link. */
+	action?: string;
+	/** A fact shown in a glass pill at the foot instead of an action ("UNITED STATES"). */
+	tag?: string;
 	href?: string;
 	external?: boolean;
 }) {
-	const color = tone === "cyan" ? "text-[var(--ct-cyan)]" : "text-[var(--ct-magenta)]";
+	const Arrow = external ? ArrowUpRight : ArrowRight;
+	const at = headline.indexOf("@");
 	const inner = (
 		<>
-			<span
-				className={`absolute -right-px -top-px size-3 opacity-30 ${tone === "cyan" ? "bg-[var(--ct-cyan)]" : "bg-[var(--ct-magenta)]"}`}
-			/>
-			<span
-				className={`flex size-10 items-center justify-center rounded-md border bg-[var(--ct-icon)] ${tone === "cyan" ? "border-[var(--ct-cyan)]" : "border-[var(--ct-magenta)]"}`}
-			>
-				<Image src={`/home/contact/${icon}.svg`} alt="" width={20} height={20} />
-			</span>
-			<span className="flex flex-col gap-[6px]">
-				<span className={`${bungee} text-[11px] text-white`}>{title}</span>
-				<span className={`${heyComic} break-words text-sm ${color}`}>{headline}</span>
-				<span className={`${orbitron} text-xs text-[var(--ct-text)]`}>{sub}</span>
-			</span>
+			<div className="flex items-start justify-between gap-3">
+				<span
+					aria-hidden
+					className="wv-neon-card-icon flex size-11 shrink-0 items-center justify-center rounded-xl"
+				>
+					<Icon className="size-5" strokeWidth={2.25} />
+				</span>
+				<span className={`${orbitron} wv-acct-card-tag rounded-full px-2.5 py-1 text-[10px] tracking-[1px]`}>
+					{label}
+				</span>
+			</div>
+			<div className="flex flex-col gap-1.5">
+				<p className={`${heyComic} wv-neon-card-link break-words text-[15px] md:text-sm xl:text-base`}>
+					{/* An email may wrap after its "@" rather than mid-word. */}
+					{at < 0 ? (
+						headline
+					) : (
+						<>
+							{headline.slice(0, at + 1)}
+							<wbr />
+							{headline.slice(at + 1)}
+						</>
+					)}
+				</p>
+				{note && <p className={`${orbitron} wv-neon-card-text text-xs leading-[1.6]`}>{note}</p>}
+			</div>
+			<div className="flex-1" />
+			<span aria-hidden className="wv-acct-card-rule h-px w-full" />
+			{href && action ? (
+				<span
+					className={`${orbitron} wv-acct-card-action flex items-center gap-2 self-end rounded-full px-3.5 py-1.5 text-[11px] tracking-[0.5px]`}
+				>
+					{action}
+					<Arrow
+						aria-hidden
+						className={`size-3.5 transition-transform ${external ? "group-hover:-translate-y-0.5 group-hover:translate-x-0.5" : "group-hover:translate-x-1"}`}
+						strokeWidth={2.5}
+					/>
+				</span>
+			) : tag ? (
+				<span
+					className={`${orbitron} wv-acct-card-tag flex items-center gap-1.5 self-end rounded-full px-2.5 py-1 text-[10px] tracking-[1px]`}
+				>
+					<Globe aria-hidden className="size-3" strokeWidth={2.5} />
+					{tag}
+				</span>
+			) : null}
 		</>
 	);
-	const cls = `relative flex flex-col gap-4 overflow-hidden rounded-lg border bg-[var(--ct-card)] p-5 md:p-4 xl:p-6 ${tone === "cyan" ? "border-[var(--ct-cyan)]/15" : "border-[var(--ct-magenta)]/15"}`;
+	const cls = `wv-neon-card wv-acct-card ${pink ? "wv-neon-card--pink" : ""} group flex flex-col gap-3 rounded-xl p-[18px] md:p-4 xl:p-6`;
 	if (!href) return <div className={cls}>{inner}</div>;
 	return (
 		<a href={href} {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})} className={cls}>
@@ -145,31 +205,35 @@ export function WvContact() {
 					</div>
 				</section>
 
-				{/* Methods */}
-				<section className="grid gap-4 px-4 py-2 md:grid-cols-3 md:gap-6 md:px-8 md:py-4 xl:px-20 xl:py-6">
+				{/* The ways to reach us: neon cards, cyan, pink, cyan (see MethodCard). */}
+				<section className="grid gap-4 px-4 py-2 md:grid-cols-3 md:gap-5 md:px-8 md:py-4 xl:gap-6 xl:px-20 xl:py-6">
 					<MethodCard
-						tone="cyan"
-						icon="mail"
-						title="EMAIL US"
+						Icon={Mail}
+						label="EMAIL US"
 						headline={SUPPORT}
-						sub="We typically reply within 24 hours"
+						note={
+							<>
+								We typically reply within <strong className="wv-neon-key">24 hours</strong>
+							</>
+						}
+						action="SEND AN EMAIL"
 						href={`mailto:${SUPPORT}`}
 					/>
 					<MethodCard
-						tone="cyan"
-						icon="chat"
-						title="LIVE CHAT"
+						pink
+						Icon={MessageSquare}
+						label="LIVE CHAT"
 						headline="Chat with our support team"
-						sub="Monday–Sunday"
+						note={<strong className="wv-neon-key">Monday–Sunday</strong>}
+						action="START A CHAT"
 						href={chat ?? undefined}
 						external
 					/>
 					<MethodCard
-						tone="magenta"
-						icon="pin"
-						title="OUR LOCATION"
+						Icon={MapPin}
+						label="OUR LOCATION"
 						headline="123 Vapor Way, Vapecrest, NY 10001"
-						sub="United States"
+						tag="UNITED STATES"
 					/>
 				</section>
 
