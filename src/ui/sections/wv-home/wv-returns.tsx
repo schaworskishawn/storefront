@@ -1,3 +1,4 @@
+import { PackageSearch, RotateCcw, Undo2 } from "lucide-react";
 import Image from "next/image";
 import { whatsappHref } from "@/lib/whatsapp";
 import { WvFooter, WvHeader } from "./wv-chrome";
@@ -75,8 +76,9 @@ function Badge({ b }: { b: { icon: string; title: string; text: string } }) {
 	);
 }
 
-const primary = `${heyComic} flex h-[49px] items-center justify-center rounded-lg bg-[var(--rt-cyan)] px-7 text-[13px] text-[var(--rt-bg)] shadow-[0_0_8px_rgba(0,255,224,0.4)]`;
-const secondary = `${heyComic} flex h-[49px] items-center justify-center rounded-lg border-[1.5px] border-[var(--rt-cyan)] px-7 text-[13px] text-[var(--rt-cyan)]`;
+// The hero's buttons: the site's glossy cyan button (`.wv-pc-cta`) and its neon outline one (`.wv-btn-neon`).
+const primary = `${heyComic} wv-pc-cta flex h-[49px] items-center justify-center gap-2 rounded-xl bg-[var(--wv-cyan-soft)] px-7 text-[13px] text-[var(--wv-ink)]`;
+const secondary = `${heyComic} wv-btn wv-btn-outline wv-btn-neon flex h-[49px] items-center justify-center gap-2 rounded-xl border-[1.5px] border-[var(--wv-cyan-soft)] px-7 text-[13px] text-[var(--wv-cyan-soft)]`;
 
 export function WvReturns() {
 	const chat = whatsappHref("Hi Worldwide Vapor, I need help with a return.");
@@ -84,9 +86,12 @@ export function WvReturns() {
 		<div className="min-h-dvh overflow-x-clip bg-[var(--rt-bg)] text-white">
 			<WvHeader />
 
-			{/* Hero */}
-			<section className="flex flex-col gap-8 px-4 py-8 md:px-10 md:py-12 xl:flex-row-reverse xl:items-center xl:gap-20 xl:p-20">
-				<div className="border-[var(--rt-magenta)]/20 relative h-[180px] w-full shrink-0 overflow-hidden rounded-3xl border-[1.5px] bg-[var(--rt-card)] shadow-[0_0_24px_rgba(255,0,160,0.13)] md:h-[260px] xl:h-[400px] xl:w-[560px]">
+			{/* Hero, in the neon style of the site's other heroes (`.wv-hero-*` in wv-home.css): a pink and cyan glow
+			    behind it, the return window in a neon badge, a 3D two-tone title over a glowing pink-to-cyan bar, brighter
+			    copy with its key phrases lit, a glossy cyan button and the neon outline one, and the art in a glowing frame
+			    with glass and HUD corners (`.wv-art*`). */}
+			<section className="wv-hero-backdrop flex flex-col gap-8 px-4 py-8 md:px-10 md:py-12 xl:flex-row-reverse xl:items-center xl:gap-20 xl:p-20">
+				<div className="wv-art relative h-[180px] w-full shrink-0 overflow-hidden rounded-3xl md:h-[260px] xl:h-[400px] xl:w-[560px]">
 					<Image
 						src="/home/returns/hero.png"
 						alt="A parcel returning through a secure logistics network"
@@ -95,29 +100,44 @@ export function WvReturns() {
 						sizes="(min-width: 1280px) 560px, 100vw"
 						className="object-cover"
 					/>
-					<div className="bg-[var(--rt-purple)]/15 absolute inset-0" />
+					<span aria-hidden className="wv-art-glass absolute inset-0" />
+					<span aria-hidden className="wv-art-hud absolute inset-[10px] md:inset-[14px]" />
 				</div>
 				<div className="flex min-w-0 flex-1 flex-col gap-6 xl:gap-8">
-					<div className="flex flex-col gap-3 md:items-center md:text-center xl:items-start xl:text-left">
-						<p className={`${bungee} text-xs text-[var(--rt-magenta)]`}>
-							SECURE SYSTEM // RETURNS &amp; REFUNDS
+					<div className="flex flex-col items-start gap-4 md:items-center md:text-center xl:items-start xl:text-left">
+						<p
+							className={`${heyComic} wv-hero-badge flex items-center gap-2 rounded-full px-3 py-1 text-[10px] tracking-[1.5px] md:px-4 md:py-[6px] md:text-[11px]`}
+						>
+							<RotateCcw aria-hidden className="size-3.5 md:size-4" strokeWidth={2.25} />
+							<span className="md:hidden">15-DAY RETURN WINDOW</span>
+							<span className="hidden md:inline">15-DAY RETURN WINDOW · PREPAID LABEL</span>
 						</p>
-						<h1 className={`${heyComic} text-[28px] leading-[1.1] md:text-[44px] xl:text-[56px]`}>
-							RETURNS &amp; REFUNDS
-						</h1>
+						<div className="flex w-full flex-col gap-3 md:items-center xl:items-start">
+							<h1
+								className={`${heyComic} wv-title-glow wv-hero-title text-[30px] leading-[1.1] md:text-[44px] xl:text-[56px]`}
+							>
+								<span>RETURNS &amp;</span> <span className="text-[var(--wv-pink)]">REFUNDS</span>
+							</h1>
+							<div className="wv-hero-bar h-1 w-20 rounded-full md:w-[120px]" />
+						</div>
 					</div>
 					<p
-						className={`${orbitron} text-sm leading-[1.6] text-[var(--rt-text)] md:text-center md:text-base xl:text-left`}
+						className={`${orbitron} wv-hero-copy text-sm leading-[1.6] md:text-center md:text-base xl:text-left`}
 					>
-						We want you to be 100% satisfied with your purchase. If something isn&apos;t right, we are here to
-						help you get it sorted immediately with zero stress.
+						We want you to be <strong className="wv-hero-key">100% satisfied</strong> with your purchase.{" "}
+						{/* A string, not JSX text: the compiler drops a leading space from JSX text that has an apostrophe. */}
+						{"If something isn't right, we are here to help you get it "}
+						<strong className="wv-hero-key wv-hero-key--pink">sorted immediately</strong> with{" "}
+						<strong className="wv-hero-key">zero stress</strong>.
 					</p>
 					<div className="flex flex-col gap-3 md:flex-row md:justify-center xl:justify-start xl:gap-4">
 						<a href={START_HREF} className={`${primary} hidden md:flex`}>
-							START A RETURN
+							<Undo2 aria-hidden className="size-4" strokeWidth={2.5} />
+							<span className="wv-pc-cta-label">START A RETURN</span>
 						</a>
 						<a href={STATUS_HREF} className={`${secondary} w-full md:w-auto`}>
-							VIEW STATUS
+							<PackageSearch aria-hidden className="size-4" strokeWidth={2.5} />
+							<span className="wv-btn-label">VIEW STATUS</span>
 						</a>
 					</div>
 				</div>
