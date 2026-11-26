@@ -199,7 +199,7 @@ export function ContactForm({ whatsapp }: { whatsapp: string | null }) {
 						name="email"
 						type="email"
 						autoComplete="email"
-						placeholder="e.g. neo@matrix.com"
+						placeholder="me@example.com"
 						className={field}
 						{...aria("email")}
 					/>
