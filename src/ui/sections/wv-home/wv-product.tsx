@@ -1,3 +1,4 @@
+import { ChevronRight, Home } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { type HomeProduct } from "@/lib/catalog/get-home-products";
@@ -53,22 +54,29 @@ export function WvProduct({
 		<div className="min-h-dvh overflow-x-clip bg-[var(--wv-bg)] text-white">
 			<WvHeader />
 
-			{/* Breadcrumbs */}
+			{/* Breadcrumb, as on the shop page: a glass strip under the header, Home glowing cyan behind a house icon, pink
+			    chevrons, and this product in a neon pill (styles: `.wv-crumb*` in wv-home.css). It wraps on narrow screens,
+			    and a long name is cut short with an ellipsis rather than breaking out of its pill. */}
 			<nav
 				aria-label="Breadcrumb"
-				className={`${orbitron} flex flex-wrap items-center gap-2 px-4 py-4 text-xs text-[var(--wv-disabled)] md:px-8 md:py-5 xl:px-20 xl:py-8`}
+				className={`${heyComic} wv-crumbs flex flex-wrap items-center gap-x-2 gap-y-1.5 px-4 py-2 text-xs tracking-[0.5px] md:px-8 xl:px-20 xl:py-3`}
 			>
-				<Link href="/home">Home</Link>
-				<span aria-hidden>/</span>
-				<Link href="/shop">{product.brand || "Shop"}</Link>
-				<span aria-hidden>/</span>
-				<span aria-current="page" className="text-[var(--wv-cyan-soft)]">
+				<Link href="/home" className="wv-link wv-crumb-link">
+					<Home aria-hidden className="size-3.5" strokeWidth={2.25} />
+					Home
+				</Link>
+				<ChevronRight aria-hidden className="wv-crumb-sep size-3.5" strokeWidth={2.5} />
+				<Link href="/shop" className="wv-link wv-crumb-link">
+					{product.brand || "Shop"}
+				</Link>
+				<ChevronRight aria-hidden className="wv-crumb-sep size-3.5" strokeWidth={2.5} />
+				<span aria-current="page" className="wv-crumb-current min-w-0 max-w-full truncate">
 					{product.name}
 				</span>
 			</nav>
 
 			{/* Hero */}
-			<section className="flex flex-col gap-6 px-4 pb-10 md:gap-8 md:px-8 md:pb-14 xl:grid xl:grid-cols-[620px_minmax(0,1fr)] xl:items-start xl:gap-x-16 xl:gap-y-5 xl:px-20 xl:pb-20">
+			<section className="flex flex-col gap-6 px-4 pb-10 pt-5 md:gap-8 md:px-8 md:pb-14 md:pt-6 xl:grid xl:grid-cols-[620px_minmax(0,1fr)] xl:items-start xl:gap-x-16 xl:gap-y-5 xl:px-20 xl:pb-20 xl:pt-8">
 				<div>
 					<ProductGallery images={images} name={product.name} />
 				</div>
