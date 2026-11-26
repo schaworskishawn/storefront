@@ -6,6 +6,7 @@ import { formatPrice } from "@/ui/components/plp/utils";
 import { WholesalePrice } from "./wv-wholesale-price";
 import { WvFooter, WvHeader } from "./wv-chrome";
 import { ProductGallery, ProductPurchase } from "./wv-product-client";
+import { ProductFaqSection, ProductStructuredData } from "./wv-product-seo";
 import "./wv-home.css";
 
 /** Worldwide Vapor product page — Figma "6.06 - High Fidelity - Product" (desktop 1440, tablet 768, mobile 360). */
@@ -139,6 +140,9 @@ export function WvProduct({
 				</section>
 			)}
 
+			{/* Questions and answers, and a companion guide, from the product's `faq` and `guide` metadata in Saleor */}
+			<ProductFaqSection faq={details?.faq ?? []} guide={details?.guide ?? null} />
+
 			{/* Recommendations */}
 			{related.length > 0 && (
 				<section className="flex flex-col gap-6 px-4 pb-8 pt-5 md:px-8 md:pb-10 xl:px-20 xl:pb-12">
@@ -175,6 +179,7 @@ export function WvProduct({
 				</section>
 			)}
 
+			<ProductStructuredData product={product} details={details} variants={variants} images={images} />
 			<WvFooter />
 		</div>
 	);
