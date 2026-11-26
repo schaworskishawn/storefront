@@ -517,9 +517,10 @@ button[aria-pressed="true"] > .wv-filter-dot {
 /* The rewards page's three numbers (wv-rewards.tsx), in a lit glass band: each icon glows in its neon ring in the item's
  * colour (cyan, pink, cyan), the value is lifted (a dark edge, a purple one beneath) and glows in that colour, and
  * glowing neon lines, cyan into pink, stand between the items (across on phones, upright from tablets up). The affiliate
- * page's highlights (wv-affiliate.tsx) light their icons the same way. */
+ * page's highlights (wv-affiliate.tsx) and the FAQ page's trust badges (wv-faqs.tsx) light their icons the same way. */
 .wv-stat .wv-trust-icon svg,
-.wv-af-highlight .wv-trust-icon svg {
+.wv-af-highlight .wv-trust-icon svg,
+.wv-faq-badge .wv-trust-icon svg {
 	color: var(--accent);
 	filter: drop-shadow(0 0 4px color-mix(in srgb, var(--accent) 85%, transparent));
 }
@@ -3658,8 +3659,9 @@ li:nth-child(even) > .wv-cat-chip {
 /* The affiliate page's "Your affiliate dashboard" section (wv-affiliate-live.tsx) and its referral tools
  * (wv-affiliate.tsx): neon cards (.wv-neon-card) that glow brighter under the pointer but don't lift, as they aren't
  * links, their icons lit in the card's colour; a neon "live" pill whose dot glows and sends out a ring (no ring for
- * reduced motion). */
-.wv-neon-card.wv-af-stat:hover {
+ * reduced motion). The FAQ page's trust badges (wv-faqs.tsx) don't lift either. */
+.wv-neon-card.wv-af-stat:hover,
+.wv-neon-card.wv-faq-badge:hover {
 	transform: none;
 }
 /* The referral tools: a soft glow, cyan behind the link and pink behind the tools; the sample link set into dark glass

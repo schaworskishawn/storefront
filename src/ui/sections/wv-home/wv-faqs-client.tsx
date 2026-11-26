@@ -1,5 +1,6 @@
 "use client";
 
+import { Search, X } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState, type ReactNode } from "react";
 
@@ -36,15 +37,23 @@ export function FaqExperience({
 
 	return (
 		<>
-			<section className="flex flex-col gap-6 md:gap-8 xl:flex-row xl:items-center xl:justify-between xl:gap-10 xl:pb-12 xl:pt-5">
+			{/* A pink and cyan glow behind the hero (`.wv-hero-backdrop`), run out to the page's edges (the negative margins
+			    undo the page's side padding) so it fades out instead of stopping at a line. The search is the search page's
+			    neon glass bar (`.wv-search-bar*`): a lit magnifier tile and a clear button that glows pink. */}
+			<section className="wv-hero-backdrop -mx-4 flex flex-col gap-6 px-4 pt-6 md:-mx-8 md:gap-8 md:px-8 md:pt-8 xl:-mx-20 xl:flex-row xl:items-center xl:justify-between xl:gap-10 xl:px-20 xl:pb-12 xl:pt-14">
 				<div className="flex min-w-0 flex-col gap-5 xl:w-[680px] xl:gap-7">
 					{intro}
 					<form
 						role="search"
 						onSubmit={(e) => e.preventDefault()}
-						className="flex h-12 items-center gap-3 rounded-lg border border-[var(--fq-search-border)] bg-[var(--fq-search-bg)] px-4 xl:h-14"
+						className="wv-search-bar flex h-12 items-center gap-3 rounded-xl pl-2 pr-3 md:h-14 md:pl-[10px] md:pr-4"
 					>
-						<span aria-hidden>🔍</span>
+						<span
+							aria-hidden
+							className="wv-search-bar-icon flex size-8 shrink-0 items-center justify-center rounded-lg md:size-9"
+						>
+							<Search className="size-4 md:size-[18px]" strokeWidth={2.5} />
+						</span>
 						<label htmlFor="faq-search" className="sr-only">
 							Search FAQs
 						</label>
@@ -57,16 +66,16 @@ export function FaqExperience({
 								setOpen(null);
 							}}
 							placeholder="Search for questions, keywords, or topics..."
-							className={`${heyComic} min-w-0 flex-1 bg-transparent text-[15px] text-white placeholder:text-[var(--fq-search-text)] focus:shadow-none focus:outline-none focus:ring-0`}
+							className={`${heyComic} min-w-0 flex-1 appearance-none border-0 bg-transparent p-0 text-[15px] text-white shadow-none ring-0 placeholder:text-[var(--wv-muted)] focus:outline-none focus:ring-0`}
 						/>
 						{query && (
 							<button
 								type="button"
 								aria-label="Clear search"
 								onClick={() => setQuery("")}
-								className="text-[var(--fq-search-text)]"
+								className="wv-search-clear flex size-[26px] shrink-0 items-center justify-center rounded-full"
 							>
-								✕
+								<X aria-hidden className="size-4" strokeWidth={2.5} />
 							</button>
 						)}
 					</form>
