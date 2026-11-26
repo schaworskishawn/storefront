@@ -1,5 +1,15 @@
 "use client";
 
+import {
+	ChevronLeft,
+	ChevronRight,
+	CircleCheck,
+	Minus,
+	Plus,
+	ShoppingCart,
+	TriangleAlert,
+	Zap,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useTransition } from "react";
@@ -12,28 +22,32 @@ const heyComic = "font-[family-name:var(--font-hey-comic)]";
 const bungee = "font-[family-name:var(--font-bungee)]";
 const orbitron = "font-[family-name:var(--font-orbitron)]";
 
+/** An option chip: glass edged cyan into pink, or glossy cyan and glowing once chosen (`.wv-pdp-chip` in wv-home.css). */
 const chip = (on: boolean) =>
-	`${heyComic} rounded-full border px-3 py-[5px] text-[11px] transition-colors ${
-		on
-			? "border-[var(--wv-cyan-soft)] bg-[var(--wv-cyan-soft)] text-[var(--wv-bg)]"
-			: "border-[var(--wv-control)] bg-[var(--wv-bg)] text-white hover:border-[var(--wv-cyan-soft)]"
-	}`;
+	`${heyComic} wv-pdp-chip rounded-full px-3.5 py-[6px] text-[11px] ${on ? "is-on" : ""}`;
 
-const labelClass = `${orbitron} text-[11px] font-bold tracking-[1px] text-[var(--wv-disabled)]`;
+/** A field's label, brighter, led by a glowing pink dot (`.wv-pdp-label`). */
+const labelClass = `${orbitron} wv-pdp-label flex items-center gap-2 text-[11px] font-bold tracking-[1px]`;
 
 export type ProductImage = { url: string; alt: string };
 
-/** Gallery: main image with prev/next controls and thumbnails (single image → controls are disabled). */
+/**
+ * Gallery: the main image on a lit stage (a purple glow behind it, pink and cyan in the corners) inside the site's
+ * glowing art frame, with glass and HUD corners (`.wv-art*`, `.wv-pdp-stage`). With more than one image there are neon
+ * round prev/next controls (`.wv-pdp-arrow`) and thumbnails, the one showing edged in neon and glowing
+ * (`.wv-pdp-thumb`); with one image the controls are left out, as there's nothing to step to.
+ */
 export function ProductGallery({ images, name }: { images: ProductImage[]; name: string }) {
 	const [i, setI] = useState(0);
 	const many = images.length > 1;
 	const cur = images[i];
 	const step = (d: number) => setI((v) => (v + d + images.length) % images.length);
+	// Centred with calc() rather than a translate, which would fight the hover scale.
 	const arrow =
-		"absolute top-1/2 flex size-9 -translate-y-1/2 items-center justify-center rounded-full border border-[var(--wv-cyan-soft)] bg-[var(--wv-bg)] text-[var(--wv-cyan-soft)] disabled:opacity-40 md:size-11";
+		"wv-pdp-arrow absolute top-[calc(50%-18px)] z-10 flex size-9 items-center justify-center rounded-full md:top-[calc(50%-22px)] md:size-11";
 	return (
 		<div className="flex flex-col gap-3">
-			<div className="relative h-[284px] w-full overflow-hidden rounded-2xl border border-[var(--wv-cyan-soft)] bg-[var(--wv-bg)] md:h-[520px] xl:h-[650px]">
+			<div className="wv-art wv-pdp-stage relative h-[284px] w-full overflow-hidden rounded-2xl md:h-[520px] xl:h-[650px]">
 				{cur ? (
 					<div key={cur.url} className="wv-fade absolute inset-6 md:inset-14">
 						<Image
@@ -46,31 +60,35 @@ export function ProductGallery({ images, name }: { images: ProductImage[]; name:
 						/>
 					</div>
 				) : (
-					<div className="absolute left-1/2 top-1/2 flex h-[65%] w-[62%] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-xl border border-[var(--wv-cyan-soft)] bg-[var(--wv-ink)]">
-						<span className={`${bungee} text-lg text-[var(--wv-cyan-soft)]`}>PRODUCT</span>
+					<div className="wv-neon-card wv-dist-step absolute inset-x-[19%] inset-y-[17.5%] flex items-center justify-center rounded-xl">
+						<span className={`${bungee} wv-hero-key text-lg`}>PRODUCT</span>
 					</div>
 				)}
-				<button
-					type="button"
-					aria-label="Previous image"
-					disabled={!many}
-					onClick={() => step(-1)}
-					className={`${arrow} left-3 md:left-[15px]`}
-				>
-					‹
-				</button>
-				<button
-					type="button"
-					aria-label="Next image"
-					disabled={!many}
-					onClick={() => step(1)}
-					className={`${arrow} right-3 md:right-[15px]`}
-				>
-					›
-				</button>
+				<span aria-hidden className="wv-art-glass absolute inset-0" />
+				<span aria-hidden className="wv-art-hud absolute inset-[10px] md:inset-[14px]" />
+				{many && (
+					<>
+						<button
+							type="button"
+							aria-label="Previous image"
+							onClick={() => step(-1)}
+							className={`${arrow} left-3 md:left-[18px]`}
+						>
+							<ChevronLeft aria-hidden className="size-5 md:size-6" strokeWidth={2.5} />
+						</button>
+						<button
+							type="button"
+							aria-label="Next image"
+							onClick={() => step(1)}
+							className={`${arrow} right-3 md:right-[18px]`}
+						>
+							<ChevronRight aria-hidden className="size-5 md:size-6" strokeWidth={2.5} />
+						</button>
+					</>
+				)}
 			</div>
 			{many && (
-				<div className="flex gap-2 overflow-x-auto">
+				<div className="flex gap-2.5 overflow-x-auto p-1">
 					{images.map((im, n) => (
 						<button
 							key={im.url}
@@ -78,7 +96,7 @@ export function ProductGallery({ images, name }: { images: ProductImage[]; name:
 							aria-label={`Show image ${n + 1}`}
 							aria-current={n === i}
 							onClick={() => setI(n)}
-							className={`relative size-14 shrink-0 overflow-hidden rounded-lg border transition-colors ${n === i ? "border-[var(--wv-cyan-soft)]" : "border-[var(--wv-control)]"}`}
+							className="wv-pdp-thumb relative size-14 shrink-0 overflow-hidden rounded-lg"
 						>
 							<Image src={im.url} alt="" fill sizes="56px" className="object-cover" />
 						</button>
@@ -181,25 +199,28 @@ export function ProductPurchase({
 	};
 	const money = (n: number) => formatPrice(n, v.currency, localeBcp47);
 	const percent = v.undiscountedPrice ? Math.round((1 - v.price / v.undiscountedPrice) * 100) : 0;
+	// The buy buttons: the site's neon outline button (`.wv-btn-neon`) and its glossy cyan one (`.wv-pc-cta`).
 	const btn =
-		"font-[family-name:var(--font-inter)] flex min-h-12 items-center justify-center rounded-md px-6 text-[13px] font-bold tracking-[1.5px] md:min-h-14 xl:h-[100px]";
-	const qbtn =
-		"flex size-[30px] items-center justify-center rounded-lg border border-[var(--wv-cyan-soft)] bg-[var(--wv-bg)] text-base font-bold text-[var(--wv-cyan-soft)] disabled:opacity-40";
+		"font-[family-name:var(--font-inter)] flex min-h-12 items-center justify-center gap-2.5 rounded-xl px-6 text-[13px] font-bold tracking-[1.5px] md:min-h-14 xl:h-[100px]";
+	// The quantity steppers: small neon tiles (`.wv-pdp-step`) in a glass pill (`.wv-pdp-qty`).
+	const qbtn = "wv-pdp-step flex size-8 items-center justify-center rounded-lg disabled:opacity-40";
+	const note = `${orbitron} flex items-start gap-2 rounded-lg px-3 py-2.5 text-xs leading-[1.6]`;
 	return (
 		<>
 			<p className={`${heyComic} flex flex-wrap items-center gap-x-4 gap-y-1`} aria-live="polite">
-				<span className="text-[28px] text-[var(--wv-cyan-soft)]">{money(v.price)}</span>
+				{/* The price in chrome lettering, white into cyan, as on the product cards (`.wv-pc-price`). */}
+				<span className="wv-pc-price text-[28px] text-[var(--wv-cyan-soft)] md:text-[30px]">
+					{money(v.price)}
+				</span>
 				{v.undiscountedPrice !== null && (
 					<span className="text-xl text-[var(--wv-disabled)] line-through">{money(v.undiscountedPrice)}</span>
 				)}
 				{percent > 0 && (
-					<span className="bg-[var(--wv-pink)]/15 rounded border border-[var(--wv-pink)] px-2 py-1 text-[11px] text-[var(--wv-pink)]">
-						SAVE {percent}%
-					</span>
+					<span className="wv-af-tag rounded-full px-2.5 py-1 text-[11px]">SAVE {percent}%</span>
 				)}
 			</p>
 			<WholesalePrice price={v.price} currency={v.currency} localeBcp47={localeBcp47} variant="page" />
-			<hr className="border-[var(--wv-ink)]" />
+			<div aria-hidden className="wv-af-rule my-1 h-px w-full" />
 			{variants.length === 1 && groups.length > 0 && (
 				<div className="flex flex-col gap-3">
 					{groups.map((g) => (
@@ -265,7 +286,7 @@ export function ProductPurchase({
 			)}
 			<div className="flex flex-col gap-[6px]">
 				<p className={labelClass}>QUANTITY</p>
-				<div className="flex h-[46px] w-[122px] items-center gap-2 p-2">
+				<div className="wv-pdp-qty flex h-[46px] w-fit items-center gap-2 rounded-xl p-1.5">
 					<button
 						type="button"
 						aria-label="Decrease quantity"
@@ -273,9 +294,9 @@ export function ProductPurchase({
 						onClick={() => setQty((q) => q - 1)}
 						className={qbtn}
 					>
-						−
+						<Minus aria-hidden className="size-4" strokeWidth={2.75} />
 					</button>
-					<span aria-live="polite" className="w-[30px] text-center text-sm font-medium">
+					<span aria-live="polite" className={`${heyComic} wv-pdp-count w-[30px] text-center text-base`}>
 						{qty}
 					</span>
 					<button
@@ -285,43 +306,53 @@ export function ProductPurchase({
 						onClick={() => setQty((q) => q + 1)}
 						className={qbtn}
 					>
-						+
+						<Plus aria-hidden className="size-4" strokeWidth={2.75} />
 					</button>
 				</div>
 			</div>
-			<div className="flex items-center gap-3">
+			<div className="wv-pdp-wish flex items-center gap-3">
 				<WishlistHeart slug={slug} className="size-10 text-lg" />
-				<span className={`${orbitron} text-xs text-[var(--q-text-dim)]`}>Save to wishlist</span>
+				<span className={`${orbitron} wv-neon-card-text text-xs`}>Save to wishlist</span>
 			</div>
-			<div className="flex flex-col gap-2">
+			<div className="flex flex-col gap-2.5">
 				{v.inStock ? (
 					<>
 						<button
 							type="button"
 							disabled={pending}
 							onClick={() => submit(false)}
-							className={`${btn} border-[1.5px] border-[var(--wv-cyan-soft)] bg-[var(--wv-ink)] text-[var(--wv-cyan-soft)] disabled:opacity-60`}
+							className={`${btn} wv-btn wv-btn-outline wv-btn-neon border-[1.5px] border-[var(--wv-cyan-soft)] bg-[var(--wv-ink)] text-[var(--wv-cyan-soft)] disabled:opacity-60`}
 						>
-							{pending ? "WORKING…" : "ADD TO CART"}
+							<ShoppingCart aria-hidden className="size-[18px]" strokeWidth={2.25} />
+							<span className="wv-btn-label">{pending ? "WORKING…" : "ADD TO CART"}</span>
 						</button>
 						<button
 							type="button"
 							disabled={pending}
 							onClick={() => submit(true)}
-							className={`${btn} bg-[var(--wv-cyan-soft)] text-[var(--wv-ink)] disabled:opacity-60`}
+							className={`${btn} wv-pc-cta bg-[var(--wv-cyan-soft)] text-[var(--wv-ink)] disabled:opacity-60`}
 						>
-							BUY IT NOW
+							<Zap aria-hidden className="size-[18px]" strokeWidth={2.25} />
+							<span className="wv-pc-cta-label">BUY IT NOW</span>
 						</button>
-						<div role="status" aria-live="polite" className="text-sm">
+						<div role="status" aria-live="polite">
 							{status?.kind === "added" && (
-								<p className="wv-pop text-[var(--wv-cyan-soft)]">
-									{status.text}{" "}
-									<Link href="/cart" className="font-bold underline">
-										View cart
-									</Link>
+								<p className={`${note} wv-af-note wv-pop`}>
+									<CircleCheck aria-hidden className="mt-px size-4 shrink-0" strokeWidth={2.25} />
+									<span>
+										{status.text}{" "}
+										<Link href="/cart" className="wv-auth-link font-bold underline">
+											View cart
+										</Link>
+									</span>
 								</p>
 							)}
-							{status?.kind === "error" && <p className="text-[var(--q-red)]">{status.text}</p>}
+							{status?.kind === "error" && (
+								<p className={`${note} wv-auth-error`}>
+									<TriangleAlert aria-hidden className="mt-px size-4 shrink-0" strokeWidth={2.25} />
+									<span>{status.text}</span>
+								</p>
+							)}
 						</div>
 					</>
 				) : (
