@@ -47,14 +47,16 @@ export function ProductGallery({ images, name }: { images: ProductImage[]; name:
 		"wv-pdp-arrow absolute top-[calc(50%-18px)] z-10 flex size-9 items-center justify-center rounded-full md:top-[calc(50%-22px)] md:size-11";
 	return (
 		<div className="flex flex-col gap-3">
-			<div className="wv-art wv-pdp-stage relative h-[284px] w-full overflow-hidden rounded-2xl md:h-[520px] xl:h-[650px]">
+			{/* Square on phones, so a (usually square) product image gets the full width; the image sits close to the
+			    frame (12px on phones, 32px from tablets up), its corners under the HUD brackets. */}
+			<div className="wv-art wv-pdp-stage relative aspect-square w-full overflow-hidden rounded-2xl md:aspect-auto md:h-[520px] xl:h-[650px]">
 				{cur ? (
-					<div key={cur.url} className="wv-fade absolute inset-6 md:inset-14">
+					<div key={cur.url} className="wv-fade absolute inset-3 md:inset-8">
 						<Image
 							src={cur.url}
 							alt={cur.alt || name}
 							fill
-							sizes="(min-width: 1280px) 500px, 80vw"
+							sizes="(min-width: 1280px) 560px, (min-width: 768px) 640px, 100vw"
 							className="object-contain"
 							priority
 						/>
