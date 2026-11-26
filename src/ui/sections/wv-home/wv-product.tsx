@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { type HomeProduct } from "@/lib/catalog/get-home-products";
 import { type ProductDetails } from "@/lib/catalog/get-product-details";
+import { PRODUCT_IMAGE_PLACEHOLDER } from "@/lib/images";
 import { formatPrice } from "@/ui/components/plp/utils";
 import { WholesalePrice } from "./wv-wholesale-price";
 import { WvFooter, WvHeader } from "./wv-chrome";
@@ -151,15 +152,13 @@ export function WvProduct({
 									className="flex h-full flex-col overflow-hidden rounded-[14px] border border-[var(--wv-purple)] bg-[var(--wv-ink)]"
 								>
 									<span className="relative block h-[140px] bg-[var(--wv-bg)] md:h-[180px]">
-										{p.image && (
-											<Image
-												src={p.image.url}
-												alt={p.image.alt}
-												fill
-												sizes="(min-width: 1280px) 200px, 33vw"
-												className="object-contain p-3"
-											/>
-										)}
+										<Image
+											src={p.image?.url ?? PRODUCT_IMAGE_PLACEHOLDER}
+											alt={p.image?.alt ?? p.name}
+											fill
+											sizes="(min-width: 1280px) 200px, 33vw"
+											className="object-contain p-3"
+										/>
 									</span>
 									<span className="flex flex-1 flex-col gap-3 p-4 md:gap-4 md:p-5">
 										<span className={`${orbitron} text-sm font-bold`}>{p.name}</span>

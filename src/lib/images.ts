@@ -45,3 +45,10 @@ export const LCP_IMAGE_PRIORITY_COUNT = 1;
 
 /** Match Next.js default — higher values slow cold /_next/image encoding on Vercel */
 export const PRODUCT_IMAGE_QUALITY = 75;
+
+/**
+ * Stand-in for products with no photo in Saleor (`public/placeholder.svg`, neon device outline on a
+ * transparent background, made for the dark card surfaces). next/image serves `.svg` sources
+ * unoptimized automatically. Show it with `object-contain` so cards wider than tall don't crop it.
+ */
+export const PRODUCT_IMAGE_PLACEHOLDER = "/placeholder.svg";

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState, useTransition } from "react";
 import type { HomeProduct } from "@/lib/catalog/get-home-products";
+import { PRODUCT_IMAGE_PLACEHOLDER } from "@/lib/images";
 import { useWishlist } from "@/lib/wv-wishlist";
 import { addProductToCartBySlug } from "@/lib/wv-cart-actions";
 import { formatPrice } from "@/ui/components/plp/utils";
@@ -104,15 +105,13 @@ function Card({
 				href={href}
 				className={`from-[var(--wv-cyan-soft)]/10 via-[var(--wv-purple)]/20 to-[var(--wv-pink)]/10 relative block shrink-0 bg-gradient-to-br ${list ? "w-32 md:w-44" : "h-[170px] w-full md:h-[150px]"}`}
 			>
-				{p.image && (
-					<Image
-						src={p.image.url}
-						alt={p.image.alt}
-						fill
-						sizes="(min-width: 1280px) 242px, (min-width: 768px) 344px, 328px"
-						className="object-contain p-4"
-					/>
-				)}
+				<Image
+					src={p.image?.url ?? PRODUCT_IMAGE_PLACEHOLDER}
+					alt={p.image?.alt ?? p.name}
+					fill
+					sizes="(min-width: 1280px) 242px, (min-width: 768px) 344px, 328px"
+					className="object-contain p-4"
+				/>
 			</Link>
 			{badge && (
 				<span className="absolute left-[11px] top-[11px] rounded-full bg-[var(--wv-pink)] px-[9px] py-[6px] text-[9px] font-bold text-[var(--wv-bg)]">
