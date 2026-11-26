@@ -1,4 +1,4 @@
-import { ChevronRight, Home } from "lucide-react";
+import { ChevronRight, Flame, Home } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { type HomeProduct } from "@/lib/catalog/get-home-products";
@@ -81,16 +81,23 @@ export function WvProduct({
 					<ProductGallery images={images} name={product.name} />
 				</div>
 				<div className="flex min-w-0 flex-1 flex-col gap-[10px]">
+					{/* The buy panel is lit: a bestseller flag in the heroes' neon badge (`.wv-hero-badge`), the name lifted
+					    off the page with a cyan glow over a glowing bar (`.wv-pdp-title`, `.wv-hero-bar`); the price,
+					    options, quantity and buttons follow in ProductPurchase. */}
 					{product.isBestseller && (
 						<span
-							className={`${heyComic} w-fit rounded bg-[var(--wv-cyan-soft)] px-[14px] py-[5px] text-[10px] tracking-[1.5px] text-[var(--wv-ink)]`}
+							className={`${heyComic} wv-hero-badge flex w-fit items-center gap-1.5 rounded-full px-3 py-1 text-[10px] tracking-[1.5px]`}
 						>
+							<Flame aria-hidden className="size-3.5" strokeWidth={2.25} />
 							BESTSELLER
 						</span>
 					)}
-					<h1 className={`${heyComic} text-[22px] uppercase leading-tight md:text-[26px] xl:text-[28px]`}>
+					<h1
+						className={`${heyComic} wv-pdp-title text-[22px] uppercase leading-tight md:text-[26px] xl:text-[28px]`}
+					>
 						{product.name}
 					</h1>
+					<span aria-hidden className="wv-hero-bar mb-1 h-[3px] w-16 rounded-full" />
 					<ProductPurchase
 						variants={variants}
 						optionLabel={details?.optionLabel ?? "OPTION"}

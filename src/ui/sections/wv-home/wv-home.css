@@ -4152,3 +4152,135 @@ li:nth-child(even) > .wv-cat-chip {
 		transform: none;
 	}
 }
+
+/* The product page's buy panel (wv-product.tsx, ProductPurchase in wv-product-client.tsx). The name is lifted off the
+ * page (a dark edge, a purple one beneath, a cyan glow); each label is brighter, led by a glowing pink dot; the option
+ * chips are glass edged cyan into pink that glow under the pointer, and the one chosen is glossy cyan and glows; the
+ * quantity sits in a glass pill between two small neon tiles, its count glowing; and the wishlist heart glows pink. */
+.wv-pdp-title {
+	color: white;
+	text-shadow:
+		0 1px 0 var(--wv-ink),
+		0 2px 0 color-mix(in srgb, var(--wv-purple) 85%, transparent),
+		0 3px 0 var(--wv-ink),
+		0 0 14px color-mix(in srgb, var(--wv-cyan) 40%, transparent);
+}
+.wv-pdp-label {
+	color: color-mix(in srgb, white 72%, var(--wv-cyan-soft));
+	text-shadow: 0 1px 2px var(--wv-ink);
+}
+.wv-pdp-label::before {
+	content: "";
+	flex: none;
+	width: 6px;
+	height: 6px;
+	border-radius: 999px;
+	background: var(--wv-pink);
+	box-shadow: 0 0 6px var(--wv-pink);
+}
+.wv-pdp-chip {
+	color: white;
+	border: 1px solid transparent;
+	background:
+		linear-gradient(180deg, color-mix(in srgb, var(--wv-cyan) 8%, var(--wv-control)), var(--wv-bg))
+			padding-box,
+		linear-gradient(
+				135deg,
+				color-mix(in srgb, var(--wv-cyan) 60%, transparent),
+				color-mix(in srgb, var(--wv-pink) 60%, transparent)
+			)
+			border-box;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 10%, transparent),
+		0 0 8px color-mix(in srgb, var(--wv-cyan) 15%, transparent);
+	text-shadow: 0 1px 1px var(--wv-ink);
+	transition: box-shadow 150ms ease;
+}
+.wv-pdp-chip:not(:disabled):hover {
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 14%, transparent),
+		0 0 14px color-mix(in srgb, var(--wv-cyan) 45%, transparent);
+}
+.wv-pdp-chip.is-on {
+	color: var(--wv-ink);
+	background:
+		linear-gradient(
+				180deg,
+				color-mix(in srgb, white 30%, var(--wv-cyan-soft)),
+				var(--wv-cyan-soft) 55%,
+				color-mix(in srgb, var(--wv-cyan) 80%, var(--wv-purple))
+			)
+			padding-box,
+		linear-gradient(135deg, color-mix(in srgb, white 50%, var(--wv-cyan-soft)), var(--wv-cyan)) border-box;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 55%, transparent),
+		inset 0 -2px 0 color-mix(in srgb, var(--wv-ink) 25%, transparent),
+		0 0 14px color-mix(in srgb, var(--wv-cyan) 55%, transparent);
+	text-shadow: 0 1px 0 color-mix(in srgb, white 45%, transparent);
+}
+.wv-pdp-chip:focus-visible,
+.wv-pdp-step:focus-visible {
+	outline: 2px solid var(--wv-cyan-soft);
+	outline-offset: 2px;
+}
+.wv-pdp-qty {
+	border: 1px solid transparent;
+	background:
+		linear-gradient(180deg, var(--wv-bg), color-mix(in srgb, var(--wv-purple) 14%, var(--wv-bg))) padding-box,
+		linear-gradient(
+				135deg,
+				color-mix(in srgb, var(--wv-cyan) 55%, transparent),
+				color-mix(in srgb, var(--wv-pink) 55%, transparent)
+			)
+			border-box;
+	box-shadow:
+		inset 0 2px 6px var(--wv-ink),
+		0 0 10px color-mix(in srgb, var(--wv-cyan) 15%, transparent);
+}
+.wv-pdp-step {
+	color: var(--wv-cyan-soft);
+	border: 1px solid transparent;
+	background:
+		linear-gradient(180deg, color-mix(in srgb, var(--wv-cyan) 18%, var(--wv-control)), var(--wv-bg))
+			padding-box,
+		linear-gradient(135deg, var(--wv-cyan), color-mix(in srgb, var(--wv-purple) 60%, var(--wv-pink)))
+			border-box;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 20%, transparent),
+		0 0 10px color-mix(in srgb, var(--wv-cyan) 35%, transparent);
+	transition:
+		transform 120ms ease,
+		box-shadow 150ms ease;
+}
+.wv-pdp-step svg {
+	filter: drop-shadow(0 0 4px color-mix(in srgb, var(--wv-cyan) 90%, transparent));
+}
+.wv-pdp-step:not(:disabled):hover {
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 26%, transparent),
+		0 0 16px color-mix(in srgb, var(--wv-cyan) 60%, transparent);
+}
+.wv-pdp-step:not(:disabled):active {
+	transform: scale(0.92);
+}
+.wv-pdp-count {
+	color: white;
+	text-shadow:
+		0 1px 0 var(--wv-ink),
+		0 0 10px color-mix(in srgb, var(--wv-cyan) 75%, transparent);
+}
+.wv-pdp-wish > button {
+	border-color: color-mix(in srgb, var(--wv-pink) 70%, transparent);
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 14%, transparent),
+		0 0 12px color-mix(in srgb, var(--wv-pink) 35%, transparent);
+}
+.wv-pdp-wish > button[aria-pressed="false"] {
+	color: var(--wv-pink);
+	text-shadow: 0 0 8px color-mix(in srgb, var(--wv-pink) 85%, transparent);
+}
+@media (prefers-reduced-motion: reduce) {
+	.wv-pdp-step:not(:disabled):active {
+		transform: none;
+	}
+}
