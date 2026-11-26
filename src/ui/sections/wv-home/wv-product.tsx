@@ -1,4 +1,4 @@
-import { ChevronRight, Flame, Home } from "lucide-react";
+import { Check, ChevronRight, ClipboardList, Flame, Home, Package } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { type HomeProduct } from "@/lib/catalog/get-home-products";
@@ -14,6 +14,18 @@ import "./wv-home.css";
 const heyComic = "font-[family-name:var(--font-hey-comic)]";
 const bungee = "font-[family-name:var(--font-bungee)]";
 const orbitron = "font-[family-name:var(--font-orbitron)]";
+const marker = "font-[family-name:var(--font-permanent-marker)]";
+
+/** A paragraph whose short lead-in label ("Safety: …", "How to re-wrap: …") is lit, so the description scans. */
+function LeadIn({ text }: { text: string }) {
+	const m = /^([^.:!?]{2,28}):\s+/.exec(text);
+	if (!m) return text;
+	return (
+		<>
+			<strong className="wv-hero-key">{m[1]}:</strong> {text.slice(m[0].length)}
+		</>
+	);
+}
 
 export function WvProduct({
 	locale,
@@ -108,12 +120,17 @@ export function WvProduct({
 						slug={product.slug}
 					/>
 				</div>
-				{/* Description sits right under the buy buttons; spans the full width on desktop to match Tech Specs */}
-				<div className="-mt-3 flex flex-col gap-4 rounded-xl border border-[var(--wv-purple)] bg-[var(--wv-bg)] p-6 md:-mt-5 xl:col-span-2 xl:mt-0">
-					<h2 className={`${bungee} text-lg uppercase md:text-[22px]`}>{product.name}</h2>
+				{/* Description sits right under the buy buttons; spans the full width on desktop to match Tech Specs. A cyan
+				    neon card that glows but doesn't lift (`.wv-neon-card`, `.wv-dist-step`): the name lifted over a glowing
+				    bar, the copy brighter, and a paragraph's lead-in ("Safety:", "How to re-wrap:") lit. */}
+				<div className="wv-neon-card wv-dist-step -mt-3 flex flex-col gap-4 rounded-2xl p-6 md:-mt-5 xl:col-span-2 xl:mt-0">
+					<div className="flex flex-col gap-2">
+						<h2 className={`${bungee} wv-pdp-title text-lg uppercase md:text-[22px]`}>{product.name}</h2>
+						<span aria-hidden className="wv-hero-bar h-[3px] w-16 rounded-full" />
+					</div>
 					{paragraphs.map((x) => (
-						<p key={x} className={`${orbitron} text-sm leading-[22px] text-[var(--wv-disabled)]`}>
-							{x}
+						<p key={x} className={`${orbitron} wv-neon-card-text text-sm leading-[1.7]`}>
+							<LeadIn text={x} />
 						</p>
 					))}
 				</div>
@@ -122,16 +139,26 @@ export function WvProduct({
 			{/* Tech specs — pulled up by the hero's bottom padding (pb-10 / md:pb-14 / xl:pb-20) so only pt-5 separates it from the description. */}
 			{specs.length > 0 && (
 				<section className="-mt-10 px-4 pt-5 md:-mt-14 md:px-8 xl:-mt-20 xl:px-20">
-					<div className="flex flex-col gap-4 rounded-xl border border-[var(--wv-purple)] bg-[var(--wv-bg)] p-6">
-						<h2 className={`${bungee} text-base text-[var(--wv-cyan-soft)]`}>TECH SPECS</h2>
-						<dl className="flex flex-col gap-4">
+					{/* A pink neon card: its title chrome beside a lit icon tile, each row over a glowing rule, two columns on
+					    wider screens (`.wv-pdp-spec*`). */}
+					<div className="wv-neon-card wv-neon-card--pink wv-dist-step wv-pdp-panel flex flex-col gap-4 rounded-2xl p-6">
+						<div className="flex items-center gap-3">
+							<span
+								aria-hidden
+								className="wv-neon-card-icon flex size-10 shrink-0 items-center justify-center rounded-xl"
+							>
+								<ClipboardList className="size-[18px]" strokeWidth={2.25} />
+							</span>
+							<h2 className={`${bungee} wv-heading-title text-base text-white md:text-lg`}>TECH SPECS</h2>
+						</div>
+						<dl className="grid gap-x-10 md:grid-cols-2">
 							{specs.map((x) => (
 								<div
 									key={x.label}
-									className={`${orbitron} flex justify-between gap-4 border-b border-[var(--wv-control)] pb-3 text-xs`}
+									className={`${orbitron} wv-pdp-spec flex justify-between gap-4 py-3 text-xs`}
 								>
-									<dt className="text-[var(--wv-disabled)]">{x.label}</dt>
-									<dd className="text-right font-bold">{x.value}</dd>
+									<dt className="wv-pdp-spec-label">{x.label}</dt>
+									<dd className="text-right font-bold text-white">{x.value}</dd>
 								</div>
 							))}
 						</dl>
@@ -141,13 +168,25 @@ export function WvProduct({
 
 			{/* Key features */}
 			{features.length > 0 && (
+				// The title chrome over a glowing bar; each feature a small neon tile, in turn cyan and pink, its check lit.
 				<section className="flex flex-col gap-6 px-4 py-8 md:px-8 md:py-10 xl:px-20 xl:py-12">
-					<h2 className={`${heyComic} text-xl`}>KEY FEATURES</h2>
-					<ul className={`${orbitron} flex flex-col gap-4`}>
-						{features.map((f) => (
-							<li key={f} className="flex items-center gap-3">
-								<span className="text-sm text-[var(--wv-cyan-soft)]">✓</span>
-								<span className="flex-1 text-[13px] text-[var(--wv-disabled)]">{f}</span>
+					<div className="flex flex-col gap-2">
+						<h2 className={`${bungee} wv-heading-title text-xl text-white md:text-2xl`}>KEY FEATURES</h2>
+						<span aria-hidden className="wv-hero-bar mt-1 h-1 w-20 rounded-full md:w-[120px]" />
+					</div>
+					<ul className={`${orbitron} grid gap-3 md:grid-cols-2 xl:grid-cols-3 xl:gap-4`}>
+						{features.map((f, i) => (
+							<li
+								key={f}
+								className={`wv-neon-card wv-dist-step wv-pdp-panel ${i % 2 ? "wv-neon-card--pink" : ""} flex items-center gap-3 rounded-xl p-4`}
+							>
+								<span
+									aria-hidden
+									className="wv-neon-card-icon flex size-8 shrink-0 items-center justify-center rounded-lg"
+								>
+									<Check className="size-4" strokeWidth={3} />
+								</span>
+								<span className="wv-neon-card-text flex-1 text-[13px] leading-[1.5]">{f}</span>
 							</li>
 						))}
 					</ul>
@@ -156,17 +195,24 @@ export function WvProduct({
 
 			{/* Recommendations */}
 			{related.length > 0 && (
+				// The title chrome under a pink eyebrow, over a glowing bar; each product a neon card, in turn cyan and pink,
+				// that lifts and glows under the pointer. Its image sits on a lit stage, or a glowing package stands in when
+				// it has no photo; the name is lifted and the price chrome, as on the shop's cards.
 				<section className="flex flex-col gap-6 px-4 pb-8 pt-5 md:px-8 md:pb-10 xl:px-20 xl:pb-12">
-					<h2 className={`${heyComic} text-2xl`}>YOU MAY ALSO LIKE</h2>
+					<div className="flex flex-col gap-2">
+						<p className={`${marker} wv-heading-eyebrow text-lg text-[var(--wv-pink)]`}>Keep exploring</p>
+						<h2 className={`${bungee} wv-heading-title text-xl text-white md:text-2xl`}>YOU MAY ALSO LIKE</h2>
+						<span aria-hidden className="wv-hero-bar mt-1 h-1 w-20 rounded-full md:w-[120px]" />
+					</div>
 					<ul className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 xl:grid-cols-6">
-						{related.map((p) => (
+						{related.map((p, i) => (
 							<li key={p.id}>
 								<Link
 									href={`/product/${p.slug}`}
-									className="flex h-full flex-col overflow-hidden rounded-[14px] border border-[var(--wv-purple)] bg-[var(--wv-ink)]"
+									className={`wv-neon-card wv-pdp-panel ${i % 2 ? "wv-neon-card--pink" : ""} flex h-full flex-col overflow-hidden rounded-2xl`}
 								>
-									<span className="relative block h-[140px] bg-[var(--wv-bg)] md:h-[180px]">
-										{p.image && (
+									<span className="wv-pdp-related-art relative block h-[140px] md:h-[180px]">
+										{p.image ? (
 											<Image
 												src={p.image.url}
 												alt={p.image.alt}
@@ -174,11 +220,19 @@ export function WvProduct({
 												sizes="(min-width: 1280px) 200px, 33vw"
 												className="object-contain p-3"
 											/>
+										) : (
+											<span aria-hidden className="absolute inset-0 flex items-center justify-center">
+												<span className="wv-neon-card-icon flex size-14 items-center justify-center rounded-2xl">
+													<Package className="size-6" strokeWidth={2} />
+												</span>
+											</span>
 										)}
 									</span>
 									<span className="flex flex-1 flex-col gap-3 p-4 md:gap-4 md:p-5">
-										<span className={`${orbitron} text-sm font-bold`}>{p.name}</span>
-										<span className={`${orbitron} mt-auto text-lg font-extrabold text-[var(--wv-cyan-soft)]`}>
+										<span className={`${orbitron} wv-pc-name text-sm font-bold text-white`}>{p.name}</span>
+										<span
+											className={`${orbitron} wv-pc-price mt-auto w-fit text-lg font-extrabold text-[var(--wv-cyan-soft)]`}
+										>
 											{formatPrice(p.price, p.currency, localeBcp47)}
 										</span>
 										<WholesalePrice price={p.price} currency={p.currency} localeBcp47={localeBcp47} />

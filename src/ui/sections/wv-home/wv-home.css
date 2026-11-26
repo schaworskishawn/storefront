@@ -4284,3 +4284,36 @@ li:nth-child(even) > .wv-cat-chip {
 		transform: none;
 	}
 }
+
+/* The product page's lower panels (wv-product.tsx). The description and tech specs are neon cards (cyan, then pink)
+ * that glow but don't lift; each spec sits over a rule glowing in the card's colour, its label tinted and its value
+ * lit. The key features are small neon tiles, in turn cyan and pink, and the recommendations neon cards that lift;
+ * their icons glow in the card's colour, and a recommendation's image sits on a lit stage. */
+.wv-pdp-panel .wv-neon-card-icon svg {
+	color: var(--accent);
+	filter: drop-shadow(0 0 4px color-mix(in srgb, var(--accent) 85%, transparent));
+}
+.wv-pdp-spec {
+	background: linear-gradient(
+			90deg,
+			color-mix(in srgb, var(--accent) 50%, transparent),
+			color-mix(in srgb, var(--wv-purple) 45%, transparent) 60%,
+			transparent
+		)
+		bottom / 100% 1px no-repeat;
+}
+.wv-pdp-spec-label {
+	color: color-mix(in srgb, white 55%, var(--accent));
+	text-shadow: 0 1px 1px var(--wv-ink);
+}
+.wv-pdp-spec dd {
+	text-shadow:
+		0 1px 1px var(--wv-ink),
+		0 0 8px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+.wv-pdp-related-art {
+	background:
+		radial-gradient(60% 55% at 50% 55%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 75%),
+		linear-gradient(180deg, color-mix(in srgb, var(--wv-purple) 22%, var(--wv-bg)), var(--wv-bg));
+	box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--accent) 40%, transparent);
+}
