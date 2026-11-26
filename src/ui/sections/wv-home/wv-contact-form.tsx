@@ -1,10 +1,24 @@
 "use client";
 
-import Image from "next/image";
-import { useState, type FormEvent } from "react";
+import {
+	ChevronDown,
+	CircleCheck,
+	Hash,
+	Info,
+	Mail,
+	PenLine,
+	Send,
+	ShieldCheck,
+	Tag,
+	TriangleAlert,
+	UserRound,
+	type LucideIcon,
+} from "lucide-react";
+import { useState, type FormEvent, type ReactNode } from "react";
 
 const heyComic = "font-[family-name:var(--font-hey-comic)]";
 const bungee = "font-[family-name:var(--font-bungee)]";
+const orbitron = "font-[family-name:var(--font-orbitron)]";
 
 const SUBJECTS = [
 	"Product Question",
@@ -16,10 +30,67 @@ const SUBJECTS = [
 ];
 const SUPPORT = "support@worldwidevapor.com";
 
-const label = `${bungee} flex items-center gap-1 text-[11px] uppercase text-[var(--ct-text)]`;
-const field = `${heyComic} h-12 w-full min-w-0 rounded bg-[var(--ct-field)] border border-[var(--ct-border)] px-[14px] text-sm text-white placeholder:text-[var(--ct-placeholder)] focus:border-[var(--ct-cyan)] focus:outline-none`;
+/**
+ * The form is lit like the affiliate application (`.wv-auth-*`, `.wv-acct-field`, `.wv-af-*` in wv-home.css): each
+ * field is set into the glass behind a glowing icon, lit cyan while focused and pink when it needs fixing; labels are
+ * brighter with glowing asterisks; and the notes after sending sit in glowing glass strips.
+ */
+const field = `${heyComic} wv-acct-field h-12 w-full min-w-0 rounded-lg pl-11 pr-[14px] text-sm text-white placeholder:text-[var(--ct-placeholder)] focus:outline-none`;
+const label = `${bungee} wv-auth-label flex items-center gap-1 text-[11px] uppercase`;
+const note = `${orbitron} flex items-start gap-2 rounded-lg px-3 py-2.5 text-xs leading-[1.6]`;
 
 type Errors = Partial<Record<"firstName" | "lastName" | "email" | "message", string>>;
+
+function Field({
+	id,
+	title,
+	Icon,
+	required,
+	error,
+	select,
+	tall,
+	children,
+}: {
+	id: string;
+	title: string;
+	Icon: LucideIcon;
+	required?: boolean;
+	error?: string;
+	/** A dropdown: gets its arrow. */
+	select?: boolean;
+	/** A text area: its icon sits at the top. */
+	tall?: boolean;
+	children: ReactNode;
+}) {
+	return (
+		<div className="flex flex-col gap-2">
+			<label htmlFor={id} className={label}>
+				{title} {required && <span className="wv-auth-req">*</span>}
+			</label>
+			<div className="wv-auth-input relative">
+				<Icon
+					aria-hidden
+					className={`wv-auth-icon pointer-events-none absolute left-4 size-4 ${tall ? "top-[15px]" : "top-1/2 -translate-y-1/2"}`}
+					strokeWidth={2.25}
+				/>
+				{children}
+				{select && (
+					<ChevronDown
+						aria-hidden
+						className="wv-auth-icon pointer-events-none absolute right-4 top-1/2 size-4 -translate-y-1/2"
+						strokeWidth={2.5}
+					/>
+				)}
+			</div>
+			{error && (
+				<p role="alert" className={`${orbitron} wv-af-field-error flex items-center gap-1.5 text-xs`}>
+					<TriangleAlert aria-hidden className="size-3.5 shrink-0" strokeWidth={2.5} />
+					{error}
+				</p>
+			)}
+		</div>
+	);
+}
 
 /**
  * Contact form. Sends to /api/contact (emailed to the site inbox). If online sending isn't available it falls back to
@@ -93,12 +164,6 @@ export function ContactForm({ whatsapp }: { whatsapp: string | null }) {
 		}
 	};
 
-	const err = (k: keyof Errors) =>
-		errors[k] ? (
-			<p role="alert" className="text-xs text-[var(--q-red)]">
-				{errors[k]}
-			</p>
-		) : null;
 	const aria = (k: keyof Errors) => ({ "aria-invalid": errors[k] ? true : undefined });
 
 	return (
@@ -108,10 +173,7 @@ export function ContactForm({ whatsapp }: { whatsapp: string | null }) {
 				<input id="c-company" name="company" tabIndex={-1} autoComplete="off" />
 			</div>
 			<div className="grid gap-4 md:grid-cols-2 md:gap-5">
-				<div className="flex flex-col gap-2">
-					<label htmlFor="c-first" className={label}>
-						First Name <span className="text-[var(--ct-cyan)]">*</span>
-					</label>
+				<Field id="c-first" title="First Name" Icon={UserRound} required error={errors.firstName}>
 					<input
 						id="c-first"
 						name="firstName"
@@ -120,12 +182,8 @@ export function ContactForm({ whatsapp }: { whatsapp: string | null }) {
 						className={field}
 						{...aria("firstName")}
 					/>
-					{err("firstName")}
-				</div>
-				<div className="flex flex-col gap-2">
-					<label htmlFor="c-last" className={label}>
-						Last Name <span className="text-[var(--ct-cyan)]">*</span>
-					</label>
+				</Field>
+				<Field id="c-last" title="Last Name" Icon={UserRound} required error={errors.lastName}>
 					<input
 						id="c-last"
 						name="lastName"
@@ -134,12 +192,8 @@ export function ContactForm({ whatsapp }: { whatsapp: string | null }) {
 						className={field}
 						{...aria("lastName")}
 					/>
-					{err("lastName")}
-				</div>
-				<div className="flex flex-col gap-2">
-					<label htmlFor="c-email" className={label}>
-						Email Address <span className="text-[var(--ct-cyan)]">*</span>
-					</label>
+				</Field>
+				<Field id="c-email" title="Email Address" Icon={Mail} required error={errors.email}>
 					<input
 						id="c-email"
 						name="email"
@@ -149,103 +203,82 @@ export function ContactForm({ whatsapp }: { whatsapp: string | null }) {
 						className={field}
 						{...aria("email")}
 					/>
-					{err("email")}
-				</div>
-				<div className="flex flex-col gap-2">
-					<label htmlFor="c-order" className={label}>
-						Order Number
-					</label>
+				</Field>
+				<Field id="c-order" title="Order Number" Icon={Hash}>
 					<input id="c-order" name="order" placeholder="Optional (e.g. #WWV-10492)" className={field} />
-				</div>
+				</Field>
 			</div>
-			<div className="flex flex-col gap-2">
-				<label htmlFor="c-subject" className={label}>
-					Subject <span className="text-[var(--ct-cyan)]">*</span>
-				</label>
-				<div className="relative">
-					<select id="c-subject" name="subject" className={`${field} appearance-none pr-10`}>
-						{SUBJECTS.map((s) => (
-							<option key={s} value={s}>
-								{s}
-							</option>
-						))}
-					</select>
-					<Image
-						src="/home/contact/chevron.svg"
-						alt=""
-						width={14}
-						height={14}
-						className="pointer-events-none absolute right-[14px] top-1/2 -translate-y-1/2"
-					/>
-				</div>
-			</div>
-			<div className="flex flex-col gap-2">
-				<label htmlFor="c-message" className={label}>
-					Message <span className="text-[var(--ct-cyan)]">*</span>
-				</label>
+			<Field id="c-subject" title="Subject" Icon={Tag} required select>
+				<select id="c-subject" name="subject" className={`${field} appearance-none pr-10`}>
+					{SUBJECTS.map((s) => (
+						<option key={s} value={s}>
+							{s}
+						</option>
+					))}
+				</select>
+			</Field>
+			<Field id="c-message" title="Message" Icon={PenLine} required tall error={errors.message}>
 				<textarea
 					id="c-message"
 					name="message"
 					rows={5}
 					placeholder="Type your message here..."
-					className={`${field} h-[122px] resize-y py-[14px] md:h-[144px]`}
+					className={`${field} block h-[122px] resize-y py-[14px] md:h-[144px]`}
 					{...aria("message")}
 				/>
-				{err("message")}
-			</div>
+			</Field>
 			<div className="flex flex-col gap-3">
 				<button
 					type="submit"
 					disabled={status.kind === "sending"}
-					className={`${heyComic} flex items-center justify-center rounded bg-[var(--ct-cyan)] px-7 py-[14px] text-xs uppercase text-[var(--ct-ink)] shadow-[0_0_6px_rgba(0,255,224,0.4)] disabled:opacity-60`}
+					className={`${heyComic} wv-pc-cta flex h-12 items-center justify-center gap-2 rounded-xl bg-[var(--wv-cyan-soft)] px-8 text-base uppercase text-[var(--wv-ink)] disabled:opacity-60`}
 				>
-					{status.kind === "sending" ? "Sending…" : "Send Message"}
+					<Send aria-hidden className="size-4" strokeWidth={2.5} />
+					<span className="wv-pc-cta-label">{status.kind === "sending" ? "Sending…" : "Send Message"}</span>
 				</button>
-				<p className="flex items-center justify-center gap-[6px] text-[11px] text-[var(--ct-text)]">
-					<Image src="/home/contact/shield.svg" alt="" width={12} height={12} />
+				<p
+					className={`${orbitron} flex items-center justify-center gap-1.5 text-[11px] text-[var(--ct-text)]`}
+				>
+					<ShieldCheck aria-hidden className="wv-af-inline-icon size-3.5 [--accent:var(--wv-cyan-soft)]" />
 					Your information is safe with us
 				</p>
 				{status.kind === "sent" && (
-					<p
-						role="status"
-						className="rounded border border-[var(--ct-cyan)] bg-[var(--ct-field)] px-4 py-3 text-center text-[13px] text-[var(--ct-cyan)]"
-					>
-						Message sent ✓ Thanks. We usually reply within 24 hours.
+					<p role="status" className={`${note} wv-af-note`}>
+						<CircleCheck aria-hidden className="mt-px size-4 shrink-0" strokeWidth={2.25} />
+						<span>Message sent. Thanks, we usually reply within 24 hours.</span>
 					</p>
 				)}
 				{status.kind === "error" && (
-					<p
-						role="alert"
-						className="rounded border border-[var(--q-red)] px-4 py-3 text-center text-[13px] text-[var(--q-red)]"
-					>
-						{status.text}
+					<p role="alert" className={`${note} wv-auth-error`}>
+						<TriangleAlert aria-hidden className="mt-px size-4 shrink-0" strokeWidth={2.25} />
+						<span>{status.text}</span>
 					</p>
 				)}
 				{status.kind === "fallback" && (
-					<p
-						role="status"
-						className="border-[var(--ct-cyan)]/30 rounded border bg-[var(--ct-field)] px-4 py-3 text-center text-[13px] text-[var(--ct-text)]"
-					>
-						Online sending isn&apos;t switched on yet.{" "}
-						<a href={status.href} className="text-[var(--ct-cyan)] underline">
-							Open my email app
-						</a>{" "}
-						with your message ready to send. Nothing is sent until you press send there.
-						{whatsapp && (
-							<>
-								{" "}
-								Prefer chat?{" "}
-								<a
-									href={whatsapp}
-									target="_blank"
-									rel="noopener noreferrer"
-									className="text-[var(--ct-cyan)] underline"
-								>
-									Message us on WhatsApp
-								</a>
-								.
-							</>
-						)}
+					<p role="status" className={`${note} wv-af-note`}>
+						<Info aria-hidden className="mt-px size-4 shrink-0" strokeWidth={2.25} />
+						<span>
+							{"Online sending isn't switched on yet. "}
+							<a href={status.href} className="wv-auth-link underline">
+								Open my email app
+							</a>{" "}
+							with your message ready to send. Nothing is sent until you press send there.
+							{whatsapp && (
+								<>
+									{" "}
+									Prefer chat?{" "}
+									<a
+										href={whatsapp}
+										target="_blank"
+										rel="noopener noreferrer"
+										className="wv-auth-link underline"
+									>
+										Message us on WhatsApp
+									</a>
+									.
+								</>
+							)}
+						</span>
 					</p>
 				)}
 			</div>

@@ -1,5 +1,24 @@
+import {
+	ArrowRight,
+	ArrowUpRight,
+	BookOpen,
+	ChevronRight,
+	CircleHelp,
+	Clock,
+	Globe,
+	Home,
+	type LucideIcon,
+	Mail,
+	MapPin,
+	MessageSquare,
+	MessageSquareText,
+	PackageSearch,
+	RotateCcw,
+	Truck,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { whatsappHref } from "@/lib/whatsapp";
 import { ContactForm } from "./wv-contact-form";
 import { WvFooter, WvHeader } from "./wv-chrome";
@@ -13,12 +32,12 @@ const orbitron = "font-[family-name:var(--font-orbitron)]";
 
 const SUPPORT = "support@worldwidevapor.com";
 
-const HELP_LINKS = [
-	{ icon: "help", title: "FAQs", text: "Find answers to common questions", href: "/faqs" },
-	{ icon: "ship", title: "Shipping Information", text: "Delivery times and policies", href: "/shipping" },
-	{ icon: "returns", title: "Returns & Refunds", text: "Return policy and process", href: "/returns" },
+const HELP_LINKS: { Icon: LucideIcon; title: string; text: string; href: string }[] = [
+	{ Icon: CircleHelp, title: "FAQs", text: "Find answers to common questions", href: "/faqs" },
+	{ Icon: Truck, title: "Shipping Information", text: "Delivery times and policies", href: "/shipping" },
+	{ Icon: RotateCcw, title: "Returns & Refunds", text: "Return policy and process", href: "/returns" },
 	{
-		icon: "package",
+		Icon: PackageSearch,
 		title: "Track Your Order",
 		text: "Check the status of your order",
 		href: `mailto:${SUPPORT}?subject=Track%20my%20order&body=Order%20number%3A`,
@@ -32,42 +51,90 @@ const BADGES = [
 	{ icon: "award", title: "Quality Guarantee", text: "All products fully certified" },
 ];
 
+/**
+ * One way to reach us, in the style of the account summaries: a neon card (`.wv-neon-card`, pink for the middle one,
+ * with `.wv-acct-card*` in wv-home.css). Its icon glows in a lit tile and its label sits in a glowing glass pill; the
+ * way in glows in the card's colour, with the key words of its note lit; a neon line runs under it; then, for a link,
+ * a neon pill whose arrow slides on under the pointer, or for the address, the country in a glass pill. The address
+ * isn't a link, so it doesn't lift or brighten under the pointer.
+ */
 function MethodCard({
-	tone,
-	icon,
-	title,
+	pink = false,
+	Icon,
+	label,
 	headline,
-	sub,
+	note,
+	action,
+	tag,
 	href,
 	external,
 }: {
-	tone: "cyan" | "magenta";
-	icon: string;
-	title: string;
+	pink?: boolean;
+	Icon: LucideIcon;
+	label: string;
 	headline: string;
-	sub: string;
+	note?: ReactNode;
+	/** The link's call to action ("SEND AN EMAIL"), shown when there's a link. */
+	action?: string;
+	/** A fact shown in a glass pill at the foot instead of an action ("UNITED STATES"). */
+	tag?: string;
 	href?: string;
 	external?: boolean;
 }) {
-	const color = tone === "cyan" ? "text-[var(--ct-cyan)]" : "text-[var(--ct-magenta)]";
+	const Arrow = external ? ArrowUpRight : ArrowRight;
+	const at = headline.indexOf("@");
 	const inner = (
 		<>
-			<span
-				className={`absolute -right-px -top-px size-3 opacity-30 ${tone === "cyan" ? "bg-[var(--ct-cyan)]" : "bg-[var(--ct-magenta)]"}`}
-			/>
-			<span
-				className={`flex size-10 items-center justify-center rounded-md border bg-[var(--ct-icon)] ${tone === "cyan" ? "border-[var(--ct-cyan)]" : "border-[var(--ct-magenta)]"}`}
-			>
-				<Image src={`/home/contact/${icon}.svg`} alt="" width={20} height={20} />
-			</span>
-			<span className="flex flex-col gap-[6px]">
-				<span className={`${bungee} text-[11px] text-white`}>{title}</span>
-				<span className={`${heyComic} break-words text-sm ${color}`}>{headline}</span>
-				<span className={`${orbitron} text-xs text-[var(--ct-text)]`}>{sub}</span>
-			</span>
+			<div className="flex items-start justify-between gap-3">
+				<span
+					aria-hidden
+					className="wv-neon-card-icon flex size-11 shrink-0 items-center justify-center rounded-xl"
+				>
+					<Icon className="size-5" strokeWidth={2.25} />
+				</span>
+				<span className={`${orbitron} wv-acct-card-tag rounded-full px-2.5 py-1 text-[10px] tracking-[1px]`}>
+					{label}
+				</span>
+			</div>
+			<div className="flex flex-col gap-1.5">
+				<p className={`${heyComic} wv-neon-card-link break-words text-[15px] md:text-sm xl:text-base`}>
+					{/* An email may wrap after its "@" rather than mid-word. */}
+					{at < 0 ? (
+						headline
+					) : (
+						<>
+							{headline.slice(0, at + 1)}
+							<wbr />
+							{headline.slice(at + 1)}
+						</>
+					)}
+				</p>
+				{note && <p className={`${orbitron} wv-neon-card-text text-xs leading-[1.6]`}>{note}</p>}
+			</div>
+			<div className="flex-1" />
+			<span aria-hidden className="wv-acct-card-rule h-px w-full" />
+			{href && action ? (
+				<span
+					className={`${orbitron} wv-acct-card-action flex items-center gap-2 self-end rounded-full px-3.5 py-1.5 text-[11px] tracking-[0.5px]`}
+				>
+					{action}
+					<Arrow
+						aria-hidden
+						className={`size-3.5 transition-transform ${external ? "group-hover:-translate-y-0.5 group-hover:translate-x-0.5" : "group-hover:translate-x-1"}`}
+						strokeWidth={2.5}
+					/>
+				</span>
+			) : tag ? (
+				<span
+					className={`${orbitron} wv-acct-card-tag flex items-center gap-1.5 self-end rounded-full px-2.5 py-1 text-[10px] tracking-[1px]`}
+				>
+					<Globe aria-hidden className="size-3" strokeWidth={2.5} />
+					{tag}
+				</span>
+			) : null}
 		</>
 	);
-	const cls = `relative flex flex-col gap-4 overflow-hidden rounded-lg border bg-[var(--ct-card)] p-5 md:p-4 xl:p-6 ${tone === "cyan" ? "border-[var(--ct-cyan)]/15" : "border-[var(--ct-magenta)]/15"}`;
+	const cls = `wv-neon-card wv-acct-card ${pink ? "wv-neon-card--pink" : ""} group flex flex-col gap-3 rounded-xl p-[18px] md:p-4 xl:p-6`;
 	if (!href) return <div className={cls}>{inner}</div>;
 	return (
 		<a href={href} {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})} className={cls}>
@@ -87,112 +154,167 @@ export function WvContact() {
 			<div className="relative">
 				<WvHeader />
 
-				{/* Hero */}
-				<section className="flex flex-col gap-6 px-4 py-6 md:flex-row md:items-center md:justify-between md:gap-8 md:px-8 md:py-16 xl:px-20 xl:py-[105px]">
-					<div className="flex max-w-[640px] flex-col gap-5 xl:gap-6">
+				{/* The hero, in the neon style of the site's other heroes (`.wv-hero-*` in wv-home.css): a pink and cyan glow
+				    behind it, the breadcrumb lit (Home glowing cyan, a pink chevron, this page in a neon pill), what we promise
+				    in a neon badge, a 3D two-tone title over a glowing pink-to-cyan bar, brighter copy with its key words lit,
+				    and the art in a glowing frame with glass and HUD corners (`.wv-art*`). */}
+				<section className="wv-hero-backdrop flex flex-col gap-6 px-4 py-6 md:flex-row md:items-center md:justify-between md:gap-8 md:px-8 md:py-16 xl:px-20 xl:py-[105px]">
+					<div className="flex max-w-[640px] flex-col items-start gap-5 xl:gap-6">
 						<nav
 							aria-label="Breadcrumb"
-							className={`${orbitron} flex items-center gap-2 text-[11px] font-bold uppercase`}
+							className={`${heyComic} flex items-center gap-2 text-xs tracking-[0.5px]`}
 						>
-							<Link href="/home" className="text-[var(--ct-placeholder)]">
+							<Link href="/home" className="wv-link wv-crumb-link">
+								<Home aria-hidden className="size-3.5" strokeWidth={2.25} />
 								Home
 							</Link>
-							<Image src="/home/contact/crumb.svg" alt="" width={8} height={8} />
-							<span aria-current="page" className="text-[var(--ct-cyan)]">
+							<ChevronRight aria-hidden className="wv-crumb-sep size-3.5" strokeWidth={2.5} />
+							<span aria-current="page" className="wv-crumb-current">
 								Contact Us
 							</span>
 						</nav>
-						<div className="flex flex-col gap-2">
-							<h1 className={`${bungee} text-[26px] leading-none md:text-4xl xl:text-5xl`}>
-								CONTACT <span className="text-[var(--ct-cyan)]">US</span>
+						<p
+							className={`${heyComic} wv-hero-badge flex items-center gap-2 rounded-full px-3 py-1 text-[10px] tracking-[1.5px] md:px-4 md:py-[6px] md:text-[11px]`}
+						>
+							<Clock aria-hidden className="size-3.5 md:size-4" strokeWidth={2.25} />
+							<span className="md:hidden">WE REPLY WITHIN 24 HOURS</span>
+							<span className="hidden md:inline">WE REPLY WITHIN 24 HOURS · 7 DAYS A WEEK</span>
+						</p>
+						<div className="flex w-full flex-col gap-3">
+							<h1
+								className={`${heyComic} wv-title-glow wv-hero-title text-[30px] leading-[1.1] md:text-4xl xl:text-5xl`}
+							>
+								<span>CONTACT</span> <span className="text-[var(--wv-cyan-soft)]">US</span>
 							</h1>
-							<span aria-hidden className="h-[2px] w-[70px] bg-[var(--ct-cyan)] md:w-[90px] xl:w-[120px]" />
+							<div className="wv-hero-bar h-1 w-20 rounded-full md:w-[120px]" />
 						</div>
-						<p className={`${orbitron} text-sm leading-[1.6] text-[var(--ct-text)] xl:text-base`}>
-							We&apos;re here to help! Reach out to us with any questions about our products, orders, or
-							anything vaping related.
+						<p className={`${orbitron} wv-hero-copy text-sm leading-[1.6] xl:text-base`}>
+							{/* A string, not JSX text: the compiler drops a leading space from JSX text that has an apostrophe. */}
+							{"We're "}
+							<strong className="wv-hero-key">here to help</strong>! Reach out to us with any questions about
+							our <strong className="wv-hero-key wv-hero-key--pink">products</strong>,{" "}
+							<strong className="wv-hero-key">orders</strong>, or anything vaping related.
 						</p>
 					</div>
-					<div className="border-[var(--ct-cyan)]/15 relative h-[150px] w-full shrink-0 overflow-hidden rounded-2xl border md:h-[236px] md:w-[240px] xl:h-[240px] xl:w-[400px]">
+					{/* 5:3 on phones and tablets, so the whole scene shows (the art is drawn 1200×720). */}
+					<div className="wv-art relative aspect-[5/3] w-full shrink-0 overflow-hidden rounded-2xl md:aspect-auto md:h-[176px] md:w-[294px] xl:h-[260px] xl:w-[420px]">
 						<Image
-							src="/home/contact/hero.png"
-							alt="Neon email, chat and phone icons over a support console"
+							src="/home/contact/hero.svg"
+							alt="A glowing envelope with its letter rising out inside a 24-hour reply ring, wired to neon seals for live chat, the support team, the FAQs and order tracking"
 							fill
 							priority
-							sizes="(min-width: 1280px) 400px, (min-width: 768px) 240px, 328px"
+							sizes="(min-width: 1280px) 420px, (min-width: 768px) 294px, 100vw"
 							className="object-cover"
 						/>
+						<span aria-hidden className="wv-art-glass absolute inset-0" />
+						<span aria-hidden className="wv-art-hud absolute inset-[10px] md:inset-[14px]" />
 					</div>
 				</section>
 
-				{/* Methods */}
-				<section className="grid gap-4 px-4 py-2 md:grid-cols-3 md:gap-6 md:px-8 md:py-4 xl:px-20 xl:py-6">
+				{/* The ways to reach us: neon cards, cyan, pink, cyan (see MethodCard). */}
+				<section className="grid gap-4 px-4 py-2 md:grid-cols-3 md:gap-5 md:px-8 md:py-4 xl:gap-6 xl:px-20 xl:py-6">
 					<MethodCard
-						tone="cyan"
-						icon="mail"
-						title="EMAIL US"
+						Icon={Mail}
+						label="EMAIL US"
 						headline={SUPPORT}
-						sub="We typically reply within 24 hours"
+						note={
+							<>
+								We typically reply within <strong className="wv-neon-key">24 hours</strong>
+							</>
+						}
+						action="SEND AN EMAIL"
 						href={`mailto:${SUPPORT}`}
 					/>
 					<MethodCard
-						tone="cyan"
-						icon="chat"
-						title="LIVE CHAT"
+						pink
+						Icon={MessageSquare}
+						label="LIVE CHAT"
 						headline="Chat with our support team"
-						sub="Monday–Sunday"
+						note={<strong className="wv-neon-key">Monday–Sunday</strong>}
+						action="START A CHAT"
 						href={chat ?? undefined}
 						external
 					/>
 					<MethodCard
-						tone="magenta"
-						icon="pin"
-						title="OUR LOCATION"
+						Icon={MapPin}
+						label="OUR LOCATION"
 						headline="123 Vapor Way, Vapecrest, NY 10001"
-						sub="United States"
+						tag="UNITED STATES"
 					/>
 				</section>
 
 				{/* Form + help */}
 				<section className="flex flex-col gap-8 px-4 py-6 md:px-8 md:py-8 xl:flex-row xl:gap-12 xl:px-20 xl:py-12">
-					<div className="flex flex-col gap-6 rounded-xl border border-[var(--ct-border)] bg-[var(--ct-card)] p-5 md:p-6 xl:w-[740px] xl:shrink-0 xl:gap-7 xl:p-8">
-						<div className="flex flex-col gap-[6px]">
-							<h2 className={`${bungee} text-base`}>SEND US A MESSAGE</h2>
-							<span aria-hidden className="h-[2px] w-16 bg-[var(--ct-cyan)]" />
+					{/* The form is lit glass like the affiliate application (`.wv-auth-card`, with `.wv-af-form` for its fields'
+					    pink "needs fixing" state): its title is chrome beside a lit icon tile over a glowing bar, and a neon rule
+					    runs cyan into pink above the fields. */}
+					<div className="wv-auth-card wv-af-form flex flex-col gap-6 rounded-[20px] p-5 md:p-6 xl:w-[740px] xl:shrink-0 xl:gap-7 xl:p-8">
+						<div className="flex items-center gap-3">
+							<span
+								aria-hidden
+								className="wv-acct-icon flex size-10 shrink-0 items-center justify-center rounded-xl"
+							>
+								<MessageSquareText className="size-[18px]" strokeWidth={2.25} />
+							</span>
+							<div className="flex flex-col gap-1.5">
+								<h2 className={`${bungee} wv-heading-title text-base text-white md:text-lg`}>
+									SEND US A MESSAGE
+								</h2>
+								<span aria-hidden className="wv-hero-bar h-[3px] w-16 rounded-full" />
+							</div>
 						</div>
+						<div aria-hidden className="wv-af-rule h-px w-full" />
 						<ContactForm whatsapp={chat} />
 					</div>
+					{/* Before you contact us: the title chrome over a glowing bar, the copy brighter with its key words lit; each
+					    help link a neon card in turn cyan and pink (`.wv-neon-card`, with `.wv-acct-card` for its glowing icon
+					    and focus ring) that lifts under the pointer, its title lifted and its arrow glowing and sliding on; and
+					    the Help Center the site's neon outline button (`.wv-btn-neon`). */}
 					<div className="flex min-w-0 flex-1 flex-col gap-6">
-						<div className="flex flex-col gap-2">
-							<h2 className="font-[family-name:var(--font-bungee)] text-base">BEFORE YOU CONTACT US</h2>
-							<p className="text-sm text-[var(--ct-text)]">
-								You may find your answer faster in our Help Center.
+						<div className="flex flex-col gap-3">
+							<div className="flex flex-col gap-2">
+								<h2 className={`${bungee} wv-heading-title text-base text-white md:text-lg`}>
+									BEFORE YOU CONTACT US
+								</h2>
+								<span aria-hidden className="wv-hero-bar h-[3px] w-16 rounded-full" />
+							</div>
+							<p className={`${orbitron} wv-hero-copy text-sm leading-[1.6]`}>
+								You may find your answer <strong className="wv-hero-key">faster</strong> in our{" "}
+								<strong className="wv-hero-key wv-hero-key--pink">Help Center</strong>.
 							</p>
 						</div>
 						<ul className="flex flex-col gap-3">
-							{HELP_LINKS.map((h) => (
+							{HELP_LINKS.map((h, i) => (
 								<li key={h.title}>
 									<a
 										href={h.href}
-										className="flex items-center gap-4 rounded-lg border border-[var(--ct-border)] bg-[var(--ct-card)] p-4"
+										className={`wv-neon-card wv-acct-card ${i % 2 ? "wv-neon-card--pink" : ""} group flex items-center gap-4 rounded-xl p-4`}
 									>
-										<span className="flex size-9 shrink-0 items-center justify-center rounded bg-[var(--ct-icon)]">
-											<Image src={`/home/contact/${h.icon}.svg`} alt="" width={18} height={18} />
+										<span
+											aria-hidden
+											className="wv-neon-card-icon flex size-10 shrink-0 items-center justify-center rounded-xl"
+										>
+											<h.Icon className="size-[18px]" strokeWidth={2.25} />
 										</span>
 										<span className="flex min-w-0 flex-1 flex-col gap-1">
-											<span className={`${heyComic} text-sm`}>{h.title}</span>
-											<span className={`${orbitron} text-xs text-[var(--ct-text)]`}>{h.text}</span>
+											<span className={`${heyComic} wv-trust-title text-sm`}>{h.title}</span>
+											<span className={`${orbitron} wv-neon-card-text text-xs`}>{h.text}</span>
 										</span>
-										<Image src="/home/contact/arrow.svg" alt="" width={16} height={16} className="shrink-0" />
+										<ArrowRight
+											aria-hidden
+											className="wv-af-inline-icon size-4 shrink-0 transition-transform group-hover:translate-x-1"
+											strokeWidth={2.5}
+										/>
 									</a>
 								</li>
 							))}
 						</ul>
 						<Link
 							href="/learn"
-							className={`${heyComic} flex items-center justify-center rounded border-[1.5px] border-[var(--ct-cyan)] px-7 py-[14px] text-xs uppercase text-[var(--ct-cyan)]`}
+							className={`${heyComic} wv-btn wv-btn-outline wv-btn-neon flex h-12 items-center justify-center gap-2 rounded-xl border-[1.5px] border-[var(--wv-cyan-soft)] px-7 text-[13px] uppercase text-[var(--wv-cyan-soft)]`}
 						>
-							Visit Help Center
+							<BookOpen aria-hidden className="size-4" strokeWidth={2.25} />
+							<span className="wv-btn-label">Visit Help Center</span>
 						</Link>
 					</div>
 				</section>
