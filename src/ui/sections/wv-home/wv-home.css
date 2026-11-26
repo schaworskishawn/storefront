@@ -1484,7 +1484,9 @@ li:nth-child(even) > .wv-cat-chip {
 		0 0 10px color-mix(in srgb, var(--accent) 18%, transparent);
 	transition: box-shadow 200ms ease;
 }
-.wv-info-item[open] {
+/* Open: a <details> (the shipping page), or a panel that says so itself (the legal pages' accordion, wv-legal-client.tsx). */
+.wv-info-item[open],
+.wv-info-item[data-open="true"] {
 	--accent: var(--wv-cyan-soft);
 	box-shadow:
 		inset 0 1px 0 color-mix(in srgb, white 12%, transparent),
@@ -3928,4 +3930,137 @@ li:nth-child(even) > .wv-cat-chip {
 }
 .wv-dist-tier-terms .wv-stat-value {
 	color: var(--accent);
+}
+
+/* The legal pages' trust badges (wv-legal.tsx): neon cards (.wv-neon-card) in turn cyan and pink, their icons lit in the
+ * card's colour like the affiliate highlights', glowing brighter under the pointer but not lifting, as they aren't links. */
+.wv-legal-badge .wv-trust-icon svg {
+	color: var(--accent);
+	filter: drop-shadow(0 0 4px color-mix(in srgb, var(--accent) 85%, transparent));
+}
+.wv-neon-card.wv-legal-badge:hover {
+	transform: none;
+}
+
+/* The legal pages' table of contents and help card (wv-legal-client.tsx): neon cards that glow brighter under the
+ * pointer but don't lift. In the contents, each section is dim until the pointer finds it; the one you're on is lit cyan
+ * in a glass strip with a glowing bar at its left. */
+.wv-neon-card.wv-legal-panel:hover {
+	transform: none;
+}
+.wv-legal-toc-link {
+	position: relative;
+	color: color-mix(in srgb, white 70%, var(--wv-text-dim));
+	transition:
+		color 150ms ease,
+		background-color 150ms ease;
+}
+.wv-legal-toc-link:hover,
+.wv-legal-toc-link:focus-visible {
+	color: white;
+	background: color-mix(in srgb, var(--wv-pink) 10%, transparent);
+}
+.wv-legal-toc-link[aria-current] {
+	color: var(--wv-cyan-soft);
+	background: linear-gradient(90deg, color-mix(in srgb, var(--wv-cyan) 16%, transparent), transparent);
+	text-shadow:
+		0 1px 1px var(--wv-ink),
+		0 0 8px color-mix(in srgb, var(--wv-cyan) 65%, transparent);
+}
+.wv-legal-toc-link[aria-current]::before {
+	content: "";
+	position: absolute;
+	left: 0;
+	top: 6px;
+	bottom: 6px;
+	width: 3px;
+	border-radius: 3px;
+	background: var(--wv-cyan-soft);
+	box-shadow: 0 0 8px var(--wv-cyan);
+}
+
+/* The legal heroes' text (wv-legal.tsx) sits on a lit glass panel: a pink glow in its top corner and a cyan one in the
+ * bottom over a hint of purple, a cyan-through-purple-to-pink edge that glows, a highlight along the top and a shadow
+ * beneath, with the art frame's HUD corners (.wv-art-hud). The highlight chips' icons glow in neon rings in the chip's
+ * colour (.wv-trust-icon). */
+.wv-legal-hero-panel {
+	border: 1.5px solid transparent;
+	background:
+		radial-gradient(70% 60% at 0% 0%, color-mix(in srgb, var(--wv-pink) 12%, transparent), transparent 70%)
+			padding-box,
+		radial-gradient(
+				60% 60% at 100% 100%,
+				color-mix(in srgb, var(--wv-cyan) 10%, transparent),
+				transparent 70%
+			)
+			padding-box,
+		linear-gradient(
+				180deg,
+				color-mix(in srgb, var(--wv-purple) 14%, var(--wv-ink)),
+				color-mix(in srgb, var(--wv-ink) 88%, transparent)
+			)
+			padding-box,
+		linear-gradient(
+				135deg,
+				var(--wv-cyan),
+				color-mix(in srgb, var(--wv-purple) 70%, transparent) 50%,
+				var(--wv-pink)
+			)
+			border-box;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 12%, transparent),
+		0 0 22px color-mix(in srgb, var(--wv-cyan) 18%, transparent),
+		0 0 46px -12px color-mix(in srgb, var(--wv-pink) 40%, transparent),
+		0 20px 34px -18px var(--wv-ink);
+}
+.wv-legal-chip-icon svg {
+	color: var(--accent);
+	filter: drop-shadow(0 0 3px color-mix(in srgb, var(--accent) 85%, transparent));
+}
+
+/* The legal sections' numbers (wv-legal-client.tsx): each in a neon tile in its panel's colour (pink while closed, cyan
+ * once open: the panel's --accent), lit from inside and glowing; and under an open section's title, a glowing neon rule
+ * that runs cyan into pink and fades out. */
+.wv-legal-num {
+	display: inline-flex;
+	flex: none;
+	align-items: center;
+	justify-content: center;
+	min-width: 34px;
+	height: 28px;
+	padding: 0 6px;
+	border: 1.5px solid var(--accent);
+	border-radius: 8px;
+	color: var(--accent);
+	letter-spacing: 1px;
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--accent) 24%, transparent),
+		color-mix(in srgb, var(--accent) 6%, transparent)
+	);
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 18%, transparent),
+		0 0 10px color-mix(in srgb, var(--accent) 45%, transparent);
+	text-shadow: 0 0 6px var(--accent);
+	transition:
+		color 200ms ease,
+		border-color 200ms ease,
+		box-shadow 200ms ease;
+}
+.wv-legal-divider {
+	height: 1px;
+	background: linear-gradient(
+		90deg,
+		var(--wv-cyan),
+		color-mix(in srgb, var(--wv-pink) 80%, transparent) 60%,
+		transparent
+	);
+	box-shadow: 0 0 6px color-mix(in srgb, var(--wv-cyan) 60%, transparent);
+}
+/* Each section's icon sits in its number tile, glowing in the tile's colour. */
+.wv-legal-num {
+	gap: 6px;
+}
+.wv-legal-num svg {
+	filter: drop-shadow(0 0 3px var(--accent));
 }

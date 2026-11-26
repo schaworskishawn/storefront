@@ -1,7 +1,87 @@
 "use client";
 
+import {
+	BadgeCheck,
+	BookOpen,
+	ChevronDown,
+	Cookie,
+	Copyright,
+	CreditCard,
+	Database,
+	Earth,
+	FileText,
+	Gift,
+	Globe,
+	Handshake,
+	HardDrive,
+	HeartHandshake,
+	LifeBuoy,
+	ListChecks,
+	Lock,
+	Mail,
+	MessageCircle,
+	MessageSquare,
+	MonitorSmartphone,
+	Package,
+	Plug,
+	RefreshCw,
+	Scale,
+	Settings2,
+	Share2,
+	ShieldAlert,
+	SlidersHorizontal,
+	TriangleAlert,
+	Truck,
+	Undo2,
+	UserCheck,
+	UserRound,
+	type LucideIcon,
+} from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { flushSync } from "react-dom";
+
+/** Each legal section's icon, shown glowing in its number tile (any section not listed gets a page). */
+const SECTION_ICONS: Record<string, LucideIcon> = {
+	// Terms
+	introduction: BookOpen,
+	"use-of-our-site": Globe,
+	"products-and-orders": Package,
+	"pricing-and-payment": CreditCard,
+	"shipping-and-delivery": Truck,
+	"returns-and-refunds": Undo2,
+	"age-verification": BadgeCheck,
+	"vapor-tokens-and-gift-cards": Gift,
+	"affiliate-and-distributor-programs": Handshake,
+	"intellectual-property": Copyright,
+	"user-accounts": UserRound,
+	"limitation-of-liability": Scale,
+	"changes-and-contact": Mail,
+	// Privacy
+	"information-we-collect": Database,
+	"how-we-use-your-data": Settings2,
+	"data-sharing": Share2,
+	"cookies-and-tracking": Cookie,
+	"data-security": Lock,
+	"your-rights-and-choices": UserCheck,
+	"childrens-privacy": ShieldAlert,
+	"international-transfers": Earth,
+	"policy-updates": RefreshCw,
+	"contact-us": Mail,
+	// Cookies
+	"what-are-cookies": Cookie,
+	"cookies-we-set": ListChecks,
+	"browser-storage": HardDrive,
+	"third-party-services": Plug,
+	"managing-cookies": SlidersHorizontal,
+	// Accessibility
+	"our-commitment": HeartHandshake,
+	"what-we-do": ListChecks,
+	"known-limitations": TriangleAlert,
+	"browsers-and-technology": MonitorSmartphone,
+	"need-help-ordering": LifeBuoy,
+	feedback: MessageSquare,
+};
 
 const heyComic = "font-[family-name:var(--font-hey-comic)]";
 const bungee = "font-[family-name:var(--font-bungee)]";
@@ -14,17 +94,30 @@ export type LegalSection = {
 	link?: { href: string; label: string };
 };
 
-/** Table of contents + single-open accordion for legal pages. The open section is mirrored in the URL hash. */
+/**
+ * Table of contents + single-open accordion for legal pages. The open section is mirrored in the URL hash.
+ *
+ * Lit like the shipping page's answers, over a soft pink and cyan glow (`.wv-faq-glow`):
+ * - each section is a glassy neon panel, pink while closed and glowing cyan once open, its title lifted and its +/− in a
+ *   neon ring (`.wv-info-*`, `.wv-trust-*`);
+ * - the heading is chrome 3D lettering over a glowing bar (`.wv-heading-*`);
+ * - the table of contents and the help card are neon cards (`.wv-neon-card`) that don't lift (`.wv-legal-panel`), the
+ *   section you're on lit in the list.
+ */
 function SupportCard({ text }: { text: string }) {
 	return (
-		<div className="flex flex-col gap-5 rounded-2xl border border-[var(--wv-purple)] bg-[var(--lg-card)] p-6 shadow-[0_0_12px_rgba(217,0,255,0.07)] md:p-8">
+		<div className="wv-neon-card wv-neon-card--pink wv-legal-panel flex flex-col gap-5 rounded-2xl p-6 md:p-8">
 			<div className="flex flex-col gap-2">
-				<p className={`${heyComic} text-base`}>NEED HELP?</p>
-				<span aria-hidden className="h-[2px] w-12 bg-[var(--wv-purple)]" />
+				<p className={`${bungee} wv-heading-title text-lg text-white`}>NEED HELP?</p>
+				<span aria-hidden className="wv-hero-bar h-1 w-14 rounded-full" />
 			</div>
-			<p className={`${orbitron} text-[13px] leading-[1.5] text-[var(--lg-body)]`}>{text}</p>
-			<Link href="/contact-us" className={`${heyComic} text-xs uppercase text-[var(--wv-cyan)] underline`}>
-				Contact support
+			<p className={`${orbitron} wv-trust-text text-[13px] leading-[1.6]`}>{text}</p>
+			<Link
+				href="/contact-us"
+				className={`${heyComic} wv-btn wv-btn-outline wv-btn-neon flex h-11 items-center justify-center gap-2 rounded-xl border-[1.5px] border-[var(--wv-cyan-soft)] px-6 text-sm text-[var(--wv-cyan-soft)] md:w-fit xl:w-full`}
+			>
+				<MessageCircle aria-hidden className="size-4" strokeWidth={2.5} />
+				<span className="wv-btn-label">CONTACT SUPPORT</span>
 			</Link>
 		</div>
 	);
@@ -43,21 +136,37 @@ export function LegalSections({
 	const [open, setOpen] = useState<string>(sections[0].id);
 	const [tocOpen, setTocOpen] = useState(false);
 
+	/**
+	 * Open a section and bring it into view. Opening it closes the one that was open above it (and the phone menu), which
+	 * moves everything up, so the change is applied first (flushSync) and the scroll worked out from the new layout;
+	 * worked out before, it would overshoot.
+	 */
+	const openAndShow = (id: string) => {
+		flushSync(() => {
+			setOpen(id);
+			setTocOpen(false);
+		});
+		document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+	};
+
 	useEffect(() => {
+		// A link to a section (the hero's chips, or another page linking here). The first look runs just after mounting,
+		// outside React's own work, where flushSync is allowed.
 		const fromHash = () => {
 			const id = window.location.hash.slice(1);
-			if (sections.some((s) => s.id === id)) setOpen(id);
+			if (sections.some((s) => s.id === id)) openAndShow(id);
 		};
-		fromHash();
+		const first = window.setTimeout(fromHash, 0);
 		window.addEventListener("hashchange", fromHash);
-		return () => window.removeEventListener("hashchange", fromHash);
+		return () => {
+			window.clearTimeout(first);
+			window.removeEventListener("hashchange", fromHash);
+		};
 	}, [sections]);
 
 	const go = (id: string) => {
-		setOpen(id);
-		setTocOpen(false);
 		window.history.replaceState(null, "", `#${id}`);
-		document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+		openAndShow(id);
 	};
 	const toggle = (id: string) => {
 		const next = open === id ? "" : id;
@@ -68,26 +177,25 @@ export function LegalSections({
 	const current = sections.find((s) => s.id === open);
 
 	return (
-		<div className="flex flex-col gap-6 px-4 pb-10 md:px-6 xl:flex-row xl:gap-12 xl:px-20 xl:pb-16 xl:pt-6">
+		<div className="wv-faq-glow flex flex-col gap-6 px-4 pb-10 md:px-6 xl:flex-row xl:gap-12 xl:px-20 xl:pb-16 xl:pt-6">
 			{/* Desktop sidebar */}
 			<aside
 				className="hidden w-[320px] shrink-0 flex-col gap-6 xl:sticky xl:top-6 xl:flex xl:self-start"
 				aria-label="Table of contents"
 			>
-				<nav className="flex flex-col gap-4 rounded-2xl border border-[var(--lg-border)] bg-[var(--lg-card)] p-6">
-					<p className={`${bungee} text-sm tracking-[0.5px]`}>ON THIS PAGE</p>
-					<hr className="border-[var(--lg-border)]" />
-					<ol className={`${orbitron} flex flex-col gap-3 text-[13px] tracking-[0.5px]`}>
+				<nav className="wv-neon-card wv-legal-panel flex flex-col gap-4 rounded-2xl p-6">
+					<div className="flex flex-col gap-2">
+						<p className={`${bungee} wv-heading-title text-base text-white`}>ON THIS PAGE</p>
+						<span aria-hidden className="wv-hero-bar h-1 w-14 rounded-full" />
+					</div>
+					<ol className={`${orbitron} flex flex-col gap-1 text-[13px] tracking-[0.5px]`}>
 						{sections.map((s, i) => (
 							<li key={s.id}>
 								<a
 									href={`#${s.id}`}
 									onClick={(e) => (e.preventDefault(), go(s.id))}
-									className={
-										open === s.id
-											? "font-bold text-[var(--wv-cyan)]"
-											: "text-[var(--lg-body)] hover:text-white"
-									}
+									aria-current={open === s.id ? "location" : undefined}
+									className="wv-legal-toc-link block rounded-lg px-3 py-2"
 								>
 									{i + 1}. {s.title}
 								</a>
@@ -104,28 +212,33 @@ export function LegalSections({
 					type="button"
 					aria-expanded={tocOpen}
 					onClick={() => setTocOpen((v) => !v)}
-					className={`${orbitron} flex w-full items-center justify-between gap-3 rounded-xl border border-[var(--lg-border)] bg-[var(--lg-card)] px-4 py-3 text-xs md:text-[13px]`}
+					data-open={tocOpen}
+					className={`${orbitron} wv-info-item flex w-full items-center justify-between gap-3 rounded-xl px-4 py-3 text-xs md:text-[13px]`}
 				>
-					<span>
-						<span className="font-bold">ON THIS PAGE</span>{" "}
-						<span className="ml-2 text-[var(--wv-cyan)]">
+					<span className="min-w-0">
+						<span className={`${heyComic} wv-trust-title`}>ON THIS PAGE</span>{" "}
+						<span className="wv-hero-key ml-2">
 							{current ? `${sections.indexOf(current) + 1}. ${current.title}` : "Sections"}
 						</span>
 					</span>
-					<span aria-hidden className={`transition-transform ${tocOpen ? "rotate-180" : ""}`}>
-						⌄
+					<span aria-hidden className="wv-info-toggle">
+						<ChevronDown
+							className={`size-4 transition-transform ${tocOpen ? "rotate-180" : ""}`}
+							strokeWidth={2.5}
+						/>
 					</span>
 				</button>
 				{tocOpen && (
 					<ol
-						className={`${orbitron} mt-2 flex flex-col gap-1 rounded-xl border border-[var(--lg-border)] bg-[var(--lg-card)] p-3 text-[13px]`}
+						className={`${orbitron} wv-neon-card wv-legal-panel wv-unfold mt-2 flex flex-col gap-1 rounded-xl p-3 text-[13px]`}
 					>
 						{sections.map((s, i) => (
 							<li key={s.id}>
 								<button
 									type="button"
 									onClick={() => go(s.id)}
-									className={`w-full rounded-md px-3 py-2 text-left ${open === s.id ? "font-bold text-[var(--wv-cyan)]" : "text-[var(--lg-body)]"}`}
+									aria-current={open === s.id ? "location" : undefined}
+									className="wv-legal-toc-link w-full rounded-lg px-3 py-2 text-left"
 								>
 									{i + 1}. {s.title}
 								</button>
@@ -138,8 +251,13 @@ export function LegalSections({
 			{/* Sections */}
 			<div className="flex min-w-0 flex-1 flex-col gap-6 xl:gap-7">
 				<div className="flex flex-col gap-2">
-					<h2 className={`${heyComic} text-base uppercase md:text-lg`}>{heading}</h2>
-					<span aria-hidden className="h-[2px] w-12 bg-[var(--wv-cyan)] xl:w-16" />
+					<h2 className={`${bungee} wv-heading-title text-lg uppercase text-white md:text-xl xl:text-2xl`}>
+						{heading}
+					</h2>
+					<span
+						aria-hidden
+						className="wv-heading-bar mt-1 h-[3px] w-16 rounded-full bg-[var(--wv-cyan-soft)]"
+					/>
 				</div>
 				<ul className="flex flex-col gap-3 xl:gap-4">
 					{sections.map((s, i) => {
@@ -148,7 +266,8 @@ export function LegalSections({
 							<li
 								key={s.id}
 								id={s.id}
-								className={`scroll-mt-6 rounded-xl border bg-[var(--lg-card)] p-4 md:p-5 xl:p-6 ${isOpen ? "border-[var(--wv-cyan-soft)] shadow-[0_0_8px_rgba(0,255,224,0.13)]" : "border-[var(--lg-border)]"}`}
+								data-open={isOpen}
+								className="wv-info-item scroll-mt-6 rounded-xl p-4 md:p-5 xl:p-6"
 							>
 								<h3>
 									<button
@@ -158,15 +277,20 @@ export function LegalSections({
 										onClick={() => toggle(s.id)}
 										className="flex w-full items-center justify-between gap-4 text-left"
 									>
-										<span
-											className={`${heyComic} text-sm uppercase md:text-[15px] ${isOpen ? "text-[var(--wv-cyan)]" : "text-white"}`}
-										>
-											{i + 1}. {s.title}
+										<span className="flex min-w-0 items-center gap-3">
+											{/* The number in a neon tile, in the panel's colour (`.wv-legal-num`) */}
+											<span className={`${bungee} wv-legal-num text-xs`}>
+												{(() => {
+													const Icon = SECTION_ICONS[s.id] ?? FileText;
+													return <Icon aria-hidden className="size-3.5" strokeWidth={2.25} />;
+												})()}
+												{String(i + 1).padStart(2, "0")}
+											</span>
+											<span className={`${heyComic} wv-trust-title text-sm uppercase md:text-[15px]`}>
+												{s.title}
+											</span>
 										</span>
-										<span
-											aria-hidden
-											className={`${bungee} text-xl ${isOpen ? "text-[var(--wv-cyan)]" : "text-[var(--lg-body)]"}`}
-										>
+										<span aria-hidden className="wv-info-toggle font-mono text-base">
 											{isOpen ? "−" : "+"}
 										</span>
 									</button>
@@ -175,14 +299,15 @@ export function LegalSections({
 									<div
 										id={`${s.id}-body`}
 										role="region"
-										className={`${orbitron} wv-unfold mt-4 flex flex-col gap-3 border-t border-[var(--lg-border)] pt-3 text-sm leading-[1.6] text-[var(--lg-body)]`}
+										className={`${orbitron} wv-trust-text wv-unfold mt-4 flex flex-col gap-3 text-sm leading-[1.6]`}
 									>
+										<span aria-hidden className="wv-legal-divider mb-1 block" />
 										{s.body.map((p) => (
 											<p key={p}>{p}</p>
 										))}
 										{s.link && (
 											<p>
-												<Link href={s.link.href} className="text-[var(--wv-cyan)] underline">
+												<Link href={s.link.href} className="wv-hero-key underline underline-offset-4">
 													{s.link.label}
 												</Link>
 											</p>

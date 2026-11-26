@@ -1,5 +1,16 @@
+import {
+	Award,
+	CalendarCheck,
+	ChevronRight,
+	Home,
+	Lock,
+	MessageCircle,
+	Truck,
+	type LucideIcon,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { type ReactNode } from "react";
 import { WvFooter, WvHeader } from "./wv-chrome";
 import { LegalSections, type LegalSection } from "./wv-legal-client";
 import "./wv-home.css";
@@ -9,12 +20,36 @@ import "./wv-home.css";
 const heyComic = "font-[family-name:var(--font-hey-comic)]";
 const orbitron = "font-[family-name:var(--font-orbitron)]";
 
-const BADGES = [
-	{ icon: "truck", title: "Fast Shipping", text: "Dispatched within 24 hours" },
-	{ icon: "lock", title: "Secure Payments", text: "100% SSL protected" },
-	{ icon: "support", title: "Dedicated Support", text: "We are always here to help" },
-	{ icon: "award", title: "Quality Guarantee", text: "All products fully certified" },
+const BADGES: { Icon: LucideIcon; title: string; text: string }[] = [
+	{ Icon: Truck, title: "Fast Shipping", text: "Dispatched within 24 hours" },
+	{ Icon: Lock, title: "Secure Payments", text: "100% SSL protected" },
+	{ Icon: MessageCircle, title: "Dedicated Support", text: "We are always here to help" },
+	{ Icon: Award, title: "Quality Guarantee", text: "All products fully certified" },
 ];
+
+export type LegalHighlight = {
+	Icon: LucideIcon;
+	label: string;
+	/** The section id it opens. */ section: string;
+};
+
+/** The intro with each key phrase lit (`.wv-hero-key`), in turn cyan and pink. A phrase not in the text is ignored. */
+export function lightUp(text: string, keys: readonly string[]): ReactNode[] {
+	const found = keys.filter((k) => k && text.includes(k));
+	if (found.length === 0) return [text];
+	const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+	const parts = text.split(new RegExp(`(${found.map(escape).join("|")})`));
+	let lit = 0;
+	return parts.map((part, i) =>
+		found.includes(part) ? (
+			<strong key={i} className={`wv-hero-key${lit++ % 2 ? " wv-hero-key--pink" : ""}`}>
+				{part}
+			</strong>
+		) : (
+			part
+		),
+	);
+}
 
 export function WvLegal({
 	crumb,
@@ -26,17 +61,26 @@ export function WvLegal({
 	supportText,
 	sections,
 	image,
+	imageAlt = "",
 	accent = "magenta",
+	introKeys = [],
+	highlights = [],
 }: {
 	crumb: string;
 	titleLead: string;
 	titleAccent: string;
 	updated: string;
 	intro: string;
+	/** Phrases of the intro to light up, in turn cyan and pink, as the other heroes light their key phrases. */
+	introKeys?: string[];
+	/** Up to three things the page promises, each a chip that opens its section. */
+	highlights?: LegalHighlight[];
 	sectionsHeading: string;
 	supportText: string;
 	sections: LegalSection[];
 	image: string;
+	/** What the art shows, for screen readers; empty (decorative) when the art says nothing the page doesn't. */
+	imageAlt?: string;
 	accent?: "magenta" | "cyan";
 }) {
 	return (
@@ -52,66 +96,103 @@ export function WvLegal({
 			<div className="relative">
 				<WvHeader />
 
+				{/* The shop's breadcrumb: a glass strip under the header, Home glowing cyan, a pink chevron, and this page in a
+				    neon pill (styles: `.wv-crumb*` in wv-home.css). */}
 				<nav
 					aria-label="Breadcrumb"
-					className={`${orbitron} flex items-center gap-2 px-4 py-4 text-[11px] text-[var(--ct-placeholder)] md:px-6 xl:px-20 xl:py-6 xl:text-xs`}
+					className={`${heyComic} wv-crumbs flex items-center gap-2 px-4 py-2 text-xs tracking-[0.5px] md:px-6 xl:px-20 xl:py-3`}
 				>
-					<Link href="/home">Home</Link>
-					<span aria-hidden>›</span>
-					<span aria-current="page" className="text-[var(--wv-cyan)]">
+					<Link href="/home" className="wv-link wv-crumb-link">
+						<Home aria-hidden className="size-3.5" strokeWidth={2.25} />
+						Home
+					</Link>
+					<ChevronRight aria-hidden className="wv-crumb-sep size-3.5" strokeWidth={2.5} />
+					<span aria-current="page" className="wv-crumb-current">
 						{crumb}
 					</span>
 				</nav>
 
-				<section className="flex flex-col gap-6 px-4 pb-6 md:flex-row md:items-center md:justify-between md:gap-8 md:px-6 xl:px-20 xl:pb-12 xl:pt-5">
-					<div className="flex max-w-[750px] flex-col gap-5 xl:gap-6">
-						<div className="flex flex-col gap-3">
+				{/* The hero, in the neon style of the site's other heroes (`.wv-hero-*` in wv-home.css): a pink and cyan glow
+				    behind it, the date it was last updated in a neon badge, a 3D two-tone title over a glowing pink-to-cyan bar,
+				    brighter copy, and the art in a glowing frame with glass and HUD corners (`.wv-art*`). */}
+				<section className="wv-hero-backdrop flex flex-col gap-6 px-4 pb-6 pt-6 md:flex-row md:items-center md:justify-between md:gap-8 md:px-6 md:pt-8 xl:px-20 xl:pb-12 xl:pt-10">
+					{/* The text sits on a lit glass panel (`.wv-legal-hero-panel`) with the art frame's HUD corners, so the two
+					    read as a pair of screens. */}
+					<div className="wv-legal-hero-panel relative flex max-w-[750px] flex-col items-start gap-4 rounded-[20px] p-5 md:p-6 xl:gap-6 xl:p-8">
+						<span aria-hidden className="wv-art-hud absolute inset-[10px]" />
+						<p
+							className={`${heyComic} wv-hero-badge flex items-center gap-2 rounded-full px-3 py-1 text-[10px] tracking-[1.5px] md:px-4 md:py-[6px] md:text-[11px]`}
+						>
+							<CalendarCheck aria-hidden className="size-3.5 md:size-4" strokeWidth={2.25} />
+							LAST UPDATED: {updated}
+						</p>
+						<div className="flex w-full flex-col gap-3">
 							<h1
-								className={`${heyComic} text-[26px] leading-[30px] md:text-[34px] md:leading-10 xl:text-[44px] xl:leading-[52px]`}
+								className={`${heyComic} wv-title-glow wv-hero-title text-[28px] leading-[32px] md:text-[34px] md:leading-10 xl:text-[44px] xl:leading-[52px]`}
 							>
-								{titleLead}{" "}
-								<span className={accent === "magenta" ? "text-[var(--ct-magenta)]" : "text-[var(--wv-cyan)]"}>
+								<span>{titleLead}</span>{" "}
+								<span
+									className={accent === "magenta" ? "text-[var(--wv-pink)]" : "text-[var(--wv-cyan-soft)]"}
+								>
 									{titleAccent}
 								</span>
 							</h1>
-							<span aria-hidden className="h-[2px] w-[100px] bg-[var(--wv-cyan-soft)] md:w-[120px] xl:w-40" />
+							<div className="wv-hero-bar h-1 w-20 rounded-full md:w-[120px]" />
 						</div>
-						<p
-							className={`${orbitron} text-xs font-semibold tracking-[1px] text-[var(--wv-cyan)] md:text-sm`}
-						>
-							LAST UPDATED: {updated}
+						<p className={`${orbitron} wv-hero-copy text-sm leading-[1.6] xl:text-[15px]`}>
+							{lightUp(intro, introKeys)}
 						</p>
-						<p className={`${orbitron} text-sm leading-[1.6] text-[var(--lg-body)] xl:text-[15px]`}>
-							{intro}
-						</p>
+						{highlights.length > 0 && (
+							// What the page promises, as the payments strip's glowing chips (`.wv-pay-chip`, in turn cyan and
+							// pink): each opens its section below (the accordion follows the URL hash).
+							<nav aria-label="Highlights" className="flex flex-wrap gap-2">
+								{highlights.map((h) => (
+									<a
+										key={h.section}
+										href={`#${h.section}`}
+										className={`${heyComic} wv-pay-chip flex items-center gap-2 rounded-full py-[5px] pl-[5px] pr-3 text-xs text-white`}
+									>
+										<span aria-hidden className="wv-trust-icon wv-legal-chip-icon text-[14px]">
+											<h.Icon className="size-3.5" strokeWidth={2.25} />
+										</span>
+										{h.label}
+									</a>
+								))}
+							</nav>
+						)}
 					</div>
-					<div className="relative h-[137px] w-full shrink-0 overflow-hidden rounded-2xl border border-[var(--wv-cyan-soft)] md:h-[180px] md:w-[200px] xl:h-[260px] xl:w-[400px]">
+					{/* 5:3 on phones and tablets, so a whole scene shows (the art is drawn 1200×720). */}
+					<div className="wv-art relative aspect-[5/3] w-full shrink-0 overflow-hidden rounded-2xl md:aspect-auto md:h-[168px] md:w-[280px] xl:h-[260px] xl:w-[400px]">
 						<Image
 							src={image}
-							alt=""
+							alt={imageAlt}
 							fill
 							priority
-							sizes="(min-width: 1280px) 400px, (min-width: 768px) 200px, 328px"
+							sizes="(min-width: 1280px) 400px, (min-width: 768px) 280px, 100vw"
 							className="object-cover"
 						/>
+						<span aria-hidden className="wv-art-glass absolute inset-0" />
+						<span aria-hidden className="wv-art-hud absolute inset-[10px] xl:inset-[14px]" />
 					</div>
 				</section>
 
 				<LegalSections sections={sections} heading={sectionsHeading} supportText={supportText} />
 
-				<ul className="grid gap-3 px-4 pb-10 md:grid-cols-2 md:gap-3 md:px-6 xl:hidden">
+				{/* Trust badges (phones and tablets): neon cards in turn cyan and pink (`.wv-neon-card`, `.wv-trust-item`), each
+				    icon glowing in a neon ring of its colour, its title lifted and its line brighter (`.wv-trust-*`). They glow
+				    brighter under the pointer but don't lift, as they aren't links (`.wv-legal-badge`). */}
+				<ul className="grid gap-3 px-4 pb-10 md:grid-cols-2 md:gap-4 md:px-6 xl:hidden">
 					{BADGES.map((b) => (
 						<li
 							key={b.title}
-							className="flex items-center gap-4 rounded-lg border border-[var(--ct-border)] bg-[var(--ct-card)] p-4"
+							className="wv-neon-card wv-trust-item wv-legal-badge flex items-center gap-4 rounded-xl p-4"
 						>
-							<span aria-hidden className="h-8 w-[3px] shrink-0 rounded-[2px] bg-[var(--ct-cyan)]" />
+							<span aria-hidden className="wv-trust-icon text-[22px]">
+								<b.Icon className="size-[0.7em]" strokeWidth={2} />
+							</span>
 							<span className="flex min-w-0 flex-col gap-1">
-								<span className={`${heyComic} flex items-center gap-[6px] text-[13px]`}>
-									<Image src={`/home/contact/${b.icon}.svg`} alt="" width={14} height={14} />
-									{b.title}
-								</span>
-								<span className={`${orbitron} text-xs text-[var(--ct-text)]`}>{b.text}</span>
+								<span className={`${heyComic} wv-trust-title text-[13px]`}>{b.title}</span>
+								<span className={`${orbitron} wv-trust-text text-xs leading-[1.45]`}>{b.text}</span>
 							</span>
 						</li>
 					))}
