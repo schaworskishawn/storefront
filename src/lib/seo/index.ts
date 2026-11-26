@@ -60,4 +60,4 @@ export { rootMetadata, buildPageMetadata, buildBrowsePageMetadata, truncateText 
 export { buildLocaleHreflangAlternates } from "./hreflang";
 
 // JSON-LD structured data
-export { buildProductJsonLd, jsonLdScriptProps } from "./json-ld";
+export { buildBreadcrumbJsonLd, buildFaqJsonLd, buildProductJsonLd, jsonLdScriptProps } from "./json-ld";

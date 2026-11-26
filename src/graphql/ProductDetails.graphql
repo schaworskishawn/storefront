@@ -6,6 +6,11 @@ query ProductDetails($slug: String!, $channel: String!, $languageCode: LanguageC
 		description
 		seoTitle
 		seoDescription
+		# Questions and answers for the product page's FAQ and its FAQPage structured data: a JSON array of
+		# {"q": "...", "a": "..."} in the product's public metadata (see src/lib/catalog/product-faq.ts).
+		faq: metafield(key: "faq")
+		# A companion guide linked from the FAQ: {"url": "/learn/…", "title": "…"} (src/lib/catalog/product-guide.ts).
+		guide: metafield(key: "guide")
 		translation(languageCode: $languageCode) {
 			name
 			description

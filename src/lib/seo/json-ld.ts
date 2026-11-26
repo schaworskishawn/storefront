@@ -1,4 +1,4 @@
-import { type WithContext, type Product } from "schema-dts";
+import { type BreadcrumbList, type FAQPage, type WithContext, type Product } from "schema-dts";
 import { serializeForInlineScript } from "@/lib/html/inline-script";
 import { seoConfig, getBaseUrl } from "./config";
 
@@ -45,6 +45,10 @@ export function buildProductJsonLd(options: {
 	} | null;
 	inStock?: boolean;
 	variantCount?: number;
+	/** The product's category name (schema.org `category`). */
+	category?: string | null;
+	/** Spec rows, published as `additionalProperty` so search and AI engines can read them as facts. */
+	properties?: { name: string; value: string }[];
 }): WithContext<Product> | null {
 	if (!seoConfig.enableJsonLd) {
 		return null;
@@ -61,6 +65,8 @@ export function buildProductJsonLd(options: {
 		priceRange,
 		inStock = true,
 		variantCount,
+		category,
+		properties,
 	} = options;
 
 	const baseUrl = getBaseUrl();
@@ -72,7 +78,16 @@ export function buildProductJsonLd(options: {
 		name,
 		description: description || name,
 		image: images && images.length > 0 ? images : undefined,
+		...(fullUrl && { url: fullUrl }),
 		...(sku && { sku }),
+		...(category && { category }),
+		...(properties?.length && {
+			additionalProperty: properties.map((p) => ({
+				"@type": "PropertyValue" as const,
+				name: p.name,
+				value: p.value,
+			})),
+		}),
 		brand: {
 			"@type": "Brand",
 			name: brand || seoConfig.defaultBrand,
@@ -104,6 +119,41 @@ export function buildProductJsonLd(options: {
 						},
 					}
 				: undefined,
+	};
+}
+
+/**
+ * FAQPage structured data for questions and answers shown on the page (they must be visible there too).
+ * Returns null when there are none.
+ */
+export function buildFaqJsonLd(faqs: { q: string; a: string }[]): WithContext<FAQPage> | null {
+	if (!seoConfig.enableJsonLd || faqs.length === 0) return null;
+	return {
+		"@context": "https://schema.org",
+		"@type": "FAQPage",
+		mainEntity: faqs.map((f) => ({
+			"@type": "Question",
+			name: f.q,
+			acceptedAnswer: { "@type": "Answer", text: f.a },
+		})),
+	};
+}
+
+/** BreadcrumbList structured data; `url`s are site paths (made absolute here). The last item may omit its url. */
+export function buildBreadcrumbJsonLd(
+	items: { name: string; url?: string }[],
+): WithContext<BreadcrumbList> | null {
+	if (!seoConfig.enableJsonLd || items.length === 0) return null;
+	const baseUrl = getBaseUrl();
+	return {
+		"@context": "https://schema.org",
+		"@type": "BreadcrumbList",
+		itemListElement: items.map((item, i) => ({
+			"@type": "ListItem",
+			position: i + 1,
+			name: item.name,
+			...(item.url && { item: `${baseUrl}${item.url}` }),
+		})),
 	};
 }
 

@@ -2,6 +2,8 @@ import { ProductDetailsDocument } from "@/gql/graphql";
 import { CACHE_PROFILES, applyCacheProfile } from "@/lib/cache-manifest";
 import { graphqlLanguageCodeVariables } from "@/lib/graphql-locale";
 import { executePublicGraphQL } from "@/lib/graphql";
+import { parseProductFaq, type ProductFaq } from "./product-faq";
+import { parseProductGuide, type ProductGuide } from "./product-guide";
 
 export type ProductSpec = { label: string; value: string };
 export type VariantSelectionOption = { attribute: string; label: string; value: string };
@@ -21,6 +23,17 @@ export type ProductDetails = {
 	specs: ProductSpec[];
 	optionLabel: string;
 	variants: ProductVariantOption[];
+	/** Saleor's SEO title and description (translated when available); null when not set. */
+	seoTitle: string | null;
+	seoDescription: string | null;
+	/** Questions and answers from the product's `faq` metadata. */
+	faq: ProductFaq[];
+	/** A companion guide on this site, from the product's `guide` metadata. */
+	guide: ProductGuide | null;
+	/** The first variant's SKU, for structured data. */
+	sku: string | null;
+	/** The product's category, for the breadcrumb's structured data. */
+	category: { name: string; slug: string } | null;
 };
 
 const stripTags = (s: string) =>
@@ -129,5 +142,13 @@ export async function getProductDetails(
 		specs,
 		optionLabel: (optionAttr?.translation?.name || optionAttr?.name || "Option").toUpperCase(),
 		variants,
+		seoTitle: p.translation?.seoTitle?.trim() || p.seoTitle?.trim() || null,
+		seoDescription: p.translation?.seoDescription?.trim() || p.seoDescription?.trim() || null,
+		faq: parseProductFaq(p.faq),
+		guide: parseProductGuide(p.guide),
+		sku: p.variants?.find((x) => x.sku)?.sku ?? null,
+		category: p.category
+			? { name: p.category.translation?.name || p.category.name, slug: p.category.slug }
+			: null,
 	};
 }
