@@ -4066,3 +4066,89 @@ li:nth-child(even) > .wv-cat-chip {
 .wv-legal-num svg {
 	filter: drop-shadow(0 0 3px var(--accent));
 }
+
+/* The product gallery (ProductGallery, wv-product-client.tsx) sits in the glowing art frame (.wv-art, with glass and
+ * HUD corners) on a lit stage: a purple glow behind the product, pink in the top corner and cyan in the bottom one. Its
+ * prev/next controls are neon rings (glass inside a cyan-to-pink edge that glows, the chevron lit), growing and glowing
+ * brighter under the pointer; the thumbnail showing is edged in neon and glows, the others dimmed until pointed at. */
+.wv-art.wv-pdp-stage {
+	background:
+		radial-gradient(
+				50% 42% at 50% 52%,
+				color-mix(in srgb, var(--wv-purple) 42%, transparent),
+				transparent 72%
+			)
+			padding-box,
+		radial-gradient(45% 35% at 10% 8%, color-mix(in srgb, var(--wv-pink) 16%, transparent), transparent 70%)
+			padding-box,
+		radial-gradient(45% 35% at 90% 92%, color-mix(in srgb, var(--wv-cyan) 14%, transparent), transparent 70%)
+			padding-box,
+		linear-gradient(var(--wv-bg), var(--wv-bg)) padding-box,
+		linear-gradient(135deg, var(--wv-cyan), var(--wv-purple) 50%, var(--wv-pink)) border-box;
+}
+.wv-pdp-arrow {
+	color: var(--wv-cyan-soft);
+	border: 1.5px solid transparent;
+	background:
+		linear-gradient(
+				180deg,
+				color-mix(in srgb, var(--wv-cyan) 16%, var(--wv-control)),
+				color-mix(in srgb, var(--wv-bg) 90%, transparent)
+			)
+			padding-box,
+		linear-gradient(135deg, var(--wv-cyan), var(--wv-pink)) border-box;
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 22%, transparent),
+		0 0 12px color-mix(in srgb, var(--wv-cyan) 40%, transparent),
+		0 6px 14px -6px var(--wv-ink);
+	transition:
+		transform 150ms ease,
+		box-shadow 150ms ease;
+}
+.wv-pdp-arrow svg {
+	filter: drop-shadow(0 0 4px color-mix(in srgb, var(--wv-cyan) 90%, transparent));
+}
+@media (hover: hover) {
+	.wv-pdp-arrow:hover {
+		transform: scale(1.08);
+		box-shadow:
+			inset 0 1px 0 color-mix(in srgb, white 28%, transparent),
+			0 0 20px color-mix(in srgb, var(--wv-cyan) 65%, transparent),
+			0 0 30px -8px color-mix(in srgb, var(--wv-pink) 60%, transparent);
+	}
+}
+.wv-pdp-arrow:active {
+	transform: scale(0.95);
+}
+.wv-pdp-arrow:focus-visible,
+.wv-pdp-thumb:focus-visible {
+	outline: 2px solid var(--wv-cyan-soft);
+	outline-offset: 2px;
+}
+.wv-pdp-thumb {
+	border: 1.5px solid color-mix(in srgb, var(--wv-purple) 70%, var(--wv-control));
+	background: var(--wv-bg);
+	opacity: 0.7;
+	transition:
+		opacity 150ms ease,
+		box-shadow 150ms ease;
+}
+.wv-pdp-thumb:hover {
+	opacity: 1;
+}
+.wv-pdp-thumb[aria-current="true"] {
+	opacity: 1;
+	border-color: transparent;
+	background:
+		linear-gradient(var(--wv-bg), var(--wv-bg)) padding-box,
+		linear-gradient(135deg, var(--wv-cyan), var(--wv-pink)) border-box;
+	box-shadow:
+		0 0 12px color-mix(in srgb, var(--wv-cyan) 45%, transparent),
+		0 0 22px -6px color-mix(in srgb, var(--wv-pink) 55%, transparent);
+}
+@media (prefers-reduced-motion: reduce) {
+	.wv-pdp-arrow:hover,
+	.wv-pdp-arrow:active {
+		transform: none;
+	}
+}
