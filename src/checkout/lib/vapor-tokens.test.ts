@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import type { ServerCheckout, ServerOrder } from "@/checkout/lib/checkout-types";
-import { estimateOrderTokens, toFlowCheckout } from "./vapor-tokens";
+import type { TokensView } from "@/lib/rewards/checkout-flow";
+import {
+	checkoutTokensView,
+	estimateOrderTokens,
+	toFlowCheckout,
+	type CheckoutTokensViewInput,
+} from "./vapor-tokens";
 
 const money = (amount: number, currency = "CAD") => ({ amount, currency });
 
@@ -59,6 +65,71 @@ describe("toFlowCheckout", () => {
 			subtotalCents: 0,
 			currency: "",
 		});
+	});
+});
+
+describe("checkoutTokensView", () => {
+	const ready: TokensView = {
+		status: "ready",
+		currency: "CAD",
+		balanceTokens: 0,
+		balanceCents: 0,
+		appliedLotIds: [],
+		appliedTokens: 0,
+		coversOrder: false,
+		canApply: false,
+		expiringSoon: null,
+		willEarnTokens: 45,
+	};
+
+	const input = (overrides: Partial<CheckoutTokensViewInput> = {}): CheckoutTokensViewInput => ({
+		enabled: true,
+		tokensPerDollar: 3,
+		sessionUserId: "user-1",
+		checkout: checkout(),
+		fetched: null,
+		now: new Date("2026-11-24T12:00:00Z"),
+		...overrides,
+	});
+
+	it("is off when the program is off", () => {
+		expect(checkoutTokensView(input({ enabled: false }))).toEqual({ status: "disabled" });
+	});
+
+	it("shows a guest what the order would earn", () => {
+		// $15 of products at 3 tokens a dollar.
+		expect(checkoutTokensView(input({ sessionUserId: null, checkout: checkout({ user: null }) }))).toEqual({
+			status: "guest",
+			willEarnTokens: 45,
+		});
+	});
+
+	it("treats a signed-in customer as signed in before Saleor attaches them to the checkout", () => {
+		// The checkout was started as a guest, so it has no customer yet; the session says who is signed in.
+		const unattached = checkout({ user: null });
+		// Loading the balance, not the guest "Sign in to earn" copy.
+		expect(checkoutTokensView(input({ checkout: unattached }))).toBeNull();
+		expect(
+			checkoutTokensView(input({ checkout: unattached, fetched: { userId: "user-1", view: ready } })),
+		).toBe(ready);
+	});
+
+	it("goes by the session, not the checkout's customer, for a guest", () => {
+		// Signed out since the checkout was attached: the session wins, so no balance is shown.
+		expect(
+			checkoutTokensView(input({ sessionUserId: null, fetched: { userId: "user-1", view: ready } })),
+		).toEqual({ status: "guest", willEarnTokens: 45 });
+	});
+
+	it("waits for the signed-in customer's own view, not one read for someone else", () => {
+		expect(
+			checkoutTokensView(input({ sessionUserId: "user-2", fetched: { userId: "user-1", view: ready } })),
+		).toBeNull();
+	});
+
+	it("shows what the server returned for the signed-in customer", () => {
+		const unavailable: TokensView = { status: "unavailable" };
+		expect(checkoutTokensView(input({ fetched: { userId: "user-1", view: unavailable } }))).toBe(unavailable);
 	});
 });
 
