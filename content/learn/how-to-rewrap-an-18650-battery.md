@@ -23,7 +23,7 @@ Look at each battery every time you charge it, and re-wrap it before you use it 
 
 ## What you need
 
-- one [18650 battery wrap](/product/18650-battery-wrappers) per battery: pre-cut PVC heat-shrink, about 29–30 mm flat and 70–72 mm long
+- one [18650 battery wrap](/product/18650-battery-wraps-10-pack) per battery: pre-cut PVC heat-shrink, about 29–30 mm flat and 70–72 mm long (they come 10 to a pack)
 - a heat gun on its low setting, or a hair dryer on its hottest setting
 - a new insulator ring, if the old one is missing or damaged
 
@@ -48,4 +48,4 @@ A new wrap fixes the insulation, not the battery. Recycle the battery instead if
 
 **How often should I re-wrap?** Whenever the wrap is damaged. Batteries carried loose in a pocket or bag get nicked most, so carry spares in a plastic battery case, away from keys and coins.
 
-**Is a battery included with the wraps?** No. [Our 18650 battery wraps](/product/18650-battery-wrappers) are the wrap only.
+**Is a battery included with the wraps?** No. [Our 18650 battery wraps](/product/18650-battery-wraps-10-pack) come 10 to a pack, wraps only.
