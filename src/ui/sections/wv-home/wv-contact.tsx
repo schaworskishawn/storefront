@@ -1,12 +1,15 @@
 import {
 	ArrowRight,
 	ArrowUpRight,
+	Award,
 	BookOpen,
 	ChevronRight,
 	CircleHelp,
 	Clock,
 	Globe,
+	Headset,
 	Home,
+	Lock,
 	type LucideIcon,
 	Mail,
 	MapPin,
@@ -44,11 +47,11 @@ const HELP_LINKS: { Icon: LucideIcon; title: string; text: string; href: string 
 	},
 ];
 
-const BADGES = [
-	{ icon: "truck", title: "Fast Shipping", text: "Dispatched within 24 hours" },
-	{ icon: "lock", title: "Secure Payments", text: "100% SSL protected" },
-	{ icon: "support", title: "Dedicated Support", text: "We are always here to help" },
-	{ icon: "award", title: "Quality Guarantee", text: "All products fully certified" },
+const BADGES: { Icon: LucideIcon; title: string; text: string }[] = [
+	{ Icon: Truck, title: "Fast Shipping", text: "Dispatched within 24 hours" },
+	{ Icon: Lock, title: "Secure Payments", text: "100% SSL protected" },
+	{ Icon: Headset, title: "Dedicated Support", text: "We are always here to help" },
+	{ Icon: Award, title: "Quality Guarantee", text: "All products fully certified" },
 ];
 
 /**
@@ -319,20 +322,26 @@ export function WvContact() {
 					</div>
 				</section>
 
-				{/* Trust badges */}
-				<ul className="grid gap-3 px-4 py-8 md:grid-cols-4 md:gap-4 md:px-8 xl:gap-6 xl:px-20 xl:py-12">
+				{/* Trust badges, as on the returns page: a lit glass band (`.wv-band`, neon edges top and bottom) holding
+				    neon cards in turn cyan and pink (`.wv-trust-item`) that glow but don't lift, as they aren't links
+				    (`.wv-dist-step`); each icon glows in a neon ring of its colour, the title lifted and the line brighter. */}
+				<ul className="wv-band grid gap-4 px-4 py-8 md:grid-cols-2 md:px-8 xl:grid-cols-4 xl:gap-6 xl:px-20 xl:py-10">
 					{BADGES.map((b) => (
 						<li
 							key={b.title}
-							className="flex items-center gap-4 rounded-lg border border-[var(--ct-border)] bg-[var(--ct-card)] p-4 xl:p-5"
+							className="wv-neon-card wv-trust-item wv-dist-step flex items-center gap-4 rounded-2xl p-4 xl:p-5"
 						>
-							<span aria-hidden className="h-8 w-[3px] shrink-0 rounded-[2px] bg-[var(--ct-cyan)]" />
+							<span aria-hidden className="wv-trust-icon text-[26px] xl:text-[30px]">
+								<b.Icon
+									className="size-[0.68em] text-[var(--accent)] drop-shadow-[0_0_4px_var(--accent)]"
+									strokeWidth={2}
+								/>
+							</span>
 							<span className="flex min-w-0 flex-col gap-1">
-								<span className={`${heyComic} flex items-center gap-[6px] text-[13px]`}>
-									<Image src={`/home/contact/${b.icon}.svg`} alt="" width={14} height={14} />
-									{b.title}
+								<span className={`${heyComic} wv-trust-title text-[13px] md:text-sm`}>{b.title}</span>
+								<span className={`${orbitron} wv-trust-text text-xs leading-[1.45] md:text-[13px]`}>
+									{b.text}
 								</span>
-								<span className={`${orbitron} text-xs text-[var(--ct-text)]`}>{b.text}</span>
 							</span>
 						</li>
 					))}
